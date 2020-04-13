@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"io"
 
-	"miactl/renderer"
-	"miactl/sdk"
+	"github.com/mia-platform/miactl/renderer"
+
+	"github.com/mia-platform/miactl/sdk"
 )
 
 // FactoryContextKey key of the factory in context

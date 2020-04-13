@@ -1,4 +1,4 @@
-module miactl
+module github.com/mia-platform/miactl
 
 go 1.14
 

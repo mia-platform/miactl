@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"miactl/sdk"
+	"github.com/mia-platform/miactl/sdk"
 
 	"github.com/davidebianchi/go-jsonclient"
 )
