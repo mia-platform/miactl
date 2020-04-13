@@ -1,6 +1,6 @@
 package main
 
-import "miactl/cmd"
+import "cmd"
 
 func main() {
 	cmd.Execute()
