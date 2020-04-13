@@ -10,11 +10,11 @@ IMAGE    := ${IMG_NAME}:${VERSION}
 default: help
 
 test:   ## Run all tests
-	@go clean --testcache && go test ./...
+	@go clean --testcache && go test -race ./...
 
 
 cover:  ## Run test coverage suite
-	@go test ./... --coverprofile=cov.out
+	@go test ./... -race --coverprofile=cov.out
 	@go tool cover --html=cov.out
 
 build:  ## Builds the CLI
