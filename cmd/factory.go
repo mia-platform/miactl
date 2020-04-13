@@ -7,7 +7,6 @@ import (
 	"io"
 
 	"github.com/mia-platform/miactl/renderer"
-
 	"github.com/mia-platform/miactl/sdk"
 )
 
