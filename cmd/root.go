@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"miactl/sdk"
+	"github.com/mia-platform/miactl/sdk"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"

@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"context"
 	"io/ioutil"
-	"miactl/renderer"
-	"miactl/sdk"
 	"path/filepath"
 	"testing"
+
+	"github.com/mia-platform/miactl/renderer"
+	"github.com/mia-platform/miactl/sdk"
 
 	"github.com/spf13/cobra"
 )

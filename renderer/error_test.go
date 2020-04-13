@@ -9,7 +9,7 @@ import (
 	"os"
 	"testing"
 
-	"miactl/sdk"
+	"github.com/mia-platform/miactl/sdk"
 
 	"github.com/davidebianchi/go-jsonclient"
 	"github.com/stretchr/testify/require"
