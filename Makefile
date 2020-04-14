@@ -1,8 +1,7 @@
 NAME    := miactl
 PACKAGE := github.com/mia-platform/$(NAME)
 GIT     := $(shell git rev-parse --short HEAD)
-SOURCE_DATE_EPOCH ?= $(shell date +%s)
-DATE    := $(shell date -u -d @${SOURCE_DATE_EPOCH} +%FT%T%Z)
+DATE    := $(shell date -u +%FT%T%Z)
 VERSION  ?= v0.0.1
 IMG_NAME := mia-platform/miactl
 IMAGE    := ${IMG_NAME}:${VERSION}
