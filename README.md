@@ -31,7 +31,7 @@ go get -u github.com/mia-platform/miactl
 ### Get projects
 
 ```sh
-miactl get projects --secret "your-secret" --apiCookie "sid=your-sid" --apiBaseUrl "https://console.url/"
+miactl get projects --apiKey "your-api-key" --apiCookie "sid=your-sid" --apiBaseUrl "https://console.url/"
 ```
 
 ### Projects help

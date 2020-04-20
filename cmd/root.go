@@ -48,11 +48,11 @@ func init() {
 
 func setRootPersistentFlag(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.miaplatformctl.yaml)")
-	rootCmd.PersistentFlags().StringVar(&opts.Secret, "secret", "", "secret")
+	rootCmd.PersistentFlags().StringVar(&opts.APIKey, "apiKey", "", "API Key")
 	rootCmd.PersistentFlags().StringVar(&opts.APICookie, "apiCookie", "", "api cookie sid")
 	rootCmd.PersistentFlags().StringVar(&opts.APIBaseURL, "apiBaseUrl", "", "api base url")
 
-	rootCmd.MarkFlagRequired("secret")
+	rootCmd.MarkFlagRequired("apiKey")
 	rootCmd.MarkFlagRequired("apiCookie")
 	rootCmd.MarkFlagRequired("apiBaseUrl")
 }

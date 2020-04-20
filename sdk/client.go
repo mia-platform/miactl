@@ -9,7 +9,7 @@ import (
 
 // Options struct define options to create the sdk client
 type Options struct {
-	Secret     string
+	APIKey     string
 	APICookie  string
 	APIBaseURL string
 }
@@ -37,14 +37,14 @@ var (
 // New returns the MiaSdkClient to be used to communicate to Mia Platform
 // Console api
 func New(opts Options) (*MiaClient, error) {
-	if opts.Secret == "" || opts.APIBaseURL == "" || opts.APICookie == "" {
+	if opts.APIKey == "" || opts.APIBaseURL == "" || opts.APICookie == "" {
 		return nil, fmt.Errorf("%w: client options are not correct", ErrCreateClient)
 	}
 	JSONClient, err := jsonclient.New(jsonclient.Options{
 		BaseURL: opts.APIBaseURL,
 		Headers: map[string]string{
 			"cookie": opts.APICookie,
-			"secret": opts.Secret,
+			"apiKey": opts.APIKey,
 		},
 	})
 	if err != nil {

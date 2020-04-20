@@ -14,9 +14,9 @@ func TestNew(t *testing.T) {
 			option Options
 		}{
 			{option: Options{}},
-			{option: Options{Secret: "sid=asd", APIBaseURL: "base"}},
+			{option: Options{APIKey: "sid=asd", APIBaseURL: "base"}},
 			{option: Options{APIBaseURL: "base", APICookie: "cookie"}},
-			{option: Options{APICookie: "cookie", Secret: "sid=asd"}},
+			{option: Options{APICookie: "cookie", APIKey: "sid=asd"}},
 		}
 		for _, test := range tests {
 			client, err := New(test.option)
@@ -28,7 +28,7 @@ func TestNew(t *testing.T) {
 	t.Run("throws with wrong base url", func(t *testing.T) {
 		client, err := New(Options{
 			APIBaseURL: "wrong	",
-			Secret:    "secret",
+			APIKey:    "apiKey",
 			APICookie: "sid=asd",
 		})
 		require.Error(t, err)
@@ -38,7 +38,7 @@ func TestNew(t *testing.T) {
 	t.Run("correctly returns mia client", func(t *testing.T) {
 		opts := Options{
 			APIBaseURL: "http://my-url/path",
-			Secret:     "my secret",
+			APIKey:     "my apiKey",
 			APICookie:  "sid=asd",
 		}
 		client, err := New(opts)
@@ -46,7 +46,7 @@ func TestNew(t *testing.T) {
 		expectedJSONClient, _ := jsonclient.New(jsonclient.Options{
 			BaseURL: opts.APIBaseURL,
 			Headers: map[string]string{
-				"secret": opts.Secret,
+				"apiKey": opts.APIKey,
 				"cookie": opts.APICookie,
 			},
 		})

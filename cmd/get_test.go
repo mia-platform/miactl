@@ -38,15 +38,15 @@ func TestGetCommandRenderAndReturnsError(t *testing.T) {
 }
 
 func TestGetCommand(t *testing.T) {
-	secretValue := "foo"
-	secretFlag := fmt.Sprintf(`--secret="%s"`, secretValue)
+	apiKeyValue := "foo"
+	apiKeyFlag := fmt.Sprintf(`--apiKey="%s"`, apiKeyValue)
 	sidValue := "my-sid"
 	apiCookieFlag := fmt.Sprintf(`--apiCookie="sid=%s"`, sidValue)
 	apiBaseURLValue := "https://local.io/base-path/"
 	apiBaseURLFlag := fmt.Sprintf(`--apiBaseUrl=%s`, apiBaseURLValue)
 
 	t.Run("get projects", func(t *testing.T) {
-		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "projects", secretFlag, apiBaseURLFlag, apiCookieFlag)
+		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "projects", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
 		require.NoError(t, err)
 		rows := renderer.CleanTableRows(out)
 
@@ -54,7 +54,7 @@ func TestGetCommand(t *testing.T) {
 	})
 
 	t.Run("get project", func(t *testing.T) {
-		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "project", secretFlag, apiBaseURLFlag, apiCookieFlag)
+		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "project", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
 		require.NoError(t, err)
 		rows := renderer.CleanTableRows(out)
 
@@ -64,7 +64,7 @@ func TestGetCommand(t *testing.T) {
 	t.Run("get projects returns error", func(t *testing.T) {
 		out, err := executeRootCommandWithContext(sdk.MockClientError{
 			ProjectsError: sdk.ErrHTTP,
-		}, "get", "projects", secretFlag, apiBaseURLFlag, apiCookieFlag)
+		}, "get", "projects", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
 		require.NoError(t, err)
 
 		require.Equal(t, fmt.Sprintf("%s\n", sdk.ErrHTTP), out)
@@ -72,7 +72,7 @@ func TestGetCommand(t *testing.T) {
 }
 
 func TestGetProjects(t *testing.T) {
-	secretValue := "foo"
+	apiKeyValue := "foo"
 	cookieValue := "sid=my-sid"
 	apiBaseURLValue := "https://local.io/base-path/"
 	mockMiaClient := sdk.WrapperMockMiaClient(sdk.MockClientError{})
@@ -82,7 +82,7 @@ func TestGetProjects(t *testing.T) {
 		getErr := fmt.Errorf("error getting projects")
 
 		miaClient, err := mockMiaClient(sdk.Options{
-			Secret:     secretValue,
+			APIKey:     apiKeyValue,
 			APICookie:  cookieValue,
 			APIBaseURL: apiBaseURLValue,
 		})
@@ -104,7 +104,7 @@ func TestGetProjects(t *testing.T) {
 		buf := &bytes.Buffer{}
 
 		miaClient, err := mockMiaClient(sdk.Options{
-			Secret:     secretValue,
+			APIKey:     apiKeyValue,
 			APICookie:  cookieValue,
 			APIBaseURL: apiBaseURLValue,
 		})
