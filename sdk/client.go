@@ -44,7 +44,7 @@ func New(opts Options) (*MiaClient, error) {
 		BaseURL: opts.APIBaseURL,
 		Headers: map[string]string{
 			"cookie": opts.APICookie,
-			"apiKey": opts.APIKey,
+			"client-key": opts.APIKey,
 		},
 	})
 	if err != nil {

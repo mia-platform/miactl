@@ -46,7 +46,7 @@ func TestNew(t *testing.T) {
 		expectedJSONClient, _ := jsonclient.New(jsonclient.Options{
 			BaseURL: opts.APIBaseURL,
 			Headers: map[string]string{
-				"apiKey": opts.APIKey,
+				"client-key": opts.APIKey,
 				"cookie": opts.APICookie,
 			},
 		})

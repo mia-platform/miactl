@@ -25,9 +25,7 @@ func NewGetCmd() *cobra.Command {
 			resource := args[0]
 
 			switch resource {
-			case "projects":
-				fallthrough
-			case "project":
+			case "projects", "project":
 				getProjects(f)
 			}
 			return nil
