@@ -39,7 +39,7 @@ func TestGetCommandRenderAndReturnsError(t *testing.T) {
 
 func TestGetCommand(t *testing.T) {
 	secretValue := "foo"
-	secretFlag := fmt.Sprintf(`--secret="%s"`, secretValue)
+	secretFlag := fmt.Sprintf(`--apiKey="%s"`, secretValue)
 	sidValue := "my-sid"
 	apiCookieFlag := fmt.Sprintf(`--apiCookie="sid=%s"`, sidValue)
 	apiBaseURLValue := "https://local.io/base-path/"
@@ -82,7 +82,7 @@ func TestGetProjects(t *testing.T) {
 		getErr := fmt.Errorf("error getting projects")
 
 		miaClient, err := mockMiaClient(sdk.Options{
-			Secret:     secretValue,
+			APIKey:     secretValue,
 			APICookie:  cookieValue,
 			APIBaseURL: apiBaseURLValue,
 		})
@@ -104,7 +104,7 @@ func TestGetProjects(t *testing.T) {
 		buf := &bytes.Buffer{}
 
 		miaClient, err := mockMiaClient(sdk.Options{
-			Secret:     secretValue,
+			APIKey:     secretValue,
 			APICookie:  cookieValue,
 			APIBaseURL: apiBaseURLValue,
 		})
