@@ -47,7 +47,7 @@ func TestAddMiaClientToFactory(t *testing.T) {
 
 	t.Run("method add MiaClient to factory", func(t *testing.T) {
 		opts := sdk.Options{
-			APIKey:     "my-secret",
+			APIKey:     "my-apiKey",
 			APIBaseURL: "base-url",
 			APICookie:  "cookie",
 		}

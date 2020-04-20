@@ -12,7 +12,7 @@ func TestWrapperMockMiaClient(t *testing.T) {
 		wrapperClient := WrapperMockMiaClient(MockClientError{})
 
 		opts := Options{
-			APIKey: "secret",
+			APIKey: "apiKey",
 		}
 		miaClient, err := wrapperClient(opts)
 		require.NoError(t, err)
@@ -32,7 +32,7 @@ func TestWrapperMockMiaClient(t *testing.T) {
 		})
 
 		opts := Options{
-			APIKey: "secret",
+			APIKey: "apiKey",
 		}
 		miaClient, err := wrapperClient(opts)
 		require.NoError(t, err)
