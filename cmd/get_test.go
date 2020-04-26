@@ -22,7 +22,14 @@ func TestGetCommandRenderAndReturnsError(t *testing.T) {
 
 	t.Run("without correct args", func(t *testing.T) {
 		out, err := executeCommand(NewRootCmd(), "get", "not-correct-arg")
-		expectedErrMessage := `invalid argument "not-correct-arg" for "miaplatformctl get"`
+		expectedErrMessage := `invalid argument "not-correct-arg" for "miactl get"`
+		require.Contains(t, out, expectedErrMessage)
+		require.EqualError(t, err, expectedErrMessage)
+	})
+
+	t.Run("without args", func(t *testing.T) {
+		out, err := executeCommand(NewRootCmd(), "get")
+		expectedErrMessage := `accepts 1 arg(s), received 0`
 		require.Contains(t, out, expectedErrMessage)
 		require.EqualError(t, err, expectedErrMessage)
 	})

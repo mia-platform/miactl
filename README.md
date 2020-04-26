@@ -26,6 +26,39 @@ This library require golang at version >= 1.13
 go get -u github.com/mia-platform/miactl
 ```
 
+### Enabling shell autocompletion
+
+miactl provides autocompletion support for Bash, Zsh and Fish, which can save you a lot of typing.
+
+#### Bash
+
+Completion could be generate running the `miactl completion bash` command.
+In order to make this completion work, you should have [bash completion](https://github.com/scop/bash-completion)
+correctly installed.
+You could make the completion works running:
+```sh
+miactl completion bash >/etc/bash_completion.d/miactl
+```
+
+#### Fish
+
+Completion could be generate running the `miactl completion fish` command.
+
+In order to make this completion work, you should run:
+```sh
+miactl completion fish >~/.config/fish/completions/miactl.fish
+```
+
+#### Zsh
+
+Completion could be generate running the `miactl completion zsh` command
+
+In order to make this completion work, add the following to your ~/.zshrc file:
+
+```sh
+source <(miactl completion zsh)
+```
+
 ## Example usage
 
 ### Get projects
@@ -39,7 +72,6 @@ miactl get projects --apiKey "your-api-key" --apiCookie "sid=your-sid" --apiBase
 ```sh
 miactl help
 ```
-
 
 [github-actions]: https://github.com/mia-platform/miactl/actions
 [github-actions-svg]: https://github.com/mia-platform/miactl/workflows/Test%20and%20build/badge.svg
