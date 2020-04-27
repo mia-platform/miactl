@@ -20,9 +20,10 @@ func newCompletionCmd(rootCmd *cobra.Command) *cobra.Command {
 
 	miactl completion fish >~/.config/fish/completions/miactl.fish
 
-	For zsh, add the following to your ~/.zshrc file:
+	For zsh:
 
-	source <(miactl completion zsh)
+	To generate the completion script, run miactl completion zsh
+	the generated completion script should be put somewhere in your $fpath named _miactl
 
 	---
 
