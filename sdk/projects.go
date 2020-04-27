@@ -63,3 +63,8 @@ func (p ProjectsClient) Get() (Projects, error) {
 
 	return projects, nil
 }
+
+type DeployItem struct {
+}
+
+func (p Project) GetDeployHistory()

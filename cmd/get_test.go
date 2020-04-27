@@ -69,6 +69,14 @@ func TestGetCommand(t *testing.T) {
 
 		require.Equal(t, fmt.Sprintf("%s\n", sdk.ErrHTTP), out)
 	})
+
+	t.Run("get deploys", func(t *testing.T) {
+		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "deploys", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
+		require.NoError(t, err)
+		rows := renderer.CleanTableRows(out)
+
+		assertMockProjectsCorrectlyRendered(t, rows)
+	})
 }
 
 func TestGetProjects(t *testing.T) {
