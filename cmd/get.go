@@ -9,12 +9,12 @@ import (
 var validArgs = []string{"project", "projects"}
 
 // NewGetCmd func creates a new command
-func NewGetCmd() *cobra.Command {
+func newGetCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:       "get",
 		ValidArgs: validArgs,
 		Args: func(cmd *cobra.Command, args []string) error {
-			return cobra.OnlyValidArgs(cmd, args)
+			return cobra.ExactValidArgs(1)(cmd, args)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := GetFactoryFromContext(cmd.Context(), opts)
