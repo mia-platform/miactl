@@ -19,10 +19,15 @@ type IProjects interface {
 	Get() (Projects, error)
 }
 
+type IDeploy interface {
+	GetHistory(projectID string) ([]DeployItem, error)
+}
+
 // MiaClient is the client of the sdk to be used to communicate with Mia
 // Platform Console api
 type MiaClient struct {
 	Projects IProjects
+	Deploy   IDeploy
 }
 
 var (
@@ -32,6 +37,9 @@ var (
 	ErrHTTP = jsonclient.ErrHTTP
 	// ErrCreateClient is the error creating MiaSdkClient
 	ErrCreateClient = errors.New("Error creating sdk client")
+	// ErrProjectNotFound is the error returned when specified
+	// project cannot be found.
+	ErrProjectNotFound = errors.New("Project not found")
 )
 
 // New returns the MiaSdkClient to be used to communicate to Mia Platform
@@ -43,7 +51,7 @@ func New(opts Options) (*MiaClient, error) {
 	JSONClient, err := jsonclient.New(jsonclient.Options{
 		BaseURL: opts.APIBaseURL,
 		Headers: map[string]string{
-			"cookie": opts.APICookie,
+			"cookie":     opts.APICookie,
 			"client-key": opts.APIKey,
 		},
 	})

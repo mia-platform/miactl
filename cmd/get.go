@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/spf13/cobra"
@@ -31,8 +30,8 @@ func newGetCmd() *cobra.Command {
 			switch resource {
 			case "projects", "project":
 				getProjects(f)
-			case "deploy", "deploys":
-				getDeploysForProject(f)
+				// case "deploy", "deploys":
+				// 	getDeploysForProject(f)
 			}
 			return nil
 		},
@@ -59,6 +58,7 @@ func getProjects(f *Factory) {
 	table.Render()
 }
 
-func getDeploysForProject(f *Factory) {
-	fmt.Printf("what\n")
-}
+// func getDeploysForProject(f *Factory) {
+// 	fmt.Printf("what\n")
+
+// }

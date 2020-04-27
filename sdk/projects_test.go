@@ -120,14 +120,36 @@ func testCreateProjectClient(t *testing.T, url string) IProjects {
 
 type assertionFn func(t *testing.T, req *http.Request)
 
+type response struct {
+	assertions assertionFn
+	body       string
+	status     int
+}
+type responses []response
+
 func testCreateResponseServer(t *testing.T, assertions assertionFn, responseBody string, statusCode int) *httptest.Server {
 	t.Helper()
+	responses := []response{
+		{assertions: assertions, body: responseBody, status: statusCode},
+	}
+	return testCreateMultiResponseServer(t, responses)
+}
 
+func testCreateMultiResponseServer(t *testing.T, responses responses) *httptest.Server {
+	t.Helper()
+
+	var usage int
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		assertions(t, req)
-		w.WriteHeader(statusCode)
-		if responseBody != "" {
-			w.Write([]byte(responseBody))
+		fmt.Println("Invoked", usage, req.URL.String())
+		response := responses[usage]
+		usage++
+		if response.assertions != nil {
+			response.assertions(t, req)
+		}
+
+		w.WriteHeader(response.status)
+		if response.body != "" {
+			w.Write([]byte(response.body))
 			return
 		}
 		w.Write(nil)
