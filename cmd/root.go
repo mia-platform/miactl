@@ -20,14 +20,14 @@ var (
 // NewRootCmd creates a new root command
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:     "miaplatformctl",
-		Aliases: []string{"miactl"},
+		Use: "miactl",
 	}
 	setRootPersistentFlag(rootCmd)
 
 	// add sub command to root command
-	rootCmd.AddCommand(NewGetCmd())
+	rootCmd.AddCommand(newGetCmd())
 
+	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
 }
 

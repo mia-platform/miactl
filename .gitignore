@@ -16,3 +16,6 @@
 
 # Build output directory
 execs/*
+
+# Program binary
+miactl
