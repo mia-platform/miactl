@@ -11,16 +11,16 @@ import (
 
 // DeployItem represents a single item of the deploy history.
 type DeployItem struct {
-	ID          string        `json:"id"`
-	Status      string        `json:"status"`
-	Ref         string        `json:"ref"`
-	Commit      CommitInfo    `json:"commit"`
-	User        DeployUser    `json:"iser"`
-	DeployType  string        `json:"deployType"`
-	WebURL      string        `json:"webURL"`
-	Duration    time.Duration `json:"duration"`
-	FinishedAt  time.Time     `json:"finishedAt"`
-	Environment string        `json:"environment"`
+	ID          int        `json:"id"`
+	Status      string     `json:"status"`
+	Ref         string     `json:"ref"`
+	Commit      CommitInfo `json:"commit"`
+	User        DeployUser `json:"iser"`
+	DeployType  string     `json:"deployType"`
+	WebURL      string     `json:"webURL"`
+	Duration    float64    `json:"duration"`
+	FinishedAt  time.Time  `json:"finishedAt"`
+	Environment string     `json:"environment"`
 }
 
 // CommitInfo represents available information regarding a specific commit.

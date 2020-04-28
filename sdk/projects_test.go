@@ -137,7 +137,7 @@ func testCreateResponseServer(t *testing.T, assertions assertionFn, responseBody
 
 func testCreateMultiResponseServer(t *testing.T, responses responses) *httptest.Server {
 	t.Helper()
-
+	fmt.Println("NEW MOCK", len(responses))
 	var usage int
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		fmt.Println(">>>> Invoked", usage, len(responses), usage > len(responses), req.URL.String())
@@ -152,10 +152,10 @@ func testCreateMultiResponseServer(t *testing.T, responses responses) *httptest.
 		}
 
 		w.WriteHeader(response.status)
+		var responseBytes []byte
 		if response.body != "" {
-			w.Write([]byte(response.body))
-			return
+			responseBytes = []byte(response.body)
 		}
-		w.Write(nil)
+		w.Write(responseBytes)
 	}))
 }
