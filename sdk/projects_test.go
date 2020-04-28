@@ -140,7 +140,11 @@ func testCreateMultiResponseServer(t *testing.T, responses responses) *httptest.
 
 	var usage int
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		fmt.Println("Invoked", usage, req.URL.String())
+		fmt.Println(">>>> Invoked", usage, len(responses), usage > len(responses), req.URL.String())
+		if usage >= len(responses) {
+			t.Fatalf("Unexpected HTTP request, provided %d handler, received call #%d.", len(responses), usage+1)
+		}
+
 		response := responses[usage]
 		usage++
 		if response.assertions != nil {

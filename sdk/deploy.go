@@ -70,15 +70,18 @@ func (d DeployClient) GetHistory(projectID string) ([]DeployItem, error) {
 
 	path := fmt.Sprintf("api/backend/projects/%s/deployment/?page=1&per_page=25&sort=desc", project.ID)
 
-	req, err = d.JSONClient.NewRequest(http.MethodGet, path, nil)
+	historyReq, err := d.JSONClient.NewRequest(http.MethodGet, path, nil)
+	if err != nil {
+		return nil, err
+	}
+
 	var history []DeployItem
-	if _, err := d.JSONClient.Do(req, &history); err != nil {
+	if _, err := d.JSONClient.Do(historyReq, &history); err != nil {
 		var httpErr *jsonclient.HTTPError
 		if errors.As(err, &httpErr) {
 			return nil, httpErr
 		}
 		return nil, fmt.Errorf("%w: %s", ErrGeneric, err)
 	}
-
 	return history, nil
 }
