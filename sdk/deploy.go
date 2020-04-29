@@ -38,10 +38,12 @@ type DeployUser struct {
 	Name string `json:"name"`
 }
 
+// DeployClient implements IDeploy interface to interact with Mia Platform deploy API.
 type DeployClient struct {
 	JSONClient *jsonclient.Client
 }
 
+// GetHistory interacts with Mia Platform APIs to retrieve a list of the lastest deploy.
 func (d DeployClient) GetHistory(projectID string) ([]DeployItem, error) {
 	req, err := d.JSONClient.NewRequest(http.MethodGet, "api/backend/projects/", nil)
 	if err != nil {
