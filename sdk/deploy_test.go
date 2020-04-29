@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
 	"github.com/stretchr/testify/require"
@@ -110,11 +109,6 @@ func TestDeployGetHistory(t *testing.T) {
 		history, err := client.GetHistory("project-2")
 		require.Nil(t, err)
 		require.Equal(t, 3, len(history))
-
-		// 2020-04-24T21:50:59.000+00:00
-		expectedCommittDate := time.Date(2020, time.April, 24, 21, 50, 59, 0, &time.Location{})
-		fmt.Printf("%+v\n", history[0])
-		require.Equal(t, expectedCommittDate, history[0].Commit.CommitDate)
 	})
 }
 

@@ -27,7 +27,7 @@ type DeployItem struct {
 type CommitInfo struct {
 	URL        string    `json:"url"`
 	AuthorName string    `json:"authorName"`
-	CommitDate time.Time `json:"commitDate"`
+	CommitDate time.Time `json:"committedDate"`
 	AvatarURL  string    `json:"avatarURL"`
 	Hash       string    `json:"sha"`
 }
