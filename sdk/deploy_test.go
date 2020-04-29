@@ -43,6 +43,19 @@ func TestDeployGetHistory(t *testing.T) {
 		require.True(t, errors.Is(err, ErrHTTP))
 	})
 
+	t.Run("Error occurs when projects fetch holds malformed data", func(t *testing.T) {
+		projectsResponseBody := `[{"_id":9876543,"name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
+
+		s := testCreateResponseServer(t, projectRequestAssertions, projectsResponseBody, 200)
+		defer s.Close()
+		client := testCreateDeployClient(t, s.URL)
+
+		history, err := client.GetHistory("project-NaN")
+		require.Nil(t, history)
+		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal number into Go struct field Project._id of type string", ErrGeneric))
+		require.True(t, errors.Is(err, ErrGeneric))
+	})
+
 	t.Run("Error occurs when projectId does not exist in download list", func(t *testing.T) {
 		projectsResponseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
 
@@ -71,8 +84,6 @@ func TestDeployGetHistory(t *testing.T) {
 		history, err := client.GetHistory("project-2")
 		require.Nil(t, history)
 		require.NotNil(t, err)
-		// require.EqualError(t, err, fmt.Sprintf("GET %s/api/backend/projects/mongo-id-2/deployment/?page=1&per_page=25&sort=desc: 500 - %s", s.URL, historyResponseBody))
-		// require.True(t, errors.Is(err, ErrHTTP))
 	})
 
 	t.Run("Error on malformed history items", func(t *testing.T) {
