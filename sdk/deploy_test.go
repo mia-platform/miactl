@@ -37,7 +37,7 @@ func TestDeployGetHistory(t *testing.T) {
 		defer s.Close()
 		client := testCreateDeployClient(t, s.URL)
 
-		history, err := client.GetHistory("project1")
+		history, err := client.GetHistory(DeployQuery{ProjectID: "project1"})
 		require.Nil(t, history)
 		require.EqualError(t, err, fmt.Sprintf("GET %s/api/backend/projects/: 401 - %s", s.URL, responseBody))
 		require.True(t, errors.Is(err, ErrHTTP))
@@ -50,7 +50,7 @@ func TestDeployGetHistory(t *testing.T) {
 		defer s.Close()
 		client := testCreateDeployClient(t, s.URL)
 
-		history, err := client.GetHistory("project-NaN")
+		history, err := client.GetHistory(DeployQuery{ProjectID: "project-NaN"})
 		require.Nil(t, history)
 		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal number into Go struct field Project._id of type string", ErrGeneric))
 		require.True(t, errors.Is(err, ErrGeneric))
@@ -63,7 +63,7 @@ func TestDeployGetHistory(t *testing.T) {
 		defer s.Close()
 		client := testCreateDeployClient(t, s.URL)
 
-		history, err := client.GetHistory("project-NaN")
+		history, err := client.GetHistory(DeployQuery{ProjectID: "project-NaN"})
 		require.Nil(t, history)
 		require.EqualError(t, err, fmt.Sprintf("%s: project-NaN", ErrProjectNotFound))
 		require.True(t, errors.Is(err, ErrProjectNotFound))
@@ -81,7 +81,7 @@ func TestDeployGetHistory(t *testing.T) {
 
 		client := testCreateDeployClient(t, s.URL)
 
-		history, err := client.GetHistory("project-2")
+		history, err := client.GetHistory(DeployQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
 		require.NotNil(t, err)
 	})
@@ -98,7 +98,7 @@ func TestDeployGetHistory(t *testing.T) {
 
 		client := testCreateDeployClient(t, s.URL)
 
-		history, err := client.GetHistory("project-2")
+		history, err := client.GetHistory(DeployQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
 		require.NotNil(t, err)
 		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal string into Go struct field DeployItem.id of type int", ErrGeneric))
@@ -117,7 +117,7 @@ func TestDeployGetHistory(t *testing.T) {
 
 		client := testCreateDeployClient(t, s.URL)
 
-		history, err := client.GetHistory("project-2")
+		history, err := client.GetHistory(DeployQuery{ProjectID: "project-2"})
 		require.Nil(t, err)
 		require.Equal(t, 3, len(history))
 	})

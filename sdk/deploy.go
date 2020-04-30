@@ -44,7 +44,7 @@ type DeployClient struct {
 }
 
 // GetHistory interacts with Mia Platform APIs to retrieve a list of the lastest deploy.
-func (d DeployClient) GetHistory(projectID string) ([]DeployItem, error) {
+func (d DeployClient) GetHistory(query DeployQuery) ([]DeployItem, error) {
 	req, err := d.JSONClient.NewRequest(http.MethodGet, "api/backend/projects/", nil)
 	if err != nil {
 		return nil, err
@@ -61,13 +61,13 @@ func (d DeployClient) GetHistory(projectID string) ([]DeployItem, error) {
 
 	var project *Project
 	for _, p := range projects {
-		if p.ProjectID == projectID {
+		if p.ProjectID == query.ProjectID {
 			project = &p
 			break
 		}
 	}
 	if project == nil {
-		return nil, fmt.Errorf("%w: %s", ErrProjectNotFound, projectID)
+		return nil, fmt.Errorf("%w: %s", ErrProjectNotFound, query.ProjectID)
 	}
 
 	path := fmt.Sprintf("api/backend/projects/%s/deployment/?page=1&per_page=25&sort=desc", project.ID)
