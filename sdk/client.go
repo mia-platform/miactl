@@ -66,8 +66,7 @@ func New(opts Options) (*MiaClient, error) {
 	}
 
 	return &MiaClient{
-		Projects: &ProjectsClient{
-			JSONClient: JSONClient,
-		},
+		Projects: &ProjectsClient{JSONClient: JSONClient},
+		Deploy:   &DeployClient{JSONClient: JSONClient},
 	}, nil
 }
