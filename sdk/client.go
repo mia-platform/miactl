@@ -19,9 +19,14 @@ type IProjects interface {
 	Get() (Projects, error)
 }
 
+// DeployHistoryQuery wraps query filters for project deployments.
+type DeployHistoryQuery struct {
+	ProjectID string
+}
+
 // IDeploy is a client interface used to interact with deployment pipelines.
 type IDeploy interface {
-	GetHistory(projectID string) ([]DeployItem, error)
+	GetHistory(DeployHistoryQuery) ([]DeployItem, error)
 }
 
 // MiaClient is the client of the sdk to be used to communicate with Mia
