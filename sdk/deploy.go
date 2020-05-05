@@ -15,7 +15,7 @@ type DeployItem struct {
 	Status      string     `json:"status"`
 	Ref         string     `json:"ref"`
 	Commit      CommitInfo `json:"commit"`
-	User        DeployUser `json:"iser"`
+	User        DeployUser `json:"user"`
 	DeployType  string     `json:"deployType"`
 	WebURL      string     `json:"webURL"`
 	Duration    float64    `json:"duration"`

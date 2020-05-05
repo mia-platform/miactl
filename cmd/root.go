@@ -13,8 +13,9 @@ import (
 )
 
 var (
-	cfgFile string
-	opts    = sdk.Options{}
+	cfgFile   string
+	projectID string
+	opts      = sdk.Options{}
 )
 
 // NewRootCmd creates a new root command
@@ -51,6 +52,7 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().StringVar(&opts.APIKey, "apiKey", "", "API Key")
 	rootCmd.PersistentFlags().StringVar(&opts.APICookie, "apiCookie", "", "api cookie sid")
 	rootCmd.PersistentFlags().StringVar(&opts.APIBaseURL, "apiBaseUrl", "", "api base url")
+	rootCmd.PersistentFlags().StringVarP(&projectID, "project", "p", "", "specify desired project ID")
 
 	rootCmd.MarkFlagRequired("apiKey")
 	rootCmd.MarkFlagRequired("apiCookie")

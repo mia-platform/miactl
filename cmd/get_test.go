@@ -4,13 +4,21 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
-
 	"github.com/stretchr/testify/require"
 )
+
+var apiKeyValue = "foo"
+var apiKeyFlag = fmt.Sprintf(`--apiKey="%s"`, apiKeyValue)
+var sidValue = "my-sid"
+var apiCookieFlag = fmt.Sprintf(`--apiCookie="sid=%s"`, sidValue)
+var apiBaseURLValue = "https://local.io/base-path/"
+var apiBaseURLFlag = fmt.Sprintf(`--apiBaseUrl=%s`, apiBaseURLValue)
 
 func TestGetCommandRenderAndReturnsError(t *testing.T) {
 	t.Run("without context", func(t *testing.T) {
@@ -45,13 +53,6 @@ func TestGetCommandRenderAndReturnsError(t *testing.T) {
 }
 
 func TestGetCommand(t *testing.T) {
-	apiKeyValue := "foo"
-	apiKeyFlag := fmt.Sprintf(`--apiKey="%s"`, apiKeyValue)
-	sidValue := "my-sid"
-	apiCookieFlag := fmt.Sprintf(`--apiCookie="sid=%s"`, sidValue)
-	apiBaseURLValue := "https://local.io/base-path/"
-	apiBaseURLFlag := fmt.Sprintf(`--apiBaseUrl=%s`, apiBaseURLValue)
-
 	t.Run("get projects", func(t *testing.T) {
 		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "projects", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
 		require.NoError(t, err)
@@ -77,12 +78,80 @@ func TestGetCommand(t *testing.T) {
 		require.Equal(t, fmt.Sprintf("%s\n", sdk.ErrHTTP), out)
 	})
 
-	t.Run("get deploys", func(t *testing.T) {
-		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "deploys", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
+}
+
+func TestGetDeployments(t *testing.T) {
+	t.Run("returns error if no project ID is provided", func(t *testing.T) {
+		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "deployments", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
+		require.Error(t, err)
+		require.True(t, strings.HasPrefix(out, "Error: no project ID specified"))
+	})
+
+	var projectIDFlag = fmt.Sprintf("--project=%s", "project-id")
+	var projectIDShorthandFlag = fmt.Sprintf("-p=%s", "project-id")
+
+	t.Run("renders error on sdk error", func(t *testing.T) {
+		mockErrors := sdk.MockClientError{
+			DeployError: fmt.Errorf("Some error"),
+		}
+		out, err := executeRootCommandWithContext(mockErrors, "get", "deployments", apiKeyFlag, apiBaseURLFlag, apiCookieFlag, projectIDFlag)
+		require.NoError(t, err)
+		require.True(t, strings.HasPrefix(out, "Some error"))
+	})
+
+	history := []sdk.DeployItem{
+		{
+			ID:         123,
+			Status:     "running",
+			DeployType: "deploy_all",
+			Ref:        "v1.2.3",
+			User:       sdk.DeployUser{Name: "John Smith"},
+			Duration:   12.3,
+			FinishedAt: time.Date(2020, 01, 12, 22, 33, 44, 12, &time.Location{}),
+			WebURL:     "https://web.url/",
+		},
+		{
+			ID:         456,
+			Status:     "pending",
+			DeployType: "deploy_all",
+			Ref:        "master",
+			User:       sdk.DeployUser{Name: "Rick Astley"},
+			Duration:   22.99,
+			FinishedAt: time.Date(2020, 02, 12, 22, 33, 44, 12, &time.Location{}),
+			WebURL:     "https://web.url.2/",
+		},
+	}
+
+	t.Run("works with projectId flag", func(t *testing.T) {
+		mockErrors := sdk.MockClientError{
+			DeployAssertFn: func(query sdk.DeployHistoryQuery) {
+				require.Equal(t, sdk.DeployHistoryQuery{
+					ProjectID: "project-id",
+				}, query)
+			},
+			DeployHistory: history,
+		}
+		out, err := executeRootCommandWithContext(mockErrors, "get", "deployments", apiKeyFlag, apiBaseURLFlag, apiCookieFlag, projectIDFlag)
 		require.NoError(t, err)
 		rows := renderer.CleanTableRows(out)
 
-		assertMockProjectsCorrectlyRendered(t, rows)
+		assertMockDeploymentsCorrectlyRendered(t, rows)
+	})
+
+	t.Run("works with projectId shorthand flag", func(t *testing.T) {
+		mockErrors := sdk.MockClientError{
+			DeployAssertFn: func(query sdk.DeployHistoryQuery) {
+				require.Equal(t, sdk.DeployHistoryQuery{
+					ProjectID: "project-id",
+				}, query)
+			},
+			DeployHistory: history,
+		}
+		out, err := executeRootCommandWithContext(mockErrors, "get", "deployments", apiKeyFlag, apiBaseURLFlag, apiCookieFlag, projectIDShorthandFlag)
+		require.NoError(t, err)
+		rows := renderer.CleanTableRows(out)
+
+		assertMockDeploymentsCorrectlyRendered(t, rows)
 	})
 }
 
@@ -147,6 +216,17 @@ func assertMockProjectsCorrectlyRendered(t *testing.T, rows []string) {
 	expectedRow1 := "1 | Project 1 | /git/path | project-1"
 	expectedRow2 := "2 | Project 2 | /git/path | project-2"
 
+	require.Equal(t, expectedHeaders, rows[0])
+	require.Equal(t, expectedRow1, rows[1])
+	require.Equal(t, expectedRow2, rows[2])
+}
+
+func assertMockDeploymentsCorrectlyRendered(t *testing.T, rows []string) {
+	expectedHeaders := "# | STATUS | DEPLOY TYPE | DEPLOY REF | MADE BY | DURATION | FINISHED | VIEW LOG"
+	expectedRow1 := "123 | running | deploy_all | v1.2.3 | John Smith | 12s | 2020-01-12 22:33:44.000000012 +0000 UTC | https://web.url/"
+	expectedRow2 := "456 | pending | deploy_all | master | Rick Astley | 22s | 2020-02-12 22:33:44.000000012 +0000 UTC | https://web.url.2/"
+
+	require.Lenf(t, rows, 3, "headers + projects")
 	require.Equal(t, expectedHeaders, rows[0])
 	require.Equal(t, expectedRow1, rows[1])
 	require.Equal(t, expectedRow2, rows[2])

@@ -3,13 +3,15 @@ package cmd
 import (
 	"fmt"
 	"strconv"
+	"time"
 
+	"github.com/mia-platform/miactl/sdk"
 	"github.com/spf13/cobra"
 )
 
 var validArgs = []string{
 	"project", "projects",
-	"deploy", "deploys",
+	"deployment", "deployments",
 }
 
 // NewGetCmd func creates a new command
@@ -19,6 +21,19 @@ func newGetCmd() *cobra.Command {
 		ValidArgs: validArgs,
 		Args: func(cmd *cobra.Command, args []string) error {
 			return cobra.ExactValidArgs(1)(cmd, args)
+		},
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			switch args[0] {
+			case "projects", "project":
+			case "deployment", "deployments":
+				if err := cmd.MarkFlagRequired("project"); err != nil {
+					return err
+				}
+				if projectID == "" {
+					return fmt.Errorf("no project ID specified")
+				}
+			}
+			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := GetFactoryFromContext(cmd.Context(), opts)
@@ -31,8 +46,8 @@ func newGetCmd() *cobra.Command {
 			switch resource {
 			case "projects", "project":
 				getProjects(f)
-			case "deploy", "deploys":
-				getDeploysForProject(cmd)
+			case "deployment", "deployments":
+				getDeploysForProject(f)
 			}
 			return nil
 		},
@@ -59,9 +74,30 @@ func getProjects(f *Factory) {
 	table.Render()
 }
 
-func getDeploysForProject(cmd *cobra.Command) {
-	// cmd.PersistentFlags().StringVar()
+func getDeploysForProject(f *Factory) {
+	query := sdk.DeployHistoryQuery{
+		ProjectID: projectID,
+	}
 
-	fmt.Printf("here we will use the DeployClient from factory\n")
+	history, err := f.MiaClient.Deploy.GetHistory(query)
+	if err != nil {
+		f.Renderer.Error(err).Render()
+		return
+	}
 
+	headers := []string{"#", "Status", "Deploy Type", "Deploy Ref", "Made By", "Duration", "Finished", "View Log"}
+	table := f.Renderer.Table(headers)
+	for _, deploy := range history {
+		table.Append([]string{
+			strconv.Itoa(deploy.ID),
+			deploy.Status,
+			deploy.DeployType,
+			deploy.Ref,
+			deploy.User.Name,
+			time.Duration(time.Duration(deploy.Duration) * time.Second).String(),
+			deploy.FinishedAt.String(),
+			deploy.WebURL,
+		})
+	}
+	table.Render()
 }

@@ -42,6 +42,11 @@ func TestWrapperMockMiaClient(t *testing.T) {
 				Error:   prjErr,
 				Options: opts,
 			},
+			Deploy: &DeployMock{
+				Error:    nil,
+				AssertFn: nil,
+				History:  nil,
+			},
 		}, miaClient)
 	})
 

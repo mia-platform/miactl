@@ -7,9 +7,20 @@ type ProjectsMock struct {
 	Projects Projects
 }
 
+// DeployMock is useful to be used to mock deploy client.
+type DeployMock struct {
+	Error    error
+	AssertFn func(DeployHistoryQuery)
+	History  []DeployItem
+}
+
 // MockClientError passes error to mia client mock
 type MockClientError struct {
 	ProjectsError error
+
+	DeployError    error
+	DeployAssertFn func(DeployHistoryQuery)
+	DeployHistory  []DeployItem
 }
 
 // WrapperMockMiaClient creates a mock of mia client
@@ -19,6 +30,11 @@ func WrapperMockMiaClient(errors MockClientError) func(opts Options) (*MiaClient
 			Projects: &ProjectsMock{
 				Error:   errors.ProjectsError,
 				Options: opts,
+			},
+			Deploy: &DeployMock{
+				Error:    errors.DeployError,
+				AssertFn: errors.DeployAssertFn,
+				History:  errors.DeployHistory,
 			},
 		}, nil
 	}
@@ -78,4 +94,17 @@ var defaultMockProjects = Projects{
 		},
 		ProjectID: "project-2",
 	},
+}
+
+// GetHistory method mock. It returns error or a list of deploy items.
+func (d DeployMock) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
+	if d.Error != nil {
+		return nil, d.Error
+	}
+
+	if d.AssertFn != nil {
+		d.AssertFn(query)
+	}
+
+	return d.History, nil
 }
