@@ -47,13 +47,16 @@ func TestNew(t *testing.T) {
 			BaseURL: opts.APIBaseURL,
 			Headers: map[string]string{
 				"client-key": opts.APIKey,
-				"cookie": opts.APICookie,
+				"cookie":     opts.APICookie,
 			},
 		})
 
 		require.NoError(t, err, "new client error")
 		require.Exactly(t, &MiaClient{
 			Projects: &ProjectsClient{
+				JSONClient: expectedJSONClient,
+			},
+			Deploy: &DeployClient{
 				JSONClient: expectedJSONClient,
 			},
 		}, client)
