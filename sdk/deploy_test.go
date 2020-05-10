@@ -100,7 +100,7 @@ func TestDeployGetHistory(t *testing.T) {
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
-		require.NotNil(t, err)
+		require.NoError(t, err)
 		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal string into Go struct field DeployItem.id of type int", ErrGeneric))
 		require.True(t, errors.Is(err, ErrGeneric))
 	})
