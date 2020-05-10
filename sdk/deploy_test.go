@@ -31,7 +31,7 @@ func TestDeployGetHistory(t *testing.T) {
 		require.Equal(t, &http.Cookie{Name: "sid", Value: "my-random-sid"}, cookieSid)
 	}
 
-	t.Run("Error occurs during projectId fetch", func(t *testing.T) {
+	t.Run("Http error occurs during projectId fetch", func(t *testing.T) {
 		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
 		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 401)
 		defer s.Close()
