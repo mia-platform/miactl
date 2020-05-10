@@ -84,7 +84,7 @@ func TestGetDeployments(t *testing.T) {
 	t.Run("returns error if no project ID is provided", func(t *testing.T) {
 		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "deployments", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
 		require.Error(t, err)
-		require.True(t, strings.HasPrefix(out, "Error: no project ID specified"))
+		require.True(t, strings.HasPrefix(out, "Error: required flag(s) \"project\" not set"))
 	})
 
 	var projectIDFlag = fmt.Sprintf("--project=%s", "project-id")

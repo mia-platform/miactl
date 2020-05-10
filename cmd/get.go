@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"strconv"
 	"time"
 
@@ -26,12 +25,7 @@ func newGetCmd() *cobra.Command {
 			switch args[0] {
 			case "projects", "project":
 			case "deployment", "deployments":
-				if err := cmd.MarkFlagRequired("project"); err != nil {
-					return err
-				}
-				if projectID == "" {
-					return fmt.Errorf("no project ID specified")
-				}
+				cmd.MarkFlagRequired("project"); err != nil {
 			}
 			return nil
 		},
