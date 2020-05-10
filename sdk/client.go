@@ -48,7 +48,7 @@ var (
 	ErrProjectNotFound = errors.New("Project not found")
 )
 
-// New returns the MiaSdkClient to be used to communicate to Mia Platform.
+// New returns the MiaSdkClient to be used to communicate to Mia Platform
 // Console api
 func New(opts Options) (*MiaClient, error) {
 	if opts.APIKey == "" || opts.APIBaseURL == "" || opts.APICookie == "" {
