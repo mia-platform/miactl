@@ -83,7 +83,7 @@ func TestDeployGetHistory(t *testing.T) {
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
-		require.NotNil(t, err)
+		require.NoError(t, err)
 	})
 
 	t.Run("Error on malformed history items", func(t *testing.T) {
