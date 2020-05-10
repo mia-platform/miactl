@@ -79,7 +79,7 @@ func getDeploysForProject(f *Factory) {
 		return
 	}
 
-	headers := []string{"#", "Status", "Deploy Type", "Deploy Ref", "Made By", "Duration", "Finished", "View Log"}
+	headers := []string{"#", "Status", "Deploy Type", "Deploy Branch/Tag", "Made By", "Duration", "Finished At", "View Log"}
 	table := f.Renderer.Table(headers)
 	for _, deploy := range history {
 		table.Append([]string{
