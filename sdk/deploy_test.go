@@ -86,7 +86,7 @@ func TestDeployGetHistory(t *testing.T) {
 		require.NoError(t, err)
 	})
 
-	t.Run("Error on malformed history items", func(t *testing.T) {
+	t.Run("Error on malformed history items (invalid DeployItem.ID)", func(t *testing.T) {
 		projectsResponseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
 		historyResponseBody := `[{"id":"abcde","status":"success","ref":"v1.4.2","commit":{"url":"https://the-repo/123456789","authorName":"John Doe","committedDate":"2020-04-24T21:50:59.000+00:00","sha":"123456789"},"user":{"name":"John Doe"},"deployType":"deploy_all","webUrl":"https://the-repo/993344","duration":32.553293,"finishedAt":"2020-04-24T21:52:00.491Z","env":"production"}]`
 		responses := []response{
