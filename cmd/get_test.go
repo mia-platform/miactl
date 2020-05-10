@@ -222,7 +222,7 @@ func assertMockProjectsCorrectlyRendered(t *testing.T, rows []string) {
 }
 
 func assertMockDeploymentsCorrectlyRendered(t *testing.T, rows []string) {
-	expectedHeaders := "# | STATUS | DEPLOY TYPE | DEPLOY REF | MADE BY | DURATION | FINISHED | VIEW LOG"
+	expectedHeaders := "# | STATUS | DEPLOY TYPE | DEPLOY BRANCH/TAG | MADE BY | DURATION | FINISHED AT | VIEW LOG"
 	expectedRow1 := "123 | running | deploy_all | v1.2.3 | John Smith | 12s | 2020-01-12 22:33:44.000000012 +0000 UTC | https://web.url/"
 	expectedRow2 := "456 | pending | deploy_all | master | Rick Astley | 22s | 2020-02-12 22:33:44.000000012 +0000 UTC | https://web.url.2/"
 

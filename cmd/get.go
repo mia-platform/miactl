@@ -25,7 +25,7 @@ func newGetCmd() *cobra.Command {
 			switch args[0] {
 			case "projects", "project":
 			case "deployment", "deployments":
-				cmd.MarkFlagRequired("project"); err != nil {
+				cmd.MarkFlagRequired("project")
 			}
 			return nil
 		},
