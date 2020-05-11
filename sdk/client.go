@@ -49,7 +49,7 @@ var (
 )
 
 // New returns the MiaSdkClient to be used to communicate to Mia Platform
-// Console api
+// Console api.
 func New(opts Options) (*MiaClient, error) {
 	if opts.APIKey == "" || opts.APIBaseURL == "" || opts.APICookie == "" {
 		return nil, fmt.Errorf("%w: client options are not correct", ErrCreateClient)
