@@ -22,7 +22,6 @@ func TestProjectsGet(t *testing.T) {
 	}
 
 	t.Run("correctly returns projects", func(t *testing.T) {
-		responseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
 		expectedProjects := Projects{
 			Project{
 				ID:                   "mongo-id-1",
@@ -69,7 +68,7 @@ func TestProjectsGet(t *testing.T) {
 			},
 		}
 
-		s := testCreateResponseServer(t, requestAssertions, responseBody, 200)
+		s := testCreateResponseServer(t, requestAssertions, projectsListResponseBody, 200)
 		client := testCreateProjectClient(t, s.URL)
 
 		projects, err := client.Get()
@@ -143,8 +142,7 @@ func TestGetProjectByID(t *testing.T) {
 	})
 
 	t.Run("Error projectID not found", func(t *testing.T) {
-		responseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
-		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 200)
+		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
 
 		client := testCreateClient(t, s.URL)
@@ -155,8 +153,7 @@ func TestGetProjectByID(t *testing.T) {
 	})
 
 	t.Run("Returns desired project", func(t *testing.T) {
-		responseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}],"pipelines":{"type":"gitlab"}}]`
-		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 200)
+		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
 
 		client := testCreateClient(t, s.URL)
@@ -182,7 +179,6 @@ func TestGetProjectByID(t *testing.T) {
 					Namespace: "project-2",
 				},
 			}},
-			Pipelines: Pipelines{Type: "gitlab"},
 		},
 			project)
 	})

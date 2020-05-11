@@ -31,35 +31,8 @@ func TestDeployGetHistory(t *testing.T) {
 		require.Equal(t, &http.Cookie{Name: "sid", Value: "my-random-sid"}, cookieSid)
 	}
 
-	t.Run("Http error occurs during projectId fetch", func(t *testing.T) {
-		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
-		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 401)
-		defer s.Close()
-		client := testCreateDeployClient(t, s.URL)
-
-		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project1"})
-		require.Nil(t, history)
-		require.EqualError(t, err, fmt.Sprintf("GET %s/api/backend/projects/: 401 - %s", s.URL, responseBody))
-		require.True(t, errors.Is(err, ErrHTTP))
-	})
-
-	t.Run("Error occurs when projects fetch holds malformed data", func(t *testing.T) {
-		projectsResponseBody := `[{"_id":9876543,"name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
-
-		s := testCreateResponseServer(t, projectRequestAssertions, projectsResponseBody, 200)
-		defer s.Close()
-		client := testCreateDeployClient(t, s.URL)
-
-		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-NaN"})
-		require.Nil(t, history)
-		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal number into Go struct field Project._id of type string", ErrGeneric))
-		require.True(t, errors.Is(err, ErrGeneric))
-	})
-
 	t.Run("Error occurs when projectId does not exist in download list", func(t *testing.T) {
-		projectsResponseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
-
-		s := testCreateResponseServer(t, projectRequestAssertions, projectsResponseBody, 200)
+		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
 		client := testCreateDeployClient(t, s.URL)
 
@@ -69,11 +42,10 @@ func TestDeployGetHistory(t *testing.T) {
 		require.True(t, errors.Is(err, ErrProjectNotFound))
 	})
 
-	t.Run("Http error occurs when downloading deploy history", func(t *testing.T) {
-		projectsResponseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
+	t.Run("HTTP error occurs when downloading deploy history", func(t *testing.T) {
 		historyResponseBody := `{"statusCode":500,"error":"InternalServerError","message":"some server error"}`
 		responses := []response{
-			{assertions: projectRequestAssertions, body: projectsResponseBody, status: 200},
+			{assertions: projectRequestAssertions, body: projectsListResponseBody, status: 200},
 			{assertions: historyRequestAsserions, body: historyResponseBody, status: 500},
 		}
 		s := testCreateMultiResponseServer(t, responses)
@@ -83,14 +55,14 @@ func TestDeployGetHistory(t *testing.T) {
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
-		require.NoError(t, err)
+		require.Error(t, err)
+		require.True(t, errors.Is(err, jsonclient.ErrHTTP))
 	})
 
 	t.Run("Error on malformed history items (invalid DeployItem.ID)", func(t *testing.T) {
-		projectsResponseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
 		historyResponseBody := `[{"id":"abcde","status":"success","ref":"v1.4.2","commit":{"url":"https://the-repo/123456789","authorName":"John Doe","committedDate":"2020-04-24T21:50:59.000+00:00","sha":"123456789"},"user":{"name":"John Doe"},"deployType":"deploy_all","webUrl":"https://the-repo/993344","duration":32.553293,"finishedAt":"2020-04-24T21:52:00.491Z","env":"production"}]`
 		responses := []response{
-			{assertions: projectRequestAssertions, body: projectsResponseBody, status: 200},
+			{assertions: projectRequestAssertions, body: projectsListResponseBody, status: 200},
 			{assertions: historyRequestAsserions, body: historyResponseBody, status: 200},
 		}
 		s := testCreateMultiResponseServer(t, responses)
@@ -100,16 +72,15 @@ func TestDeployGetHistory(t *testing.T) {
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
-		require.NoError(t, err)
+		require.Error(t, err)
 		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal string into Go struct field DeployItem.id of type int", ErrGeneric))
 		require.True(t, errors.Is(err, ErrGeneric))
 	})
 
 	t.Run("History download goes fine", func(t *testing.T) {
-		projectsResponseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
 		historyResponseBody := `[{"id":1234,"status":"success","ref":"v1.4.2","commit":{"url":"https://the-repo/123456789","authorName":"John Doe","committedDate":"2020-04-24T21:50:59.000+00:00","sha":"123456789"},"user":{"name":"John Doe"},"deployType":"deploy_all","webUrl":"https://the-repo/993344","duration":32.553293,"finishedAt":"2020-04-24T21:52:00.491Z","env":"production"},{"id":1235,"status":"success","ref":"v1.4.1","commit":{"url":"https://the-repo/9876543","authorName":"Tim Applepie","committedDate":"2020-04-24T21:04:13.000+00:00","sha":"9876543"},"user":{"name":"Tim Applepie"},"deployType":"deploy_all","webUrl":"https://the-repo/443399","duration":30.759551,"finishedAt":"2020-04-24T21:05:08.633Z","env":"production"},{"id":2414,"status":"failed","ref":"v1.4.0","commit":{"url":"https://the-repo/987123456","authorName":"F. Nietzsche","committedDate":"2020-04-24T20:58:01.000+00:00","sha":"987123456"},"user":{"name":"F. Nietzsche"},"deployType":"deploy_all","webUrl":"https://the-repo/334499","duration":32.671445,"finishedAt":"2020-04-24T21:02:10.540Z","env":"development"}]`
 		responses := []response{
-			{assertions: projectRequestAssertions, body: projectsResponseBody, status: 200},
+			{assertions: projectRequestAssertions, body: projectsListResponseBody, status: 200},
 			{assertions: historyRequestAsserions, body: historyResponseBody, status: 200},
 		}
 		s := testCreateMultiResponseServer(t, responses)
