@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
 	"github.com/spf13/cobra"
 )
@@ -89,7 +90,7 @@ func getDeploysForProject(f *Factory) {
 			deploy.Ref,
 			deploy.User.Name,
 			time.Duration(time.Duration(deploy.Duration) * time.Second).String(),
-			deploy.FinishedAt.String(),
+			renderer.FormatDate(deploy.FinishedAt),
 			deploy.WebURL,
 		})
 	}
