@@ -101,24 +101,26 @@ func TestGetDeployments(t *testing.T) {
 
 	history := []sdk.DeployItem{
 		{
-			ID:         123,
-			Status:     "running",
-			DeployType: "deploy_all",
-			Ref:        "v1.2.3",
-			User:       sdk.DeployUser{Name: "John Smith"},
-			Duration:   12.3,
-			FinishedAt: time.Date(2020, 01, 12, 22, 33, 44, 12, &time.Location{}),
-			WebURL:     "https://web.url/",
+			ID:          123,
+			Status:      "running",
+			DeployType:  "deploy_all",
+			Ref:         "v1.2.3",
+			User:        sdk.DeployUser{Name: "John Smith"},
+			Duration:    12.3,
+			FinishedAt:  time.Date(2020, 01, 12, 22, 33, 44, 12, &time.Location{}),
+			WebURL:      "https://web.url/",
+			Environment: "development",
 		},
 		{
-			ID:         456,
-			Status:     "pending",
-			DeployType: "deploy_all",
-			Ref:        "master",
-			User:       sdk.DeployUser{Name: "Rick Astley"},
-			Duration:   22.99,
-			FinishedAt: time.Date(2020, 02, 12, 22, 33, 44, 12, &time.Location{}),
-			WebURL:     "https://web.url.2/",
+			ID:          456,
+			Status:      "pending",
+			DeployType:  "deploy_all",
+			Ref:         "master",
+			User:        sdk.DeployUser{Name: "Rick Astley"},
+			Duration:    22.99,
+			FinishedAt:  time.Date(2020, 02, 12, 22, 33, 44, 12, &time.Location{}),
+			WebURL:      "https://web.url.2/",
+			Environment: "production",
 		},
 	}
 
@@ -222,9 +224,9 @@ func assertMockProjectsCorrectlyRendered(t *testing.T, rows []string) {
 }
 
 func assertMockDeploymentsCorrectlyRendered(t *testing.T, rows []string) {
-	expectedHeaders := "# | STATUS | DEPLOY TYPE | DEPLOY BRANCH/TAG | MADE BY | DURATION | FINISHED AT | VIEW LOG"
-	expectedRow1 := "123 | running | deploy_all | v1.2.3 | John Smith | 12s | 12 Jan 2020 22:33 UTC | https://web.url/"
-	expectedRow2 := "456 | pending | deploy_all | master | Rick Astley | 22s | 12 Feb 2020 22:33 UTC | https://web.url.2/"
+	expectedHeaders := "# | STATUS | DEPLOY TYPE | ENVIRONMENT | DEPLOY BRANCH/TAG | MADE BY | DURATION | FINISHED AT | VIEW LOG"
+	expectedRow1 := "123 | running | deploy_all | development | v1.2.3 | John Smith | 12s | 12 Jan 2020 22:33 UTC | https://web.url/"
+	expectedRow2 := "456 | pending | deploy_all | production | master | Rick Astley | 22s | 12 Feb 2020 22:33 UTC | https://web.url.2/"
 
 	require.Lenf(t, rows, 3, "headers + projects")
 	require.Equal(t, expectedHeaders, rows[0])

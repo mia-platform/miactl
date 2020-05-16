@@ -80,13 +80,14 @@ func getDeploysForProject(f *Factory) {
 		return
 	}
 
-	headers := []string{"#", "Status", "Deploy Type", "Deploy Branch/Tag", "Made By", "Duration", "Finished At", "View Log"}
+	headers := []string{"#", "Status", "Deploy Type", "Environment", "Deploy Branch/Tag", "Made By", "Duration", "Finished At", "View Log"}
 	table := f.Renderer.Table(headers)
 	for _, deploy := range history {
 		table.Append([]string{
 			strconv.Itoa(deploy.ID),
 			deploy.Status,
 			deploy.DeployType,
+			deploy.Environment,
 			deploy.Ref,
 			deploy.User.Name,
 			time.Duration(time.Duration(deploy.Duration) * time.Second).String(),
