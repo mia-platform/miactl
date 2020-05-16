@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
 	"github.com/stretchr/testify/require"
@@ -92,6 +93,81 @@ func TestDeployGetHistory(t *testing.T) {
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, err)
 		require.Equal(t, 3, len(history))
+
+		deploy := history[0]
+		commitDate, err := time.Parse(time.RFC3339, "2020-04-24T21:50:59.000+00:00")
+		require.NoError(t, err)
+		finishedAt, err := time.Parse(time.RFC3339, "2020-04-24T21:52:00.491Z")
+		require.NoError(t, err)
+		require.Equal(t, DeployItem{
+			ID:     1234,
+			Status: "success",
+			Ref:    "v1.4.2",
+			Commit: CommitInfo{
+				URL:        "https://the-repo/123456789",
+				AuthorName: "John Doe",
+				CommitDate: commitDate,
+				Hash:       "123456789",
+			},
+			User: DeployUser{
+				Name: "John Doe",
+			},
+			DeployType:  "deploy_all",
+			WebURL:      "https://the-repo/993344",
+			Duration:    32.553293,
+			FinishedAt:  finishedAt,
+			Environment: "production",
+		}, deploy)
+
+		deploy = history[1]
+		commitDate, err = time.Parse(time.RFC3339, "2020-04-24T21:04:13.000+00:00")
+		require.NoError(t, err)
+		finishedAt, err = time.Parse(time.RFC3339, "2020-04-24T21:05:08.633Z")
+		require.NoError(t, err)
+		require.Equal(t, DeployItem{
+			ID:     1235,
+			Status: "success",
+			Ref:    "v1.4.1",
+			Commit: CommitInfo{
+				URL:        "https://the-repo/9876543",
+				AuthorName: "Tim Applepie",
+				CommitDate: commitDate,
+				Hash:       "9876543",
+			},
+			User: DeployUser{
+				Name: "Tim Applepie",
+			},
+			DeployType:  "deploy_all",
+			WebURL:      "https://the-repo/443399",
+			Duration:    30.759551,
+			FinishedAt:  finishedAt,
+			Environment: "production",
+		}, deploy)
+
+		deploy = history[2]
+		commitDate, err = time.Parse(time.RFC3339, "2020-04-24T20:58:01.000+00:00")
+		require.NoError(t, err)
+		finishedAt, err = time.Parse(time.RFC3339, "2020-04-24T21:02:10.540Z")
+		require.NoError(t, err)
+		require.Equal(t, DeployItem{
+			ID:     2414,
+			Status: "failed",
+			Ref:    "v1.4.0",
+			Commit: CommitInfo{
+				URL:        "https://the-repo/987123456",
+				AuthorName: "F. Nietzsche",
+				CommitDate: commitDate,
+				Hash:       "987123456",
+			},
+			User: DeployUser{
+				Name: "F. Nietzsche",
+			},
+			DeployType:  "deploy_all",
+			WebURL:      "https://the-repo/334499",
+			Duration:    32.671445,
+			FinishedAt:  finishedAt,
+			Environment: "development",
+		}, deploy)
 	})
 }
 

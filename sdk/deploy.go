@@ -20,7 +20,7 @@ type DeployItem struct {
 	WebURL      string     `json:"webURL"`
 	Duration    float64    `json:"duration"`
 	FinishedAt  time.Time  `json:"finishedAt"`
-	Environment string     `json:"environment"`
+	Environment string     `json:"env"`
 }
 
 // CommitInfo represents available information regarding a specific commit.
