@@ -1,6 +1,8 @@
 package sdk
 
 import (
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -8,8 +10,6 @@ import (
 	"github.com/davidebianchi/go-jsonclient"
 	"github.com/stretchr/testify/require"
 )
-
-const projectsListResponseBody = `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
 
 type assertionFn func(t *testing.T, req *http.Request)
 
@@ -61,4 +61,12 @@ func testCreateMultiResponseServer(t *testing.T, responses responses) *httptest.
 		}
 		w.Write(responseBytes)
 	}))
+}
+
+func readTestData(t *testing.T, fileName string) string {
+	t.Helper()
+
+	fileContent, err := ioutil.ReadFile(fmt.Sprintf("./testdata/%s", fileName))
+	require.NoError(t, err)
+	return string(fileContent)
 }

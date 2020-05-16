@@ -11,6 +11,7 @@ import (
 )
 
 func TestProjectsGet(t *testing.T) {
+	projectsListResponseBody := readTestData(t, "projects.json")
 	requestAssertions := func(t *testing.T, req *http.Request) {
 		t.Helper()
 
@@ -100,6 +101,7 @@ func TestProjectsGet(t *testing.T) {
 }
 
 func TestGetProjectByID(t *testing.T) {
+	projectsListResponseBody := readTestData(t, "projects.json")
 	projectRequestAssertions := func(t *testing.T, req *http.Request) {
 		t.Helper()
 
@@ -130,7 +132,7 @@ func TestGetProjectByID(t *testing.T) {
 	})
 
 	t.Run("Generic error occurs during projectId fetch (malformed data, _id should be a string)", func(t *testing.T) {
-		responseBody := `[{"_id":9876543,"name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
+		responseBody := readTestData(t, "projects-invalid-payload.json")
 		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 200)
 		defer s.Close()
 

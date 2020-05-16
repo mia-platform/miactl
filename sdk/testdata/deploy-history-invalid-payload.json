@@ -1,0 +1,19 @@
+[{
+    "id": "abcde",
+    "status": "success",
+    "ref": "v1.4.2",
+    "commit": {
+        "url": "https://the-repo/123456789",
+        "authorName": "John Doe",
+        "committedDate": "2020-04-24T21:50:59.000+00:00",
+        "sha": "123456789"
+    },
+    "user": {
+        "name": "John Doe"
+    },
+    "deployType": "deploy_all",
+    "webUrl": "https://the-repo/993344",
+    "duration": 32.553293,
+    "finishedAt": "2020-04-24T21:52:00.491Z",
+    "env": "production"
+}]
