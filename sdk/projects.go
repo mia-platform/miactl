@@ -74,7 +74,6 @@ func getProjectByID(client *jsonclient.Client, projectID string) (*Project, erro
 	var projects Projects
 	if _, err := client.Do(req, &projects); err != nil {
 		var httpErr *jsonclient.HTTPError
-		fmt.Printf(">>>> %s - %s\n", err.Error(), reflect.TypeOf(err))
 		if errors.As(err, &httpErr) {
 			return nil, httpErr
 		}
