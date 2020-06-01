@@ -119,7 +119,7 @@ func TestGetProjectByID(t *testing.T) {
 		require.EqualError(t, err, fmt.Sprintf("BaseURL must have a trailing slash, but \"this-url-does-not-exist\" does not"))
 	})
 
-	t.Run("Network error occurs during projectId fetch", func(t *testing.T) {
+	t.Run("Unauthorized error occurs during projectId fetch", func(t *testing.T) {
 		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
 		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 401)
 		defer s.Close()
