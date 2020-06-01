@@ -24,7 +24,7 @@ func TestDeployGetHistory(t *testing.T) {
 		require.Equal(t, &http.Cookie{Name: "sid", Value: "my-random-sid"}, cookieSid)
 	}
 
-	historyRequestAsserions := func(t *testing.T, req *http.Request) {
+	historyRequestAssertions := func(t *testing.T, req *http.Request) {
 		t.Helper()
 
 		require.Equal(t, http.MethodGet, req.Method)
@@ -48,7 +48,7 @@ func TestDeployGetHistory(t *testing.T) {
 		historyResponseBody := `{"statusCode":500,"error":"InternalServerError","message":"some server error"}`
 		responses := []response{
 			{assertions: projectRequestAssertions, body: projectsListResponseBody, status: 200},
-			{assertions: historyRequestAsserions, body: historyResponseBody, status: 500},
+			{assertions: historyRequestAssertions, body: historyResponseBody, status: 500},
 		}
 		s := testCreateMultiResponseServer(t, responses)
 		defer s.Close()
@@ -65,7 +65,7 @@ func TestDeployGetHistory(t *testing.T) {
 		historyResponseBody := readTestData(t, "deploy-history-invalid-payload.json")
 		responses := []response{
 			{assertions: projectRequestAssertions, body: projectsListResponseBody, status: 200},
-			{assertions: historyRequestAsserions, body: historyResponseBody, status: 200},
+			{assertions: historyRequestAssertions, body: historyResponseBody, status: 200},
 		}
 		s := testCreateMultiResponseServer(t, responses)
 		defer s.Close()
@@ -83,7 +83,7 @@ func TestDeployGetHistory(t *testing.T) {
 		historyResponseBody := readTestData(t, "deploy-history.json")
 		responses := []response{
 			{assertions: projectRequestAssertions, body: projectsListResponseBody, status: 200},
-			{assertions: historyRequestAsserions, body: historyResponseBody, status: 200},
+			{assertions: historyRequestAssertions, body: historyResponseBody, status: 200},
 		}
 		s := testCreateMultiResponseServer(t, responses)
 		defer s.Close()
