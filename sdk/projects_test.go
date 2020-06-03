@@ -4,15 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/davidebianchi/go-jsonclient"
 	"github.com/stretchr/testify/require"
 )
 
 func TestProjectsGet(t *testing.T) {
+	projectsListResponseBody := readTestData(t, "projects.json")
 	requestAssertions := func(t *testing.T, req *http.Request) {
 		t.Helper()
 
@@ -24,7 +23,6 @@ func TestProjectsGet(t *testing.T) {
 	}
 
 	t.Run("correctly returns projects", func(t *testing.T) {
-		responseBody := `[{"_id":"mongo-id-1","name":"Project 1","configurationGitPath":"/clients/path","projectId":"project-1","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-1-dev"}}],"pipelines":{"type":"gitlab"}},{"_id":"mongo-id-2","name":"Project 2","configurationGitPath":"/clients/path/configuration","projectId":"project-2","environments":[{"label":"Development","value":"development","cluster":{"hostname":"127.0.0.1","namespace":"project-2-dev"}},{"label":"Production","value":"production","cluster":{"hostname":"127.0.0.1","namespace":"project-2"}}]}]`
 		expectedProjects := Projects{
 			Project{
 				ID:                   "mongo-id-1",
@@ -71,7 +69,7 @@ func TestProjectsGet(t *testing.T) {
 			},
 		}
 
-		s := testCreateResponseServer(t, requestAssertions, responseBody, 200)
+		s := testCreateResponseServer(t, requestAssertions, projectsListResponseBody, 200)
 		client := testCreateProjectClient(t, s.URL)
 
 		projects, err := client.Get()
@@ -102,34 +100,95 @@ func TestProjectsGet(t *testing.T) {
 	})
 }
 
-func testCreateProjectClient(t *testing.T, url string) IProjects {
-	t.Helper()
+func TestGetProjectByID(t *testing.T) {
+	projectsListResponseBody := readTestData(t, "projects.json")
+	projectRequestAssertions := func(t *testing.T, req *http.Request) {
+		t.Helper()
 
-	client, err := jsonclient.New(jsonclient.Options{
-		BaseURL: url,
-		Headers: jsonclient.Headers{
-			"cookie": "sid=my-random-sid",
-		},
-	})
-	require.NoError(t, err, "error creating client")
-
-	return ProjectsClient{
-		JSONClient: client,
+		require.True(t, strings.HasSuffix(req.URL.Path, "/projects/"))
+		require.Equal(t, http.MethodGet, req.Method)
+		cookieSid, err := req.Cookie("sid")
+		require.NoError(t, err)
+		require.Equal(t, &http.Cookie{Name: "sid", Value: "my-random-sid"}, cookieSid)
 	}
+
+	t.Run("Error creating request for projectId fetch", func(t *testing.T) {
+		client := testCreateClient(t, "this-url-does-not-exist")
+		project, err := getProjectByID(client, "project1")
+		require.Nil(t, project)
+		require.EqualError(t, err, fmt.Sprintf("BaseURL must have a trailing slash, but \"this-url-does-not-exist\" does not"))
+	})
+
+	t.Run("Unauthorized error occurs during projectId fetch", func(t *testing.T) {
+		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
+		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 401)
+		defer s.Close()
+
+		client := testCreateClient(t, s.URL)
+		project, err := getProjectByID(client, "project1")
+		require.Nil(t, project)
+		require.EqualError(t, err, fmt.Sprintf("GET %s/api/backend/projects/: 401 - %s", s.URL, responseBody))
+		require.True(t, errors.Is(err, ErrHTTP))
+	})
+
+	t.Run("Generic error occurs during projectId fetch (malformed data, _id should be a string)", func(t *testing.T) {
+		responseBody := readTestData(t, "projects-invalid-payload.json")
+		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 200)
+		defer s.Close()
+
+		client := testCreateClient(t, s.URL)
+		project, err := getProjectByID(client, "project1")
+		require.Nil(t, project)
+		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal number into Go struct field Project._id of type string", ErrGeneric))
+		require.True(t, errors.Is(err, ErrGeneric))
+	})
+
+	t.Run("Error projectID not found", func(t *testing.T) {
+		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
+		defer s.Close()
+
+		client := testCreateClient(t, s.URL)
+		project, err := getProjectByID(client, "project1")
+		require.Nil(t, project)
+		require.EqualError(t, err, fmt.Sprintf("%s: project1", ErrProjectNotFound))
+		require.True(t, errors.Is(err, ErrProjectNotFound))
+	})
+
+	t.Run("Returns desired project", func(t *testing.T) {
+		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
+		defer s.Close()
+
+		client := testCreateClient(t, s.URL)
+		project, err := getProjectByID(client, "project-2")
+		require.NoError(t, err)
+		require.Equal(t, &Project{
+			ID:                   "mongo-id-2",
+			Name:                 "Project 2",
+			ConfigurationGitPath: "/clients/path/configuration",
+			ProjectID:            "project-2",
+			Environments: []Environment{{
+				EnvID:       "development",
+				DisplayName: "Development",
+				Cluster: Cluster{
+					Hostname:  "127.0.0.1",
+					Namespace: "project-2-dev",
+				},
+			}, {
+				EnvID:       "production",
+				DisplayName: "Production",
+				Cluster: Cluster{
+					Hostname:  "127.0.0.1",
+					Namespace: "project-2",
+				},
+			}},
+		},
+			project)
+	})
 }
 
-type assertionFn func(t *testing.T, req *http.Request)
-
-func testCreateResponseServer(t *testing.T, assertions assertionFn, responseBody string, statusCode int) *httptest.Server {
+func testCreateProjectClient(t *testing.T, url string) IProjects {
 	t.Helper()
-
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		assertions(t, req)
-		w.WriteHeader(statusCode)
-		if responseBody != "" {
-			w.Write([]byte(responseBody))
-			return
-		}
-		w.Write(nil)
-	}))
+	return ProjectsClient{
+		JSONClient: testCreateClient(t, url),
+	}
 }

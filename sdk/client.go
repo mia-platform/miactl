@@ -19,10 +19,21 @@ type IProjects interface {
 	Get() (Projects, error)
 }
 
+// DeployHistoryQuery wraps query filters for project deployments.
+type DeployHistoryQuery struct {
+	ProjectID string
+}
+
+// IDeploy is a client interface used to interact with deployment pipelines.
+type IDeploy interface {
+	GetHistory(DeployHistoryQuery) ([]DeployItem, error)
+}
+
 // MiaClient is the client of the sdk to be used to communicate with Mia
 // Platform Console api
 type MiaClient struct {
 	Projects IProjects
+	Deploy   IDeploy
 }
 
 var (
@@ -32,10 +43,13 @@ var (
 	ErrHTTP = jsonclient.ErrHTTP
 	// ErrCreateClient is the error creating MiaSdkClient
 	ErrCreateClient = errors.New("Error creating sdk client")
+	// ErrProjectNotFound is the error returned when specified
+	// project cannot be found.
+	ErrProjectNotFound = errors.New("Project not found")
 )
 
 // New returns the MiaSdkClient to be used to communicate to Mia Platform
-// Console api
+// Console api.
 func New(opts Options) (*MiaClient, error) {
 	if opts.APIKey == "" || opts.APIBaseURL == "" || opts.APICookie == "" {
 		return nil, fmt.Errorf("%w: client options are not correct", ErrCreateClient)
@@ -43,7 +57,7 @@ func New(opts Options) (*MiaClient, error) {
 	JSONClient, err := jsonclient.New(jsonclient.Options{
 		BaseURL: opts.APIBaseURL,
 		Headers: map[string]string{
-			"cookie": opts.APICookie,
+			"cookie":     opts.APICookie,
 			"client-key": opts.APIKey,
 		},
 	})
@@ -52,8 +66,7 @@ func New(opts Options) (*MiaClient, error) {
 	}
 
 	return &MiaClient{
-		Projects: &ProjectsClient{
-			JSONClient: JSONClient,
-		},
+		Projects: &ProjectsClient{JSONClient: JSONClient},
+		Deploy:   &DeployClient{JSONClient: JSONClient},
 	}, nil
 }

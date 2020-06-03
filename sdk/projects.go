@@ -63,3 +63,32 @@ func (p ProjectsClient) Get() (Projects, error) {
 
 	return projects, nil
 }
+
+func getProjectByID(client *jsonclient.Client, projectID string) (*Project, error) {
+	req, err := client.NewRequest(http.MethodGet, "api/backend/projects/", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var projects Projects
+	if _, err := client.Do(req, &projects); err != nil {
+		var httpErr *jsonclient.HTTPError
+		if errors.As(err, &httpErr) {
+			return nil, httpErr
+		}
+		return nil, fmt.Errorf("%w: %s", ErrGeneric, err)
+	}
+
+	var project *Project
+	for _, p := range projects {
+		if p.ProjectID == projectID {
+			project = &p
+			break
+		}
+	}
+
+	if project == nil {
+		return nil, fmt.Errorf("%w: %s", ErrProjectNotFound, projectID)
+	}
+	return project, nil
+}
