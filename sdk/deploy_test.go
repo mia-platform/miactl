@@ -27,6 +27,7 @@ func TestDeployGetHistory(t *testing.T) {
 	historyRequestAssertions := func(t *testing.T, req *http.Request) {
 		t.Helper()
 
+		require.Equal(t, "/api/deploy/projects/mongo-id-2/deployment/", req.URL.Path)
 		require.Equal(t, http.MethodGet, req.Method)
 		cookieSid, err := req.Cookie("sid")
 		require.NoError(t, err)

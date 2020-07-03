@@ -50,7 +50,7 @@ func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error)
 		return nil, err
 	}
 
-	path := fmt.Sprintf("api/backend/projects/%s/deployment/?page=1&per_page=25&sort=desc", project.ID)
+	path := fmt.Sprintf("api/deploy/projects/%s/deployment/?page=1&per_page=25&sort=desc", project.ID)
 
 	historyReq, err := d.JSONClient.NewRequest(http.MethodGet, path, nil)
 	if err != nil {
