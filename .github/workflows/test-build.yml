@@ -3,10 +3,10 @@ on: [push, pull_request]
 jobs:
   tests:
      name: Test on go ${{ matrix.go_version }}
-     runs-on: ${{ matrix.os }} 
+     runs-on: ${{ matrix.os }}
      strategy:
        matrix:
-         go_version: [1.13, 1.14]
+         go_version: [1.13, 1.14, 1.15]
          os: [macos-latest, ubuntu-latest]
      steps:
        - uses: actions/checkout@v1
@@ -25,6 +25,6 @@ jobs:
          run: |
           go test ./... -count=1 -race -cover
        - name: Build
-         if: matrix.go_version == 1.14
+         if: matrix.go_version == 1.15
          run: |
            go build -v .
