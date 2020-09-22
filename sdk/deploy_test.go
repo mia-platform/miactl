@@ -37,7 +37,7 @@ func TestDeployGetHistory(t *testing.T) {
 	t.Run("Error occurs when projectId does not exist in download list", func(t *testing.T) {
 		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
-		client := testCreateDeployClient(t, s.URL)
+		client := testCreateDeployClient(t, fmt.Sprintf("%s/", s.URL))
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-NaN"})
 		require.Nil(t, history)
@@ -54,7 +54,7 @@ func TestDeployGetHistory(t *testing.T) {
 		s := testCreateMultiResponseServer(t, responses)
 		defer s.Close()
 
-		client := testCreateDeployClient(t, s.URL)
+		client := testCreateDeployClient(t, fmt.Sprintf("%s/", s.URL))
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
@@ -71,7 +71,7 @@ func TestDeployGetHistory(t *testing.T) {
 		s := testCreateMultiResponseServer(t, responses)
 		defer s.Close()
 
-		client := testCreateDeployClient(t, s.URL)
+		client := testCreateDeployClient(t, fmt.Sprintf("%s/", s.URL))
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
@@ -89,7 +89,7 @@ func TestDeployGetHistory(t *testing.T) {
 		s := testCreateMultiResponseServer(t, responses)
 		defer s.Close()
 
-		client := testCreateDeployClient(t, s.URL)
+		client := testCreateDeployClient(t, fmt.Sprintf("%s/", s.URL))
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, err)
