@@ -48,7 +48,7 @@ func TestAddMiaClientToFactory(t *testing.T) {
 	t.Run("method add MiaClient to factory", func(t *testing.T) {
 		opts := sdk.Options{
 			APIKey:     "my-apiKey",
-			APIBaseURL: "base-url",
+			APIBaseURL: "http://base-url/",
 			APICookie:  "cookie",
 		}
 		miaClient, err := sdk.New(opts)
@@ -95,7 +95,7 @@ func TestGetFactoryFromContext(t *testing.T) {
 		ctx := context.Background()
 		ctx = WithFactoryValue(ctx, &bytes.Buffer{})
 		opts := sdk.Options{
-			APIBaseURL: "http://base-url",
+			APIBaseURL: "http://base-url/",
 			APICookie:  "cookie",
 			APIKey:     "my-APIKey",
 		}

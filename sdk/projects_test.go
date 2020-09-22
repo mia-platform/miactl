@@ -70,7 +70,7 @@ func TestProjectsGet(t *testing.T) {
 		}
 
 		s := testCreateResponseServer(t, requestAssertions, projectsListResponseBody, 200)
-		client := testCreateProjectClient(t, s.URL)
+		client := testCreateProjectClient(t, fmt.Sprintf("%s/", s.URL))
 
 		projects, err := client.Get()
 		require.NoError(t, err)
@@ -80,7 +80,7 @@ func TestProjectsGet(t *testing.T) {
 	t.Run("throws when server respond with 401", func(t *testing.T) {
 		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
 		s := testCreateResponseServer(t, requestAssertions, responseBody, 401)
-		client := testCreateProjectClient(t, s.URL)
+		client := testCreateProjectClient(t, fmt.Sprintf("%s/", s.URL))
 
 		projects, err := client.Get()
 		require.Nil(t, projects)
@@ -91,7 +91,7 @@ func TestProjectsGet(t *testing.T) {
 	t.Run("throws if response body is not as expected", func(t *testing.T) {
 		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
 		s := testCreateResponseServer(t, requestAssertions, responseBody, 200)
-		client := testCreateProjectClient(t, s.URL)
+		client := testCreateProjectClient(t, fmt.Sprintf("%s/", s.URL))
 
 		projects, err := client.Get()
 		require.Nil(t, projects)
@@ -112,19 +112,12 @@ func TestGetProjectByID(t *testing.T) {
 		require.Equal(t, &http.Cookie{Name: "sid", Value: "my-random-sid"}, cookieSid)
 	}
 
-	t.Run("Error creating request for projectId fetch", func(t *testing.T) {
-		client := testCreateClient(t, "this-url-does-not-exist")
-		project, err := getProjectByID(client, "project1")
-		require.Nil(t, project)
-		require.EqualError(t, err, fmt.Sprintf("BaseURL must have a trailing slash, but \"this-url-does-not-exist\" does not"))
-	})
-
 	t.Run("Unauthorized error occurs during projectId fetch", func(t *testing.T) {
 		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
 		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 401)
 		defer s.Close()
 
-		client := testCreateClient(t, s.URL)
+		client := testCreateClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project1")
 		require.Nil(t, project)
 		require.EqualError(t, err, fmt.Sprintf("GET %s/api/backend/projects/: 401 - %s", s.URL, responseBody))
@@ -136,7 +129,7 @@ func TestGetProjectByID(t *testing.T) {
 		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 200)
 		defer s.Close()
 
-		client := testCreateClient(t, s.URL)
+		client := testCreateClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project1")
 		require.Nil(t, project)
 		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal number into Go struct field Project._id of type string", ErrGeneric))
@@ -147,7 +140,7 @@ func TestGetProjectByID(t *testing.T) {
 		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
 
-		client := testCreateClient(t, s.URL)
+		client := testCreateClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project1")
 		require.Nil(t, project)
 		require.EqualError(t, err, fmt.Sprintf("%s: project1", ErrProjectNotFound))
@@ -158,7 +151,7 @@ func TestGetProjectByID(t *testing.T) {
 		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
 
-		client := testCreateClient(t, s.URL)
+		client := testCreateClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project-2")
 		require.NoError(t, err)
 		require.Equal(t, &Project{
