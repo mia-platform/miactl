@@ -1,11 +1,11 @@
-package cmd
+package factory
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"io"
 
+	"github.com/mia-platform/miactl/iostreams"
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
 )
@@ -36,9 +36,9 @@ func (o *Factory) addMiaClientToFactory(opts sdk.Options) error {
 }
 
 // WithFactoryValue add factory to passed context
-func WithFactoryValue(ctx context.Context, writer io.Writer) context.Context {
+func WithFactoryValue(ctx context.Context, iostream *iostreams.IOStreams) context.Context {
 	return context.WithValue(ctx, FactoryContextKey{}, Factory{
-		Renderer:         renderer.New(writer),
+		Renderer:         renderer.New(iostream.Out),
 		miaClientCreator: sdk.New,
 	})
 }

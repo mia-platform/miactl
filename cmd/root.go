@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/mia-platform/miactl/cmd/auth"
+	"github.com/mia-platform/miactl/cmd/factory"
+	"github.com/mia-platform/miactl/iostreams"
 	"github.com/mia-platform/miactl/sdk"
 
 	homedir "github.com/mitchellh/go-homedir"
@@ -27,6 +30,7 @@ func NewRootCmd() *cobra.Command {
 
 	// add sub command to root command
 	rootCmd.AddCommand(newGetCmd())
+	rootCmd.AddCommand(auth.NewAuthCmd(opts))
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
@@ -36,7 +40,8 @@ func NewRootCmd() *cobra.Command {
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	rootCmd := NewRootCmd()
-	ctx := WithFactoryValue(context.Background(), rootCmd.OutOrStdout())
+
+	ctx := factory.WithFactoryValue(context.Background(), iostreams.System())
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		fmt.Println(err)
 		os.Exit(1)

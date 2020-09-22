@@ -7,7 +7,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/mia-platform/miactl/renderer"
+	"github.com/mia-platform/miactl/cmd/factory"
+	"github.com/mia-platform/miactl/iostreams"
 	"github.com/mia-platform/miactl/sdk"
 
 	"github.com/spf13/cobra"
@@ -32,19 +33,17 @@ func executeCommandWithContext(ctx context.Context, root *cobra.Command, args ..
 func executeRootCommandWithContext(mockError sdk.MockClientError, args ...string) (output string, err error) {
 	rootCmd := NewRootCmd()
 
-	buf := new(bytes.Buffer)
-	rootCmd.SetOut(buf)
-	rootCmd.SetErr(buf)
+	// TODO: make better
+	iostream, _, out, _ := iostreams.Test()
+	rootCmd.SetOut(iostream.Out)
+	rootCmd.SetErr(iostream.ErrOut)
 	rootCmd.SetArgs(args)
 
-	ctx := context.WithValue(context.Background(), FactoryContextKey{}, Factory{
-		Renderer:         renderer.New(rootCmd.OutOrStderr()),
-		miaClientCreator: sdk.WrapperMockMiaClient(mockError),
-	})
+	ctx := factory.WithFactoryValueTest(context.Background(), iostream, sdk.WrapperMockMiaClient(mockError))
 
 	err = rootCmd.ExecuteContext(ctx)
 
-	return buf.String(), err
+	return out.String(), err
 }
 
 func executeCommandC(root *cobra.Command, args ...string) (c *cobra.Command, output string, err error) {
