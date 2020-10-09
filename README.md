@@ -20,7 +20,7 @@ brew install mia-platform/tap/miactl
 
 ### Using Go
 
-This library require golang at version >= 1.13
+This library requires golang at version >= 1.13
 
 ```sh
 go get -u github.com/mia-platform/miactl
@@ -47,8 +47,8 @@ miactl provides autocompletion support for Bash, Zsh and Fish, which can save yo
 
 ### Bash
 
-Completion could be generate running the `miactl completion bash` command.
-In order to make this completion work, you should have [bash completion](https://github.com/scop/bash-completion)
+Completion could be generated running the `miactl completion bash` command.
+To make this completion work, you should have [bash completion](https://github.com/scop/bash-completion)
 correctly installed.
 
 Warning: there are two versions of `bash-completion`, v1 and v2. V1 is for Bash 3.2 (which is the default on macOS), and v2 is for Bash 4.1+. The miactl completion script requires `bash-completion` v2 and Bash 4.1+.
@@ -58,7 +58,7 @@ Warning: there are two versions of `bash-completion`, v1 and v2. V1 is for Bash 
 You could install `bash-completion` running `apt-get install bash-completion`.
 
 The above command create `/usr/share/bash-completion/bash_completion`, which is the main script of bash completion.
-Try to run the command `type _init_completion`. If the command succeeds, you're already seet. Otherwise add to the `~/.bashrc` file:
+Try to run the command `type _init_completion`. If the command succeeds, you're already set. Otherwise, add to the `~/.bashrc` file:
 
 ```sh
 source /usr/share/bash-completion/bash_completion
@@ -98,16 +98,16 @@ miactl completion bash >/etc/bash_completion.d/miactl
 
 ### Fish
 
-Completion could be generate running the `miactl completion fish` command.
+Completion could be generated running the `miactl completion fish` command.
 
-In order to make this completion work, you should run:
+To make this completion work, you should run:
 ```sh
 miactl completion fish >~/.config/fish/completions/miactl.fish
 ```
 
 ### Zsh
 
-Completion could be generate running the `miactl completion zsh` command
+Completion could be generated running the `miactl completion zsh` command
 
 The generated completion script should be put somewhere in your $fpath named _miactl.
 
