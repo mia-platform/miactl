@@ -14,9 +14,8 @@ func TestNew(t *testing.T) {
 			option Options
 		}{
 			{option: Options{}},
-			{option: Options{APIKey: "sid=asd", APIBaseURL: "base"}},
-			{option: Options{APIBaseURL: "base", APICookie: "cookie"}},
-			{option: Options{APICookie: "cookie", APIKey: "sid=asd"}},
+			{option: Options{APIKey: "sid=asd"}},
+			{option: Options{APICookie: "cookie"}},
 		}
 		for _, test := range tests {
 			client, err := New(test.option)
@@ -57,6 +56,9 @@ func TestNew(t *testing.T) {
 				JSONClient: expectedJSONClient,
 			},
 			Deploy: &DeployClient{
+				JSONClient: expectedJSONClient,
+			},
+			Auth: &AuthClient{
 				JSONClient: expectedJSONClient,
 			},
 		}, client)
