@@ -3,21 +3,31 @@ package browser
 import (
 	"fmt"
 	"os/exec"
+	"runtime"
 )
 
-func OpenBrowser(goos, url string) error {
-	var err error
+// Open browser for different os.
+func Open(url string) (*exec.Cmd, error) {
+	return commandForOS(runtime.GOOS, url)
+}
+
+func commandForOS(goos, url string) (*exec.Cmd, error) {
+	var exe string
+	var args []string
 
 	switch goos {
 	case "linux":
-		err = exec.Command("xdg-open", url).Start()
+		exe = "xdg-open"
+		args = append(args, url)
 	case "windows":
-		err = exec.Command("rundll32", "url.dll,FileProtocolHandler", url).Start()
+		exe = "rundll32"
+		args = append(args, "url.dll,FileProtocolHandler", url)
 	case "darwin":
-		err = exec.Command("open", url).Start()
+		exe = "open"
+		args = append(args, url)
 	default:
-		err = fmt.Errorf("unsupported platform %s", goos)
+		return nil, fmt.Errorf("unsupported platform %s", goos)
 	}
 
-	return err
+	return exec.Command(exe, args...), nil
 }

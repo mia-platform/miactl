@@ -30,7 +30,7 @@ func NewRootCmd() *cobra.Command {
 
 	// add sub command to root command
 	rootCmd.AddCommand(newGetCmd())
-	rootCmd.AddCommand(auth.NewAuthCmd(opts))
+	rootCmd.AddCommand(auth.NewAuthCmd())
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd

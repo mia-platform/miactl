@@ -34,5 +34,4 @@ func Test() (*IOStreams, *bytes.Buffer, *bytes.Buffer, *bytes.Buffer) {
 		Out:    out,
 		ErrOut: errOut,
 	}, in, out, errOut
-
 }

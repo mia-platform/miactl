@@ -29,11 +29,16 @@ type IDeploy interface {
 	GetHistory(DeployHistoryQuery) ([]DeployItem, error)
 }
 
+type IAuth interface {
+	GetProviders(appID string) ([]Provider, error)
+}
+
 // MiaClient is the client of the sdk to be used to communicate with Mia
 // Platform Console api
 type MiaClient struct {
 	Projects IProjects
 	Deploy   IDeploy
+	Auth     IAuth
 }
 
 var (
@@ -51,7 +56,7 @@ var (
 // New returns the MiaSdkClient to be used to communicate to Mia Platform
 // Console api.
 func New(opts Options) (*MiaClient, error) {
-	if opts.APIKey == "" || opts.APIBaseURL == "" || opts.APICookie == "" {
+	if opts.APIBaseURL == "" {
 		return nil, fmt.Errorf("%w: client options are not correct", ErrCreateClient)
 	}
 	JSONClient, err := jsonclient.New(jsonclient.Options{
@@ -68,5 +73,6 @@ func New(opts Options) (*MiaClient, error) {
 	return &MiaClient{
 		Projects: &ProjectsClient{JSONClient: JSONClient},
 		Deploy:   &DeployClient{JSONClient: JSONClient},
+		Auth:     &AuthClient{JSONClient: JSONClient},
 	}, nil
 }
