@@ -1,4 +1,4 @@
-package cmd
+package factory
 
 import (
 	"bytes"
@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/mia-platform/miactl/iostreams"
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
 
@@ -16,7 +17,9 @@ import (
 func TestWithFactoryValue(t *testing.T) {
 	t.Run("save factory to passed context", func(t *testing.T) {
 		ctx := context.Background()
-		ctx = WithFactoryValue(ctx, &bytes.Buffer{})
+		iostream, _, _, _ := iostreams.Test()
+
+		ctx = WithFactoryValue(ctx, iostream)
 		f := ctx.Value(FactoryContextKey{})
 		require.NotNil(t, f)
 		if _, ok := f.(Factory); ok {
@@ -82,8 +85,9 @@ func TestGetFactoryFromContext(t *testing.T) {
 
 	t.Run("throws if mia client error", func(t *testing.T) {
 		ctx := context.Background()
-		buf := &bytes.Buffer{}
-		ctx = WithFactoryValue(ctx, buf)
+		iostream, _, _, _ := iostreams.Test()
+
+		ctx = WithFactoryValue(ctx, iostream)
 		f, err := GetFactoryFromContext(ctx, sdk.Options{})
 
 		require.Nil(t, f)
@@ -93,7 +97,9 @@ func TestGetFactoryFromContext(t *testing.T) {
 
 	t.Run("returns factory", func(t *testing.T) {
 		ctx := context.Background()
-		ctx = WithFactoryValue(ctx, &bytes.Buffer{})
+		iostream, _, _, _ := iostreams.Test()
+
+		ctx = WithFactoryValue(ctx, iostream)
 		opts := sdk.Options{
 			APIBaseURL: "http://base-url/",
 			APICookie:  "cookie",
