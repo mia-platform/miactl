@@ -27,7 +27,7 @@ func NewRootCmd() *cobra.Command {
 
 	// add sub command to root command
 	rootCmd.AddCommand(newGetCmd())
-
+	rootCmd.AddCommand(newKafkaCmd())
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
 }
