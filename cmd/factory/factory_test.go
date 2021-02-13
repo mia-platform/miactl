@@ -1,4 +1,4 @@
-package cmd
+package factory
 
 import (
 	"bytes"

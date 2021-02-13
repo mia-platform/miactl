@@ -1,10 +1,10 @@
-package cmd
+package kafka
 
 import (
 	"testing"
 )
 
-func TestKafkaCreateTopic(t *testing.T) {
+func TestKafkaProduceMessage(t *testing.T) {
 	t.Run("just pass the test", func(t *testing.T) {
 		return
 	})

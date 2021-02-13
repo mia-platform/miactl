@@ -1,4 +1,4 @@
-package cmd
+package kafka
 
 import (
 	"github.com/spf13/cobra"
