@@ -1,4 +1,4 @@
-package completion
+package cmd
 
 import (
 	"testing"
