@@ -3,6 +3,7 @@ module github.com/mia-platform/miactl
 go 1.15
 
 require (
+	github.com/confluentinc/confluent-kafka-go v1.5.2
 	github.com/davidebianchi/go-jsonclient v1.2.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/magiconair/properties v1.8.4 // indirect
@@ -19,5 +20,6 @@ require (
 	github.com/spf13/viper v1.7.1
 	github.com/stretchr/testify v1.7.0
 	golang.org/x/sys v0.0.0-20201009025420-dfb3f7c4e634 // indirect
+	gopkg.in/confluentinc/confluent-kafka-go.v1 v1.5.2 // indirect
 	gopkg.in/ini.v1 v1.62.0 // indirect
 )
