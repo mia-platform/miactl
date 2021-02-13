@@ -4,25 +4,25 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewKafkaProduceMessage produces a message to a Kafka topic
-func NewKafkaProduceMessage() *cobra.Command {
+// NewKafkaSubscribeTopic subscribe to a Kafka topic and shows the messages on it
+func NewKafkaTopicSubscribe() *cobra.Command {
 
 	var validKafkaArgs = []string{
-		"produce",
+		"topic",
 	}
 
 	return &cobra.Command{
-		Short: "Send a message to Kafka	",
+		Short:     "Subscribe to Kafka topic",
 		Long:      "",
-		Use:       "produce",
+		Use:       "subscribe",
 		ValidArgs: validKafkaArgs,
 		Args: func(cmd *cobra.Command, args []string) error {
 			return cobra.ExactValidArgs(1)(cmd, args)
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			switch args[0] {
-			case "produce":
-				cmd.MarkFlagRequired("produce")
+			case "subscribe":
+				cmd.MarkFlagRequired("subscribe")
 			}
 			return nil
 		},
@@ -35,14 +35,14 @@ func NewKafkaProduceMessage() *cobra.Command {
 			resource := args[0]
 
 			switch resource {
-			case "produce":
-				produceMessage(f, args)
+			case "subscribe":
+				subscribeTopic(f, args)
 			}
 			return nil
 		},
 	}
 }
 
-func produceMessage(f *Factory, args []string) {
+func subscribeTopic(f *Factory, args []string) {
 	return
 }

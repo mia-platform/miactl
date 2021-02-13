@@ -11,43 +11,31 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewKafkaCreateTopic creates a topic for Kafka
-func NewKafkaCreateTopic() *cobra.Command {
+var Partitions int
+var Gracefully bool
 
-	var validKafkaArgs = []string{
-		"topic",
-	}
+// NewKafkaTopicCreate creates a topic for Kafka
+func NewKafkaTopicCreate() *cobra.Command {
 
-	return &cobra.Command{
-		Short:     "Manage Kafka Topic",
-		Long:      "",
-		Use:       "create",
-		ValidArgs: validKafkaArgs,
-		Args: func(cmd *cobra.Command, args []string) error {
-			return cobra.ExactValidArgs(1)(cmd, args)
-		},
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			switch args[0] {
-			case "topic":
-				cmd.MarkFlagRequired("topic")
-			}
-			return nil
-		},
+	createTopicCmd := &cobra.Command{
+		Short: "Create a Kafka Topic",
+		Long:  "Use this command to create a Kafka Topic on a Mia-Platform cluster",
+		Use:   "create <topic name>",
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := GetFactoryFromContext(cmd.Context(), opts)
 			if err != nil {
 				return err
 			}
-
-			resource := args[0]
-
-			switch resource {
-			case "topic":
-				createTopic(f, args)
-			}
+			createTopic(f, args)
 			return nil
 		},
 	}
+
+	createTopicCmd.Flags().IntVarP(&Partitions, "partitions", "", 1, "Number of topic partitions.")
+	createTopicCmd.Flags().BoolVarP(&Gracefully, "if-not-exists", "", false, "Exit gracefully if topic already exists.")
+
+	return createTopicCmd
 }
 
 func createTopic(f *Factory, args []string) {

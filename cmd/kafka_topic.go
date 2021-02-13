@@ -4,19 +4,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: deve essere dichiarativa come lo yaml di k8s
-
-// NewGetCmd func creates a new command
-func newKafkaCmd() *cobra.Command {
+// NewKafkaSubscribeTopic subscribe to a Kafka topic and shows the messages on it
+func NewKafkaTopic() *cobra.Command {
 
 	var validKafkaArgs = []string{
 		"topic",
 	}
 
-	kafkaCommand := &cobra.Command{
-		Short:     "Manage Mia-Platform Kafka cluster",
+	topicCommand := &cobra.Command{
+		Short:     "Manage Kafka topic",
 		Long:      "",
-		Use:       "kafka",
+		Use:       "topic",
 		ValidArgs: validKafkaArgs,
 		Args: func(cmd *cobra.Command, args []string) error {
 			return cobra.ExactValidArgs(1)(cmd, args)
@@ -30,7 +28,9 @@ func newKafkaCmd() *cobra.Command {
 		},
 	}
 
-	// add sub command to root command
-	kafkaCommand.AddCommand(NewKafkaTopic())
-	return kafkaCommand
+	topicCommand.AddCommand(NewKafkaTopicCreate())
+	topicCommand.AddCommand(NewKafkaTopicSubscribe())
+	topicCommand.AddCommand(NewKafkaTopicProduceMessage())
+
+	return topicCommand
 }
