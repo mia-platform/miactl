@@ -4,54 +4,44 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/confluentinc/confluent-kafka-go/kafka"
 	"github.com/spf13/cobra"
 )
 
-var Partitions int
-var Gracefully bool
-
 // NewKafkaTopicCreate creates a topic for Kafka
 func NewKafkaTopicCreate() *cobra.Command {
 
 	createTopicCmd := &cobra.Command{
 		Short: "Create a Kafka Topic",
-		Long:  "Use this command to create a Kafka Topic on a Mia-Platform cluster",
-		Use:   "create <topic name>",
-		Args:  cobra.MinimumNArgs(1),
+		Long: `Use this command to create a Kafka Topic on a Mia-Platform cluster.
+Example:
+  miactl kafka topic create --broker http://localhost:8999 --partitions 1  my-new-topic;`,
+		Use:  "create <topic name>",
+		Args: cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := GetFactoryFromContext(cmd.Context(), opts)
 			if err != nil {
 				return err
 			}
-			createTopic(f, args)
+			broker, _ := cmd.Flags().GetString("broker")
+			topic := args[0]
+			numParts, _ := cmd.Flags().GetInt("partitions")
+			replicationFactor, _ := cmd.Flags().GetInt("replication")
+			createTopic(f, broker, topic, numParts, replicationFactor)
 			return nil
 		},
 	}
 
-	createTopicCmd.Flags().IntVarP(&Partitions, "partitions", "", 1, "Number of topic partitions.")
-	createTopicCmd.Flags().BoolVarP(&Gracefully, "if-not-exists", "", false, "Exit gracefully if topic already exists.")
+	createTopicCmd.Flags().IntP("partitions", "", 1, "number of topic partitions")
+	createTopicCmd.Flags().IntP("replication", "", 1, "replication factor")
+	createTopicCmd.Flags().BoolP("if-not-exists", "", false, "exit gracefully if topic already exists")
 
 	return createTopicCmd
 }
 
-func createTopic(f *Factory, args []string) {
-
-	broker := args[1]
-	topic := args[2]
-	numParts, err := strconv.Atoi(args[3])
-	if err != nil {
-		fmt.Printf("Invalid partition count: %s: %v\n", os.Args[3], err)
-		return
-	}
-	replicationFactor, err := strconv.Atoi(args[4])
-	if err != nil {
-		fmt.Printf("Invalid replication factor: %s: %v\n", os.Args[4], err)
-		return
-	}
+func createTopic(f *Factory, broker string, topic string, numParts int, replicationFactor int) {
 
 	// Create a new AdminClient.
 	// AdminClient can also be instantiated using an existing

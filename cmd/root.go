@@ -26,7 +26,7 @@ func NewRootCmd() *cobra.Command {
 	setRootPersistentFlag(rootCmd)
 
 	// add sub command to root command
-	rootCmd.AddCommand(newGetCmd())
+	rootCmd.AddCommand(newProjectCmd())
 	rootCmd.AddCommand(newKafkaCmd())
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
@@ -52,7 +52,6 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().StringVar(&opts.APIKey, "apiKey", "", "API Key")
 	rootCmd.PersistentFlags().StringVar(&opts.APICookie, "apiCookie", "", "api cookie sid")
 	rootCmd.PersistentFlags().StringVar(&opts.APIBaseURL, "apiBaseUrl", "", "api base url")
-	rootCmd.PersistentFlags().StringVarP(&projectID, "project", "p", "", "specify desired project ID")
 
 	rootCmd.MarkFlagRequired("apiKey")
 	rootCmd.MarkFlagRequired("apiCookie")

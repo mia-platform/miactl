@@ -4,7 +4,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// NewKafkaSubscribeTopic subscribe to a Kafka topic and shows the messages on it
+
+
+// NewKafkaTopic subscribe to a Kafka topic and shows the messages on it
 func NewKafkaTopic() *cobra.Command {
 
 	var validKafkaArgs = []string{

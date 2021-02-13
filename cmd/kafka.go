@@ -4,8 +4,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// TODO: deve essere dichiarativa come lo yaml di k8s
-
 // NewGetCmd func creates a new command
 func newKafkaCmd() *cobra.Command {
 
@@ -30,7 +28,12 @@ func newKafkaCmd() *cobra.Command {
 		},
 	}
 
+	// add flags
+	kafkaCommand.PersistentFlags().StringP("broker", "", "", "Url of the Kafka broker.")
+	kafkaCommand.MarkFlagRequired("broker")
+
 	// add sub command to root command
 	kafkaCommand.AddCommand(NewKafkaTopic())
+
 	return kafkaCommand
 }
