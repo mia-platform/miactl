@@ -49,8 +49,9 @@ func NewLoginCmd() *cobra.Command {
 				return err
 			}
 
-			// write down current token in case of successful login
+			// save current token for later commands
 			viper.Set("apitoken", accessToken)
+			fmt.Println("OK")
 			return viper.WriteConfig()
 		},
 	}
