@@ -1,4 +1,4 @@
-package cmd
+package factory
 
 import (
 	"bytes"
@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestWithFactoryValue(t *testing.T) {
+func TestWithValue(t *testing.T) {
 	t.Run("save factory to passed context", func(t *testing.T) {
 		ctx := context.Background()
-		ctx = WithFactoryValue(ctx, &bytes.Buffer{})
+		ctx = WithValue(ctx, &bytes.Buffer{})
 		f := ctx.Value(FactoryContextKey{})
 		require.NotNil(t, f)
 		if _, ok := f.(Factory); ok {
@@ -70,11 +70,11 @@ func TestAddMiaClientToFactory(t *testing.T) {
 	})
 }
 
-func TestGetFactoryFromContext(t *testing.T) {
+func TestFromContext(t *testing.T) {
 	t.Run("throws if context error", func(t *testing.T) {
 		ctx, cancFn := context.WithTimeout(context.Background(), 0)
 		defer cancFn()
-		f, err := GetFactoryFromContext(ctx, sdk.Options{})
+		f, err := FromContext(ctx, sdk.Options{})
 
 		require.Nil(t, f)
 		require.EqualError(t, err, "context error")
@@ -83,8 +83,8 @@ func TestGetFactoryFromContext(t *testing.T) {
 	t.Run("throws if mia client error", func(t *testing.T) {
 		ctx := context.Background()
 		buf := &bytes.Buffer{}
-		ctx = WithFactoryValue(ctx, buf)
-		f, err := GetFactoryFromContext(ctx, sdk.Options{})
+		ctx = WithValue(ctx, buf)
+		f, err := FromContext(ctx, sdk.Options{})
 
 		require.Nil(t, f)
 		require.Error(t, err)
@@ -93,14 +93,14 @@ func TestGetFactoryFromContext(t *testing.T) {
 
 	t.Run("returns factory", func(t *testing.T) {
 		ctx := context.Background()
-		ctx = WithFactoryValue(ctx, &bytes.Buffer{})
+		ctx = WithValue(ctx, &bytes.Buffer{})
 		opts := sdk.Options{
 			APIBaseURL: "http://base-url/",
 			APICookie:  "cookie",
 			APIKey:     "my-APIKey",
 		}
 
-		f, err := GetFactoryFromContext(ctx, opts)
+		f, err := FromContext(ctx, opts)
 		require.NoError(t, err)
 
 		miaClient, err := sdk.New(opts)
