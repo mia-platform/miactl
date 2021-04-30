@@ -12,6 +12,7 @@ type Options struct {
 	APIKey     string
 	APICookie  string
 	APIBaseURL string
+	APIToken   string
 }
 
 // IProjects expose the projects client interface
