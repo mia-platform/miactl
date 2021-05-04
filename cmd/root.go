@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	"github.com/mia-platform/miactl/cmd/console"
+	"github.com/mia-platform/miactl/cmd/login"
 	"github.com/mia-platform/miactl/sdk"
 	"github.com/mia-platform/miactl/sdk/factory"
 
@@ -32,7 +32,7 @@ func NewRootCmd() *cobra.Command {
 
 	// add sub command to root command
 	rootCmd.AddCommand(newGetCmd())
-	rootCmd.AddCommand(console.NewConsoleCmd())
+	rootCmd.AddCommand(login.NewLoginCmd())
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
