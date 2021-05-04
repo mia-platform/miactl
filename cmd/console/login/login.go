@@ -91,7 +91,7 @@ func login(authProvider, username, password, appID, providerID string) (string, 
 	var loginResponse tokenResponse
 
 	response, err := JSONClient.Do(loginReq, &loginResponse)
-	if err != nil || response.StatusCode != http.StatusOK {
+	if err != nil {
 		return "", fmt.Errorf("auth error: %w", err)
 	}
 	defer response.Body.Close()
