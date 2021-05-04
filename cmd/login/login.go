@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-const loginKey = "login"
+const miactlAppID = "miactl"
 
 type tokenRequest struct {
 	GrantType  string `json:"grant_type"`
@@ -31,7 +31,6 @@ func NewLoginCmd() *cobra.Command {
 	var (
 		username   string
 		password   string
-		appID      string
 		providerID string
 	)
 
@@ -44,7 +43,7 @@ func NewLoginCmd() *cobra.Command {
 				return errors.New("API base URL not specified nor configured")
 			}
 
-			accessToken, err := login(baseURL, username, password, appID, providerID)
+			accessToken, err := login(baseURL, username, password, providerID)
 			if err != nil {
 				return err
 			}
@@ -58,18 +57,16 @@ func NewLoginCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&username, "username", "", "your user identifier")
 	cmd.Flags().StringVar(&password, "password", "", "your secret password")
-	cmd.Flags().StringVar(&appID, "app-id", "", "the type of application is trying to login")
 	cmd.Flags().StringVar(&providerID, "provider-id", "", "the authentication provider identifier")
 
 	cmd.MarkFlagRequired("username")
 	cmd.MarkFlagRequired("password")
-	cmd.MarkFlagRequired("app-id")
 	cmd.MarkFlagRequired("provider-id")
 
 	return cmd
 }
 
-func login(authProvider, username, password, appID, providerID string) (string, error) {
+func login(authProvider, username, password, providerID string) (string, error) {
 	JSONClient, err := jsonclient.New(jsonclient.Options{
 		BaseURL: authProvider,
 	})
@@ -81,7 +78,7 @@ func login(authProvider, username, password, appID, providerID string) (string, 
 		GrantType:  "password",
 		Username:   username,
 		Password:   password,
-		AppID:      appID,
+		AppID:      miactlAppID,
 		ProviderID: providerID,
 	}
 	loginReq, err := JSONClient.NewRequest(http.MethodPost, "/oauth/token", data)

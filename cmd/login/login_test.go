@@ -46,7 +46,6 @@ func TestNewLoginCmd(t *testing.T) {
 		cmd := NewLoginCmd()
 		cmd.Flags().Set("username", username)
 		cmd.Flags().Set("password", password)
-		cmd.Flags().Set("app-id", appID)
 		cmd.Flags().Set("provider-id", providerID)
 
 		require.Nil(t, cmd.Execute())
@@ -74,7 +73,6 @@ func TestNewLoginCmd(t *testing.T) {
 		cmd := NewLoginCmd()
 		cmd.Flags().Set("username", username)
 		cmd.Flags().Set("password", password)
-		cmd.Flags().Set("app-id", appID)
 		cmd.Flags().Set("provider-id", providerID)
 
 		err := cmd.Execute()
@@ -108,7 +106,6 @@ func TestNewLoginCmd(t *testing.T) {
 		cmd := NewLoginCmd()
 		cmd.Flags().Set("username", username)
 		cmd.Flags().Set("password", password)
-		cmd.Flags().Set("app-id", appID)
 		cmd.Flags().Set("provider-id", providerID)
 
 		require.EqualError(t, cmd.Execute(), "API base URL not specified nor configured")
@@ -143,7 +140,7 @@ func TestLogin(t *testing.T) {
 				"expiresAt":    1619799800,
 			})
 
-		accessToken, err := login(baseURL, username, password, appID, providerID)
+		accessToken, err := login(baseURL, username, password, providerID)
 
 		require.Nil(t, err)
 		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
@@ -159,7 +156,7 @@ func TestLogin(t *testing.T) {
 			Reply(401).
 			JSON(map[string]string{})
 
-		accessToken, err := login(baseURL, username, password, appID, providerID)
+		accessToken, err := login(baseURL, username, password, providerID)
 
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "auth error:")
