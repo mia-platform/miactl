@@ -62,8 +62,6 @@ func TestNewLoginCmd(t *testing.T) {
 		defer viper.Reset()
 		defer gock.Off() // Flush pending mocks after test execution
 
-		const expectedAccessToken = ""
-
 		gock.New(baseURL).
 			Post("/oauth/token").
 			Reply(401).
@@ -79,11 +77,13 @@ func TestNewLoginCmd(t *testing.T) {
 		cmd.Flags().Set("app-id", appID)
 		cmd.Flags().Set("provider-id", providerID)
 
-		require.Error(t, cmd.Execute(), "auth error:")
+		err := cmd.Execute()
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "auth error:")
 
 		accessToken := viper.GetString("apitoken")
 		fmt.Println(accessToken)
-		require.Equal(t, expectedAccessToken, accessToken)
+		require.Empty(t, accessToken, "Access token must be empty string")
 
 		require.True(t, gock.IsDone())
 	})
@@ -93,13 +93,11 @@ func TestNewLoginCmd(t *testing.T) {
 		defer viper.Reset()
 		defer gock.Off() // Flush pending mocks after test execution
 
-		const expectedAccessToken = ""
-
 		gock.New(baseURL).
 			Post("/oauth/token").
 			Reply(200).
 			JSON(map[string]interface{}{
-				"accessToken":  expectedAccessToken,
+				"accessToken":  "YWNjZXNzVG9rZW4=",
 				"refreshToken": "cmVmcmVzaFRva2Vu",
 				"expiresAt":    1619799800,
 			})
@@ -116,7 +114,7 @@ func TestNewLoginCmd(t *testing.T) {
 		require.EqualError(t, cmd.Execute(), "API base URL not specified nor configured")
 
 		accessToken := viper.GetString("apitoken")
-		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
+		require.Empty(t, accessToken, "Access token differs from expected")
 
 		require.False(t, gock.IsDone())
 	})
@@ -148,7 +146,7 @@ func TestLogin(t *testing.T) {
 		accessToken, err := login(baseURL, username, password, appID, providerID)
 
 		require.Nil(t, err)
-		require.Equal(t, expectedAccessToken, accessToken)
+		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
 
 		require.True(t, gock.IsDone())
 	})
@@ -163,8 +161,9 @@ func TestLogin(t *testing.T) {
 
 		accessToken, err := login(baseURL, username, password, appID, providerID)
 
-		require.Error(t, err, "auth error:")
-		require.Equal(t, "", accessToken)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "auth error:")
+		require.Empty(t, accessToken, "Access token must be empty string")
 
 		require.True(t, gock.IsDone())
 	})
