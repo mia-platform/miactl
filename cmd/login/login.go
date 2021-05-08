@@ -50,8 +50,13 @@ func NewLoginCmd() *cobra.Command {
 
 			// save current token for later commands
 			viper.Set("apitoken", accessToken)
+			if err = viper.WriteConfig(); err != nil {
+				fmt.Println("error saving API token in the configuration")
+				return err
+			}
+
 			fmt.Println("OK")
-			return viper.WriteConfig()
+			return nil
 		},
 	}
 
