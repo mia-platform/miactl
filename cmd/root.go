@@ -4,13 +4,18 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path"
 
+	"github.com/mia-platform/miactl/cmd/login"
 	"github.com/mia-platform/miactl/sdk"
+	"github.com/mia-platform/miactl/sdk/factory"
 
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+const cfgFileName = ".miaplatformctl.yaml"
 
 var (
 	cfgFile   string
@@ -27,6 +32,7 @@ func NewRootCmd() *cobra.Command {
 
 	// add sub command to root command
 	rootCmd.AddCommand(newGetCmd())
+	rootCmd.AddCommand(login.NewLoginCmd())
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
@@ -36,7 +42,7 @@ func NewRootCmd() *cobra.Command {
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	rootCmd := NewRootCmd()
-	ctx := WithFactoryValue(context.Background(), rootCmd.OutOrStdout())
+	ctx := factory.WithValue(context.Background(), rootCmd.OutOrStdout())
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -52,11 +58,13 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().StringVar(&opts.APIKey, "apiKey", "", "API Key")
 	rootCmd.PersistentFlags().StringVar(&opts.APICookie, "apiCookie", "", "api cookie sid")
 	rootCmd.PersistentFlags().StringVar(&opts.APIBaseURL, "apiBaseUrl", "", "api base url")
+	rootCmd.PersistentFlags().StringVar(&opts.APIToken, "apiToken", "", "api access token")
 	rootCmd.PersistentFlags().StringVarP(&projectID, "project", "p", "", "specify desired project ID")
 
-	rootCmd.MarkFlagRequired("apiKey")
-	rootCmd.MarkFlagRequired("apiCookie")
 	rootCmd.MarkFlagRequired("apiBaseUrl")
+
+	viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
+	viper.BindPFlag("apitoken", rootCmd.PersistentFlags().Lookup("apiToken"))
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -75,6 +83,11 @@ func initConfig() {
 		// Search config in home directory with name ".miaplatformctl" (without extension).
 		viper.AddConfigPath(home)
 		viper.SetConfigName(".miaplatformctl")
+
+		// create a default config file if it does not exist
+		if err := viper.SafeWriteConfig(); err != nil {
+			viper.SafeWriteConfigAs(path.Join(home, cfgFileName))
+		}
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
