@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/mia-platform/miactl/cmd/console"
 	"github.com/mia-platform/miactl/cmd/login"
 	"github.com/mia-platform/miactl/sdk"
 	"github.com/mia-platform/miactl/sdk/factory"
@@ -33,6 +34,7 @@ func NewRootCmd() *cobra.Command {
 	// add sub command to root command
 	rootCmd.AddCommand(newGetCmd())
 	rootCmd.AddCommand(login.NewLoginCmd())
+	rootCmd.AddCommand(console.NewConsoleCmd())
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
@@ -65,6 +67,7 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 
 	viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
 	viper.BindPFlag("apitoken", rootCmd.PersistentFlags().Lookup("apiToken"))
+	viper.BindPFlag("project", rootCmd.PersistentFlags().Lookup("project"))
 }
 
 // initConfig reads in config file and ENV variables if set.

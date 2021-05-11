@@ -19,3 +19,7 @@ execs/*
 
 # Program binary
 miactl
+
+# Editors
+.vscode
+.idea
