@@ -53,7 +53,6 @@ func TestNewDeployCmd(t *testing.T) {
 
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
-		cmd.SetArgs([]string{environment, revision})
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
@@ -97,7 +96,6 @@ func TestNewDeployCmd(t *testing.T) {
 
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
-		cmd.SetArgs([]string{environment, revision})
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
@@ -135,7 +133,6 @@ func TestNewDeployCmd(t *testing.T) {
 
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
-		cmd.SetArgs([]string{environment, revision})
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
@@ -163,7 +160,6 @@ func TestNewDeployCmd(t *testing.T) {
 
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
-		cmd.SetArgs([]string{environment, revision})
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
@@ -190,7 +186,6 @@ func TestNewDeployCmd(t *testing.T) {
 
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
-		cmd.SetArgs([]string{environment, revision})
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
