@@ -59,7 +59,7 @@ func TestNewDeployCmd(t *testing.T) {
 
 		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
 		err := cmd.ExecuteContext(ctx)
-		require.Nil(t, err)
+		require.NoError(t, err)
 
 		tableRows := renderer.CleanTableRows(buf.String())
 
@@ -103,13 +103,14 @@ func TestNewDeployCmd(t *testing.T) {
 
 		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
 		err := cmd.ExecuteContext(ctx)
+		require.NoError(t, err)
 
 		base, _ := url.Parse(baseURL)
 		path, _ := url.Parse(triggerEndpoint)
-		require.EqualError(
+		require.Contains(
 			t,
-			err,
-			fmt.Sprintf("deploy error: POST %s: 400 - {}\n", base.ResolveReference(path)),
+			buf.String(),
+			fmt.Sprintf("POST %s: 400", base.ResolveReference(path)),
 		)
 
 		lastDeployPipeline := viper.GetInt("project-deploy-pipeline")

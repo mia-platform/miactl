@@ -69,7 +69,8 @@ func NewDeployCmd() *cobra.Command {
 
 			deployData, err := deploy(baseURL, apiToken, projectId, &cfg)
 			if err != nil {
-				return err
+				r.Error(err).Render()
+				return nil
 			}
 
 			// save pipeline id to simplify getting its state
