@@ -33,14 +33,13 @@ type deployResponse struct {
 
 func NewDeployCmd() *cobra.Command {
 	var (
-		baseURL             string
-		apiToken            string
-		projectId           string
-		environment         string
-		revision            string
-		smartDeploy         *bool
-		forceDeployNoSemVer *bool
+		baseURL   string
+		apiToken  string
+		projectId string
 	)
+
+	cfg := deployConfig{}
+
 	cmd := &cobra.Command{
 		Use:   "deploy",
 		Short: "deploy project",
@@ -68,12 +67,6 @@ func NewDeployCmd() *cobra.Command {
 			}
 			r := renderer.New(cmd.OutOrStdout())
 
-			cfg := deployConfig{
-				Environment:         environment,
-				Revision:            revision,
-				SmartDeploy:         *smartDeploy,
-				ForceDeployNoSemVer: *forceDeployNoSemVer,
-			}
 			deployData, err := deploy(baseURL, apiToken, projectId, &cfg)
 			if err != nil {
 				return err
@@ -91,10 +84,10 @@ func NewDeployCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&environment, "environment", "", "the environment where to deploy the project")
-	cmd.Flags().StringVar(&revision, "revision", "", "which version of your project should be released")
-	smartDeploy = cmd.Flags().Bool("smart-deploy", false, "enable smart-deploy feature, which deploys only updated resources")
-	forceDeployNoSemVer = cmd.Flags().Bool("force-no-semver", false, "whether to always deploy pods that do not follow semver")
+	cmd.Flags().StringVar(&cfg.Environment, "environment", "", "the environment where to deploy the project")
+	cmd.Flags().StringVar(&cfg.Revision, "revision", "", "which version of your project should be released")
+	cfg.SmartDeploy = *cmd.Flags().Bool("smart-deploy", false, "enable smart-deploy feature, which deploys only updated resources")
+	cfg.ForceDeployNoSemVer = *cmd.Flags().Bool("force-no-semver", false, "whether to always deploy pods that do not follow semver")
 
 	cmd.MarkFlagRequired("environment")
 	cmd.MarkFlagRequired("revision")
@@ -141,7 +134,7 @@ func deploy(baseUrl, apiToken, projectId string, cfg *deployConfig) (deployRespo
 }
 
 func getDeployEndpoint(projectId string) string {
-	return fmt.Sprintf("/deploy/projects/%s/trigger/pipeline/", projectId)
+	return fmt.Sprintf("deploy/projects/%s/trigger/pipeline/", projectId)
 }
 
 func visualizeResponse(r renderer.IRenderer, projectId string, rs deployResponse) {
