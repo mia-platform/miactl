@@ -8,8 +8,6 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/renderer"
-	"github.com/mia-platform/miactl/sdk"
-	"github.com/mia-platform/miactl/sdk/factory"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/h2non/gock.v1"
@@ -56,8 +54,7 @@ func TestNewDeployCmd(t *testing.T) {
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
-		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
-		err := cmd.ExecuteContext(ctx)
+		err := cmd.ExecuteContext(context.Background())
 		require.NoError(t, err)
 
 		tableRows := renderer.CleanTableRows(buf.String())
@@ -99,8 +96,7 @@ func TestNewDeployCmd(t *testing.T) {
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
-		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
-		err := cmd.ExecuteContext(ctx)
+		err := cmd.ExecuteContext(context.Background())
 		require.NoError(t, err)
 
 		base, _ := url.Parse(baseURL)
@@ -136,8 +132,7 @@ func TestNewDeployCmd(t *testing.T) {
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
-		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
-		err := cmd.ExecuteContext(ctx)
+		err := cmd.ExecuteContext(context.Background())
 		require.EqualError(t, err, "API base URL not specified nor configured")
 
 		lastDeployPipeline := viper.GetInt("project-deploy-pipeline")
@@ -163,8 +158,7 @@ func TestNewDeployCmd(t *testing.T) {
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
-		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
-		err := cmd.ExecuteContext(ctx)
+		err := cmd.ExecuteContext(context.Background())
 		require.EqualError(t, err, "project id not specified nor configured")
 
 		lastDeployPipeline := viper.GetInt("project-deploy-pipeline")
@@ -189,8 +183,7 @@ func TestNewDeployCmd(t *testing.T) {
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
-		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
-		err := cmd.ExecuteContext(ctx)
+		err := cmd.ExecuteContext(context.Background())
 		require.EqualError(t, err, "missing API token - please login")
 
 		lastDeployPipeline := viper.GetInt("project-deploy-pipeline")
@@ -298,8 +291,4 @@ func TestDeploy(t *testing.T) {
 
 		require.True(t, gock.IsDone())
 	})
-}
-
-func clientMock(opts sdk.Options) (*sdk.MiaClient, error) {
-	return nil, nil
 }
