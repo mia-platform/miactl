@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/url"
 	"testing"
 
 	"github.com/mia-platform/miactl/renderer"
@@ -16,7 +17,7 @@ import (
 
 func TestNewDeployCmd(t *testing.T) {
 	const (
-		projectId   = "4h6UBlNiZO"
+		projectId   = "4h6UBlNiZOk2"
 		revision    = "master"
 		environment = "development"
 		baseURL     = "http://console-base-url/"
@@ -44,10 +45,6 @@ func TestNewDeployCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", baseURL)
 		viper.Set("apitoken", apiToken)
-		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
-
-		viper.Set("apibaseurl", baseURL)
-		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
@@ -57,7 +54,6 @@ func TestNewDeployCmd(t *testing.T) {
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
 		cmd.SetArgs([]string{environment, revision})
-		cmd.InheritedFlags().Set("project", projectId)
 		cmd.Flags().Set("environment", environment)
 		cmd.Flags().Set("revision", revision)
 
@@ -79,11 +75,136 @@ func TestNewDeployCmd(t *testing.T) {
 		require.True(t, gock.IsDone())
 	})
 
+	t.Run("failed deploy", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+		defer gock.Off()
+
+		gock.New(baseURL).
+			Post(triggerEndpoint).
+			Reply(400).
+			JSON(map[string]interface{}{})
+
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apibaseurl", baseURL)
+		viper.Set("apitoken", apiToken)
+		viper.Set("project", projectId)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		buf := &bytes.Buffer{}
+		cmd := NewDeployCmd()
+
+		cmd.SetOut(buf)
+		cmd.SetErr(buf)
+		cmd.SetArgs([]string{environment, revision})
+		cmd.Flags().Set("environment", environment)
+		cmd.Flags().Set("revision", revision)
+
+		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
+		err := cmd.ExecuteContext(ctx)
+
+		base, _ := url.Parse(baseURL)
+		path, _ := url.Parse(triggerEndpoint)
+		require.EqualError(
+			t,
+			err,
+			fmt.Sprintf("deploy error: POST %s: 400 - {}\n", base.ResolveReference(path)),
+		)
+
+		lastDeployPipeline := viper.GetInt("project-deploy-pipeline")
+		require.Empty(t, lastDeployPipeline, "Pipeline must be empty")
+
+		require.True(t, gock.IsDone())
+	})
+
+	t.Run("missing base url", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+		defer gock.Off()
+
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apitoken", apiToken)
+		viper.Set("project", projectId)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		buf := &bytes.Buffer{}
+		cmd := NewDeployCmd()
+
+		cmd.SetOut(buf)
+		cmd.SetErr(buf)
+		cmd.SetArgs([]string{environment, revision})
+		cmd.Flags().Set("environment", environment)
+		cmd.Flags().Set("revision", revision)
+
+		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
+		err := cmd.ExecuteContext(ctx)
+		require.EqualError(t, err, "API base URL not specified nor configured")
+
+		lastDeployPipeline := viper.GetInt("project-deploy-pipeline")
+		require.Empty(t, lastDeployPipeline, "Pipeline must be empty")
+	})
+
+	t.Run("missing project id", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+		defer gock.Off()
+
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apibaseurl", baseURL)
+		viper.Set("apitoken", apiToken)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		buf := &bytes.Buffer{}
+		cmd := NewDeployCmd()
+
+		cmd.SetOut(buf)
+		cmd.SetErr(buf)
+		cmd.SetArgs([]string{environment, revision})
+		cmd.Flags().Set("environment", environment)
+		cmd.Flags().Set("revision", revision)
+
+		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
+		err := cmd.ExecuteContext(ctx)
+		require.EqualError(t, err, "project id not specified nor configured")
+
+		lastDeployPipeline := viper.GetInt("project-deploy-pipeline")
+		require.Empty(t, lastDeployPipeline, "Pipeline must be empty")
+	})
+
+	t.Run("missing api token", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+		defer gock.Off()
+
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apibaseurl", baseURL)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		buf := &bytes.Buffer{}
+		cmd := NewDeployCmd()
+
+		cmd.SetOut(buf)
+		cmd.SetErr(buf)
+		cmd.SetArgs([]string{environment, revision})
+		cmd.Flags().Set("environment", environment)
+		cmd.Flags().Set("revision", revision)
+
+		ctx := factory.WithValueTest(context.Background(), cmd.OutOrStdout(), clientMock)
+		err := cmd.ExecuteContext(ctx)
+		require.EqualError(t, err, "missing API token - please login")
+
+		lastDeployPipeline := viper.GetInt("project-deploy-pipeline")
+		require.Empty(t, lastDeployPipeline, "Pipeline must be empty")
+	})
 }
 
 func TestDeploy(t *testing.T) {
 	const (
-		projectId   = "4h6UBlNiZO"
+		projectId   = "27ebd48c25a7"
 		revision    = "master"
 		environment = "development"
 		baseURL     = "http://console-base-url/"
@@ -170,10 +291,12 @@ func TestDeploy(t *testing.T) {
 		}
 
 		deployResponse, err := deploy(baseURL, apiToken, projectId, &cfg)
+		base, _ := url.Parse(baseURL)
+		path, _ := url.Parse(triggerEndpoint)
 		require.EqualError(
 			t,
 			err,
-			fmt.Sprintf("deploy error: POST http://console-base-url/deploy/projects/%s/trigger/pipeline/: 400 - {}\n", projectId),
+			fmt.Sprintf("deploy error: POST %s: 400 - {}\n", base.ResolveReference(path)),
 		)
 		require.Empty(t, deployResponse)
 

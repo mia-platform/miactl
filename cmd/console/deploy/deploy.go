@@ -7,8 +7,7 @@ import (
 	"strconv"
 
 	"github.com/davidebianchi/go-jsonclient"
-	"github.com/mia-platform/miactl/sdk"
-	"github.com/mia-platform/miactl/sdk/factory"
+	"github.com/mia-platform/miactl/renderer"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -52,7 +51,7 @@ func NewDeployCmd() *cobra.Command {
 			projectId = viper.GetString("project")
 
 			if apiToken == "" {
-				return errors.New("Missing API token - please login")
+				return errors.New("missing API token - please login")
 			}
 			if projectId == "" {
 				cmd.MarkFlagRequired("project")
@@ -67,10 +66,7 @@ func NewDeployCmd() *cobra.Command {
 			if projectId == "" {
 				return errors.New("project id not specified nor configured")
 			}
-			f, err := factory.FromContext(cmd.Context(), sdk.Options{})
-			if err != nil {
-				return err
-			}
+			r := renderer.New(cmd.OutOrStdout())
 
 			cfg := deployConfig{
 				Environment:         environment,
@@ -89,7 +85,7 @@ func NewDeployCmd() *cobra.Command {
 				return err
 			}
 
-			visualizeResponse(projectId, deployData, f)
+			visualizeResponse(r, projectId, deployData)
 
 			return nil
 		},
@@ -148,9 +144,9 @@ func getDeployEndpoint(projectId string) string {
 	return fmt.Sprintf("/deploy/projects/%s/trigger/pipeline/", projectId)
 }
 
-func visualizeResponse(projectId string, rs deployResponse, f *factory.Factory) {
+func visualizeResponse(r renderer.IRenderer, projectId string, rs deployResponse) {
 	headers := []string{"Project Id", "Deploy Id", "View Pipeline"}
-	table := f.Renderer.Table(headers)
+	table := r.Table(headers)
 	table.Append([]string{projectId, strconv.FormatInt(int64(rs.Id), 10), rs.Url})
 	table.Render()
 }
