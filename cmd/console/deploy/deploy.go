@@ -70,6 +70,9 @@ func NewDeployCmd() *cobra.Command {
 	cmd.MarkFlagRequired("environment")
 	cmd.MarkFlagRequired("revision")
 
+	// subcommands
+	cmd.AddCommand(NewStatusCmd())
+
 	return cmd
 }
 
