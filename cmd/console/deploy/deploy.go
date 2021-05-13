@@ -142,7 +142,7 @@ func deploy(baseUrl, apiToken, projectId string, cfg *deployConfig) (deployRespo
 	if err != nil {
 		return deployResponse{}, fmt.Errorf("deploy error: %w", err)
 	}
-	defer rawRes.Body.Close()
+	rawRes.Body.Close()
 
 	return response, nil
 }
