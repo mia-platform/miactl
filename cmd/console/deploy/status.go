@@ -73,13 +73,18 @@ func NewStatusCmd() *cobra.Command {
 				return err
 			}
 
-			tSleep := &timeSleeper{2 * time.Second}
+			if len(pipelines) == 0 {
+				fmt.Fprintln(cmd.OutOrStdout(), "no deploy pipelines triggered found")
+				return nil
+			}
+
+			tSleep := &timeSleeper{checkDelay}
 			lastEndedDeploy, err := statusMonitor(cmd.OutOrStdout(), baseURL, apiToken, &pipelines, tSleep)
 			if err != nil {
 				return err
 			}
 
-			viper.Set(triggeredPipelinesKey, pipelines[lastEndedDeploy+1:])
+			viper.Set(triggeredPipelinesKey, pipelines[lastEndedDeploy:])
 			if err := viper.WriteConfig(); err != nil {
 				return err
 			}
@@ -93,7 +98,7 @@ func NewStatusCmd() *cobra.Command {
 }
 
 func statusMonitor(w io.Writer, baseURL, apiToken string, pipelines *sdk.PipelinesConfig, sl sleeper) (int, error) {
-	lastEndedDeploy := -1
+	lastEndedDeploy := 0
 	JSONClient, err := jsonclient.New(jsonclient.Options{
 		BaseURL: baseURL,
 		Headers: jsonclient.Headers{
@@ -104,23 +109,23 @@ func statusMonitor(w io.Writer, baseURL, apiToken string, pipelines *sdk.Pipelin
 		return lastEndedDeploy, fmt.Errorf("error creating JSON client: %w", err)
 	}
 
-	for i, p := range *pipelines {
+	for _, p := range *pipelines {
 		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/?environment=%s", p.ProjectId, p.PipelineId, p.Environment)
 
 		var response statusResponse
 		response, err = getStatus(JSONClient, statusEndpoint)
 		if err != nil {
-			return i, err
+			return lastEndedDeploy, err
 		}
-		for response.Status != "success" && response.Status != "failed" {
+		for shouldRetry(response) {
 			sl.Sleep()
 			response, err = getStatus(JSONClient, statusEndpoint)
 			if err != nil {
-				return i, err
+				return lastEndedDeploy, err
 			}
 		}
 		fmt.Fprintf(w, "project: %s\tpipeline: %d\tstatus:%s\n", p.ProjectId, p.PipelineId, response.Status)
-		lastEndedDeploy = i
+		lastEndedDeploy += 1
 	}
 
 	return lastEndedDeploy, nil
@@ -141,4 +146,17 @@ func getStatus(jc *jsonclient.Client, endpoint string) (statusResponse, error) {
 	defer rawRes.Body.Close()
 
 	return statusRes, nil
+}
+
+func shouldRetry(sr statusResponse) bool {
+	switch sr.Status {
+	case Success:
+		return false
+	case Failed:
+		return false
+	case Canceled:
+		return false
+	default:
+		return true
+	}
 }
