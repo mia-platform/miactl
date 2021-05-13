@@ -200,33 +200,6 @@ func TestNewDeployCmd(t *testing.T) {
 		require.Empty(t, triggeredPipelines, "No pipelines should be triggered")
 	})
 
-	t.Run("missing project id", func(t *testing.T) {
-		viper.Reset()
-		defer viper.Reset()
-		defer gock.Off()
-
-		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
-
-		viper.Set("apibaseurl", baseURL)
-		viper.Set("apitoken", apiToken)
-		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
-
-		buf := &bytes.Buffer{}
-		cmd := NewDeployCmd()
-
-		cmd.SetOut(buf)
-		cmd.SetErr(buf)
-		cmd.Flags().Set("environment", environment)
-		cmd.Flags().Set("revision", revision)
-
-		err := cmd.ExecuteContext(context.Background())
-		require.EqualError(t, err, "project id not specified nor configured")
-
-		var triggeredPipelines Pipelines
-		require.NoError(t, viper.UnmarshalKey(triggeredPipelinesKey, &triggeredPipelines))
-		require.Empty(t, triggeredPipelines, "No pipelines should be triggered")
-	})
-
 	t.Run("missing api token", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()

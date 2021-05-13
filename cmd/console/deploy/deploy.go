@@ -49,6 +49,9 @@ func NewDeployCmd() *cobra.Command {
 			apiToken = viper.GetString("apitoken")
 			projectId = viper.GetString("project")
 
+			if baseURL == "" {
+				return errors.New("API base URL not specified nor configured")
+			}
 			if apiToken == "" {
 				return errors.New("missing API token - please login")
 			}
@@ -59,12 +62,6 @@ func NewDeployCmd() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if baseURL == "" {
-				return errors.New("API base URL not specified nor configured")
-			}
-			if projectId == "" {
-				return errors.New("project id not specified nor configured")
-			}
 			r := renderer.New(cmd.OutOrStdout())
 
 			deployData, err := deploy(baseURL, apiToken, projectId, &cfg)
