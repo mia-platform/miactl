@@ -73,8 +73,17 @@ func NewDeployCmd() *cobra.Command {
 				return nil
 			}
 
-			// save pipeline id to simplify getting its state
-			viper.Set("project-deploy-pipeline", deployData.Id)
+			// store triggered pipelines details to enabling checking their status
+			var pipelines Pipelines
+			if err := viper.UnmarshalKey(triggeredPipelinesKey, &pipelines); err != nil {
+				return err
+			}
+
+			viper.Set(triggeredPipelinesKey, append(pipelines, Pipeline{
+				ProjectId:   projectId,
+				PipelineId:  deployData.Id,
+				Environment: cfg.Environment,
+			}))
 			if err := viper.WriteConfig(); err != nil {
 				return err
 			}
