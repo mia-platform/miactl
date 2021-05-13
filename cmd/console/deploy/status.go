@@ -13,9 +13,35 @@ import (
 	"github.com/spf13/viper"
 )
 
+const checkDelay = 2 * time.Second
+const endMessage = "all deploy pipelines triggered have completed"
+
+const (
+	Created  PipelineStatus = "created"
+	Pending                 = "pending"
+	Running                 = "running"
+	Success                 = "success"
+	Failed                  = "failed"
+	Canceled                = "canceled"
+)
+
+type PipelineStatus string
+
 type statusResponse struct {
 	PipelineId int    `json:"id"`
 	Status     string `json:"status"`
+}
+
+type sleeper interface {
+	Sleep()
+}
+
+type timeSleeper struct {
+	delay time.Duration
+}
+
+func (ts *timeSleeper) Sleep() {
+	time.Sleep(ts.delay)
 }
 
 func NewStatusCmd() *cobra.Command {
@@ -47,7 +73,8 @@ func NewStatusCmd() *cobra.Command {
 				return err
 			}
 
-			lastEndedDeploy, err := statusMonitor(cmd.OutOrStdout(), baseURL, apiToken, &pipelines)
+			tSleep := &timeSleeper{2 * time.Second}
+			lastEndedDeploy, err := statusMonitor(cmd.OutOrStdout(), baseURL, apiToken, &pipelines, tSleep)
 			if err != nil {
 				return err
 			}
@@ -65,7 +92,7 @@ func NewStatusCmd() *cobra.Command {
 	return cmd
 }
 
-func statusMonitor(w io.Writer, baseURL, apiToken string, pipelines *sdk.PipelinesConfig) (int, error) {
+func statusMonitor(w io.Writer, baseURL, apiToken string, pipelines *sdk.PipelinesConfig, sl sleeper) (int, error) {
 	lastEndedDeploy := -1
 	JSONClient, err := jsonclient.New(jsonclient.Options{
 		BaseURL: baseURL,
@@ -86,7 +113,7 @@ func statusMonitor(w io.Writer, baseURL, apiToken string, pipelines *sdk.Pipelin
 			return i, err
 		}
 		for response.Status != "success" && response.Status != "failed" {
-			time.Sleep(2 * time.Second)
+			sl.Sleep()
 			response, err = getStatus(JSONClient, statusEndpoint)
 			if err != nil {
 				return i, err
