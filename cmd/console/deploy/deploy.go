@@ -12,18 +12,25 @@ import (
 	"github.com/spf13/viper"
 )
 
+type deployType string
+
+const (
+	smartDeploy deployType = "smart_deploy"
+	deployAll              = "deploy_all"
+)
+
 type deployConfig struct {
 	Environment         string
 	Revision            string
-	SmartDeploy         bool
+	DeployAll           bool
 	ForceDeployNoSemVer bool
 }
 
 type deployRequest struct {
-	Environment             string `json:"environment"`
-	Revision                string `json:"revision"`
-	DeployType              string `json:"deployType"`
-	ForceDeployWhenNoSemver bool   `json:"forceDeployWhenNoSemver,omitempty"`
+	Environment             string     `json:"environment"`
+	Revision                string     `json:"revision"`
+	DeployType              deployType `json:"deployType"`
+	ForceDeployWhenNoSemver bool       `json:"forceDeployWhenNoSemver"`
 }
 
 type deployResponse struct {
@@ -93,7 +100,7 @@ func NewDeployCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&cfg.Environment, "environment", "", "the environment where to deploy the project")
 	cmd.Flags().StringVar(&cfg.Revision, "revision", "", "which version of your project should be released")
-	cfg.SmartDeploy = *cmd.Flags().Bool("smart-deploy", false, "enable smart-deploy feature, which deploys only updated resources")
+	cfg.DeployAll = *cmd.Flags().Bool("deploy-all", false, "deploy all the project services, regardless of whether they have been updated or not")
 	cfg.ForceDeployNoSemVer = *cmd.Flags().Bool("force-no-semver", false, "whether to always deploy pods that do not follow semver")
 
 	cmd.MarkFlagRequired("environment")
@@ -116,13 +123,13 @@ func deploy(baseUrl, apiToken, projectId string, cfg *deployConfig) (deployRespo
 	data := deployRequest{
 		Environment:             cfg.Environment,
 		Revision:                cfg.Revision,
+		DeployType:              smartDeploy,
 		ForceDeployWhenNoSemver: cfg.ForceDeployNoSemVer,
 	}
 
-	if cfg.SmartDeploy == true {
-		data.DeployType = "smart_deploy"
-	} else {
-		data.DeployType = "deploy_all"
+	if cfg.DeployAll == true {
+		data.DeployType = deployAll
+		data.ForceDeployWhenNoSemver = true
 	}
 
 	request, err := JSONClient.NewRequest(http.MethodPost, getDeployEndpoint(projectId), data)

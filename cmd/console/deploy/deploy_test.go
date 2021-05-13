@@ -250,6 +250,13 @@ func TestDeploy(t *testing.T) {
 		gock.New(baseURL).
 			Post(triggerEndpoint).
 			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
+			MatchType("json").
+			JSON(map[string]interface{}{
+				"environment":             environment,
+				"revision":                revision,
+				"deployType":              smartDeploy,
+				"forceDeployWhenNoSemver": false,
+			}).
 			Reply(200).
 			JSON(map[string]interface{}{
 				"id":  expectedPipelineId,
@@ -268,7 +275,7 @@ func TestDeploy(t *testing.T) {
 		require.True(t, gock.IsDone())
 	})
 
-	t.Run("success - with smart deploy", func(t *testing.T) {
+	t.Run("success - with deploy all strategy", func(t *testing.T) {
 		defer gock.Off()
 
 		const expectedPipelineId = 458467
@@ -281,6 +288,13 @@ func TestDeploy(t *testing.T) {
 		gock.New(baseURL).
 			Post(triggerEndpoint).
 			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
+			MatchType("json").
+			JSON(map[string]interface{}{
+				"environment":             environment,
+				"revision":                revision,
+				"deployType":              deployAll,
+				"forceDeployWhenNoSemver": true,
+			}).
 			Reply(200).
 			JSON(map[string]interface{}{
 				"id":  expectedPipelineId,
@@ -288,10 +302,9 @@ func TestDeploy(t *testing.T) {
 			})
 
 		cfg := deployConfig{
-			Environment:         environment,
-			Revision:            revision,
-			SmartDeploy:         true,
-			ForceDeployNoSemVer: false,
+			Environment: environment,
+			Revision:    revision,
+			DeployAll:   true,
 		}
 
 		deployResponse, err := deploy(baseURL, apiToken, projectId, &cfg)
