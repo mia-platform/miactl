@@ -6,11 +6,11 @@ import (
 	"os"
 	"path"
 
+	factory2 "github.com/mia-platform/miactl/factory"
+
 	"github.com/mia-platform/miactl/cmd/console"
 	"github.com/mia-platform/miactl/cmd/login"
 	"github.com/mia-platform/miactl/sdk"
-	"github.com/mia-platform/miactl/sdk/factory"
-
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -46,7 +46,7 @@ func NewRootCmd() *cobra.Command {
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	rootCmd := NewRootCmd()
-	ctx := factory.WithValue(context.Background(), rootCmd.OutOrStdout())
+	ctx := factory2.WithValue(context.Background(), rootCmd.OutOrStdout())
 	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
