@@ -2,41 +2,12 @@ package deploy
 
 import (
 	"errors"
-	"fmt"
-	"net/http"
-	"strconv"
 
-	"github.com/davidebianchi/go-jsonclient"
 	"github.com/mia-platform/miactl/renderer"
+	"github.com/mia-platform/miactl/sdk/deploy"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
-
-type deployType string
-
-const (
-	smartDeploy deployType = "smart_deploy"
-	deployAll              = "deploy_all"
-)
-
-type deployConfig struct {
-	Environment         string
-	Revision            string
-	DeployAll           bool
-	ForceDeployNoSemVer bool
-}
-
-type deployRequest struct {
-	Environment             string     `json:"environment"`
-	Revision                string     `json:"revision"`
-	DeployType              deployType `json:"deployType"`
-	ForceDeployWhenNoSemver bool       `json:"forceDeployWhenNoSemver"`
-}
-
-type deployResponse struct {
-	Id  int    `json:"id"`
-	Url string `json:"url"`
-}
 
 func NewDeployCmd() *cobra.Command {
 	var (
@@ -45,7 +16,7 @@ func NewDeployCmd() *cobra.Command {
 		projectId string
 	)
 
-	cfg := deployConfig{}
+	cfg := deploy.DeployConfig{}
 
 	cmd := &cobra.Command{
 		Use:   "deploy",
@@ -71,28 +42,26 @@ func NewDeployCmd() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			r := renderer.New(cmd.OutOrStdout())
 
-			deployData, err := deploy(baseURL, apiToken, projectId, &cfg)
+			deployData, err := deploy.Trigger(baseURL, apiToken, projectId, cfg)
 			if err != nil {
 				r.Error(err).Render()
 				return nil
 			}
 
-			// store triggered pipelines details to enabling checking their status
-			var pipelines Pipelines
-			if err := viper.UnmarshalKey(triggeredPipelinesKey, &pipelines); err != nil {
+			var pipelines deploy.Pipelines
+			if err := deploy.ReadPipelines(&pipelines); err != nil {
 				return err
 			}
 
-			viper.Set(triggeredPipelinesKey, append(pipelines, Pipeline{
+			if err := deploy.StorePipelines(pipelines, deploy.Pipeline{
 				ProjectId:   projectId,
 				PipelineId:  deployData.Id,
 				Environment: cfg.Environment,
-			}))
-			if err := viper.WriteConfig(); err != nil {
+			}); err != nil {
 				return err
 			}
 
-			visualizeResponse(r, projectId, deployData)
+			deploy.VisualizeResponse(r, projectId, deployData)
 
 			return nil
 		},
@@ -107,53 +76,4 @@ func NewDeployCmd() *cobra.Command {
 	cmd.MarkFlagRequired("revision")
 
 	return cmd
-}
-
-func deploy(baseUrl, apiToken, projectId string, cfg *deployConfig) (deployResponse, error) {
-	JSONClient, err := jsonclient.New(jsonclient.Options{
-		BaseURL: baseUrl,
-		Headers: jsonclient.Headers{
-			"Authorization": fmt.Sprintf("Bearer %s", apiToken),
-		},
-	})
-	if err != nil {
-		return deployResponse{}, fmt.Errorf("error creating JSON client: %w", err)
-	}
-
-	data := deployRequest{
-		Environment:             cfg.Environment,
-		Revision:                cfg.Revision,
-		DeployType:              smartDeploy,
-		ForceDeployWhenNoSemver: cfg.ForceDeployNoSemVer,
-	}
-
-	if cfg.DeployAll == true {
-		data.DeployType = deployAll
-		data.ForceDeployWhenNoSemver = true
-	}
-
-	request, err := JSONClient.NewRequest(http.MethodPost, getDeployEndpoint(projectId), data)
-	if err != nil {
-		return deployResponse{}, fmt.Errorf("error creating deploy request: %w", err)
-	}
-	var response deployResponse
-
-	rawRes, err := JSONClient.Do(request, &response)
-	if err != nil {
-		return deployResponse{}, fmt.Errorf("deploy error: %w", err)
-	}
-	rawRes.Body.Close()
-
-	return response, nil
-}
-
-func getDeployEndpoint(projectId string) string {
-	return fmt.Sprintf("deploy/projects/%s/trigger/pipeline/", projectId)
-}
-
-func visualizeResponse(r renderer.IRenderer, projectId string, rs deployResponse) {
-	headers := []string{"Project Id", "Deploy Id", "View Pipeline"}
-	table := r.Table(headers)
-	table.Append([]string{projectId, strconv.FormatInt(int64(rs.Id), 10), rs.Url})
-	table.Render()
 }

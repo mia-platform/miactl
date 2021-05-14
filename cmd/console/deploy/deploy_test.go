@@ -8,10 +8,13 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/renderer"
+	"github.com/mia-platform/miactl/sdk/deploy"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/h2non/gock.v1"
 )
+
+const triggeredPipelinesKey = "triggered-pipelines"
 
 func TestNewDeployCmd(t *testing.T) {
 	const (
@@ -25,7 +28,7 @@ func TestNewDeployCmd(t *testing.T) {
 	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
 	triggerEndpoint := fmt.Sprintf("/deploy/projects/%s/trigger/pipeline/", projectId)
 
-	expectedPipeline := Pipeline{
+	expectedPipeline := deploy.Pipeline{
 		ProjectId:   projectId,
 		PipelineId:  expectedPipelineId,
 		Environment: environment,
@@ -71,7 +74,7 @@ func TestNewDeployCmd(t *testing.T) {
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
 
-		var triggeredPipelines Pipelines
+		var triggeredPipelines deploy.Pipelines
 		require.NoError(t, viper.UnmarshalKey(triggeredPipelinesKey, &triggeredPipelines))
 		require.Equal(t, 1, len(triggeredPipelines), "Number of triggered pipelines should match")
 		require.Equal(t, expectedPipeline, triggeredPipelines[0], "Pipeline details should match")
@@ -98,8 +101,8 @@ func TestNewDeployCmd(t *testing.T) {
 		viper.Set("apibaseurl", baseURL)
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
-		viper.Set(triggeredPipelinesKey, Pipelines{
-			Pipeline{ProjectId: "437t34b293u", PipelineId: 723531, Environment: "test"},
+		viper.Set(triggeredPipelinesKey, deploy.Pipelines{
+			deploy.Pipeline{ProjectId: "437t34b293u", PipelineId: 723531, Environment: "test"},
 		})
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
@@ -122,7 +125,7 @@ func TestNewDeployCmd(t *testing.T) {
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
 
-		var triggeredPipelines Pipelines
+		var triggeredPipelines deploy.Pipelines
 		require.NoError(t, viper.UnmarshalKey(triggeredPipelinesKey, &triggeredPipelines))
 		require.Equal(t, 2, len(triggeredPipelines), "Number of triggered pipelines should match")
 		require.Equal(t, expectedPipeline, triggeredPipelines[1], "Last pipeline details should match")
@@ -166,7 +169,7 @@ func TestNewDeployCmd(t *testing.T) {
 			fmt.Sprintf("POST %s: 400", base.ResolveReference(path)),
 		)
 
-		var triggeredPipelines Pipelines
+		var triggeredPipelines deploy.Pipelines
 		require.NoError(t, viper.UnmarshalKey(triggeredPipelinesKey, &triggeredPipelines))
 		require.Empty(t, triggeredPipelines, "No pipelines should be triggered")
 
@@ -195,7 +198,7 @@ func TestNewDeployCmd(t *testing.T) {
 		err := cmd.ExecuteContext(context.Background())
 		require.EqualError(t, err, "API base URL not specified nor configured")
 
-		var triggeredPipelines Pipelines
+		var triggeredPipelines deploy.Pipelines
 		require.NoError(t, viper.UnmarshalKey(triggeredPipelinesKey, &triggeredPipelines))
 		require.Empty(t, triggeredPipelines, "No pipelines should be triggered")
 	})
@@ -221,123 +224,8 @@ func TestNewDeployCmd(t *testing.T) {
 		err := cmd.ExecuteContext(context.Background())
 		require.EqualError(t, err, "missing API token - please login")
 
-		var triggeredPipelines Pipelines
+		var triggeredPipelines deploy.Pipelines
 		require.NoError(t, viper.UnmarshalKey(triggeredPipelinesKey, &triggeredPipelines))
 		require.Empty(t, triggeredPipelines, "No pipelines should be triggered")
-	})
-}
-
-func TestDeploy(t *testing.T) {
-	const (
-		projectId   = "27ebd48c25a7"
-		revision    = "master"
-		environment = "development"
-		baseURL     = "http://console-base-url/"
-		apiToken    = "YWNjZXNzVG9rZW4="
-	)
-	const expectedPipelineId = 458467
-	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
-	triggerEndpoint := fmt.Sprintf("/deploy/projects/%s/trigger/pipeline/", projectId)
-
-	t.Run("success - default behaviour", func(t *testing.T) {
-		defer gock.Off()
-
-		expectedResponse := deployResponse{
-			Id:  expectedPipelineId,
-			Url: expectedPipelineURL,
-		}
-
-		gock.New(baseURL).
-			Post(triggerEndpoint).
-			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
-			MatchType("json").
-			JSON(map[string]interface{}{
-				"environment":             environment,
-				"revision":                revision,
-				"deployType":              smartDeploy,
-				"forceDeployWhenNoSemver": false,
-			}).
-			Reply(200).
-			JSON(map[string]interface{}{
-				"id":  expectedPipelineId,
-				"url": expectedPipelineURL,
-			})
-
-		cfg := deployConfig{
-			Environment: environment,
-			Revision:    revision,
-		}
-
-		deployResponse, err := deploy(baseURL, apiToken, projectId, &cfg)
-		require.Empty(t, err)
-		require.Equal(t, expectedResponse, deployResponse)
-
-		require.True(t, gock.IsDone())
-	})
-
-	t.Run("success - with deploy all strategy", func(t *testing.T) {
-		defer gock.Off()
-
-		const expectedPipelineId = 458467
-		expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
-		expectedResponse := deployResponse{
-			Id:  expectedPipelineId,
-			Url: expectedPipelineURL,
-		}
-
-		gock.New(baseURL).
-			Post(triggerEndpoint).
-			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
-			MatchType("json").
-			JSON(map[string]interface{}{
-				"environment":             environment,
-				"revision":                revision,
-				"deployType":              deployAll,
-				"forceDeployWhenNoSemver": true,
-			}).
-			Reply(200).
-			JSON(map[string]interface{}{
-				"id":  expectedPipelineId,
-				"url": expectedPipelineURL,
-			})
-
-		cfg := deployConfig{
-			Environment: environment,
-			Revision:    revision,
-			DeployAll:   true,
-		}
-
-		deployResponse, err := deploy(baseURL, apiToken, projectId, &cfg)
-		require.Empty(t, err)
-		require.Equal(t, expectedResponse, deployResponse)
-
-		require.True(t, gock.IsDone())
-	})
-
-	t.Run("failure", func(t *testing.T) {
-		defer gock.Off()
-
-		gock.New(baseURL).
-			Post(triggerEndpoint).
-			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
-			Reply(400).
-			JSON(map[string]interface{}{})
-
-		cfg := deployConfig{
-			Environment: environment,
-			Revision:    revision,
-		}
-
-		deployResponse, err := deploy(baseURL, apiToken, projectId, &cfg)
-		base, _ := url.Parse(baseURL)
-		path, _ := url.Parse(triggerEndpoint)
-		require.EqualError(
-			t,
-			err,
-			fmt.Sprintf("deploy error: POST %s: 400 - {}\n", base.ResolveReference(path)),
-		)
-		require.Empty(t, deployResponse)
-
-		require.True(t, gock.IsDone())
 	})
 }
