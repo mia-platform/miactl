@@ -14,9 +14,11 @@ func TestNew(t *testing.T) {
 			option Options
 		}{
 			{option: Options{}},
-			{option: Options{APIKey: "sid=asd", APIBaseURL: "base"}},
-			{option: Options{APIBaseURL: "base", APICookie: "cookie"}},
+			{option: Options{APIKey: "sid=asd", APIBaseURL: "http://base.url/"}},
+			{option: Options{APIBaseURL: "http://base.url/"}},
+			{option: Options{APIBaseURL: "http://base.url/", APICookie: "cookie"}},
 			{option: Options{APICookie: "cookie", APIKey: "sid=asd"}},
+			{option: Options{APIToken: "token"}},
 		}
 		for _, test := range tests {
 			client, err := New(test.option)
@@ -48,6 +50,32 @@ func TestNew(t *testing.T) {
 			Headers: map[string]string{
 				"client-key": opts.APIKey,
 				"cookie":     opts.APICookie,
+			},
+		})
+
+		require.NoError(t, err, "new client error")
+		require.Exactly(t, &MiaClient{
+			Projects: &ProjectsClient{
+				JSONClient: expectedJSONClient,
+			},
+			Deploy: &DeployClient{
+				JSONClient: expectedJSONClient,
+			},
+		}, client)
+	})
+
+	t.Run("correctly returns mia client (api-token)", func(t *testing.T) {
+		fakeApiToken := "api-token"
+		opts := Options{
+			APIBaseURL: "http://my-url/path/",
+			APIToken:   fakeApiToken,
+		}
+		client, err := New(opts)
+
+		expectedJSONClient, _ := jsonclient.New(jsonclient.Options{
+			BaseURL: opts.APIBaseURL,
+			Headers: map[string]string{
+				"Authorization": fmt.Sprintf("Bearer %s", fakeApiToken),
 			},
 		})
 

@@ -108,3 +108,8 @@ func (d DeployMock) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
 
 	return d.History, nil
 }
+
+// Trigger method mock. Added just to satisfy the interface
+func (d DeployMock) Trigger(projectId string, cfg DeployConfig) (DeployResponse, error) {
+	return DeployResponse{}, nil
+}

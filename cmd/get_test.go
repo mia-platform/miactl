@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	factory2 "github.com/mia-platform/miactl/factory"
+	"github.com/mia-platform/miactl/factory"
 
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
@@ -46,7 +46,7 @@ func TestGetCommandRenderAndReturnsError(t *testing.T) {
 
 	t.Run("without required flags", func(t *testing.T) {
 		cmd := NewRootCmd()
-		ctx := factory2.WithValue(context.Background(), cmd.OutOrStdout())
+		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
 		out, err := executeCommandWithContext(ctx, cmd, "get", "projects")
 		expectedErrMessage := fmt.Sprintf("%s: client options are not correct", sdk.ErrCreateClient)
 		require.Contains(t, out, expectedErrMessage)
@@ -179,7 +179,7 @@ func TestGetProjects(t *testing.T) {
 		require.True(t, ok, "miaClientMock not contains ProjectMock struct")
 		prjMock.SetReturnError(getErr)
 
-		f := &factory2.Factory{
+		f := &factory.Factory{
 			Renderer:  renderer.New(buf),
 			MiaClient: miaClient,
 		}
@@ -198,7 +198,7 @@ func TestGetProjects(t *testing.T) {
 		})
 		require.NoError(t, err)
 
-		f := &factory2.Factory{
+		f := &factory.Factory{
 			Renderer:  renderer.New(buf),
 			MiaClient: miaClient,
 		}

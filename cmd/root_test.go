@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	factory2 "github.com/mia-platform/miactl/factory"
+	"github.com/mia-platform/miactl/factory"
 
 	"github.com/mia-platform/miactl/sdk"
 	"github.com/spf13/cobra"
@@ -37,7 +37,7 @@ func executeRootCommandWithContext(mockError sdk.MockClientError, args ...string
 	rootCmd.SetErr(buf)
 	rootCmd.SetArgs(args)
 
-	ctx := factory2.WithValueTest(
+	ctx := factory.WithValueTest(
 		context.Background(),
 		rootCmd.OutOrStderr(),
 		sdk.WrapperMockMiaClient(mockError),

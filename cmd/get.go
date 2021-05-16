@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"time"
 
-	factory2 "github.com/mia-platform/miactl/factory"
+	"github.com/mia-platform/miactl/factory"
 
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
@@ -33,7 +33,7 @@ func newGetCmd() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f, err := factory2.FromContext(cmd.Context(), opts)
+			f, err := factory.FromContext(cmd.Context(), opts)
 			if err != nil {
 				return err
 			}
@@ -51,7 +51,7 @@ func newGetCmd() *cobra.Command {
 	}
 }
 
-func getProjects(f *factory2.Factory) {
+func getProjects(f *factory.Factory) {
 	projects, err := f.MiaClient.Projects.Get()
 	if err != nil {
 		f.Renderer.Error(err).Render()
@@ -71,7 +71,7 @@ func getProjects(f *factory2.Factory) {
 	table.Render()
 }
 
-func getDeploysForProject(f *factory2.Factory) {
+func getDeploysForProject(f *factory.Factory) {
 	query := sdk.DeployHistoryQuery{
 		ProjectID: projectID,
 	}

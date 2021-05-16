@@ -2,12 +2,16 @@ package deploy
 
 import (
 	"errors"
+	"strconv"
 
-	"github.com/mia-platform/miactl/renderer"
-	"github.com/mia-platform/miactl/sdk/deploy"
+	"github.com/mia-platform/miactl/factory"
+	"github.com/mia-platform/miactl/sdk"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+const triggeredPipelinesKey = "triggered-pipelines"
 
 func NewDeployCmd() *cobra.Command {
 	var (
@@ -16,7 +20,7 @@ func NewDeployCmd() *cobra.Command {
 		projectId string
 	)
 
-	cfg := deploy.DeployConfig{}
+	cfg := sdk.DeployConfig{}
 
 	cmd := &cobra.Command{
 		Use:   "deploy",
@@ -34,26 +38,32 @@ func NewDeployCmd() *cobra.Command {
 				return errors.New("missing API token - please login")
 			}
 			if projectId == "" {
-				cmd.MarkFlagRequired("project")
+				return cmd.MarkFlagRequired("project")
 			}
 
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			r := renderer.New(cmd.OutOrStdout())
-
-			deployData, err := deploy.Trigger(baseURL, apiToken, projectId, cfg)
+			f, err := factory.FromContext(cmd.Context(), sdk.Options{
+				APIBaseURL: baseURL,
+				APIToken:   apiToken,
+			})
 			if err != nil {
-				r.Error(err).Render()
-				return nil
-			}
-
-			var pipelines deploy.Pipelines
-			if err := deploy.ReadPipelines(&pipelines); err != nil {
 				return err
 			}
 
-			if err := deploy.StorePipelines(pipelines, deploy.Pipeline{
+			deployData, err := f.MiaClient.Deploy.Trigger(projectId, cfg)
+			if err != nil {
+				f.Renderer.Error(err).Render()
+				return nil
+			}
+
+			var pipelines sdk.PipelinesConfig
+			if err := readPipelines(&pipelines); err != nil {
+				return err
+			}
+
+			if err := storePipelines(pipelines, sdk.PipelineConfig{
 				ProjectId:   projectId,
 				PipelineId:  deployData.Id,
 				Environment: cfg.Environment,
@@ -61,7 +71,7 @@ func NewDeployCmd() *cobra.Command {
 				return err
 			}
 
-			deploy.VisualizeResponse(r, projectId, deployData)
+			visualizeResponse(f, projectId, deployData)
 
 			return nil
 		},
@@ -76,4 +86,28 @@ func NewDeployCmd() *cobra.Command {
 	cmd.MarkFlagRequired("revision")
 
 	return cmd
+}
+
+func visualizeResponse(f *factory.Factory, projectId string, rs sdk.DeployResponse) {
+	headers := []string{"Project Id", "Deploy Id", "View Pipeline"}
+	table := f.Renderer.Table(headers)
+	table.Append([]string{projectId, strconv.FormatInt(int64(rs.Id), 10), rs.Url})
+	table.Render()
+}
+
+func storePipelines(ps sdk.PipelinesConfig, p sdk.PipelineConfig) error {
+	viper.Set(triggeredPipelinesKey, append(ps, p))
+	if err := viper.WriteConfig(); err != nil {
+		return err
+	}
+	return nil
+}
+
+// ReadPipelines store triggered pipelines details to enabling checking their status
+func readPipelines(p *sdk.PipelinesConfig) error {
+	if err := viper.UnmarshalKey(triggeredPipelinesKey, p); err != nil {
+		return err
+	}
+
+	return nil
 }
