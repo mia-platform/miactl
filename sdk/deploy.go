@@ -3,6 +3,7 @@ package sdk
 import (
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"time"
 
@@ -12,6 +13,15 @@ import (
 const (
 	SmartDeploy DeployStrategy = "smart_deploy"
 	DeployAll                  = "deploy_all"
+)
+
+const (
+	Created  PipelineStatus = "created"
+	Pending                 = "pending"
+	Running                 = "running"
+	Success                 = "success"
+	Failed                  = "failed"
+	Canceled                = "canceled"
 )
 
 // DeployItem represents a single item of the deploy history.
@@ -73,6 +83,29 @@ type DeployResponse struct {
 	Url string `json:"url"`
 }
 
+// StatusResponse is the response of the service regarding a deploy pipeline.
+type StatusResponse struct {
+	PipelineId int    `json:"id"`
+	Status     string `json:"status"`
+}
+
+// PipelineStatus is one of the possible states in which a deploy pipeline can be found.
+type PipelineStatus string
+
+// Sleeper expose a sleep interface
+type Sleeper interface {
+	Sleep()
+}
+
+// TimeSleeper use time package to implement Sleeper interface
+type TimeSleeper struct {
+	Delay time.Duration
+}
+
+func (ts *TimeSleeper) Sleep() {
+	time.Sleep(ts.Delay)
+}
+
 // GetHistory interacts with Mia Platform APIs to retrieve a list of the latest deploy.
 func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
 	project, err := getProjectByID(d.JSONClient, query.ProjectID)
@@ -98,6 +131,7 @@ func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error)
 	return history, nil
 }
 
+// Trigger interacts with Mia Platform APIs to launch a deploy pipeline with specified configuration.
 func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployResponse, error) {
 	data := DeployRequest{
 		Environment:             cfg.Environment,
@@ -126,4 +160,61 @@ func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployRespons
 	rawRes.Body.Close()
 
 	return response, nil
+}
+
+// StatusMonitor interacts with Mia Platform APIs to check the status of
+// all the pipelines deployed from miactl
+func (d DeployClient) StatusMonitor(w io.Writer, pipelines *PipelinesConfig, sl Sleeper) (int, error) {
+	lastEndedDeploy := 0
+
+	for _, p := range *pipelines {
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/?environment=%s", p.ProjectId, p.PipelineId, p.Environment)
+
+		var response StatusResponse
+		response, err := getStatus(d.JSONClient, statusEndpoint)
+		if err != nil {
+			return lastEndedDeploy, err
+		}
+		for shouldRetry(response) {
+			sl.Sleep()
+			response, err = getStatus(d.JSONClient, statusEndpoint)
+			if err != nil {
+				return lastEndedDeploy, err
+			}
+		}
+		fmt.Fprintf(w, "project: %s\tpipeline: %d\tstatus:%s\n", p.ProjectId, p.PipelineId, response.Status)
+		lastEndedDeploy += 1
+	}
+
+	return lastEndedDeploy, nil
+}
+
+func getStatus(jc *jsonclient.Client, endpoint string) (StatusResponse, error) {
+	req, err := jc.NewRequest(http.MethodGet, endpoint, nil)
+	if err != nil {
+		return StatusResponse{}, fmt.Errorf("error creating status request: %w", err)
+	}
+
+	var statusRes StatusResponse
+
+	rawRes, err := jc.Do(req, &statusRes)
+	if err != nil {
+		return StatusResponse{}, fmt.Errorf("status error: %w", err)
+	}
+	defer rawRes.Body.Close()
+
+	return statusRes, nil
+}
+
+func shouldRetry(sr StatusResponse) bool {
+	switch sr.Status {
+	case Success:
+		return false
+	case Failed:
+		return false
+	case Canceled:
+		return false
+	default:
+		return true
+	}
 }

@@ -1,6 +1,7 @@
 package sdk
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -13,6 +14,10 @@ import (
 	"github.com/stretchr/testify/require"
 	"gopkg.in/h2non/gock.v1"
 )
+
+type sleeperMock struct {
+	CallCount int
+}
 
 func TestDeployGetHistory(t *testing.T) {
 	projectsListResponseBody := readTestData(t, "projects.json")
@@ -290,6 +295,176 @@ func TestTrigger(t *testing.T) {
 		require.True(t, gock.IsDone())
 	})
 }
+func TestStatusMonitor(t *testing.T) {
+	const (
+		projectId   = "u543t8sdf34t5"
+		pipelineId  = 32562
+		baseURL     = "http://console-base-url/"
+		apiToken    = "YWNjZXNzVG9rZW4="
+		environment = "preprod"
+	)
+
+	client := testCreateDeployClientToken(t, baseURL, apiToken)
+
+	t.Run("get status - success immediately", func(t *testing.T) {
+		defer gock.Off()
+
+		const expectedStatus = Success
+		pipelinesTriggered := PipelinesConfig{
+			PipelineConfig{
+				ProjectId:   projectId,
+				PipelineId:  pipelineId,
+				Environment: environment,
+			},
+			PipelineConfig{
+				ProjectId:   "dc24c12fe",
+				PipelineId:  143295,
+				Environment: environment,
+			},
+		}
+
+		for _, p := range pipelinesTriggered {
+			statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", p.ProjectId, p.PipelineId)
+			gock.New(baseURL).
+				Get(statusEndpoint).
+				MatchParam("environment", p.Environment).
+				Reply(200).
+				JSON(map[string]interface{}{
+					"id":     pipelineId,
+					"status": expectedStatus,
+				})
+		}
+
+		buf := &bytes.Buffer{}
+		slm := &sleeperMock{}
+
+		lastDeployedCompleted, err := client.StatusMonitor(buf, &pipelinesTriggered, slm)
+
+		require.NoError(t, err)
+		require.Equal(t, len(pipelinesTriggered), lastDeployedCompleted, "all the deploy were completed")
+		require.Empty(t, slm.CallCount, "no need to wait")
+
+		require.True(t, gock.IsDone())
+	})
+
+	t.Run("get status - pending -> running -> success", func(t *testing.T) {
+		defer gock.Off()
+
+		const finalStatus = Success
+		const runningTimes = 2
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+
+		pipelinesTriggered := PipelinesConfig{
+			PipelineConfig{
+				ProjectId:   projectId,
+				PipelineId:  pipelineId,
+				Environment: environment,
+			},
+		}
+
+		pipelineStatuses := []PipelineStatus{Created, Pending, Running, Running, finalStatus}
+
+		for _, ps := range pipelineStatuses {
+			gock.New(baseURL).
+				Get(statusEndpoint).
+				MatchParam("environment", environment).
+				Reply(200).
+				JSON(map[string]interface{}{
+					"id":     pipelineId,
+					"status": ps,
+				})
+		}
+
+		buf := &bytes.Buffer{}
+		slm := &sleeperMock{}
+
+		lastDeployedCompleted, err := client.StatusMonitor(buf, &pipelinesTriggered, slm)
+
+		require.NoError(t, err)
+		require.Equal(t, len(pipelinesTriggered), lastDeployedCompleted, "all the deploy were completed")
+		require.Equal(t, len(pipelineStatuses)-1, slm.CallCount, "wait when created, pending and running received")
+
+		require.True(t, gock.IsDone())
+	})
+
+	t.Run("get status - running -> failed", func(t *testing.T) {
+		defer gock.Off()
+		const finalStatus = Failed
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+
+		pipelinesTriggered := PipelinesConfig{
+			PipelineConfig{
+				ProjectId:   projectId,
+				PipelineId:  pipelineId,
+				Environment: environment,
+			},
+		}
+
+		pipelineStatuses := []PipelineStatus{Running, finalStatus}
+
+		for _, ps := range pipelineStatuses {
+			gock.New(baseURL).
+				Get(statusEndpoint).
+				MatchParam("environment", environment).
+				Reply(200).
+				JSON(map[string]interface{}{
+					"id":     pipelineId,
+					"status": ps,
+				})
+		}
+
+		buf := &bytes.Buffer{}
+		slm := &sleeperMock{}
+
+		lastDeployedCompleted, err := client.StatusMonitor(buf, &pipelinesTriggered, slm)
+
+		require.NoError(t, err)
+		require.Equal(t, len(pipelinesTriggered), lastDeployedCompleted, "all the deploy were completed")
+		require.Equal(t, 1, slm.CallCount, "wait once when running received")
+
+		require.True(t, gock.IsDone())
+	})
+
+	t.Run("get status - error", func(t *testing.T) {
+		defer gock.Off()
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+
+		gock.New(baseURL).
+			Get(statusEndpoint).
+			MatchParam("environment", environment).
+			Reply(200).
+			JSON(map[string]interface{}{
+				"id":     pipelineId,
+				"status": Created,
+			})
+
+		gock.New(baseURL).
+			Get(statusEndpoint).
+			MatchParam("environment", environment).
+			Reply(400).
+			JSON(map[string]interface{}{})
+
+		pipelinesTriggered := PipelinesConfig{
+			PipelineConfig{
+				ProjectId:   projectId,
+				PipelineId:  pipelineId,
+				Environment: environment,
+			},
+		}
+
+		buf := &bytes.Buffer{}
+		slm := &sleeperMock{}
+
+		lastDeployedCompleted, err := client.StatusMonitor(buf, &pipelinesTriggered, slm)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "status error:")
+		require.Empty(t, lastDeployedCompleted, "no deploy was completed")
+		require.Equal(t, 1, slm.CallCount, "wait only once")
+
+		require.True(t, gock.IsDone())
+	})
+}
 
 func testCreateDeployClientCookie(t *testing.T, url string) IDeploy {
 	t.Helper()
@@ -321,4 +496,8 @@ func testCreateDeployClientToken(t *testing.T, url, apiToken string) IDeploy {
 	return DeployClient{
 		JSONClient: client,
 	}
+}
+
+func (sm *sleeperMock) Sleep() {
+	sm.CallCount += 1
 }

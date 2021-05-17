@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/sdk"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
@@ -62,8 +63,8 @@ func TestNewStatusCmd(t *testing.T) {
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
 
-		err := cmd.ExecuteContext(context.Background())
-		require.NoError(t, err)
+		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		require.NoError(t, cmd.ExecuteContext(ctx))
 
 		rawOutputLines := strings.Split(buf.String(), "\n")
 		outputLines := sliceFilter(t, rawOutputLines)
@@ -91,7 +92,7 @@ func TestNewStatusCmd(t *testing.T) {
 		defer viper.Reset()
 		defer gock.Off()
 
-		const expectedStatus = Success
+		const expectedStatus = sdk.Success
 		pipelinesTriggered := sdk.PipelinesConfig{
 			sdk.PipelineConfig{
 				ProjectId:   projectId,
@@ -100,7 +101,7 @@ func TestNewStatusCmd(t *testing.T) {
 			},
 		}
 
-		pipelineStatuses := []PipelineStatus{Pending, expectedStatus}
+		pipelineStatuses := []sdk.PipelineStatus{sdk.Pending, expectedStatus}
 
 		for _, ps := range pipelineStatuses {
 			gock.New(baseURL).
@@ -129,8 +130,8 @@ func TestNewStatusCmd(t *testing.T) {
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
 
-		err := cmd.ExecuteContext(context.Background())
-		require.NoError(t, err)
+		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		require.NoError(t, cmd.ExecuteContext(ctx))
 
 		rawOutputLines := strings.Split(buf.String(), "\n")
 		outputLines := sliceFilter(t, rawOutputLines)
@@ -188,7 +189,8 @@ func TestNewStatusCmd(t *testing.T) {
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
 
-		err := cmd.ExecuteContext(context.Background())
+		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		err := cmd.ExecuteContext(ctx)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "status error:")
 
@@ -232,7 +234,8 @@ func TestNewStatusCmd(t *testing.T) {
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
 
-		err := cmd.ExecuteContext(context.Background())
+		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		err := cmd.ExecuteContext(ctx)
 		require.EqualError(t, err, "missing API token - please login")
 
 		var pipelines sdk.PipelinesConfig
@@ -269,7 +272,8 @@ func TestNewStatusCmd(t *testing.T) {
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
 
-		err := cmd.ExecuteContext(context.Background())
+		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		err := cmd.ExecuteContext(ctx)
 		require.EqualError(t, err, "API base URL not specified nor configured")
 
 		var pipelines sdk.PipelinesConfig
@@ -298,182 +302,14 @@ func TestNewStatusCmd(t *testing.T) {
 		cmd.SetOut(buf)
 		cmd.SetErr(buf)
 
-		require.NoError(t, cmd.ExecuteContext(context.Background()))
+		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		require.NoError(t, cmd.ExecuteContext(ctx))
 
 		require.Equal(t, "no deploy pipelines triggered found\n", buf.String())
 
 		var pipelines sdk.PipelinesConfig
 		require.NoError(t, viper.UnmarshalKey(triggeredPipelinesKey, &pipelines))
 		require.Equal(t, 0, len(pipelines))
-	})
-}
-
-func TestStatusMonitor(t *testing.T) {
-	const (
-		projectId   = "u543t8sdf34t5"
-		pipelineId  = 32562
-		baseURL     = "http://console-base-url/"
-		apiToken    = "YWNjZXNzVG9rZW4="
-		environment = "preprod"
-	)
-
-	t.Run("get status - success immediately", func(t *testing.T) {
-		defer gock.Off()
-
-		const expectedStatus = Success
-		pipelinesTriggered := sdk.PipelinesConfig{
-			sdk.PipelineConfig{
-				ProjectId:   projectId,
-				PipelineId:  pipelineId,
-				Environment: environment,
-			},
-			sdk.PipelineConfig{
-				ProjectId:   "dc24c12fe",
-				PipelineId:  143295,
-				Environment: environment,
-			},
-		}
-
-		for _, p := range pipelinesTriggered {
-			statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", p.ProjectId, p.PipelineId)
-			gock.New(baseURL).
-				Get(statusEndpoint).
-				MatchParam("environment", p.Environment).
-				Reply(200).
-				JSON(map[string]interface{}{
-					"id":     pipelineId,
-					"status": expectedStatus,
-				})
-		}
-
-		buf := &bytes.Buffer{}
-		slm := &sleeperMock{}
-
-		lastDeployedCompleted, err := statusMonitor(buf, baseURL, apiToken, &pipelinesTriggered, slm)
-
-		require.NoError(t, err)
-		require.Equal(t, len(pipelinesTriggered), lastDeployedCompleted, "all the deploy were completed")
-		require.Empty(t, slm.CallCount, "no need to wait")
-
-		require.True(t, gock.IsDone())
-	})
-
-	t.Run("get status - pending -> running -> success", func(t *testing.T) {
-		defer gock.Off()
-
-		const finalStatus = Success
-		const runningTimes = 2
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-
-		pipelinesTriggered := sdk.PipelinesConfig{
-			sdk.PipelineConfig{
-				ProjectId:   projectId,
-				PipelineId:  pipelineId,
-				Environment: environment,
-			},
-		}
-
-		pipelineStatuses := []PipelineStatus{Created, Pending, Running, Running, finalStatus}
-
-		for _, ps := range pipelineStatuses {
-			gock.New(baseURL).
-				Get(statusEndpoint).
-				MatchParam("environment", environment).
-				Reply(200).
-				JSON(map[string]interface{}{
-					"id":     pipelineId,
-					"status": ps,
-				})
-		}
-
-		buf := &bytes.Buffer{}
-		slm := &sleeperMock{}
-
-		lastDeployedCompleted, err := statusMonitor(buf, baseURL, apiToken, &pipelinesTriggered, slm)
-
-		require.NoError(t, err)
-		require.Equal(t, len(pipelinesTriggered), lastDeployedCompleted, "all the deploy were completed")
-		require.Equal(t, len(pipelineStatuses)-1, slm.CallCount, "wait when created, pending and running received")
-
-		require.True(t, gock.IsDone())
-	})
-
-	t.Run("get status - running -> failed", func(t *testing.T) {
-		defer gock.Off()
-		const finalStatus = Failed
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-
-		pipelinesTriggered := sdk.PipelinesConfig{
-			sdk.PipelineConfig{
-				ProjectId:   projectId,
-				PipelineId:  pipelineId,
-				Environment: environment,
-			},
-		}
-
-		pipelineStatuses := []PipelineStatus{Running, finalStatus}
-
-		for _, ps := range pipelineStatuses {
-			gock.New(baseURL).
-				Get(statusEndpoint).
-				MatchParam("environment", environment).
-				Reply(200).
-				JSON(map[string]interface{}{
-					"id":     pipelineId,
-					"status": ps,
-				})
-		}
-
-		buf := &bytes.Buffer{}
-		slm := &sleeperMock{}
-
-		lastDeployedCompleted, err := statusMonitor(buf, baseURL, apiToken, &pipelinesTriggered, slm)
-
-		require.NoError(t, err)
-		require.Equal(t, len(pipelinesTriggered), lastDeployedCompleted, "all the deploy were completed")
-		require.Equal(t, 1, slm.CallCount, "wait once when running received")
-
-		require.True(t, gock.IsDone())
-	})
-
-	t.Run("get status - error", func(t *testing.T) {
-		defer gock.Off()
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-
-		gock.New(baseURL).
-			Get(statusEndpoint).
-			MatchParam("environment", environment).
-			Reply(200).
-			JSON(map[string]interface{}{
-				"id":     pipelineId,
-				"status": Created,
-			})
-
-		gock.New(baseURL).
-			Get(statusEndpoint).
-			MatchParam("environment", environment).
-			Reply(400).
-			JSON(map[string]interface{}{})
-
-		pipelinesTriggered := sdk.PipelinesConfig{
-			sdk.PipelineConfig{
-				ProjectId:   projectId,
-				PipelineId:  pipelineId,
-				Environment: environment,
-			},
-		}
-
-		buf := &bytes.Buffer{}
-		slm := &sleeperMock{}
-
-		lastDeployedCompleted, err := statusMonitor(buf, baseURL, apiToken, &pipelinesTriggered, slm)
-
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "status error:")
-		require.Empty(t, lastDeployedCompleted, "no deploy was completed")
-		require.Equal(t, 1, slm.CallCount, "wait only once")
-
-		require.True(t, gock.IsDone())
 	})
 }
 
@@ -488,12 +324,4 @@ func sliceFilter(t testing.TB, s []string) []string {
 	}
 
 	return filtered
-}
-
-type sleeperMock struct {
-	CallCount int
-}
-
-func (sm *sleeperMock) Sleep() {
-	sm.CallCount += 1
 }
