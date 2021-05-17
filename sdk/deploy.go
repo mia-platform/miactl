@@ -111,7 +111,9 @@ func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployRespons
 		data.ForceDeployWhenNoSemver = true
 	}
 
-	request, err := d.JSONClient.NewRequest(http.MethodPost, getDeployEndpoint(projectId), data)
+	path := fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectId)
+
+	request, err := d.JSONClient.NewRequest(http.MethodPost, path, data)
 	if err != nil {
 		return DeployResponse{}, fmt.Errorf("error creating deploy request: %w", err)
 	}
@@ -124,8 +126,4 @@ func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployRespons
 	rawRes.Body.Close()
 
 	return response, nil
-}
-
-func getDeployEndpoint(projectId string) string {
-	return fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectId)
 }
