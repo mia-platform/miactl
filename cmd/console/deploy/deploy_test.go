@@ -8,10 +8,9 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/factory"
-
 	"github.com/mia-platform/miactl/sdk"
-
 	"github.com/mia-platform/miactl/renderer"
+
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 	"gopkg.in/h2non/gock.v1"

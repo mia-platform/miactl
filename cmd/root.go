@@ -7,7 +7,6 @@ import (
 	"path"
 
 	"github.com/mia-platform/miactl/factory"
-
 	"github.com/mia-platform/miactl/cmd/console"
 	"github.com/mia-platform/miactl/cmd/login"
 	"github.com/mia-platform/miactl/sdk"
