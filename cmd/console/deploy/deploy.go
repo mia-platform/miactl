@@ -13,6 +13,17 @@ import (
 
 const triggeredPipelinesKey = "triggered-pipelines"
 
+// pipelineConfig represents a single triggered deploy pipeline in the config file.
+type pipelineConfig struct {
+	ProjectId   string `yaml:"projectid" mapstructure:"projectid"`
+	PipelineId  int    `yaml:"pipelineid" mapstructure:"pipelineid"`
+	Environment string `yaml:"environment" mapstructure:"environment"`
+}
+
+// pipelinesConfig represents a list in the config of all the pipelines
+// that have been triggered but not checked their status.
+type pipelinesConfig []pipelineConfig
+
 func NewDeployCmd() *cobra.Command {
 	var (
 		baseURL   string
@@ -58,12 +69,12 @@ func NewDeployCmd() *cobra.Command {
 				return nil
 			}
 
-			var pipelines sdk.PipelinesConfig
+			var pipelines pipelinesConfig
 			if err := readPipelines(&pipelines); err != nil {
 				return err
 			}
 
-			if err := storePipelines(pipelines, sdk.PipelineConfig{
+			if err := storePipelines(pipelines, pipelineConfig{
 				ProjectId:   projectId,
 				PipelineId:  deployData.Id,
 				Environment: cfg.Environment,
@@ -95,7 +106,8 @@ func visualizeResponse(f *factory.Factory, projectId string, rs sdk.DeployRespon
 	table.Render()
 }
 
-func storePipelines(ps sdk.PipelinesConfig, p sdk.PipelineConfig) error {
+// storePipelines store triggered pipelines details to enable checking their status
+func storePipelines(ps pipelinesConfig, p pipelineConfig) error {
 	viper.Set(triggeredPipelinesKey, append(ps, p))
 	if err := viper.WriteConfig(); err != nil {
 		return err
@@ -103,8 +115,8 @@ func storePipelines(ps sdk.PipelinesConfig, p sdk.PipelineConfig) error {
 	return nil
 }
 
-// ReadPipelines store triggered pipelines details to enabling checking their status
-func readPipelines(p *sdk.PipelinesConfig) error {
+// readPipelines read from the stored config which pipelines were previously triggered
+func readPipelines(p *pipelinesConfig) error {
 	if err := viper.UnmarshalKey(triggeredPipelinesKey, p); err != nil {
 		return err
 	}

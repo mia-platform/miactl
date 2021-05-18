@@ -73,17 +73,6 @@ type DeployResponse struct {
 	Url string `json:"url"`
 }
 
-// PipelineConfig represents a single triggered deploy pipeline in the config file.
-type PipelineConfig struct {
-	ProjectId   string `yaml:"projectid" mapstructure:"projectid"`
-	PipelineId  int    `yaml:"pipelineid" mapstructure:"pipelineid"`
-	Environment string `yaml:"environment" mapstructure:"environment"`
-}
-
-// PipelinesConfig represents a list in the config of all the pipelines
-// that have been triggered but not checked their status.
-type PipelinesConfig []PipelineConfig
-
 // GetHistory interacts with Mia Platform APIs to retrieve a list of the latest deploy.
 func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
 	project, err := getProjectByID(d.JSONClient, query.ProjectID)
