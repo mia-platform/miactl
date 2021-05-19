@@ -3,7 +3,6 @@ package sdk
 import (
 	"errors"
 	"fmt"
-	"io"
 
 	"github.com/davidebianchi/go-jsonclient"
 )
@@ -30,7 +29,7 @@ type DeployHistoryQuery struct {
 type IDeploy interface {
 	GetHistory(DeployHistoryQuery) ([]DeployItem, error)
 	Trigger(string, DeployConfig) (DeployResponse, error)
-	StatusMonitor(w io.Writer, pipelines *PipelinesConfig, sl Sleeper) (int, error)
+	GetDeployStatus(string, int, string) (StatusResponse, error)
 }
 
 // MiaClient is the client of the sdk to be used to communicate with Mia

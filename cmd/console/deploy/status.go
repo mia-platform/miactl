@@ -3,7 +3,7 @@ package deploy
 import (
 	"errors"
 	"fmt"
-	"time"
+	"strconv"
 
 	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/sdk"
@@ -11,27 +11,33 @@ import (
 	"github.com/spf13/viper"
 )
 
-const checkDelay = 2 * time.Second
-const endMessage = "all deploy pipelines triggered have completed"
-
 func NewStatusCmd() *cobra.Command {
 	var (
-		baseURL  string
-		apiToken string
+		baseURL     string
+		apiToken    string
+		projectId   string
+		environment string
 	)
 
 	cmd := &cobra.Command{
 		Use:   "status",
 		Short: "verify status of deploy pipeline",
+		Args: func(cmd *cobra.Command, args []string) error {
+			return cobra.ExactArgs(1)(cmd, args)
+		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			baseURL = viper.GetString("apibaseurl")
 			apiToken = viper.GetString("apitoken")
+			projectId = viper.GetString("project")
 
 			if baseURL == "" {
 				return errors.New("API base URL not specified nor configured")
 			}
 			if apiToken == "" {
 				return errors.New("missing API token - please login")
+			}
+			if projectId == "" {
+				return cmd.MarkFlagRequired("project")
 			}
 
 			return nil
@@ -45,30 +51,32 @@ func NewStatusCmd() *cobra.Command {
 				return err
 			}
 
-			var pipelines sdk.PipelinesConfig
-			if err := readPipelines(&pipelines); err != nil {
-				return err
-			}
-
-			if len(pipelines) == 0 {
-				fmt.Fprintln(cmd.OutOrStdout(), "no deploy pipelines triggered found")
+			pipelineId, err := strconv.Atoi(args[0])
+			if err != nil {
+				f.Renderer.Error(fmt.Errorf("unexpected pipeline id: %w", err)).Render()
 				return nil
 			}
 
-			tSleep := &sdk.TimeSleeper{Delay: checkDelay}
-			lastEndedDeploy, err := f.MiaClient.Deploy.StatusMonitor(cmd.OutOrStdout(), &pipelines, tSleep)
+			statusResponse, err := f.MiaClient.Deploy.GetDeployStatus(projectId, pipelineId, environment)
 			if err != nil {
-				return err
+				f.Renderer.Error(err).Render()
+				return nil
 			}
 
-			if err := storePipelines(pipelines[lastEndedDeploy:]); err != nil {
-				return err
-			}
+			visualizeStatusResponse(f, projectId, statusResponse)
 
-			fmt.Fprintln(cmd.OutOrStdout(), endMessage)
 			return nil
 		},
 	}
 
+	cmd.Flags().StringVar(&environment, "environment", "", "the environment where the project has been deployed")
+
 	return cmd
+}
+
+func visualizeStatusResponse(f *factory.Factory, projectId string, rs sdk.StatusResponse) {
+	headers := []string{"Project Id", "Deploy Id", "Status"}
+	table := f.Renderer.Table(headers)
+	table.Append([]string{projectId, strconv.FormatInt(int64(rs.PipelineId), 10), rs.Status})
+	table.Render()
 }

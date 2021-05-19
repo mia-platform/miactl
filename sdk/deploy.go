@@ -3,7 +3,6 @@ package sdk
 import (
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
 
@@ -92,20 +91,6 @@ type StatusResponse struct {
 // PipelineStatus is one of the possible states in which a deploy pipeline can be found.
 type PipelineStatus string
 
-// Sleeper expose a sleep interface
-type Sleeper interface {
-	Sleep()
-}
-
-// TimeSleeper use time package to implement Sleeper interface
-type TimeSleeper struct {
-	Delay time.Duration
-}
-
-func (ts *TimeSleeper) Sleep() {
-	time.Sleep(ts.Delay)
-}
-
 // GetHistory interacts with Mia Platform APIs to retrieve a list of the latest deploy.
 func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
 	project, err := getProjectByID(d.JSONClient, query.ProjectID)
@@ -162,59 +147,26 @@ func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployRespons
 	return response, nil
 }
 
-// StatusMonitor interacts with Mia Platform APIs to check the status of
-// all the pipelines deployed from miactl
-func (d DeployClient) StatusMonitor(w io.Writer, pipelines *PipelinesConfig, sl Sleeper) (int, error) {
-	lastEndedDeploy := 0
-
-	for _, p := range *pipelines {
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/?environment=%s", p.ProjectId, p.PipelineId, p.Environment)
-
-		var response StatusResponse
-		response, err := getStatus(d.JSONClient, statusEndpoint)
-		if err != nil {
-			return lastEndedDeploy, err
-		}
-		for shouldRetry(response) {
-			sl.Sleep()
-			response, err = getStatus(d.JSONClient, statusEndpoint)
-			if err != nil {
-				return lastEndedDeploy, err
-			}
-		}
-		fmt.Fprintf(w, "project: %s\tpipeline: %d\tstatus:%s\n", p.ProjectId, p.PipelineId, response.Status)
-		lastEndedDeploy += 1
+// GetDeployStatus interacts with Mia Platform APIs to retrieve selected pipeline status
+func (d DeployClient) GetDeployStatus(projectId string, pipelineId int, environment string) (StatusResponse, error) {
+	var statusEndpoint string
+	if environment != "" {
+		statusEndpoint = fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/?environment=%s", projectId, pipelineId, environment)
+	} else {
+		statusEndpoint = fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
 	}
 
-	return lastEndedDeploy, nil
-}
-
-func getStatus(jc *jsonclient.Client, endpoint string) (StatusResponse, error) {
-	req, err := jc.NewRequest(http.MethodGet, endpoint, nil)
+	req, err := d.JSONClient.NewRequest(http.MethodGet, statusEndpoint, nil)
 	if err != nil {
 		return StatusResponse{}, fmt.Errorf("error creating status request: %w", err)
 	}
 
 	var statusRes StatusResponse
-
-	rawRes, err := jc.Do(req, &statusRes)
+	rawRes, err := d.JSONClient.Do(req, &statusRes)
 	if err != nil {
 		return StatusResponse{}, fmt.Errorf("status error: %w", err)
 	}
-	defer rawRes.Body.Close()
+	rawRes.Body.Close()
 
 	return statusRes, nil
-}
-
-func shouldRetry(sr StatusResponse) bool {
-	switch sr.Status {
-	case Success:
-		return false
-	case Failed:
-		return false
-	case Canceled:
-		return false
-	default:
-		return true
-	}
 }

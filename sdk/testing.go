@@ -1,7 +1,5 @@
 package sdk
 
-import "io"
-
 // ProjectsMock is useful to be used to mock projects client
 type ProjectsMock struct {
 	Error    error
@@ -117,6 +115,6 @@ func (d DeployMock) Trigger(projectId string, cfg DeployConfig) (DeployResponse,
 }
 
 // StatusMonitor method mock. Added just to satisfy the interface
-func (d DeployMock) StatusMonitor(w io.Writer, pipelines *PipelinesConfig, sl Sleeper) (int, error) {
-	return 0, nil
+func (d DeployMock) GetDeployStatus(projectId string, pipelineId int, environment string) (StatusResponse, error) {
+	return StatusResponse{}, nil
 }
