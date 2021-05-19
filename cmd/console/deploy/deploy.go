@@ -11,19 +11,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const triggeredPipelinesKey = "triggered-pipelines"
-
-// pipelineConfig represents a single triggered deploy pipeline in the config file.
-type pipelineConfig struct {
-	ProjectId   string `yaml:"projectid" mapstructure:"projectid"`
-	PipelineId  int    `yaml:"pipelineid" mapstructure:"pipelineid"`
-	Environment string `yaml:"environment" mapstructure:"environment"`
-}
-
-// pipelinesConfig represents a list in the config of all the pipelines
-// that have been triggered but not checked their status.
-type pipelinesConfig []pipelineConfig
-
 func NewDeployCmd() *cobra.Command {
 	var (
 		baseURL   string
