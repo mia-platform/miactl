@@ -69,19 +69,6 @@ func NewDeployCmd() *cobra.Command {
 				return nil
 			}
 
-			var pipelines pipelinesConfig
-			if err := readPipelines(&pipelines); err != nil {
-				return err
-			}
-
-			if err := storePipelines(pipelines, pipelineConfig{
-				ProjectId:   projectId,
-				PipelineId:  deployData.Id,
-				Environment: cfg.Environment,
-			}); err != nil {
-				return err
-			}
-
 			visualizeResponse(f, projectId, deployData)
 
 			return nil
@@ -104,22 +91,4 @@ func visualizeResponse(f *factory.Factory, projectId string, rs sdk.DeployRespon
 	table := f.Renderer.Table(headers)
 	table.Append([]string{projectId, strconv.FormatInt(int64(rs.Id), 10), rs.Url})
 	table.Render()
-}
-
-// storePipelines store triggered pipelines details to enable checking their status
-func storePipelines(ps pipelinesConfig, p pipelineConfig) error {
-	viper.Set(triggeredPipelinesKey, append(ps, p))
-	if err := viper.WriteConfig(); err != nil {
-		return err
-	}
-	return nil
-}
-
-// readPipelines read from the stored config which pipelines were previously triggered
-func readPipelines(p *pipelinesConfig) error {
-	if err := viper.UnmarshalKey(triggeredPipelinesKey, p); err != nil {
-		return err
-	}
-
-	return nil
 }
