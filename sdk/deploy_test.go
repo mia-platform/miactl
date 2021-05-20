@@ -14,10 +14,6 @@ import (
 	"gopkg.in/h2non/gock.v1"
 )
 
-type sleeperMock struct {
-	CallCount int
-}
-
 func TestDeployGetHistory(t *testing.T) {
 	projectsListResponseBody := readTestData(t, "projects.json")
 	projectRequestAssertions := func(t *testing.T, req *http.Request) {
