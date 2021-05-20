@@ -9,6 +9,11 @@ import (
 	"github.com/davidebianchi/go-jsonclient"
 )
 
+const (
+	SmartDeploy DeployStrategy = "smart_deploy"
+	DeployAll                  = "deploy_all"
+)
+
 // DeployItem represents a single item of the deploy history.
 type DeployItem struct {
 	ID          int        `json:"id"`
@@ -43,7 +48,32 @@ type DeployClient struct {
 	JSONClient *jsonclient.Client
 }
 
-// GetHistory interacts with Mia Platform APIs to retrieve a list of the lastest deploy.
+// DeployStrategy represents the type of deploy strategies that are available on the Console.
+type DeployStrategy string
+
+// DeployConfig is the details needed to trigger a deploy.
+type DeployConfig struct {
+	Environment         string
+	Revision            string
+	DeployAll           bool
+	ForceDeployNoSemVer bool
+}
+
+// DeployRequest is the body parameters needed to trigger a pipeline deploy.
+type DeployRequest struct {
+	Environment             string         `json:"environment"`
+	Revision                string         `json:"revision"`
+	DeployType              DeployStrategy `json:"deployType"`
+	ForceDeployWhenNoSemver bool           `json:"forceDeployWhenNoSemver"`
+}
+
+// DeployResponse is the response of the service after triggering a deploy pipeline.
+type DeployResponse struct {
+	Id  int    `json:"id"`
+	Url string `json:"url"`
+}
+
+// GetHistory interacts with Mia Platform APIs to retrieve a list of the latest deploy.
 func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
 	project, err := getProjectByID(d.JSONClient, query.ProjectID)
 	if err != nil {
@@ -66,4 +96,36 @@ func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error)
 		return nil, fmt.Errorf("%w: %s", ErrGeneric, err)
 	}
 	return history, nil
+}
+
+func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployResponse, error) {
+	data := DeployRequest{
+		Environment:             cfg.Environment,
+		Revision:                cfg.Revision,
+		DeployType:              SmartDeploy,
+		ForceDeployWhenNoSemver: cfg.ForceDeployNoSemVer,
+	}
+
+	if cfg.DeployAll == true {
+		data.DeployType = DeployAll
+		data.ForceDeployWhenNoSemver = true
+	}
+
+	request, err := d.JSONClient.NewRequest(http.MethodPost, getDeployEndpoint(projectId), data)
+	if err != nil {
+		return DeployResponse{}, fmt.Errorf("error creating deploy request: %w", err)
+	}
+	var response DeployResponse
+
+	rawRes, err := d.JSONClient.Do(request, &response)
+	if err != nil {
+		return DeployResponse{}, fmt.Errorf("deploy error: %w", err)
+	}
+	rawRes.Body.Close()
+
+	return response, nil
+}
+
+func getDeployEndpoint(projectId string) string {
+	return fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectId)
 }

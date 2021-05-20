@@ -6,10 +6,10 @@ import (
 	"os"
 	"path"
 
+	"github.com/mia-platform/miactl/factory"
+	"github.com/mia-platform/miactl/cmd/console"
 	"github.com/mia-platform/miactl/cmd/login"
 	"github.com/mia-platform/miactl/sdk"
-	"github.com/mia-platform/miactl/sdk/factory"
-
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,18 +21,21 @@ var (
 	cfgFile   string
 	projectID string
 	opts      = sdk.Options{}
+	verbose   *bool
 )
 
 // NewRootCmd creates a new root command
 func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use: "miactl",
+		Use:          "miactl",
+		SilenceUsage: true,
 	}
 	setRootPersistentFlag(rootCmd)
 
 	// add sub command to root command
 	rootCmd.AddCommand(newGetCmd())
 	rootCmd.AddCommand(login.NewLoginCmd())
+	rootCmd.AddCommand(console.NewConsoleCmd())
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
@@ -60,11 +63,14 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().StringVar(&opts.APIBaseURL, "apiBaseUrl", "", "api base url")
 	rootCmd.PersistentFlags().StringVar(&opts.APIToken, "apiToken", "", "api access token")
 	rootCmd.PersistentFlags().StringVarP(&projectID, "project", "p", "", "specify desired project ID")
+	verbose = rootCmd.PersistentFlags().BoolP("verbose", "v", false, "whether to output details in verbose mode")
 
 	rootCmd.MarkFlagRequired("apiBaseUrl")
 
 	viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
 	viper.BindPFlag("apitoken", rootCmd.PersistentFlags().Lookup("apiToken"))
+	viper.BindPFlag("project", rootCmd.PersistentFlags().Lookup("project"))
+	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -93,7 +99,10 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 
 	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err == nil {
-		fmt.Println("Using config file:", viper.ConfigFileUsed())
+	if err := viper.ReadInConfig(); err != nil {
+		fmt.Println("Error loading file:", viper.ConfigFileUsed())
+	}
+	if *verbose {
+		fmt.Printf("Using config file: %s\n\n", viper.ConfigFileUsed())
 	}
 }

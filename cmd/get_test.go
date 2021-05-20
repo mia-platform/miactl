@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
-	"github.com/mia-platform/miactl/sdk/factory"
 	"github.com/stretchr/testify/require"
 )
 

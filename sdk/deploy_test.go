@@ -4,12 +4,14 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/h2non/gock.v1"
 )
 
 func TestDeployGetHistory(t *testing.T) {
@@ -37,7 +39,7 @@ func TestDeployGetHistory(t *testing.T) {
 	t.Run("Error occurs when projectId does not exist in download list", func(t *testing.T) {
 		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
-		client := testCreateDeployClient(t, fmt.Sprintf("%s/", s.URL))
+		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-NaN"})
 		require.Nil(t, history)
@@ -54,7 +56,7 @@ func TestDeployGetHistory(t *testing.T) {
 		s := testCreateMultiResponseServer(t, responses)
 		defer s.Close()
 
-		client := testCreateDeployClient(t, fmt.Sprintf("%s/", s.URL))
+		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
@@ -71,7 +73,7 @@ func TestDeployGetHistory(t *testing.T) {
 		s := testCreateMultiResponseServer(t, responses)
 		defer s.Close()
 
-		client := testCreateDeployClient(t, fmt.Sprintf("%s/", s.URL))
+		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
@@ -89,7 +91,7 @@ func TestDeployGetHistory(t *testing.T) {
 		s := testCreateMultiResponseServer(t, responses)
 		defer s.Close()
 
-		client := testCreateDeployClient(t, fmt.Sprintf("%s/", s.URL))
+		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, err)
@@ -172,13 +174,146 @@ func TestDeployGetHistory(t *testing.T) {
 	})
 }
 
-func testCreateDeployClient(t *testing.T, url string) IDeploy {
+func TestTrigger(t *testing.T) {
+	const (
+		projectId   = "27ebd48c25a7"
+		revision    = "master"
+		environment = "development"
+		baseURL     = "http://console-base-url/"
+		apiToken    = "YWNjZXNzVG9rZW4="
+	)
+	const expectedPipelineId = 458467
+	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
+	triggerEndpoint := fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectId)
+
+	client := testCreateDeployClientToken(t, baseURL, apiToken)
+
+	t.Run("success - default behaviour", func(t *testing.T) {
+		defer gock.Off()
+
+		expectedResponse := DeployResponse{
+			Id:  expectedPipelineId,
+			Url: expectedPipelineURL,
+		}
+
+		gock.New(baseURL).
+			Post(triggerEndpoint).
+			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
+			MatchType("json").
+			JSON(map[string]interface{}{
+				"environment":             environment,
+				"revision":                revision,
+				"deployType":              SmartDeploy,
+				"forceDeployWhenNoSemver": false,
+			}).
+			Reply(200).
+			JSON(map[string]interface{}{
+				"id":  expectedPipelineId,
+				"url": expectedPipelineURL,
+			})
+
+		cfg := DeployConfig{
+			Environment: environment,
+			Revision:    revision,
+		}
+
+		deployResponse, err := client.Trigger(projectId, cfg)
+		require.Empty(t, err)
+		require.Equal(t, expectedResponse, deployResponse)
+
+		require.True(t, gock.IsDone())
+	})
+
+	t.Run("success - with deploy all strategy", func(t *testing.T) {
+		defer gock.Off()
+
+		const expectedPipelineId = 458467
+		expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
+		expectedResponse := DeployResponse{
+			Id:  expectedPipelineId,
+			Url: expectedPipelineURL,
+		}
+
+		gock.New(baseURL).
+			Post(triggerEndpoint).
+			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
+			MatchType("json").
+			JSON(map[string]interface{}{
+				"environment":             environment,
+				"revision":                revision,
+				"deployType":              DeployAll,
+				"forceDeployWhenNoSemver": true,
+			}).
+			Reply(200).
+			JSON(map[string]interface{}{
+				"id":  expectedPipelineId,
+				"url": expectedPipelineURL,
+			})
+
+		cfg := DeployConfig{
+			Environment: environment,
+			Revision:    revision,
+			DeployAll:   true,
+		}
+
+		deployResponse, err := client.Trigger(projectId, cfg)
+		require.Empty(t, err)
+		require.Equal(t, expectedResponse, deployResponse)
+
+		require.True(t, gock.IsDone())
+	})
+
+	t.Run("failure", func(t *testing.T) {
+		defer gock.Off()
+
+		gock.New(baseURL).
+			Post(triggerEndpoint).
+			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
+			Reply(400).
+			JSON(map[string]interface{}{})
+
+		cfg := DeployConfig{
+			Environment: environment,
+			Revision:    revision,
+		}
+
+		deployResponse, err := client.Trigger(projectId, cfg)
+		base, _ := url.Parse(baseURL)
+		path, _ := url.Parse(triggerEndpoint)
+		require.EqualError(
+			t,
+			err,
+			fmt.Sprintf("deploy error: POST %s: 400 - {}\n", base.ResolveReference(path)),
+		)
+		require.Empty(t, deployResponse)
+
+		require.True(t, gock.IsDone())
+	})
+}
+
+func testCreateDeployClientCookie(t *testing.T, url string) IDeploy {
 	t.Helper()
 
 	client, err := jsonclient.New(jsonclient.Options{
 		BaseURL: url,
 		Headers: jsonclient.Headers{
 			"cookie": "sid=my-random-sid",
+		},
+	})
+	require.NoError(t, err, "error creating client")
+
+	return DeployClient{
+		JSONClient: client,
+	}
+}
+
+func testCreateDeployClientToken(t *testing.T, url, apiToken string) IDeploy {
+	t.Helper()
+
+	client, err := jsonclient.New(jsonclient.Options{
+		BaseURL: url,
+		Headers: jsonclient.Headers{
+			"Authorization": fmt.Sprintf("Bearer %s", apiToken),
 		},
 	})
 	require.NoError(t, err, "error creating client")

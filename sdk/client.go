@@ -28,6 +28,7 @@ type DeployHistoryQuery struct {
 // IDeploy is a client interface used to interact with deployment pipelines.
 type IDeploy interface {
 	GetHistory(DeployHistoryQuery) ([]DeployItem, error)
+	Trigger(string, DeployConfig) (DeployResponse, error)
 }
 
 // MiaClient is the client of the sdk to be used to communicate with Mia
@@ -52,15 +53,23 @@ var (
 // New returns the MiaSdkClient to be used to communicate to Mia Platform
 // Console api.
 func New(opts Options) (*MiaClient, error) {
-	if opts.APIKey == "" || opts.APIBaseURL == "" || opts.APICookie == "" {
+	headers := jsonclient.Headers{}
+
+	if opts.APIBaseURL == "" || (opts.APIToken == "" && (opts.APIKey == "" || opts.APICookie == "")) {
 		return nil, fmt.Errorf("%w: client options are not correct", ErrCreateClient)
 	}
+
+	// select auth method depending on given parameters
+	if opts.APIToken != "" {
+		headers["Authorization"] = fmt.Sprintf("Bearer %s", opts.APIToken)
+	} else {
+		headers["cookie"] = opts.APICookie
+		headers["client-key"] = opts.APIKey
+	}
+
 	JSONClient, err := jsonclient.New(jsonclient.Options{
 		BaseURL: opts.APIBaseURL,
-		Headers: map[string]string{
-			"cookie":     opts.APICookie,
-			"client-key": opts.APIKey,
-		},
+		Headers: headers,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrCreateClient, err)
