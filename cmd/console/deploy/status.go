@@ -57,15 +57,22 @@ func NewStatusCmd() *cobra.Command {
 				return nil
 			}
 
-			statusResponse, err := f.MiaClient.Deploy.GetDeployStatus(projectId, pipelineId, environment)
+			result, err := f.MiaClient.Deploy.GetDeployStatus(projectId, pipelineId, environment)
 			if err != nil {
 				f.Renderer.Error(err).Render()
 				return nil
 			}
 
-			visualizeStatusResponse(f, projectId, statusResponse)
+			visualizeStatusResponse(f, projectId, result)
 
-			return nil
+			switch result.Status {
+			case sdk.Failed:
+				return fmt.Errorf("Deploy pipeline failed")
+			case sdk.Canceled:
+				return fmt.Errorf("Deploy pipeline canceled")
+			default:
+				return nil
+			}
 		},
 	}
 
