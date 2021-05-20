@@ -149,11 +149,9 @@ func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployRespons
 
 // GetDeployStatus interacts with Mia Platform APIs to retrieve selected pipeline status
 func (d DeployClient) GetDeployStatus(projectId string, pipelineId int, environment string) (StatusResponse, error) {
-	var statusEndpoint string
+	statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
 	if environment != "" {
-		statusEndpoint = fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/?environment=%s", projectId, pipelineId, environment)
-	} else {
-		statusEndpoint = fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+		statusEndpoint = fmt.Sprintf("%s?environment=%s", statusEndpoint, environment)
 	}
 
 	req, err := d.JSONClient.NewRequest(http.MethodGet, statusEndpoint, nil)
