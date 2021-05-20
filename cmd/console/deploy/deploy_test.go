@@ -143,14 +143,6 @@ func TestNewDeployCmd(t *testing.T) {
 
 		cmd, _ := prepareCmd(t, environment, revision)
 
-		// buf := &bytes.Buffer{}
-		// cmd := NewDeployCmd()
-
-		// cmd.SetOut(buf)
-		// cmd.SetErr(buf)
-		// cmd.Flags().Set("environment", environment)
-		// cmd.Flags().Set("revision", revision)
-
 		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
 		err := cmd.ExecuteContext(ctx)
 		require.Contains(t, err.Error(), "no such flag -project")
