@@ -290,6 +290,61 @@ func TestTrigger(t *testing.T) {
 		require.True(t, gock.IsDone())
 	})
 }
+func TestGetDeployStatus(t *testing.T) {
+	const (
+		projectId   = "u543t8sdf34t5"
+		pipelineId  = 32562
+		baseURL     = "http://console-base-url/"
+		apiToken    = "YWNjZXNzVG9rZW4="
+		environment = "preprod"
+	)
+
+	client := testCreateDeployClientToken(t, baseURL, apiToken)
+
+	t.Run("get status", func(t *testing.T) {
+		defer gock.Off()
+
+		expectedResponse := StatusResponse{
+			PipelineId: pipelineId,
+			Status:     Success,
+		}
+
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+		gock.New(baseURL).
+			Get(statusEndpoint).
+			MatchParam("environment", environment).
+			Reply(200).
+			JSON(map[string]interface{}{
+				"id":     pipelineId,
+				"status": Success,
+			})
+
+		response, err := client.GetDeployStatus(projectId, pipelineId, environment)
+		require.NoError(t, err)
+		require.Equal(t, expectedResponse, response)
+
+		require.True(t, gock.IsDone())
+	})
+
+	t.Run("get status - error", func(t *testing.T) {
+		defer gock.Off()
+
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+		gock.New(baseURL).
+			Get(statusEndpoint).
+			MatchParam("environment", environment).
+			Reply(400).
+			JSON(map[string]interface{}{})
+
+		response, err := client.GetDeployStatus(projectId, pipelineId, environment)
+		require.Empty(t, response)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "status error:")
+
+		require.True(t, gock.IsDone())
+	})
+}
 
 func testCreateDeployClientCookie(t *testing.T, url string) IDeploy {
 	t.Helper()

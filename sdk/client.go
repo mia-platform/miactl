@@ -29,6 +29,7 @@ type DeployHistoryQuery struct {
 type IDeploy interface {
 	GetHistory(DeployHistoryQuery) ([]DeployItem, error)
 	Trigger(string, DeployConfig) (DeployResponse, error)
+	GetDeployStatus(string, int, string) (StatusResponse, error)
 }
 
 // MiaClient is the client of the sdk to be used to communicate with Mia

@@ -14,6 +14,15 @@ const (
 	DeployAll                  = "deploy_all"
 )
 
+const (
+	Created  PipelineStatus = "created"
+	Pending                 = "pending"
+	Running                 = "running"
+	Success                 = "success"
+	Failed                  = "failed"
+	Canceled                = "canceled"
+)
+
 // DeployItem represents a single item of the deploy history.
 type DeployItem struct {
 	ID          int        `json:"id"`
@@ -73,6 +82,15 @@ type DeployResponse struct {
 	Url string `json:"url"`
 }
 
+// StatusResponse is the response of the service regarding a deploy pipeline.
+type StatusResponse struct {
+	PipelineId int    `json:"id"`
+	Status     string `json:"status"`
+}
+
+// PipelineStatus is one of the possible states in which a deploy pipeline can be found.
+type PipelineStatus string
+
 // GetHistory interacts with Mia Platform APIs to retrieve a list of the latest deploy.
 func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
 	project, err := getProjectByID(d.JSONClient, query.ProjectID)
@@ -98,6 +116,7 @@ func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error)
 	return history, nil
 }
 
+// Trigger interacts with Mia Platform APIs to launch a deploy pipeline with specified configuration.
 func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployResponse, error) {
 	data := DeployRequest{
 		Environment:             cfg.Environment,
@@ -111,7 +130,9 @@ func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployRespons
 		data.ForceDeployWhenNoSemver = true
 	}
 
-	request, err := d.JSONClient.NewRequest(http.MethodPost, getDeployEndpoint(projectId), data)
+	path := fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectId)
+
+	request, err := d.JSONClient.NewRequest(http.MethodPost, path, data)
 	if err != nil {
 		return DeployResponse{}, fmt.Errorf("error creating deploy request: %w", err)
 	}
@@ -126,6 +147,24 @@ func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployRespons
 	return response, nil
 }
 
-func getDeployEndpoint(projectId string) string {
-	return fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectId)
+// GetDeployStatus interacts with Mia Platform APIs to retrieve selected pipeline status
+func (d DeployClient) GetDeployStatus(projectId string, pipelineId int, environment string) (StatusResponse, error) {
+	statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+	if environment != "" {
+		statusEndpoint = fmt.Sprintf("%s?environment=%s", statusEndpoint, environment)
+	}
+
+	req, err := d.JSONClient.NewRequest(http.MethodGet, statusEndpoint, nil)
+	if err != nil {
+		return StatusResponse{}, fmt.Errorf("error creating status request: %w", err)
+	}
+
+	var statusRes StatusResponse
+	rawRes, err := d.JSONClient.Do(req, &statusRes)
+	if err != nil {
+		return StatusResponse{}, fmt.Errorf("status error: %w", err)
+	}
+	rawRes.Body.Close()
+
+	return statusRes, nil
 }
