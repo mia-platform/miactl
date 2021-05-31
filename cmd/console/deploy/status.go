@@ -21,7 +21,7 @@ func NewStatusCmd() *cobra.Command {
 	)
 
 	cmd := &cobra.Command{
-		Use:   "status",
+		Use:   "status {{deployId}}",
 		Short: "verify status of deploy pipeline",
 		Args: func(cmd *cobra.Command, args []string) error {
 			return cobra.ExactArgs(1)(cmd, args)
