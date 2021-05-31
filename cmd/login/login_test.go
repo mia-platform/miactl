@@ -26,7 +26,7 @@ func TestNewLoginCmd(t *testing.T) {
 		const expectedAccessToken = "YWNjZXNzVG9rZW4="
 
 		gock.New(baseURL).
-			Post("/oauth/token").
+			Post("/api/oauth/token").
 			Reply(200).
 			JSON(map[string]interface{}{
 				"accessToken":  expectedAccessToken,
@@ -62,7 +62,7 @@ func TestNewLoginCmd(t *testing.T) {
 		defer gock.Off() // Flush pending mocks after test execution
 
 		gock.New(baseURL).
-			Post("/oauth/token").
+			Post("/api/oauth/token").
 			Reply(401).
 			JSON(map[string]interface{}{})
 
@@ -92,7 +92,7 @@ func TestNewLoginCmd(t *testing.T) {
 		defer gock.Off() // Flush pending mocks after test execution
 
 		gock.New(baseURL).
-			Post("/oauth/token").
+			Post("/api/oauth/token").
 			Reply(200).
 			JSON(map[string]interface{}{
 				"accessToken":  "YWNjZXNzVG9rZW4=",
@@ -132,7 +132,7 @@ func TestLogin(t *testing.T) {
 		const expectedAccessToken = "YWNjZXNzVG9rZW4="
 
 		gock.New(baseURL).
-			Post("/oauth/token").
+			Post("/api/oauth/token").
 			Reply(200).
 			JSON(map[string]interface{}{
 				"accessToken":  expectedAccessToken,
@@ -152,7 +152,7 @@ func TestLogin(t *testing.T) {
 		defer gock.Off() // Flush pending mocks after test execution
 
 		gock.New(baseURL).
-			Post("/oauth/token").
+			Post("/api/oauth/token").
 			Reply(401).
 			JSON(map[string]string{})
 
