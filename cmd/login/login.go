@@ -86,7 +86,7 @@ func login(authProvider, username, password, providerID string) (string, error) 
 		AppID:      miactlAppID,
 		ProviderID: providerID,
 	}
-	loginReq, err := JSONClient.NewRequest(http.MethodPost, "/oauth/token", data)
+	loginReq, err := JSONClient.NewRequest(http.MethodPost, "/api/oauth/token", data)
 	if err != nil {
 		return "", fmt.Errorf("error creating login request: %w", err)
 	}
