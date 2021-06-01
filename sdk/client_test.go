@@ -89,4 +89,18 @@ func TestNew(t *testing.T) {
 			},
 		}, client)
 	})
+
+	t.Run("correctly returns mia client - insecure connection", func(t *testing.T) {
+		fakeApiToken := "api-token"
+		opts := Options{
+			APIBaseURL:      "http://my-url/path/",
+			APIToken:        fakeApiToken,
+			SkipCertificate: true,
+		}
+		_, err := New(opts)
+
+		require.NoError(t, err, "new client error")
+		// Note: it is not possible to perform address and value equality,
+		// since the underlying client is cloned to change its default transport.
+	})
 }

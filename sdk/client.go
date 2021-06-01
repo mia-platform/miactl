@@ -1,8 +1,10 @@
 package sdk
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/davidebianchi/go-jsonclient"
 )
@@ -69,10 +71,18 @@ func New(opts Options) (*MiaClient, error) {
 		headers["client-key"] = opts.APIKey
 	}
 
-	JSONClient, err := jsonclient.New(jsonclient.Options{
+	clientOptions := jsonclient.Options{
 		BaseURL: opts.APIBaseURL,
 		Headers: headers,
-	})
+	}
+
+	if opts.SkipCertificate {
+		customTransport := http.DefaultTransport.(*http.Transport).Clone()
+		customTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		clientOptions.HTTPClient = &http.Client{Transport: customTransport}
+	}
+
+	JSONClient, err := jsonclient.New(clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %s", ErrCreateClient, err)
 	}
