@@ -1,6 +1,7 @@
 package login
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,6 +12,14 @@ import (
 )
 
 const miactlAppID = "miactl"
+
+type loginConfig struct {
+	BaseURL         string
+	Username        string
+	Password        string
+	ProviderID      string
+	SkipCertificate bool
+}
 
 type tokenRequest struct {
 	GrantType  string `json:"grant_type"`
@@ -28,22 +37,26 @@ type tokenResponse struct {
 
 // NewLoginCmd create a new Login command
 func NewLoginCmd() *cobra.Command {
-	var (
-		username   string
-		password   string
-		providerID string
-	)
+	var cfg loginConfig
 
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "authenticate with console",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			baseURL := viper.GetString("apibaseurl")
-			if baseURL == "" {
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			cfg.BaseURL = viper.GetString("apibaseurl")
+			if cfg.BaseURL == "" {
 				return errors.New("API base URL not specified nor configured")
 			}
 
-			accessToken, err := login(baseURL, username, password, providerID)
+			// set the flag only in case it is defined
+			if skipCertificate, err := cmd.Flags().GetBool("insecure"); err == nil {
+				cfg.SkipCertificate = skipCertificate
+			}
+
+			return nil
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			accessToken, err := login(cfg)
 			if err != nil {
 				return err
 			}
@@ -60,9 +73,9 @@ func NewLoginCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&username, "username", "", "your user identifier")
-	cmd.Flags().StringVar(&password, "password", "", "your secret password")
-	cmd.Flags().StringVar(&providerID, "provider-id", "", "the authentication provider identifier")
+	cmd.Flags().StringVar(&cfg.Username, "username", "", "your user identifier")
+	cmd.Flags().StringVar(&cfg.Password, "password", "", "your secret password")
+	cmd.Flags().StringVar(&cfg.ProviderID, "provider-id", "", "the authentication provider identifier")
 
 	cmd.MarkFlagRequired("username")
 	cmd.MarkFlagRequired("password")
@@ -71,20 +84,27 @@ func NewLoginCmd() *cobra.Command {
 	return cmd
 }
 
-func login(authProvider, username, password, providerID string) (string, error) {
-	JSONClient, err := jsonclient.New(jsonclient.Options{
-		BaseURL: authProvider,
-	})
+func login(cfg loginConfig) (string, error) {
+	clientOptions := jsonclient.Options{
+		BaseURL: cfg.BaseURL,
+	}
+	if cfg.SkipCertificate {
+		customTransport := http.DefaultTransport.(*http.Transport).Clone()
+		customTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+		clientOptions.HTTPClient = &http.Client{Transport: customTransport}
+	}
+
+	JSONClient, err := jsonclient.New(clientOptions)
 	if err != nil {
 		return "", fmt.Errorf("error creating JSON client: %w", err)
 	}
 
 	data := tokenRequest{
 		GrantType:  "password",
-		Username:   username,
-		Password:   password,
+		Username:   cfg.Username,
+		Password:   cfg.Password,
 		AppID:      miactlAppID,
-		ProviderID: providerID,
+		ProviderID: cfg.ProviderID,
 	}
 	loginReq, err := JSONClient.NewRequest(http.MethodPost, "/api/oauth/token", data)
 	if err != nil {

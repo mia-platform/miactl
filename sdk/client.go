@@ -9,10 +9,11 @@ import (
 
 // Options struct define options to create the sdk client
 type Options struct {
-	APIKey     string
-	APICookie  string
-	APIBaseURL string
-	APIToken   string
+	APIKey          string
+	APICookie       string
+	APIBaseURL      string
+	APIToken        string
+	SkipCertificate bool
 }
 
 // IProjects expose the projects client interface

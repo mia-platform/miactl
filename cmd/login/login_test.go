@@ -1,7 +1,10 @@
 package login
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/spf13/viper"
@@ -129,6 +132,12 @@ func TestLogin(t *testing.T) {
 	t.Run("successful login", func(t *testing.T) {
 		defer gock.Off() // Flush pending mocks after test execution
 
+		testCfg := loginConfig{
+			BaseURL:    baseURL,
+			Username:   username,
+			Password:   password,
+			ProviderID: providerID,
+		}
 		const expectedAccessToken = "YWNjZXNzVG9rZW4="
 
 		gock.New(baseURL).
@@ -140,7 +149,7 @@ func TestLogin(t *testing.T) {
 				"expiresAt":    1619799800,
 			})
 
-		accessToken, err := login(baseURL, username, password, providerID)
+		accessToken, err := login(testCfg)
 
 		require.Nil(t, err)
 		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
@@ -148,15 +157,50 @@ func TestLogin(t *testing.T) {
 		require.True(t, gock.IsDone())
 	})
 
+	t.Run("successful login - insecure connection enabled", func(t *testing.T) {
+		testCfg := loginConfig{
+			BaseURL:         baseURL,
+			Username:        username,
+			Password:        password,
+			ProviderID:      providerID,
+			SkipCertificate: true,
+		}
+		const expectedAccessToken = "YWNjZXNzVG9rZW4="
+
+		server := newTestInsecureServer(t, "/api/oauth/token", func(w http.ResponseWriter, r *http.Request) {
+			data, _ := json.Marshal(map[string]interface{}{
+				"accessToken":  expectedAccessToken,
+				"refreshToken": "cmVmcmVzaFRva2Vu",
+				"expiresAt":    1619799800,
+			})
+			w.WriteHeader(http.StatusOK)
+			w.Write(data)
+		})
+		defer server.Close()
+
+		testCfg.BaseURL = fmt.Sprintf("%s/", server.URL)
+		accessToken, err := login(testCfg)
+
+		require.Nil(t, err)
+		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
+	})
+
 	t.Run("failed login", func(t *testing.T) {
 		defer gock.Off() // Flush pending mocks after test execution
+
+		testCfg := loginConfig{
+			BaseURL:    baseURL,
+			Username:   username,
+			Password:   password,
+			ProviderID: providerID,
+		}
 
 		gock.New(baseURL).
 			Post("/api/oauth/token").
 			Reply(401).
 			JSON(map[string]string{})
 
-		accessToken, err := login(baseURL, username, password, providerID)
+		accessToken, err := login(testCfg)
 
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "auth error:")
@@ -164,4 +208,14 @@ func TestLogin(t *testing.T) {
 
 		require.True(t, gock.IsDone())
 	})
+}
+
+func newTestInsecureServer(t testing.TB, path string, h func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
+	t.Helper()
+
+	mux := http.NewServeMux()
+	server := httptest.NewServer(mux)
+	mux.HandleFunc(path, h)
+
+	return server
 }
