@@ -1,6 +1,7 @@
 package login
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -129,6 +130,11 @@ func TestLogin(t *testing.T) {
 		baseURL    = "http://auth-provider/"
 	)
 
+	serverCfg := map[string]string{
+		"cert": "../../sdk/testdata/server-cert.pem",
+		"key":  "../../sdk/testdata/server-key.pem",
+	}
+
 	t.Run("successful login", func(t *testing.T) {
 		defer gock.Off() // Flush pending mocks after test execution
 
@@ -167,7 +173,7 @@ func TestLogin(t *testing.T) {
 		}
 		const expectedAccessToken = "YWNjZXNzVG9rZW4="
 
-		server := newTestInsecureServer(t, "/api/oauth/token", func(w http.ResponseWriter, r *http.Request) {
+		handler := func(w http.ResponseWriter, r *http.Request) {
 			data, _ := json.Marshal(map[string]interface{}{
 				"accessToken":  expectedAccessToken,
 				"refreshToken": "cmVmcmVzaFRva2Vu",
@@ -175,7 +181,8 @@ func TestLogin(t *testing.T) {
 			})
 			w.WriteHeader(http.StatusOK)
 			w.Write(data)
-		})
+		}
+		server, _ := getTLSTestServer(t, "/api/oauth/token", handler, serverCfg)
 		defer server.Close()
 
 		testCfg.BaseURL = fmt.Sprintf("%s/", server.URL)
@@ -210,12 +217,21 @@ func TestLogin(t *testing.T) {
 	})
 }
 
-func newTestInsecureServer(t testing.TB, path string, h func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
+func getTLSTestServer(t testing.TB, path string, h http.HandlerFunc, serverCfg map[string]string) (*httptest.Server, error) {
 	t.Helper()
 
 	mux := http.NewServeMux()
-	server := httptest.NewServer(mux)
 	mux.HandleFunc(path, h)
+	server := httptest.NewUnstartedServer(mux)
 
-	return server
+	cert, err := tls.LoadX509KeyPair(serverCfg["cert"], serverCfg["key"])
+	if err != nil {
+		return nil, err
+	}
+	server.TLS = &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+	server.StartTLS()
+
+	return server, nil
 }
