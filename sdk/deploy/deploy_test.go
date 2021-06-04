@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -211,7 +211,7 @@ func TestTrigger(t *testing.T) {
 			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
 
 			requestBody := DeployRequest{}
-			bodyRequest, _ := io.ReadAll(req.Body)
+			bodyRequest, _ := ioutil.ReadAll(req.Body)
 			require.NoError(t, json.Unmarshal(bodyRequest, &requestBody))
 			require.Equal(t, expectedRequestBody, requestBody)
 		}
