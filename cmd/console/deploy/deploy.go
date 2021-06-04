@@ -70,8 +70,8 @@ func NewDeployCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&cfg.Environment, "environment", "", "the environment where to deploy the project")
 	cmd.Flags().StringVar(&cfg.Revision, "revision", "", "which version of your project should be released")
-	cfg.DeployAll = *cmd.Flags().Bool("deploy-all", false, "deploy all the project services, regardless of whether they have been updated or not")
-	cfg.ForceDeployNoSemVer = *cmd.Flags().Bool("force-no-semver", false, "whether to always deploy pods that do not follow semver")
+	cmd.Flags().BoolVar(&cfg.DeployAll, "deploy-all", false, "deploy all the project services, regardless of whether they have been updated or not")
+	cmd.Flags().BoolVar(&cfg.ForceDeployNoSemVer, "force-no-semver", false, "whether to always deploy pods that do not follow semver")
 
 	cmd.MarkFlagRequired("environment")
 	cmd.MarkFlagRequired("revision")
