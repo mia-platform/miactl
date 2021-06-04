@@ -8,6 +8,7 @@ import (
 
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 )
 
 // FactoryContextKey key of the factory in context
@@ -25,7 +26,7 @@ type Factory struct {
 
 func (o *Factory) addMiaClientToFactory(opts sdk.Options) error {
 	if o.miaClientCreator == nil {
-		return fmt.Errorf("%w: newSdk not defined", sdk.ErrCreateClient)
+		return fmt.Errorf("%w: newSdk not defined", sdkErrors.ErrCreateClient)
 	}
 	miaSdk, err := o.miaClientCreator(opts)
 	if err != nil {

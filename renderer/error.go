@@ -6,7 +6,7 @@ import (
 	"io"
 	"os"
 
-	"github.com/mia-platform/miactl/sdk"
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 
 	"github.com/davidebianchi/go-jsonclient"
 )
@@ -42,9 +42,9 @@ func NewError(writer io.Writer, err error) IError {
 			Message: httpErrorMessage(httpErr),
 			writer:  writer,
 		}
-	case errors.Is(err, sdk.ErrCreateClient):
+	case errors.Is(err, sdkErrors.ErrCreateClient):
 		fallthrough
-	case errors.Is(err, sdk.ErrGeneric):
+	case errors.Is(err, sdkErrors.ErrGeneric):
 		fallthrough
 	default:
 		return &writeError{

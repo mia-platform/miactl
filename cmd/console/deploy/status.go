@@ -7,6 +7,7 @@ import (
 
 	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/sdk"
+	"github.com/mia-platform/miactl/sdk/deploy"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -72,9 +73,9 @@ func NewStatusCmd() *cobra.Command {
 			visualizeStatusResponse(f, projectId, result)
 
 			switch result.Status {
-			case sdk.Failed:
+			case deploy.Failed:
 				return fmt.Errorf("Deploy pipeline failed")
-			case sdk.Canceled:
+			case deploy.Canceled:
 				return fmt.Errorf("Deploy pipeline canceled")
 			default:
 				return nil
@@ -87,7 +88,7 @@ func NewStatusCmd() *cobra.Command {
 	return cmd
 }
 
-func visualizeStatusResponse(f *factory.Factory, projectId string, rs sdk.StatusResponse) {
+func visualizeStatusResponse(f *factory.Factory, projectId string, rs deploy.StatusResponse) {
 	headers := []string{"Project Id", "Deploy Id", "Status"}
 	table := f.Renderer.Table(headers)
 	table.Append([]string{projectId, strconv.FormatInt(int64(rs.PipelineId), 10), rs.Status})

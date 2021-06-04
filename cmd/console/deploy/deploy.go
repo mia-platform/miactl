@@ -6,6 +6,7 @@ import (
 
 	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/sdk"
+	"github.com/mia-platform/miactl/sdk/deploy"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,7 +20,7 @@ func NewDeployCmd() *cobra.Command {
 		skipCertificate bool
 	)
 
-	cfg := sdk.DeployConfig{}
+	cfg := deploy.DeployConfig{}
 
 	cmd := &cobra.Command{
 		Use:   "deploy",
@@ -81,7 +82,7 @@ func NewDeployCmd() *cobra.Command {
 	return cmd
 }
 
-func visualizeResponse(f *factory.Factory, projectId string, rs sdk.DeployResponse) {
+func visualizeResponse(f *factory.Factory, projectId string, rs deploy.DeployResponse) {
 	headers := []string{"Project Id", "Deploy Id", "View Pipeline"}
 	table := f.Renderer.Table(headers)
 	table.Append([]string{projectId, strconv.FormatInt(int64(rs.Id), 10), rs.Url})

@@ -13,7 +13,7 @@ import (
 	utils "github.com/mia-platform/miactl/cmd/internal"
 	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/renderer"
-	"github.com/mia-platform/miactl/sdk"
+	"github.com/mia-platform/miactl/sdk/deploy"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -33,11 +33,11 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
 
-		expectedStatuses := []sdk.PipelineStatus{
-			sdk.Created,
-			sdk.Pending,
-			sdk.Running,
-			sdk.Success,
+		expectedStatuses := []deploy.PipelineStatus{
+			deploy.Created,
+			deploy.Pending,
+			deploy.Running,
+			deploy.Success,
 		}
 
 		callsCount := 0
@@ -82,7 +82,7 @@ func TestNewStatusCmd(t *testing.T) {
 	t.Run("get pipeline status with success - pipeline error", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
-		expectedStatus := sdk.Failed
+		expectedStatus := deploy.Failed
 		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
 		callsCount := 0
 
@@ -121,7 +121,7 @@ func TestNewStatusCmd(t *testing.T) {
 	t.Run("get pipeline status with success - set environment flag", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
-		expectedStatus := sdk.Pending
+		expectedStatus := deploy.Pending
 		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
 		callsCount := 0
 

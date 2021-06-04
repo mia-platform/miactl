@@ -1,4 +1,4 @@
-package sdk
+package deploy
 
 import (
 	"errors"
@@ -6,7 +6,18 @@ import (
 	"net/http"
 
 	"github.com/davidebianchi/go-jsonclient"
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 )
+
+// IProjects expose the projects client interface
+type IProjects interface {
+	Get() (Projects, error)
+}
+
+// DeployHistoryQuery wraps query filters for project deployments.
+type DeployHistoryQuery struct {
+	ProjectID string
+}
 
 // Cluster object, different for environment
 type Cluster struct {
@@ -58,7 +69,7 @@ func (p ProjectsClient) Get() (Projects, error) {
 		if errors.As(err, &httpErr) {
 			return nil, httpErr
 		}
-		return nil, fmt.Errorf("%w: %s", ErrGeneric, err)
+		return nil, fmt.Errorf("%w: %s", sdkErrors.ErrGeneric, err)
 	}
 
 	return projects, nil
@@ -76,7 +87,7 @@ func getProjectByID(client *jsonclient.Client, projectID string) (*Project, erro
 		if errors.As(err, &httpErr) {
 			return nil, httpErr
 		}
-		return nil, fmt.Errorf("%w: %s", ErrGeneric, err)
+		return nil, fmt.Errorf("%w: %s", sdkErrors.ErrGeneric, err)
 	}
 
 	var project *Project
@@ -88,7 +99,7 @@ func getProjectByID(client *jsonclient.Client, projectID string) (*Project, erro
 	}
 
 	if project == nil {
-		return nil, fmt.Errorf("%w: %s", ErrProjectNotFound, projectID)
+		return nil, fmt.Errorf("%w: %s", sdkErrors.ErrProjectNotFound, projectID)
 	}
 	return project, nil
 }

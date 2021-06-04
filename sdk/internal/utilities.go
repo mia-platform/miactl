@@ -66,7 +66,7 @@ func CreateMultiTestResponseServer(t *testing.T, responses Responses) *httptest.
 func ReadTestData(t *testing.T, fileName string) string {
 	t.Helper()
 
-	fileContent, err := ioutil.ReadFile(fmt.Sprintf("./testdata/%s", fileName))
+	fileContent, err := ioutil.ReadFile(fmt.Sprintf("../testdata/%s", fileName))
 	require.NoError(t, err)
 	return string(fileContent)
 }

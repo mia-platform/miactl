@@ -1,4 +1,4 @@
-package sdk
+package deploy
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 	utils "github.com/mia-platform/miactl/sdk/internal"
 	"github.com/stretchr/testify/require"
 )
@@ -86,7 +87,7 @@ func TestProjectsGet(t *testing.T) {
 		projects, err := client.Get()
 		require.Nil(t, projects)
 		require.EqualError(t, err, fmt.Sprintf("GET %s/api/backend/projects/: 401 - %s", s.URL, responseBody))
-		require.True(t, errors.Is(err, ErrHTTP))
+		require.True(t, errors.Is(err, sdkErrors.ErrHTTP))
 	})
 
 	t.Run("throws if response body is not as expected", func(t *testing.T) {
@@ -97,7 +98,7 @@ func TestProjectsGet(t *testing.T) {
 		projects, err := client.Get()
 		require.Nil(t, projects)
 		require.Error(t, err)
-		require.True(t, errors.Is(err, ErrGeneric))
+		require.True(t, errors.Is(err, sdkErrors.ErrGeneric))
 	})
 }
 
@@ -122,7 +123,7 @@ func TestGetProjectByID(t *testing.T) {
 		project, err := getProjectByID(client, "project1")
 		require.Nil(t, project)
 		require.EqualError(t, err, fmt.Sprintf("GET %s/api/backend/projects/: 401 - %s", s.URL, responseBody))
-		require.True(t, errors.Is(err, ErrHTTP))
+		require.True(t, errors.Is(err, sdkErrors.ErrHTTP))
 	})
 
 	t.Run("Generic error occurs during projectId fetch (malformed data, _id should be a string)", func(t *testing.T) {
@@ -133,8 +134,8 @@ func TestGetProjectByID(t *testing.T) {
 		client := utils.CreateTestClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project1")
 		require.Nil(t, project)
-		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal number into Go struct field Project._id of type string", ErrGeneric))
-		require.True(t, errors.Is(err, ErrGeneric))
+		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal number into Go struct field Project._id of type string", sdkErrors.ErrGeneric))
+		require.True(t, errors.Is(err, sdkErrors.ErrGeneric))
 	})
 
 	t.Run("Error projectID not found", func(t *testing.T) {
@@ -144,8 +145,8 @@ func TestGetProjectByID(t *testing.T) {
 		client := utils.CreateTestClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project1")
 		require.Nil(t, project)
-		require.EqualError(t, err, fmt.Sprintf("%s: project1", ErrProjectNotFound))
-		require.True(t, errors.Is(err, ErrProjectNotFound))
+		require.EqualError(t, err, fmt.Sprintf("%s: project1", sdkErrors.ErrProjectNotFound))
+		require.True(t, errors.Is(err, sdkErrors.ErrProjectNotFound))
 	})
 
 	t.Run("Returns desired project", func(t *testing.T) {

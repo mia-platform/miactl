@@ -1,4 +1,4 @@
-package sdk
+package deploy
 
 import (
 	"encoding/json"
@@ -12,7 +12,9 @@ import (
 	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 	utils "github.com/mia-platform/miactl/sdk/internal"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -45,8 +47,8 @@ func TestDeployGetHistory(t *testing.T) {
 
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-NaN"})
 		require.Nil(t, history)
-		require.EqualError(t, err, fmt.Sprintf("%s: project-NaN", ErrProjectNotFound))
-		require.True(t, errors.Is(err, ErrProjectNotFound))
+		require.EqualError(t, err, fmt.Sprintf("%s: project-NaN", sdkErrors.ErrProjectNotFound))
+		require.True(t, errors.Is(err, sdkErrors.ErrProjectNotFound))
 	})
 
 	t.Run("HTTP error occurs when downloading deploy history", func(t *testing.T) {
@@ -80,8 +82,8 @@ func TestDeployGetHistory(t *testing.T) {
 		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
 		require.Error(t, err)
-		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal string into Go struct field DeployItem.id of type int", ErrGeneric))
-		require.True(t, errors.Is(err, ErrGeneric))
+		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal string into Go struct field DeployItem.id of type int", sdkErrors.ErrGeneric))
+		require.True(t, errors.Is(err, sdkErrors.ErrGeneric))
 	})
 
 	t.Run("History download goes fine", func(t *testing.T) {

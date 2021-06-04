@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -18,7 +19,7 @@ func TestNew(t *testing.T) {
 		}
 		for _, test := range tests {
 			client, err := New(test.option)
-			require.EqualError(t, err, fmt.Sprintf("%s: client options are not correct", ErrCreateClient))
+			require.EqualError(t, err, fmt.Sprintf("%s: client options are not correct", sdkErrors.ErrCreateClient))
 			require.Nil(t, client)
 		}
 	})

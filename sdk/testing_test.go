@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/mia-platform/miactl/sdk/deploy"
 	"github.com/stretchr/testify/require"
 )
 
@@ -68,14 +69,14 @@ func TestWrapperMockMiaClient(t *testing.T) {
 	t.Run("set projects on mock project client and returns it with Get method", func(t *testing.T) {
 		prjClient := setupClient(t)
 
-		projects := Projects{
-			Project{
+		projects := deploy.Projects{
+			deploy.Project{
 				ID:                   "id-prova",
 				Name:                 "Project 1",
 				ConfigurationGitPath: "/git/path",
-				Environments: []Environment{
+				Environments: []deploy.Environment{
 					{
-						Cluster: Cluster{
+						Cluster: deploy.Cluster{
 							Hostname: "cluster-hostname",
 						},
 						DisplayName: "development",
