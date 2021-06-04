@@ -18,6 +18,7 @@ func NewLoginCmd() *cobra.Command {
 		password        string
 		providerID      string
 		skipCertificate bool
+		certificatePath string
 	)
 
 	cmd := &cobra.Command{
@@ -28,15 +29,17 @@ func NewLoginCmd() *cobra.Command {
 				return errors.New("API base URL not specified nor configured")
 			}
 
-			// set the flag only in case it is defined
+			// set these flag only in case they are defined
 			skipCertificate, _ = cmd.Flags().GetBool("insecure")
+			certificatePath = viper.GetString("certificate")
 
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := factory.FromContext(cmd.Context(), sdk.Options{
-				APIBaseURL:      baseURL,
-				SkipCertificate: skipCertificate,
+				APIBaseURL:            baseURL,
+				SkipCertificate:       skipCertificate,
+				AdditionalCertificate: certificatePath,
 			})
 			if err != nil {
 				return err

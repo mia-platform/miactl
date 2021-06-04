@@ -20,6 +20,7 @@ func NewStatusCmd() *cobra.Command {
 		projectId       string
 		environment     string
 		skipCertificate bool
+		certificatePath string
 	)
 
 	cmd := &cobra.Command{
@@ -43,16 +44,18 @@ func NewStatusCmd() *cobra.Command {
 				return cmd.MarkFlagRequired("project")
 			}
 
-			// set the flag only in case it is defined
+			// set these flag only in case they are defined
 			skipCertificate, _ = cmd.Flags().GetBool("insecure")
+			certificatePath = viper.GetString("certificate")
 
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := factory.FromContext(cmd.Context(), sdk.Options{
-				APIBaseURL:      baseURL,
-				APIToken:        apiToken,
-				SkipCertificate: skipCertificate,
+				APIBaseURL:            baseURL,
+				APIToken:              apiToken,
+				SkipCertificate:       skipCertificate,
+				AdditionalCertificate: certificatePath,
 			})
 			if err != nil {
 				return err
