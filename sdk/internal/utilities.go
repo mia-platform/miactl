@@ -1,4 +1,4 @@
-package sdk
+package internal
 
 import (
 	"fmt"
@@ -11,16 +11,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type assertionFn func(t *testing.T, req *http.Request)
+type AssertionFn func(t *testing.T, req *http.Request)
 
-type response struct {
-	assertions assertionFn
-	body       string
-	status     int
+type Response struct {
+	Assertions AssertionFn
+	Body       string
+	Status     int
 }
-type responses []response
+type Responses []Response
 
-func testCreateClient(t *testing.T, url string) *jsonclient.Client {
+func CreateTestClient(t *testing.T, url string) *jsonclient.Client {
 	t.Helper()
 	client, err := jsonclient.New(jsonclient.Options{
 		BaseURL: url,
@@ -32,15 +32,15 @@ func testCreateClient(t *testing.T, url string) *jsonclient.Client {
 	return client
 }
 
-func testCreateResponseServer(t *testing.T, assertions assertionFn, responseBody string, statusCode int) *httptest.Server {
+func CreateTestResponseServer(t *testing.T, assertions AssertionFn, responseBody string, statusCode int) *httptest.Server {
 	t.Helper()
-	responses := []response{
-		{assertions: assertions, body: responseBody, status: statusCode},
+	responses := []Response{
+		{Assertions: assertions, Body: responseBody, Status: statusCode},
 	}
-	return testCreateMultiResponseServer(t, responses)
+	return CreateMultiTestResponseServer(t, responses)
 }
 
-func testCreateMultiResponseServer(t *testing.T, responses responses) *httptest.Server {
+func CreateMultiTestResponseServer(t *testing.T, responses Responses) *httptest.Server {
 	t.Helper()
 	var usage int
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -50,20 +50,20 @@ func testCreateMultiResponseServer(t *testing.T, responses responses) *httptest.
 
 		response := responses[usage]
 		usage++
-		if response.assertions != nil {
-			response.assertions(t, req)
+		if response.Assertions != nil {
+			response.Assertions(t, req)
 		}
 
-		w.WriteHeader(response.status)
+		w.WriteHeader(response.Status)
 		var responseBytes []byte
-		if response.body != "" {
-			responseBytes = []byte(response.body)
+		if response.Body != "" {
+			responseBytes = []byte(response.Body)
 		}
 		w.Write(responseBytes)
 	}))
 }
 
-func readTestData(t *testing.T, fileName string) string {
+func ReadTestData(t *testing.T, fileName string) string {
 	t.Helper()
 
 	fileContent, err := ioutil.ReadFile(fmt.Sprintf("./testdata/%s", fileName))

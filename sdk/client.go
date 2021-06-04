@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/davidebianchi/go-jsonclient"
+	"github.com/mia-platform/miactl/sdk/auth"
 )
 
 // Options struct define options to create the sdk client
@@ -40,6 +41,7 @@ type IDeploy interface {
 type MiaClient struct {
 	Projects IProjects
 	Deploy   IDeploy
+	Auth     auth.IAuth
 }
 
 var (
@@ -59,14 +61,14 @@ var (
 func New(opts Options) (*MiaClient, error) {
 	headers := jsonclient.Headers{}
 
-	if opts.APIBaseURL == "" || (opts.APIToken == "" && (opts.APIKey == "" || opts.APICookie == "")) {
+	if opts.APIBaseURL == "" {
 		return nil, fmt.Errorf("%w: client options are not correct", ErrCreateClient)
 	}
 
 	// select auth method depending on given parameters
 	if opts.APIToken != "" {
 		headers["Authorization"] = fmt.Sprintf("Bearer %s", opts.APIToken)
-	} else {
+	} else if opts.APIKey != "" && opts.APICookie != "" {
 		headers["cookie"] = opts.APICookie
 		headers["client-key"] = opts.APIKey
 	}
@@ -76,10 +78,13 @@ func New(opts Options) (*MiaClient, error) {
 		Headers: headers,
 	}
 
-	if opts.SkipCertificate {
-		customTransport := http.DefaultTransport.(*http.Transport).Clone()
-		customTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		clientOptions.HTTPClient = &http.Client{Transport: customTransport}
+	customTransport := http.DefaultTransport.(*http.Transport).Clone()
+	customTransport.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: opts.SkipCertificate,
+	}
+	clientOptions.HTTPClient = &http.Client{
+		// TODO: add timeout setting
+		Transport: customTransport,
 	}
 
 	JSONClient, err := jsonclient.New(clientOptions)
@@ -90,5 +95,6 @@ func New(opts Options) (*MiaClient, error) {
 	return &MiaClient{
 		Projects: &ProjectsClient{JSONClient: JSONClient},
 		Deploy:   &DeployClient{JSONClient: JSONClient},
+		Auth:     &auth.AuthClient{JSONClient: JSONClient},
 	}, nil
 }

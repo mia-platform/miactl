@@ -13,9 +13,10 @@ import (
 
 func NewDeployCmd() *cobra.Command {
 	var (
-		baseURL   string
-		apiToken  string
-		projectId string
+		baseURL         string
+		apiToken        string
+		projectId       string
+		skipCertificate bool
 	)
 
 	cfg := sdk.DeployConfig{}
@@ -39,12 +40,16 @@ func NewDeployCmd() *cobra.Command {
 				return cmd.MarkFlagRequired("project")
 			}
 
+			// set the flag only in case it is defined
+			skipCertificate, _ = cmd.Flags().GetBool("insecure")
+
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := factory.FromContext(cmd.Context(), sdk.Options{
-				APIBaseURL: baseURL,
-				APIToken:   apiToken,
+				APIBaseURL:      baseURL,
+				APIToken:        apiToken,
+				SkipCertificate: skipCertificate,
 			})
 			if err != nil {
 				return err

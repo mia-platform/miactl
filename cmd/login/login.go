@@ -1,62 +1,48 @@
 package login
 
 import (
-	"crypto/tls"
 	"errors"
 	"fmt"
-	"net/http"
 
-	"github.com/davidebianchi/go-jsonclient"
+	"github.com/mia-platform/miactl/factory"
+	"github.com/mia-platform/miactl/sdk"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-const miactlAppID = "miactl"
-
-type loginConfig struct {
-	BaseURL         string
-	Username        string
-	Password        string
-	ProviderID      string
-	SkipCertificate bool
-}
-
-type tokenRequest struct {
-	GrantType  string `json:"grant_type"`
-	Username   string `json:"username"`
-	Password   string `json:"password"`
-	AppID      string `json:"appId"`
-	ProviderID string `json:"providerId"`
-}
-
-type tokenResponse struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-	ExpireAt     int64  `json:"expiresAt"`
-}
-
 // NewLoginCmd create a new Login command
 func NewLoginCmd() *cobra.Command {
-	var cfg loginConfig
+	var (
+		baseURL         string
+		username        string
+		password        string
+		providerID      string
+		skipCertificate bool
+	)
 
 	cmd := &cobra.Command{
 		Use:   "login",
 		Short: "authenticate with console",
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			cfg.BaseURL = viper.GetString("apibaseurl")
-			if cfg.BaseURL == "" {
+			if baseURL = viper.GetString("apibaseurl"); baseURL == "" {
 				return errors.New("API base URL not specified nor configured")
 			}
 
 			// set the flag only in case it is defined
-			if skipCertificate, err := cmd.Flags().GetBool("insecure"); err == nil {
-				cfg.SkipCertificate = skipCertificate
-			}
+			skipCertificate, _ = cmd.Flags().GetBool("insecure")
 
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			accessToken, err := login(cfg)
+			f, err := factory.FromContext(cmd.Context(), sdk.Options{
+				APIBaseURL:      baseURL,
+				SkipCertificate: skipCertificate,
+			})
+			if err != nil {
+				return err
+			}
+
+			accessToken, err := f.MiaClient.Auth.Login(username, password, providerID)
 			if err != nil {
 				return err
 			}
@@ -73,50 +59,13 @@ func NewLoginCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&cfg.Username, "username", "", "your user identifier")
-	cmd.Flags().StringVar(&cfg.Password, "password", "", "your secret password")
-	cmd.Flags().StringVar(&cfg.ProviderID, "provider-id", "", "the authentication provider identifier")
+	cmd.Flags().StringVar(&username, "username", "", "your user identifier")
+	cmd.Flags().StringVar(&password, "password", "", "your secret password")
+	cmd.Flags().StringVar(&providerID, "provider-id", "", "the authentication provider identifier")
 
 	cmd.MarkFlagRequired("username")
 	cmd.MarkFlagRequired("password")
 	cmd.MarkFlagRequired("provider-id")
 
 	return cmd
-}
-
-func login(cfg loginConfig) (string, error) {
-	clientOptions := jsonclient.Options{
-		BaseURL: cfg.BaseURL,
-	}
-	if cfg.SkipCertificate {
-		customTransport := http.DefaultTransport.(*http.Transport).Clone()
-		customTransport.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
-		clientOptions.HTTPClient = &http.Client{Transport: customTransport}
-	}
-
-	JSONClient, err := jsonclient.New(clientOptions)
-	if err != nil {
-		return "", fmt.Errorf("error creating JSON client: %w", err)
-	}
-
-	data := tokenRequest{
-		GrantType:  "password",
-		Username:   cfg.Username,
-		Password:   cfg.Password,
-		AppID:      miactlAppID,
-		ProviderID: cfg.ProviderID,
-	}
-	loginReq, err := JSONClient.NewRequest(http.MethodPost, "/api/oauth/token", data)
-	if err != nil {
-		return "", fmt.Errorf("error creating login request: %w", err)
-	}
-	var loginResponse tokenResponse
-
-	response, err := JSONClient.Do(loginReq, &loginResponse)
-	if err != nil {
-		return "", fmt.Errorf("auth error: %w", err)
-	}
-	defer response.Body.Close()
-
-	return loginResponse.AccessToken, nil
 }

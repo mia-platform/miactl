@@ -101,13 +101,10 @@ func TestFromContext(t *testing.T) {
 		}
 
 		f, err := FromContext(ctx, opts)
-		require.NoError(t, err)
-
-		miaClient, err := sdk.New(opts)
 
 		require.NoError(t, err)
 		require.Equal(t, renderer.New(&bytes.Buffer{}), f.Renderer)
-		require.Equal(t, miaClient, f.MiaClient)
+		require.NotNil(t, f.MiaClient)
 		require.Equal(t, reflect.ValueOf(sdk.New).Pointer(), reflect.ValueOf(f.miaClientCreator).Pointer())
 	})
 }

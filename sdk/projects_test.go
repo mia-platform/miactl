@@ -7,11 +7,12 @@ import (
 	"strings"
 	"testing"
 
+	utils "github.com/mia-platform/miactl/sdk/internal"
 	"github.com/stretchr/testify/require"
 )
 
 func TestProjectsGet(t *testing.T) {
-	projectsListResponseBody := readTestData(t, "projects.json")
+	projectsListResponseBody := utils.ReadTestData(t, "projects.json")
 	requestAssertions := func(t *testing.T, req *http.Request) {
 		t.Helper()
 
@@ -69,7 +70,7 @@ func TestProjectsGet(t *testing.T) {
 			},
 		}
 
-		s := testCreateResponseServer(t, requestAssertions, projectsListResponseBody, 200)
+		s := utils.CreateTestResponseServer(t, requestAssertions, projectsListResponseBody, 200)
 		client := testCreateProjectClient(t, fmt.Sprintf("%s/", s.URL))
 
 		projects, err := client.Get()
@@ -79,7 +80,7 @@ func TestProjectsGet(t *testing.T) {
 
 	t.Run("throws when server respond with 401", func(t *testing.T) {
 		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
-		s := testCreateResponseServer(t, requestAssertions, responseBody, 401)
+		s := utils.CreateTestResponseServer(t, requestAssertions, responseBody, 401)
 		client := testCreateProjectClient(t, fmt.Sprintf("%s/", s.URL))
 
 		projects, err := client.Get()
@@ -90,7 +91,7 @@ func TestProjectsGet(t *testing.T) {
 
 	t.Run("throws if response body is not as expected", func(t *testing.T) {
 		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
-		s := testCreateResponseServer(t, requestAssertions, responseBody, 200)
+		s := utils.CreateTestResponseServer(t, requestAssertions, responseBody, 200)
 		client := testCreateProjectClient(t, fmt.Sprintf("%s/", s.URL))
 
 		projects, err := client.Get()
@@ -101,7 +102,7 @@ func TestProjectsGet(t *testing.T) {
 }
 
 func TestGetProjectByID(t *testing.T) {
-	projectsListResponseBody := readTestData(t, "projects.json")
+	projectsListResponseBody := utils.ReadTestData(t, "projects.json")
 	projectRequestAssertions := func(t *testing.T, req *http.Request) {
 		t.Helper()
 
@@ -114,10 +115,10 @@ func TestGetProjectByID(t *testing.T) {
 
 	t.Run("Unauthorized error occurs during projectId fetch", func(t *testing.T) {
 		responseBody := `{"statusCode":401,"error":"Unauthorized","message":"Unauthorized"}`
-		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 401)
+		s := utils.CreateTestResponseServer(t, projectRequestAssertions, responseBody, 401)
 		defer s.Close()
 
-		client := testCreateClient(t, fmt.Sprintf("%s/", s.URL))
+		client := utils.CreateTestClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project1")
 		require.Nil(t, project)
 		require.EqualError(t, err, fmt.Sprintf("GET %s/api/backend/projects/: 401 - %s", s.URL, responseBody))
@@ -125,11 +126,11 @@ func TestGetProjectByID(t *testing.T) {
 	})
 
 	t.Run("Generic error occurs during projectId fetch (malformed data, _id should be a string)", func(t *testing.T) {
-		responseBody := readTestData(t, "projects-invalid-payload.json")
-		s := testCreateResponseServer(t, projectRequestAssertions, responseBody, 200)
+		responseBody := utils.ReadTestData(t, "projects-invalid-payload.json")
+		s := utils.CreateTestResponseServer(t, projectRequestAssertions, responseBody, 200)
 		defer s.Close()
 
-		client := testCreateClient(t, fmt.Sprintf("%s/", s.URL))
+		client := utils.CreateTestClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project1")
 		require.Nil(t, project)
 		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal number into Go struct field Project._id of type string", ErrGeneric))
@@ -137,10 +138,10 @@ func TestGetProjectByID(t *testing.T) {
 	})
 
 	t.Run("Error projectID not found", func(t *testing.T) {
-		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
+		s := utils.CreateTestResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
 
-		client := testCreateClient(t, fmt.Sprintf("%s/", s.URL))
+		client := utils.CreateTestClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project1")
 		require.Nil(t, project)
 		require.EqualError(t, err, fmt.Sprintf("%s: project1", ErrProjectNotFound))
@@ -148,10 +149,10 @@ func TestGetProjectByID(t *testing.T) {
 	})
 
 	t.Run("Returns desired project", func(t *testing.T) {
-		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
+		s := utils.CreateTestResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
 
-		client := testCreateClient(t, fmt.Sprintf("%s/", s.URL))
+		client := utils.CreateTestClient(t, fmt.Sprintf("%s/", s.URL))
 		project, err := getProjectByID(client, "project-2")
 		require.NoError(t, err)
 		require.Equal(t, &Project{
@@ -182,6 +183,6 @@ func TestGetProjectByID(t *testing.T) {
 func testCreateProjectClient(t *testing.T, url string) IProjects {
 	t.Helper()
 	return ProjectsClient{
-		JSONClient: testCreateClient(t, url),
+		JSONClient: utils.CreateTestClient(t, url),
 	}
 }

@@ -1,8 +1,10 @@
 package sdk
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strings"
@@ -10,12 +12,12 @@ import (
 	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
+	utils "github.com/mia-platform/miactl/sdk/internal"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/h2non/gock.v1"
 )
 
 func TestDeployGetHistory(t *testing.T) {
-	projectsListResponseBody := readTestData(t, "projects.json")
+	projectsListResponseBody := utils.ReadTestData(t, "projects.json")
 	projectRequestAssertions := func(t *testing.T, req *http.Request) {
 		t.Helper()
 
@@ -37,7 +39,7 @@ func TestDeployGetHistory(t *testing.T) {
 	}
 
 	t.Run("Error occurs when projectId does not exist in download list", func(t *testing.T) {
-		s := testCreateResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
+		s := utils.CreateTestResponseServer(t, projectRequestAssertions, projectsListResponseBody, 200)
 		defer s.Close()
 		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
 
@@ -49,11 +51,11 @@ func TestDeployGetHistory(t *testing.T) {
 
 	t.Run("HTTP error occurs when downloading deploy history", func(t *testing.T) {
 		historyResponseBody := `{"statusCode":500,"error":"InternalServerError","message":"some server error"}`
-		responses := []response{
-			{assertions: projectRequestAssertions, body: projectsListResponseBody, status: 200},
-			{assertions: historyRequestAssertions, body: historyResponseBody, status: 500},
+		responses := utils.Responses{
+			{Assertions: projectRequestAssertions, Body: projectsListResponseBody, Status: 200},
+			{Assertions: historyRequestAssertions, Body: historyResponseBody, Status: 500},
 		}
-		s := testCreateMultiResponseServer(t, responses)
+		s := utils.CreateMultiTestResponseServer(t, responses)
 		defer s.Close()
 
 		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
@@ -65,12 +67,12 @@ func TestDeployGetHistory(t *testing.T) {
 	})
 
 	t.Run("Error on malformed history items (invalid DeployItem.ID)", func(t *testing.T) {
-		historyResponseBody := readTestData(t, "deploy-history-invalid-payload.json")
-		responses := []response{
-			{assertions: projectRequestAssertions, body: projectsListResponseBody, status: 200},
-			{assertions: historyRequestAssertions, body: historyResponseBody, status: 200},
+		historyResponseBody := utils.ReadTestData(t, "deploy-history-invalid-payload.json")
+		responses := utils.Responses{
+			{Assertions: projectRequestAssertions, Body: projectsListResponseBody, Status: 200},
+			{Assertions: historyRequestAssertions, Body: historyResponseBody, Status: 200},
 		}
-		s := testCreateMultiResponseServer(t, responses)
+		s := utils.CreateMultiTestResponseServer(t, responses)
 		defer s.Close()
 
 		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
@@ -83,12 +85,12 @@ func TestDeployGetHistory(t *testing.T) {
 	})
 
 	t.Run("History download goes fine", func(t *testing.T) {
-		historyResponseBody := readTestData(t, "deploy-history.json")
-		responses := []response{
-			{assertions: projectRequestAssertions, body: projectsListResponseBody, status: 200},
-			{assertions: historyRequestAssertions, body: historyResponseBody, status: 200},
+		historyResponseBody := utils.ReadTestData(t, "deploy-history.json")
+		responses := utils.Responses{
+			{Assertions: projectRequestAssertions, Body: projectsListResponseBody, Status: 200},
+			{Assertions: historyRequestAssertions, Body: historyResponseBody, Status: 200},
 		}
-		s := testCreateMultiResponseServer(t, responses)
+		s := utils.CreateMultiTestResponseServer(t, responses)
 		defer s.Close()
 
 		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
@@ -183,34 +185,40 @@ func TestTrigger(t *testing.T) {
 		apiToken    = "YWNjZXNzVG9rZW4="
 	)
 	const expectedPipelineId = 458467
+	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
 	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
 	triggerEndpoint := fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectId)
 
-	client := testCreateDeployClientToken(t, baseURL, apiToken)
-
 	t.Run("success - default behaviour", func(t *testing.T) {
-		defer gock.Off()
-
 		expectedResponse := DeployResponse{
 			Id:  expectedPipelineId,
 			Url: expectedPipelineURL,
 		}
+		triggerAssertions := func(t *testing.T, req *http.Request) {
+			t.Helper()
 
-		gock.New(baseURL).
-			Post(triggerEndpoint).
-			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
-			MatchType("json").
-			JSON(map[string]interface{}{
-				"environment":             environment,
-				"revision":                revision,
-				"deployType":              SmartDeploy,
-				"forceDeployWhenNoSemver": false,
-			}).
-			Reply(200).
-			JSON(map[string]interface{}{
-				"id":  expectedPipelineId,
-				"url": expectedPipelineURL,
-			})
+			expectedRequestBody := DeployRequest{
+				Environment:             environment,
+				Revision:                revision,
+				DeployType:              SmartDeploy,
+				ForceDeployWhenNoSemver: false,
+			}
+
+			require.True(t, strings.HasSuffix(req.URL.Path, triggerEndpoint))
+			require.Equal(t, http.MethodPost, req.Method)
+			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
+
+			requestBody := DeployRequest{}
+			bodyRequest, _ := io.ReadAll(req.Body)
+			require.NoError(t, json.Unmarshal(bodyRequest, &requestBody))
+			require.Equal(t, expectedRequestBody, requestBody)
+		}
+		// triggerResponse, err := json.Marshal(&expectedResponse)
+		triggerResponse := fmt.Sprintf(`{"id":%d,"url":"%s"}`, expectedPipelineId, expectedPipelineURL)
+
+		s := utils.CreateTestResponseServer(t, triggerAssertions, triggerResponse, http.StatusOK)
+		defer s.Close()
+		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
 
 		cfg := DeployConfig{
 			Environment: environment,
@@ -220,35 +228,36 @@ func TestTrigger(t *testing.T) {
 		deployResponse, err := client.Trigger(projectId, cfg)
 		require.Empty(t, err)
 		require.Equal(t, expectedResponse, deployResponse)
-
-		require.True(t, gock.IsDone())
 	})
 
 	t.Run("success - with deploy all strategy", func(t *testing.T) {
-		defer gock.Off()
-
-		const expectedPipelineId = 458467
-		expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
 		expectedResponse := DeployResponse{
 			Id:  expectedPipelineId,
 			Url: expectedPipelineURL,
 		}
+		triggerAssertions := func(t *testing.T, req *http.Request) {
+			t.Helper()
 
-		gock.New(baseURL).
-			Post(triggerEndpoint).
-			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
-			MatchType("json").
-			JSON(map[string]interface{}{
-				"environment":             environment,
-				"revision":                revision,
-				"deployType":              DeployAll,
-				"forceDeployWhenNoSemver": true,
-			}).
-			Reply(200).
-			JSON(map[string]interface{}{
-				"id":  expectedPipelineId,
-				"url": expectedPipelineURL,
-			})
+			expectedRequestBody := DeployRequest{
+				Environment:             environment,
+				Revision:                revision,
+				DeployType:              DeployAll,
+				ForceDeployWhenNoSemver: true,
+			}
+
+			require.True(t, strings.HasSuffix(req.URL.Path, triggerEndpoint))
+			require.Equal(t, http.MethodPost, req.Method)
+			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
+
+			requestBody := DeployRequest{}
+			json.NewDecoder(req.Body).Decode(&requestBody)
+			require.Equal(t, expectedRequestBody, requestBody)
+		}
+		triggerResponse := fmt.Sprintf(`{"id":%d,"url":"%s"}`, expectedPipelineId, expectedPipelineURL)
+
+		s := utils.CreateTestResponseServer(t, triggerAssertions, triggerResponse, http.StatusOK)
+		defer s.Close()
+		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
 
 		cfg := DeployConfig{
 			Environment: environment,
@@ -259,18 +268,32 @@ func TestTrigger(t *testing.T) {
 		deployResponse, err := client.Trigger(projectId, cfg)
 		require.Empty(t, err)
 		require.Equal(t, expectedResponse, deployResponse)
-
-		require.True(t, gock.IsDone())
 	})
 
 	t.Run("failure", func(t *testing.T) {
-		defer gock.Off()
+		triggerAssertions := func(t *testing.T, req *http.Request) {
+			t.Helper()
 
-		gock.New(baseURL).
-			Post(triggerEndpoint).
-			MatchHeader("Authorization", fmt.Sprintf("Bearer %s", apiToken)).
-			Reply(400).
-			JSON(map[string]interface{}{})
+			expectedRequestBody := DeployRequest{
+				Environment:             environment,
+				Revision:                revision,
+				DeployType:              SmartDeploy,
+				ForceDeployWhenNoSemver: false,
+			}
+
+			require.True(t, strings.HasSuffix(req.URL.Path, triggerEndpoint))
+			require.Equal(t, http.MethodPost, req.Method)
+			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
+
+			requestBody := DeployRequest{}
+			json.NewDecoder(req.Body).Decode(&requestBody)
+			require.Equal(t, expectedRequestBody, requestBody)
+		}
+		triggerResponse := "{}"
+
+		s := utils.CreateTestResponseServer(t, triggerAssertions, triggerResponse, http.StatusBadRequest)
+		defer s.Close()
+		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
 
 		cfg := DeployConfig{
 			Environment: environment,
@@ -278,16 +301,14 @@ func TestTrigger(t *testing.T) {
 		}
 
 		deployResponse, err := client.Trigger(projectId, cfg)
-		base, _ := url.Parse(baseURL)
+		base, _ := url.Parse(s.URL)
 		path, _ := url.Parse(triggerEndpoint)
 		require.EqualError(
 			t,
 			err,
-			fmt.Sprintf("deploy error: POST %s: 400 - {}\n", base.ResolveReference(path)),
+			fmt.Sprintf("deploy error: POST %s: 400 - {}", base.ResolveReference(path)),
 		)
 		require.Empty(t, deployResponse)
-
-		require.True(t, gock.IsDone())
 	})
 }
 func TestGetDeployStatus(t *testing.T) {
@@ -298,51 +319,56 @@ func TestGetDeployStatus(t *testing.T) {
 		apiToken    = "YWNjZXNzVG9rZW4="
 		environment = "preprod"
 	)
-
-	client := testCreateDeployClientToken(t, baseURL, apiToken)
+	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
 
 	t.Run("get status", func(t *testing.T) {
-		defer gock.Off()
-
 		expectedResponse := StatusResponse{
 			PipelineId: pipelineId,
 			Status:     Success,
 		}
-
 		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-		gock.New(baseURL).
-			Get(statusEndpoint).
-			MatchParam("environment", environment).
-			Reply(200).
-			JSON(map[string]interface{}{
-				"id":     pipelineId,
-				"status": Success,
-			})
+
+		statusAssertions := func(t *testing.T, req *http.Request) {
+			t.Helper()
+
+			require.True(t, strings.HasSuffix(req.URL.Path, statusEndpoint))
+			require.Equal(t, http.MethodGet, req.Method)
+			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
+			require.Equal(t, environment, req.FormValue("environment"))
+		}
+		statusResponse := fmt.Sprintf(`{"id":%d,"status":"%s"}`, pipelineId, Success)
+
+		s := utils.CreateTestResponseServer(t, statusAssertions, statusResponse, http.StatusOK)
+		defer s.Close()
+		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
 
 		response, err := client.GetDeployStatus(projectId, pipelineId, environment)
 		require.NoError(t, err)
 		require.Equal(t, expectedResponse, response)
-
-		require.True(t, gock.IsDone())
 	})
 
 	t.Run("get status - error", func(t *testing.T) {
-		defer gock.Off()
-
 		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-		gock.New(baseURL).
-			Get(statusEndpoint).
-			MatchParam("environment", environment).
-			Reply(400).
-			JSON(map[string]interface{}{})
+
+		statusAssertions := func(t *testing.T, req *http.Request) {
+			t.Helper()
+
+			require.True(t, strings.HasSuffix(req.URL.Path, statusEndpoint))
+			require.Equal(t, http.MethodGet, req.Method)
+			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
+			require.Equal(t, environment, req.FormValue("environment"))
+		}
+		statusResponse := fmt.Sprintf(`{"id":%d,"status":"%s"}`, pipelineId, Success)
+
+		s := utils.CreateTestResponseServer(t, statusAssertions, statusResponse, http.StatusBadRequest)
+		defer s.Close()
+		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
 
 		response, err := client.GetDeployStatus(projectId, pipelineId, environment)
 		require.Empty(t, response)
 
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "status error:")
-
-		require.True(t, gock.IsDone())
 	})
 }
 
