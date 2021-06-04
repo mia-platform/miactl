@@ -34,6 +34,17 @@ func TestNew(t *testing.T) {
 		require.Nil(t, client)
 	})
 
+	t.Run("throws due to wrong certificate path", func(t *testing.T) {
+		client, err := New(Options{
+			APIBaseURL:            "http://my-url/path/",
+			APIToken:              "api-token",
+			SkipCertificate:       false,
+			AdditionalCertificate: "./testdata/missing-ca-cert.pem",
+		})
+		require.Error(t, err)
+		require.Nil(t, client)
+	})
+
 	t.Run("correctly returns mia client", func(t *testing.T) {
 		tests := []struct {
 			option Options
@@ -56,6 +67,14 @@ func TestNew(t *testing.T) {
 					APIBaseURL:      "http://my-url/path/",
 					APIToken:        "api-token",
 					SkipCertificate: true,
+				},
+			},
+			{
+				option: Options{
+					APIBaseURL:            "http://my-url/path/",
+					APIToken:              "api-token",
+					SkipCertificate:       false,
+					AdditionalCertificate: "./testdata/ca-cert.pem",
 				},
 			},
 		}
