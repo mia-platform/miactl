@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
 	"github.com/mia-platform/miactl/sdk/auth"
@@ -83,7 +84,7 @@ func New(opts Options) (*MiaClient, error) {
 		InsecureSkipVerify: opts.SkipCertificate,
 	}
 	clientOptions.HTTPClient = &http.Client{
-		// TODO: add timeout setting
+		Timeout:   time.Second * 10,
 		Transport: customTransport,
 	}
 
