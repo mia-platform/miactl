@@ -3,15 +3,15 @@ package deploy
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"testing"
 
-	utils "github.com/mia-platform/miactl/cmd/internal"
 	"github.com/mia-platform/miactl/factory"
+	"github.com/mia-platform/miactl/internal/mocks"
 	"github.com/mia-platform/miactl/renderer"
+	"github.com/mia-platform/miactl/sdk/deploy"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -27,35 +27,48 @@ func TestNewDeployCmd(t *testing.T) {
 		apiToken    = "YWNjZXNzVG9rZW4="
 	)
 	const expectedPipelineId = 458467
+	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
 	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
 	triggerEndpoint := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", projectId)
 
 	t.Run("successful deploy", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
-		callsCount := 0
 
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			callsCount += 1
-			data, _ := json.Marshal(map[string]interface{}{
-				"id":  expectedPipelineId,
-				"url": expectedPipelineURL,
-			})
-			w.WriteHeader(http.StatusOK)
-			w.Write(data)
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: triggerEndpoint,
+				Method:   http.MethodPost,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				RequestBody: deploy.DeployRequest{
+					Environment:             environment,
+					Revision:                revision,
+					DeployType:              deploy.SmartDeploy,
+					ForceDeployWhenNoSemver: false,
+				},
+				Reply: map[string]interface{}{
+					"id":  expectedPipelineId,
+					"url": expectedPipelineURL,
+				},
+				ReplyStatus: http.StatusOK,
+			},
 		}
-		server, _ := utils.CreateConfigurableTestServer(t, triggerEndpoint, handler, nil)
-		defer server.Close()
+
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 
-		viper.Set("apibaseurl", fmt.Sprintf("%s/", server.URL))
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
 		cmd, buf, ctx := prepareCmd(t, environment, revision)
-		err := cmd.ExecuteContext(ctx)
+		err = cmd.ExecuteContext(ctx)
 		require.NoError(t, err)
 
 		tableRows := renderer.CleanTableRows(buf.String())
@@ -65,44 +78,52 @@ func TestNewDeployCmd(t *testing.T) {
 
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
-
-		require.Equal(t, 1, callsCount)
 	})
 
 	t.Run("failed deploy", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
-		callsCount := 0
 
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			callsCount += 1
-			data, _ := json.Marshal(map[string]interface{}{})
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write(data)
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: triggerEndpoint,
+				Method:   http.MethodPost,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				RequestBody: deploy.DeployRequest{
+					Environment:             environment,
+					Revision:                revision,
+					DeployType:              deploy.SmartDeploy,
+					ForceDeployWhenNoSemver: false,
+				},
+				Reply:       map[string]interface{}{},
+				ReplyStatus: http.StatusBadRequest,
+			},
 		}
-		server, _ := utils.CreateConfigurableTestServer(t, triggerEndpoint, handler, nil)
-		defer server.Close()
+
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 
-		viper.Set("apibaseurl", fmt.Sprintf("%s/", server.URL))
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
 		cmd, buf, ctx := prepareCmd(t, environment, revision)
-		err := cmd.ExecuteContext(ctx)
+		err = cmd.ExecuteContext(ctx)
 		require.NoError(t, err)
 
-		base, _ := url.Parse(server.URL)
+		base, _ := url.Parse(s.URL)
 		path, _ := url.Parse(triggerEndpoint)
 		require.Contains(
 			t,
 			buf.String(),
 			fmt.Sprintf("POST %s: 400", base.ResolveReference(path)),
 		)
-
-		require.Equal(t, 1, callsCount)
 	})
 
 	t.Run("missing base url", func(t *testing.T) {

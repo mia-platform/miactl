@@ -2,15 +2,14 @@ package auth
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/http/httptest"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
+	"github.com/mia-platform/miactl/internal/mocks"
 	"github.com/stretchr/testify/require"
 )
 
@@ -25,100 +24,84 @@ func TestLogin(t *testing.T) {
 	)
 
 	t.Run("successful login", func(t *testing.T) {
-		called := false
-
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			called = true
-			data, _ := json.Marshal(map[string]interface{}{
-				"accessToken":  expectedAccessToken,
-				"refreshToken": "cmVmcmVzaFRva2Vu",
-				"expiresAt":    1619799800,
-			})
-			w.WriteHeader(http.StatusOK)
-			w.Write(data)
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint:    "/api/oauth/token",
+				Method:      http.MethodPost,
+				RequestBody: nil,
+				Reply: map[string]interface{}{
+					"accessToken":  expectedAccessToken,
+					"refreshToken": "cmVmcmVzaFRva2Vu",
+					"expiresAt":    1619799800,
+				},
+				ReplyStatus: http.StatusOK,
+			},
 		}
-		server, _ := getTestServer(t, "/api/oauth/token", handler, nil)
-		defer server.Close()
 
-		secureClient := getTestClient(t, server.URL, false)
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		secureClient := getTestClient(t, s.URL, false)
 		accessToken, err := secureClient.Login(username, password, providerID)
 
 		require.Nil(t, err)
 		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
-		require.True(t, called)
 	})
 
 	t.Run("successful login - insecure connection enabled", func(t *testing.T) {
-		serverCfg := map[string]string{
-			"cert": "../testdata/server-cert.pem",
-			"key":  "../testdata/server-key.pem",
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: "../testdata/server-cert.pem",
+			KeyPath:  "../testdata/server-key.pem",
 		}
-		called := false
 
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			called = true
-			data, _ := json.Marshal(map[string]interface{}{
-				"accessToken":  expectedAccessToken,
-				"refreshToken": "cmVmcmVzaFRva2Vu",
-				"expiresAt":    1619799800,
-			})
-			w.WriteHeader(http.StatusOK)
-			w.Write(data)
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint:    "/api/oauth/token",
+				Method:      http.MethodPost,
+				RequestBody: nil,
+				Reply: map[string]interface{}{
+					"accessToken":  expectedAccessToken,
+					"refreshToken": "cmVmcmVzaFRva2Vu",
+					"expiresAt":    1619799800,
+				},
+				ReplyStatus: http.StatusOK,
+			},
 		}
-		server, _ := getTestServer(t, "/api/oauth/token", handler, serverCfg)
-		defer server.Close()
 
-		insecureClient := getTestClient(t, server.URL, true)
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		insecureClient := getTestClient(t, s.URL, true)
 		accessToken, err := insecureClient.Login(username, password, providerID)
 
 		require.Nil(t, err)
 		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
-		require.True(t, called)
 	})
 
 	t.Run("failed login", func(t *testing.T) {
-		called := false
-
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			called = true
-			data, _ := json.Marshal(map[string]interface{}{})
-			w.WriteHeader(http.StatusUnauthorized)
-			w.Write(data)
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint:    "/api/oauth/token",
+				Method:      http.MethodPost,
+				RequestBody: nil,
+				Reply:       map[string]interface{}{},
+				ReplyStatus: http.StatusUnauthorized,
+			},
 		}
-		server, _ := getTestServer(t, "/api/oauth/token", handler, nil)
-		defer server.Close()
 
-		secureClient := getTestClient(t, server.URL, false)
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		secureClient := getTestClient(t, s.URL, false)
 		accessToken, err := secureClient.Login(username, password, providerID)
 
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "auth error:")
 		require.Empty(t, accessToken, "Access token must be empty string")
-		require.True(t, called)
 	})
-}
-
-func getTestServer(t testing.TB, path string, h http.HandlerFunc, serverCfg map[string]string) (*httptest.Server, error) {
-	t.Helper()
-
-	mux := http.NewServeMux()
-	mux.HandleFunc(path, h)
-	server := httptest.NewUnstartedServer(mux)
-
-	if serverCfg != nil {
-		cert, err := tls.LoadX509KeyPair(serverCfg["cert"], serverCfg["key"])
-		if err != nil {
-			return nil, err
-		}
-		server.TLS = &tls.Config{
-			Certificates: []tls.Certificate{cert},
-		}
-		server.StartTLS()
-	} else {
-		server.Start()
-	}
-
-	return server, nil
 }
 
 func getTestClient(t *testing.T, url string, skipCertificate bool) IAuth {

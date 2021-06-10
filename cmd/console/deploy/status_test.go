@@ -3,15 +3,14 @@ package deploy
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
 	"testing"
 
-	utils "github.com/mia-platform/miactl/cmd/internal"
 	"github.com/mia-platform/miactl/factory"
+	"github.com/mia-platform/miactl/internal/mocks"
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk/deploy"
 
@@ -28,6 +27,7 @@ func TestNewStatusCmd(t *testing.T) {
 		environment = "test"
 		pipelineId  = 457321
 	)
+	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
 
 	t.Run("get pipeline status with success - pipeline success", func(t *testing.T) {
 		viper.Reset()
@@ -40,8 +40,6 @@ func TestNewStatusCmd(t *testing.T) {
 			deploy.Success,
 		}
 
-		callsCount := 0
-
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
@@ -50,19 +48,26 @@ func TestNewStatusCmd(t *testing.T) {
 		for pid, status := range expectedStatuses {
 			statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pid)
 
-			handler := func(w http.ResponseWriter, r *http.Request) {
-				callsCount += 1
-				data, _ := json.Marshal(map[string]interface{}{
-					"id":     pid,
-					"status": status,
-				})
-				w.WriteHeader(http.StatusOK)
-				w.Write(data)
+			mockConfigs := mocks.ServerConfigs{
+				{
+					Endpoint: statusEndpoint,
+					Method:   http.MethodGet,
+					RequestHeaders: map[string]string{
+						"Authorization": expectedBearer,
+					},
+					Reply: map[string]interface{}{
+						"id":     pid,
+						"status": status,
+					},
+					ReplyStatus: http.StatusOK,
+				},
 			}
-			server, _ := utils.CreateConfigurableTestServer(t, statusEndpoint, handler, nil)
-			defer server.Close()
 
-			viper.Set("apibaseurl", fmt.Sprintf("%s/", server.URL))
+			s, err := mocks.HTTPServer(t, mockConfigs, nil)
+			require.NoError(t, err, "mock must start correctly")
+			defer s.Close()
+
+			viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 			viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
 			cmd, buf, ctx := prepareStatusCmd(pid, "")
@@ -75,8 +80,6 @@ func TestNewStatusCmd(t *testing.T) {
 			require.Equal(t, expectedHeaders, tableRows[0])
 			require.Equal(t, expectedRow, tableRows[1])
 		}
-
-		require.Equal(t, len(expectedStatuses), callsCount)
 	})
 
 	t.Run("get pipeline status with success - pipeline error", func(t *testing.T) {
@@ -84,23 +87,28 @@ func TestNewStatusCmd(t *testing.T) {
 		defer viper.Reset()
 		expectedStatus := deploy.Failed
 		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-		callsCount := 0
 
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			callsCount += 1
-			data, _ := json.Marshal(map[string]interface{}{
-				"id":     pipelineId,
-				"status": expectedStatus,
-			})
-			w.WriteHeader(http.StatusOK)
-			w.Write(data)
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply: map[string]interface{}{
+					"id":     pipelineId,
+					"status": expectedStatus,
+				},
+				ReplyStatus: http.StatusOK,
+			},
 		}
-		server, _ := utils.CreateConfigurableTestServer(t, statusEndpoint, handler, nil)
-		defer server.Close()
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 
-		viper.Set("apibaseurl", fmt.Sprintf("%s/", server.URL))
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
@@ -114,8 +122,6 @@ func TestNewStatusCmd(t *testing.T) {
 		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
-
-		require.Equal(t, 1, callsCount)
 	})
 
 	t.Run("get pipeline status with success - set environment flag", func(t *testing.T) {
@@ -123,25 +129,30 @@ func TestNewStatusCmd(t *testing.T) {
 		defer viper.Reset()
 		expectedStatus := deploy.Pending
 		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-		callsCount := 0
 
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			callsCount += 1
-			data, _ := json.Marshal(map[string]interface{}{
-				"id":     pipelineId,
-				"status": expectedStatus,
-			})
-
-			require.Equal(t, environment, r.FormValue("environment"))
-
-			w.WriteHeader(http.StatusOK)
-			w.Write(data)
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				QueryParams: map[string]interface{}{
+					"environment": environment,
+				},
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply: map[string]interface{}{
+					"id":     pipelineId,
+					"status": expectedStatus,
+				},
+				ReplyStatus: http.StatusOK,
+			},
 		}
-		server, _ := utils.CreateConfigurableTestServer(t, statusEndpoint, handler, nil)
-		defer server.Close()
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
-		viper.Set("apibaseurl", fmt.Sprintf("%s/", server.URL))
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
@@ -155,27 +166,30 @@ func TestNewStatusCmd(t *testing.T) {
 		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
-
-		require.Equal(t, 1, callsCount)
 	})
 
 	t.Run("error getting pipeline status", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
 		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-		callsCount := 0
 
-		handler := func(w http.ResponseWriter, r *http.Request) {
-			callsCount += 1
-			data, _ := json.Marshal(map[string]interface{}{})
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write(data)
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply:       map[string]interface{}{},
+				ReplyStatus: http.StatusBadRequest,
+			},
 		}
-		server, _ := utils.CreateConfigurableTestServer(t, statusEndpoint, handler, nil)
-		defer server.Close()
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
-		viper.Set("apibaseurl", fmt.Sprintf("%s/", server.URL))
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
@@ -183,14 +197,13 @@ func TestNewStatusCmd(t *testing.T) {
 		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
 		require.NoError(t, cmd.ExecuteContext(ctx))
 
-		base, _ := url.Parse(server.URL)
+		base, _ := url.Parse(s.URL)
 		path, _ := url.Parse(statusEndpoint)
 		require.Contains(
 			t,
 			buf.String(),
 			fmt.Sprintf("GET %s: 400", base.ResolveReference(path)),
 		)
-		require.Equal(t, 1, callsCount)
 	})
 
 	t.Run("missing base url", func(t *testing.T) {

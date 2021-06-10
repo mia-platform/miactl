@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
+	"github.com/mia-platform/miactl/internal/mocks"
 	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 	utils "github.com/mia-platform/miactl/sdk/internal"
 
@@ -191,7 +192,7 @@ func TestTrigger(t *testing.T) {
 	triggerEndpoint := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", projectId)
 
 	t.Run("success - default behaviour", func(t *testing.T) {
-		mockConfigs := utils.MockServerConfigs{
+		mockConfigs := mocks.ServerConfigs{
 			{
 				Endpoint: triggerEndpoint,
 				Method:   http.MethodPost,
@@ -212,8 +213,8 @@ func TestTrigger(t *testing.T) {
 			},
 		}
 
-		s, err := utils.MockServer(t, mockConfigs, nil)
-		require.NoError(t, err)
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
 		defer s.Close()
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
@@ -233,7 +234,7 @@ func TestTrigger(t *testing.T) {
 	})
 
 	t.Run("success - with deploy all strategy", func(t *testing.T) {
-		mockConfigs := utils.MockServerConfigs{
+		mockConfigs := mocks.ServerConfigs{
 			{
 				Endpoint: triggerEndpoint,
 				Method:   http.MethodPost,
@@ -254,8 +255,8 @@ func TestTrigger(t *testing.T) {
 			},
 		}
 
-		s, err := utils.MockServer(t, mockConfigs, nil)
-		require.NoError(t, err)
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
 		defer s.Close()
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
@@ -276,7 +277,7 @@ func TestTrigger(t *testing.T) {
 	})
 
 	t.Run("failure", func(t *testing.T) {
-		mockConfigs := utils.MockServerConfigs{
+		mockConfigs := mocks.ServerConfigs{
 			{
 				Endpoint: triggerEndpoint,
 				Method:   http.MethodPost,
@@ -293,8 +294,8 @@ func TestTrigger(t *testing.T) {
 			},
 		}
 
-		s, err := utils.MockServer(t, mockConfigs, nil)
-		require.NoError(t, err)
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
 		defer s.Close()
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
@@ -328,7 +329,7 @@ func TestGetDeployStatus(t *testing.T) {
 	statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
 
 	t.Run("get status", func(t *testing.T) {
-		mockConfigs := utils.MockServerConfigs{
+		mockConfigs := mocks.ServerConfigs{
 			{
 				Endpoint: statusEndpoint,
 				Method:   http.MethodGet,
@@ -346,8 +347,8 @@ func TestGetDeployStatus(t *testing.T) {
 			},
 		}
 
-		s, err := utils.MockServer(t, mockConfigs, nil)
-		require.NoError(t, err)
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
 		defer s.Close()
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
@@ -363,7 +364,7 @@ func TestGetDeployStatus(t *testing.T) {
 	})
 
 	t.Run("get status - error", func(t *testing.T) {
-		mockConfigs := utils.MockServerConfigs{
+		mockConfigs := mocks.ServerConfigs{
 			{
 				Endpoint: statusEndpoint,
 				Method:   http.MethodGet,
@@ -377,8 +378,8 @@ func TestGetDeployStatus(t *testing.T) {
 			},
 		}
 
-		s, err := utils.MockServer(t, mockConfigs, nil)
-		require.NoError(t, err)
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
 		defer s.Close()
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
