@@ -31,7 +31,7 @@ func NewLoginCmd() *cobra.Command {
 
 			// set these flag only in case they are defined
 			skipCertificate, _ = cmd.Flags().GetBool("insecure")
-			certificatePath = viper.GetString("certificate")
+			certificatePath = viper.GetString("ca-cert")
 
 			return nil
 		},

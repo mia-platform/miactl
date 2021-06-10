@@ -67,7 +67,7 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().BoolVar(&opts.SkipCertificate, "insecure", false, "whether to not check server certificate")
 	rootCmd.PersistentFlags().StringVar(
 		&opts.AdditionalCertificate,
-		"certificate",
+		"ca-cert",
 		"",
 		"file path to additional CA certificate, which can be employed to verify server certificate",
 	)
@@ -77,7 +77,7 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 	viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
 	viper.BindPFlag("apitoken", rootCmd.PersistentFlags().Lookup("apiToken"))
 	viper.BindPFlag("project", rootCmd.PersistentFlags().Lookup("project"))
-	viper.BindPFlag("certificate", rootCmd.PersistentFlags().Lookup("certificate"))
+	viper.BindPFlag("ca-cert", rootCmd.PersistentFlags().Lookup("ca-cert"))
 }
 
 // initConfig reads in config file and ENV variables if set.
