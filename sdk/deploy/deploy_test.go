@@ -1,10 +1,8 @@
 package deploy
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -188,114 +186,117 @@ func TestTrigger(t *testing.T) {
 	)
 	const expectedPipelineId = 458467
 	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
+	authHeaders := jsonclient.Headers{"Authorization": expectedBearer}
 	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
-	triggerEndpoint := fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectId)
+	triggerEndpoint := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", projectId)
 
 	t.Run("success - default behaviour", func(t *testing.T) {
-		expectedResponse := DeployResponse{
-			Id:  expectedPipelineId,
-			Url: expectedPipelineURL,
+		mockConfigs := utils.MockServerConfigs{
+			{
+				Endpoint: triggerEndpoint,
+				Method:   http.MethodPost,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				RequestBody: DeployRequest{
+					Environment:             environment,
+					Revision:                revision,
+					DeployType:              SmartDeploy,
+					ForceDeployWhenNoSemver: false,
+				},
+				Reply: map[string]interface{}{
+					"id":  expectedPipelineId,
+					"url": expectedPipelineURL,
+				},
+				ReplyStatus: http.StatusOK,
+			},
 		}
-		triggerAssertions := func(t *testing.T, req *http.Request) {
-			t.Helper()
 
-			expectedRequestBody := DeployRequest{
-				Environment:             environment,
-				Revision:                revision,
-				DeployType:              SmartDeploy,
-				ForceDeployWhenNoSemver: false,
-			}
-
-			require.True(t, strings.HasSuffix(req.URL.Path, triggerEndpoint))
-			require.Equal(t, http.MethodPost, req.Method)
-			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
-
-			requestBody := DeployRequest{}
-			bodyRequest, _ := ioutil.ReadAll(req.Body)
-			require.NoError(t, json.Unmarshal(bodyRequest, &requestBody))
-			require.Equal(t, expectedRequestBody, requestBody)
-		}
-		// triggerResponse, err := json.Marshal(&expectedResponse)
-		triggerResponse := fmt.Sprintf(`{"id":%d,"url":"%s"}`, expectedPipelineId, expectedPipelineURL)
-
-		s := utils.CreateTestResponseServer(t, triggerAssertions, triggerResponse, http.StatusOK)
+		s, err := utils.MockServer(t, mockConfigs, nil)
+		require.NoError(t, err)
 		defer s.Close()
-		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
+		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
 		cfg := DeployConfig{
 			Environment: environment,
 			Revision:    revision,
 		}
-
-		deployResponse, err := client.Trigger(projectId, cfg)
-		require.Empty(t, err)
-		require.Equal(t, expectedResponse, deployResponse)
-	})
-
-	t.Run("success - with deploy all strategy", func(t *testing.T) {
 		expectedResponse := DeployResponse{
 			Id:  expectedPipelineId,
 			Url: expectedPipelineURL,
 		}
-		triggerAssertions := func(t *testing.T, req *http.Request) {
-			t.Helper()
 
-			expectedRequestBody := DeployRequest{
-				Environment:             environment,
-				Revision:                revision,
-				DeployType:              DeployAll,
-				ForceDeployWhenNoSemver: true,
-			}
+		deployResponse, err := client.Trigger(projectId, cfg)
 
-			require.True(t, strings.HasSuffix(req.URL.Path, triggerEndpoint))
-			require.Equal(t, http.MethodPost, req.Method)
-			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
+		require.NoError(t, err, "no error expected")
+		require.Equal(t, expectedResponse, deployResponse)
+	})
 
-			requestBody := DeployRequest{}
-			json.NewDecoder(req.Body).Decode(&requestBody)
-			require.Equal(t, expectedRequestBody, requestBody)
+	t.Run("success - with deploy all strategy", func(t *testing.T) {
+		mockConfigs := utils.MockServerConfigs{
+			{
+				Endpoint: triggerEndpoint,
+				Method:   http.MethodPost,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				RequestBody: DeployRequest{
+					Environment:             environment,
+					Revision:                revision,
+					DeployType:              DeployAll,
+					ForceDeployWhenNoSemver: true,
+				},
+				Reply: map[string]interface{}{
+					"id":  expectedPipelineId,
+					"url": expectedPipelineURL,
+				},
+				ReplyStatus: http.StatusOK,
+			},
 		}
-		triggerResponse := fmt.Sprintf(`{"id":%d,"url":"%s"}`, expectedPipelineId, expectedPipelineURL)
 
-		s := utils.CreateTestResponseServer(t, triggerAssertions, triggerResponse, http.StatusOK)
+		s, err := utils.MockServer(t, mockConfigs, nil)
+		require.NoError(t, err)
 		defer s.Close()
-		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
+		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
 		cfg := DeployConfig{
 			Environment: environment,
 			Revision:    revision,
 			DeployAll:   true,
 		}
+		expectedResponse := DeployResponse{
+			Id:  expectedPipelineId,
+			Url: expectedPipelineURL,
+		}
 
 		deployResponse, err := client.Trigger(projectId, cfg)
-		require.Empty(t, err)
+
+		require.NoError(t, err, "no error expected")
 		require.Equal(t, expectedResponse, deployResponse)
 	})
 
 	t.Run("failure", func(t *testing.T) {
-		triggerAssertions := func(t *testing.T, req *http.Request) {
-			t.Helper()
-
-			expectedRequestBody := DeployRequest{
-				Environment:             environment,
-				Revision:                revision,
-				DeployType:              SmartDeploy,
-				ForceDeployWhenNoSemver: false,
-			}
-
-			require.True(t, strings.HasSuffix(req.URL.Path, triggerEndpoint))
-			require.Equal(t, http.MethodPost, req.Method)
-			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
-
-			requestBody := DeployRequest{}
-			json.NewDecoder(req.Body).Decode(&requestBody)
-			require.Equal(t, expectedRequestBody, requestBody)
+		mockConfigs := utils.MockServerConfigs{
+			{
+				Endpoint: triggerEndpoint,
+				Method:   http.MethodPost,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				RequestBody: DeployRequest{
+					Environment:             environment,
+					Revision:                revision,
+					DeployType:              SmartDeploy,
+					ForceDeployWhenNoSemver: false,
+				},
+				ReplyStatus: http.StatusBadRequest,
+			},
 		}
-		triggerResponse := "{}"
 
-		s := utils.CreateTestResponseServer(t, triggerAssertions, triggerResponse, http.StatusBadRequest)
+		s, err := utils.MockServer(t, mockConfigs, nil)
+		require.NoError(t, err)
 		defer s.Close()
-		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
+		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
 		cfg := DeployConfig{
 			Environment: environment,
@@ -303,12 +304,13 @@ func TestTrigger(t *testing.T) {
 		}
 
 		deployResponse, err := client.Trigger(projectId, cfg)
+
 		base, _ := url.Parse(s.URL)
 		path, _ := url.Parse(triggerEndpoint)
 		require.EqualError(
 			t,
 			err,
-			fmt.Sprintf("deploy error: POST %s: 400 - {}", base.ResolveReference(path)),
+			fmt.Sprintf("deploy error: POST %s: 400", base.ResolveReference(path)),
 		)
 		require.Empty(t, deployResponse)
 	})
@@ -322,49 +324,63 @@ func TestGetDeployStatus(t *testing.T) {
 		environment = "preprod"
 	)
 	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
+	authHeaders := jsonclient.Headers{"Authorization": expectedBearer}
+	statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
 
 	t.Run("get status", func(t *testing.T) {
+		mockConfigs := utils.MockServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				QueryParams: map[string]interface{}{
+					"environment": environment,
+				},
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply: map[string]interface{}{
+					"id":     pipelineId,
+					"status": Success,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+
+		s, err := utils.MockServer(t, mockConfigs, nil)
+		require.NoError(t, err)
+		defer s.Close()
+		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
+
 		expectedResponse := StatusResponse{
 			PipelineId: pipelineId,
 			Status:     Success,
 		}
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-
-		statusAssertions := func(t *testing.T, req *http.Request) {
-			t.Helper()
-
-			require.True(t, strings.HasSuffix(req.URL.Path, statusEndpoint))
-			require.Equal(t, http.MethodGet, req.Method)
-			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
-			require.Equal(t, environment, req.FormValue("environment"))
-		}
-		statusResponse := fmt.Sprintf(`{"id":%d,"status":"%s"}`, pipelineId, Success)
-
-		s := utils.CreateTestResponseServer(t, statusAssertions, statusResponse, http.StatusOK)
-		defer s.Close()
-		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
 
 		response, err := client.GetDeployStatus(projectId, pipelineId, environment)
+
 		require.NoError(t, err)
 		require.Equal(t, expectedResponse, response)
 	})
 
 	t.Run("get status - error", func(t *testing.T) {
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-
-		statusAssertions := func(t *testing.T, req *http.Request) {
-			t.Helper()
-
-			require.True(t, strings.HasSuffix(req.URL.Path, statusEndpoint))
-			require.Equal(t, http.MethodGet, req.Method)
-			require.Equal(t, expectedBearer, req.Header.Get("Authorization"))
-			require.Equal(t, environment, req.FormValue("environment"))
+		mockConfigs := utils.MockServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				QueryParams: map[string]interface{}{
+					"environment": environment,
+				},
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				ReplyStatus: http.StatusBadRequest,
+			},
 		}
-		statusResponse := fmt.Sprintf(`{"id":%d,"status":"%s"}`, pipelineId, Success)
 
-		s := utils.CreateTestResponseServer(t, statusAssertions, statusResponse, http.StatusBadRequest)
+		s, err := utils.MockServer(t, mockConfigs, nil)
+		require.NoError(t, err)
 		defer s.Close()
-		client := testCreateDeployClientToken(t, fmt.Sprintf("%s/", s.URL), apiToken)
+		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
 		response, err := client.GetDeployStatus(projectId, pipelineId, environment)
 		require.Empty(t, response)
@@ -390,14 +406,12 @@ func testCreateDeployClientCookie(t *testing.T, url string) IDeploy {
 	}
 }
 
-func testCreateDeployClientToken(t *testing.T, url, apiToken string) IDeploy {
+func createDeployClient(t *testing.T, url string, headers jsonclient.Headers) IDeploy {
 	t.Helper()
 
 	client, err := jsonclient.New(jsonclient.Options{
 		BaseURL: url,
-		Headers: jsonclient.Headers{
-			"Authorization": fmt.Sprintf("Bearer %s", apiToken),
-		},
+		Headers: headers,
 	})
 	require.NoError(t, err, "error creating client")
 
