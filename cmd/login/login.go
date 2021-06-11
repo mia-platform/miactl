@@ -62,6 +62,9 @@ func NewLoginCmd() *cobra.Command {
 	cmd.Flags().StringVar(&username, "username", "", "your user identifier")
 	cmd.Flags().StringVar(&password, "password", "", "your secret password")
 	cmd.Flags().StringVar(&providerID, "provider-id", "", "the authentication provider identifier")
+	// Note: although this flag is defined as a persistent flag in the root command,
+	// in order to be set during tests it must be defined also at command level
+	cmd.Flags().BoolVar(&skipCertificate, "insecure", false, "whether to not check server certificate")
 
 	cmd.MarkFlagRequired("username")
 	cmd.MarkFlagRequired("password")

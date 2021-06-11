@@ -84,6 +84,9 @@ func NewStatusCmd() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&environment, "environment", "", "the environment where the project has been deployed")
+	// Note: although this flag is defined as a persistent flag in the root command,
+	// in order to be set during tests it must be defined also at command level
+	cmd.Flags().BoolVar(&skipCertificate, "insecure", false, "whether to not check server certificate")
 
 	return cmd
 }

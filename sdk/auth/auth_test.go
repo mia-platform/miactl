@@ -51,8 +51,8 @@ func TestLogin(t *testing.T) {
 
 	t.Run("successful login - insecure connection enabled", func(t *testing.T) {
 		serverCfg := mocks.CertificatesConfig{
-			CertPath: "../testdata/server-cert.pem",
-			KeyPath:  "../testdata/server-key.pem",
+			CertPath: "../../testdata/server-cert.pem",
+			KeyPath:  "../../testdata/server-key.pem",
 		}
 
 		mockConfigs := mocks.ServerConfigs{

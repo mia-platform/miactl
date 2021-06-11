@@ -60,6 +60,49 @@ func TestNewLoginCmd(t *testing.T) {
 		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
 	})
 
+	t.Run("successful login - insecure access", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: "../../testdata/server-cert.pem",
+			KeyPath:  "../../testdata/server-key.pem",
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint:    endpoint,
+				Method:      http.MethodPost,
+				RequestBody: nil,
+				Reply: map[string]interface{}{
+					"accessToken":  expectedAccessToken,
+					"refreshToken": "cmVmcmVzaFRva2Vu",
+					"expiresAt":    1619799800,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		// define from where login command should read config
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		cmd, ctx := getLoginCommand(username, password, providerID)
+		cmd.Flags().Set("insecure", "true")
+
+		err = cmd.ExecuteContext(ctx)
+		require.Nil(t, err)
+
+		accessToken := viper.GetString("apitoken")
+		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
+	})
+
 	t.Run("failed login", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
