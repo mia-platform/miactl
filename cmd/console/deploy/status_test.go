@@ -21,11 +21,14 @@ import (
 
 func TestNewStatusCmd(t *testing.T) {
 	const (
-		projectId   = "4h6UBlNiZOk2"
-		baseURL     = "http://console-base-url/"
-		apiToken    = "YWNjZXNzVG9rZW4="
-		environment = "test"
-		pipelineId  = 457321
+		projectId      = "4h6UBlNiZOk2"
+		baseURL        = "http://console-base-url/"
+		apiToken       = "YWNjZXNzVG9rZW4="
+		environment    = "test"
+		pipelineId     = 457321
+		serverCertPath = "../../../testdata/server-cert.pem"
+		serverKeyPath  = "../../../testdata/server-key.pem"
+		caCertPath     = "../../../testdata/ca-cert.pem"
 	)
 	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
 
@@ -131,8 +134,8 @@ func TestNewStatusCmd(t *testing.T) {
 		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
 
 		serverCfg := mocks.CertificatesConfig{
-			CertPath: "../../../testdata/server-cert.pem",
-			KeyPath:  "../../../testdata/server-key.pem",
+			CertPath: serverCertPath,
+			KeyPath:  serverKeyPath,
 		}
 
 		mockConfigs := mocks.ServerConfigs{
@@ -162,6 +165,54 @@ func TestNewStatusCmd(t *testing.T) {
 
 		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
 		cmd.Flags().Set("insecure", "true")
+		require.NoError(t, cmd.ExecuteContext(ctx))
+
+		tableRows := renderer.CleanTableRows(buf.String())
+
+		expectedHeaders := "PROJECT ID | DEPLOY ID | STATUS"
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
+		require.Equal(t, expectedHeaders, tableRows[0])
+		require.Equal(t, expectedRow, tableRows[1])
+	})
+
+	t.Run("get pipeline status with success - select custom CA certificate", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+		expectedStatus := deploy.Running
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: serverCertPath,
+			KeyPath:  serverKeyPath,
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply: map[string]interface{}{
+					"id":     pipelineId,
+					"status": expectedStatus,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
+		viper.Set("apitoken", apiToken)
+		viper.Set("project", projectId)
+		viper.Set("ca-cert", caCertPath)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
 		require.NoError(t, cmd.ExecuteContext(ctx))
 
 		tableRows := renderer.CleanTableRows(buf.String())

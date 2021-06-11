@@ -74,7 +74,7 @@ func TestNew(t *testing.T) {
 					APIBaseURL:            "http://my-url/path/",
 					APIToken:              "api-token",
 					SkipCertificate:       false,
-					AdditionalCertificate: "./testdata/ca-cert.pem",
+					AdditionalCertificate: "../testdata/ca-cert.pem",
 				},
 			},
 		}

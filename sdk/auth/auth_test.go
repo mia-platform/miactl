@@ -83,14 +83,14 @@ func TestLogin(t *testing.T) {
 	})
 
 	t.Run("successful login - use custom certificate", func(t *testing.T) {
-		const certificatePath = "../testdata/ca-cert.pem"
+		const certificatePath = "../../testdata/ca-cert.pem"
 		certificate, err := ioutil.ReadFile(certificatePath)
 		if err != nil {
 			t.Fatal(err)
 		}
 		serverCfg := mocks.CertificatesConfig{
-			CertPath: "../testdata/server-cert.pem",
-			KeyPath:  "../testdata/server-key.pem",
+			CertPath: "../../testdata/server-cert.pem",
+			KeyPath:  "../../testdata/server-key.pem",
 		}
 
 		mockConfigs := mocks.ServerConfigs{

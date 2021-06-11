@@ -22,6 +22,9 @@ func TestNewLoginCmd(t *testing.T) {
 		baseURL             = "http://auth-provider/"
 		endpoint            = "/api/oauth/token"
 		expectedAccessToken = "YWNjZXNzVG9rZW4tMg=="
+		serverCertPath      = "../../testdata/server-cert.pem"
+		serverKeyPath       = "../../testdata/server-key.pem"
+		caCertPath          = "../../testdata/ca-cert.pem"
 	)
 
 	t.Run("successful login", func(t *testing.T) {
@@ -95,6 +98,49 @@ func TestNewLoginCmd(t *testing.T) {
 
 		cmd, ctx := getLoginCommand(username, password, providerID)
 		cmd.Flags().Set("insecure", "true")
+
+		err = cmd.ExecuteContext(ctx)
+		require.Nil(t, err)
+
+		accessToken := viper.GetString("apitoken")
+		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
+	})
+
+	t.Run("successful login - select custom CA certificate", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: serverCertPath,
+			KeyPath:  serverKeyPath,
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint:    endpoint,
+				Method:      http.MethodPost,
+				RequestBody: nil,
+				Reply: map[string]interface{}{
+					"accessToken":  expectedAccessToken,
+					"refreshToken": "cmVmcmVzaFRva2Vu",
+					"expiresAt":    1619799800,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		// define from where login command should read config
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
+		viper.Set("ca-cert", caCertPath)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		cmd, ctx := getLoginCommand(username, password, providerID)
 
 		err = cmd.ExecuteContext(ctx)
 		require.Nil(t, err)
