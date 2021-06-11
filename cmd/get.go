@@ -6,7 +6,7 @@ import (
 
 	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/renderer"
-	"github.com/mia-platform/miactl/sdk"
+	"github.com/mia-platform/miactl/sdk/deploy"
 	"github.com/spf13/cobra"
 )
 
@@ -71,7 +71,7 @@ func getProjects(f *factory.Factory) {
 }
 
 func getDeploysForProject(f *factory.Factory) {
-	query := sdk.DeployHistoryQuery{
+	query := deploy.DeployHistoryQuery{
 		ProjectID: projectID,
 	}
 

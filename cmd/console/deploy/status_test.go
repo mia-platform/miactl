@@ -4,18 +4,19 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strconv"
 	"testing"
 
 	"github.com/mia-platform/miactl/factory"
+	"github.com/mia-platform/miactl/internal/mocks"
 	"github.com/mia-platform/miactl/renderer"
-	"github.com/mia-platform/miactl/sdk"
+	"github.com/mia-platform/miactl/sdk/deploy"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/h2non/gock.v1"
 )
 
 func TestNewStatusCmd(t *testing.T) {
@@ -26,38 +27,50 @@ func TestNewStatusCmd(t *testing.T) {
 		environment = "test"
 		pipelineId  = 457321
 	)
+	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
 
 	t.Run("get pipeline status with success - pipeline success", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
-		defer gock.Off()
 
-		expectedStatuses := []sdk.PipelineStatus{
-			sdk.Created,
-			sdk.Pending,
-			sdk.Running,
-			sdk.Success,
+		expectedStatuses := []deploy.PipelineStatus{
+			deploy.Created,
+			deploy.Pending,
+			deploy.Running,
+			deploy.Success,
 		}
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
-		viper.Set("apibaseurl", baseURL)
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
 		for pid, status := range expectedStatuses {
 			statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pid)
-			gock.New(baseURL).
-				Get(statusEndpoint).
-				Reply(200).
-				JSON(map[string]interface{}{
-					"id":     pid,
-					"status": status,
-				})
 
-			cmd, buf := prepareStatusCmd(pid, "")
+			mockConfigs := mocks.ServerConfigs{
+				{
+					Endpoint: statusEndpoint,
+					Method:   http.MethodGet,
+					RequestHeaders: map[string]string{
+						"Authorization": expectedBearer,
+					},
+					Reply: map[string]interface{}{
+						"id":     pid,
+						"status": status,
+					},
+					ReplyStatus: http.StatusOK,
+				},
+			}
 
-			ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+			s, err := mocks.HTTPServer(t, mockConfigs, nil)
+			require.NoError(t, err, "mock must start correctly")
+			defer s.Close()
+
+			viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
+			viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+			cmd, buf, ctx := prepareStatusCmd(pid, "")
 			require.NoError(t, cmd.ExecuteContext(ctx))
 
 			tableRows := renderer.CleanTableRows(buf.String())
@@ -67,71 +80,88 @@ func TestNewStatusCmd(t *testing.T) {
 			require.Equal(t, expectedHeaders, tableRows[0])
 			require.Equal(t, expectedRow, tableRows[1])
 		}
-
-		require.True(t, gock.IsDone())
 	})
 
 	t.Run("get pipeline status with success - pipeline error", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
-		defer gock.Off()
+		expectedStatus := deploy.Failed
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply: map[string]interface{}{
+					"id":     pipelineId,
+					"status": expectedStatus,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
-		viper.Set("apibaseurl", baseURL)
+
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-		gock.New(baseURL).
-			Get(statusEndpoint).
-			Reply(200).
-			JSON(map[string]interface{}{
-				"id":     pipelineId,
-				"status": sdk.Failed,
-			})
-
-		cmd, buf := prepareStatusCmd(pipelineId, "")
-
-		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
 		require.EqualError(t, cmd.ExecuteContext(ctx), "Deploy pipeline failed")
 
 		tableRows := renderer.CleanTableRows(buf.String())
 
 		expectedHeaders := "PROJECT ID | DEPLOY ID | STATUS"
-		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, sdk.Failed)
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
-
-		require.True(t, gock.IsDone())
 	})
 
-	t.Run("get pipeline status with success - set environment flag", func(t *testing.T) {
+	t.Run("get pipeline status with success - insecure access", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
-		defer gock.Off()
+		expectedStatus := deploy.Running
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
 
-		expectedStatus := sdk.Pending
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: "../../../testdata/server-cert.pem",
+			KeyPath:  "../../../testdata/server-key.pem",
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply: map[string]interface{}{
+					"id":     pipelineId,
+					"status": expectedStatus,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
-		viper.Set("apibaseurl", baseURL)
+
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-		gock.New(baseURL).
-			Get(statusEndpoint).
-			MatchParam("environment", environment).
-			Reply(200).
-			JSON(map[string]interface{}{
-				"id":     pipelineId,
-				"status": expectedStatus,
-			})
-
-		cmd, buf := prepareStatusCmd(pipelineId, environment)
-
-		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
+		cmd.Flags().Set("insecure", "true")
 		require.NoError(t, cmd.ExecuteContext(ctx))
 
 		tableRows := renderer.CleanTableRows(buf.String())
@@ -140,41 +170,88 @@ func TestNewStatusCmd(t *testing.T) {
 		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
+	})
 
-		require.True(t, gock.IsDone())
+	t.Run("get pipeline status with success - set environment flag", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+		expectedStatus := deploy.Pending
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				QueryParams: map[string]interface{}{
+					"environment": environment,
+				},
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply: map[string]interface{}{
+					"id":     pipelineId,
+					"status": expectedStatus,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
+		viper.Set("apitoken", apiToken)
+		viper.Set("project", projectId)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		cmd, buf, ctx := prepareStatusCmd(pipelineId, environment)
+		require.NoError(t, cmd.ExecuteContext(ctx))
+
+		tableRows := renderer.CleanTableRows(buf.String())
+
+		expectedHeaders := "PROJECT ID | DEPLOY ID | STATUS"
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
+		require.Equal(t, expectedHeaders, tableRows[0])
+		require.Equal(t, expectedRow, tableRows[1])
 	})
 
 	t.Run("error getting pipeline status", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
-		defer gock.Off()
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply:       map[string]interface{}{},
+				ReplyStatus: http.StatusBadRequest,
+			},
+		}
+		s, err := mocks.HTTPServer(t, mockConfigs, nil)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
-		viper.Set("apibaseurl", baseURL)
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
-		gock.New(baseURL).
-			Get(statusEndpoint).
-			Reply(400).
-			JSON(map[string]interface{}{})
-
-		cmd, buf := prepareStatusCmd(pipelineId, "")
-
-		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
 		require.NoError(t, cmd.ExecuteContext(ctx))
 
-		base, _ := url.Parse(baseURL)
+		base, _ := url.Parse(s.URL)
 		path, _ := url.Parse(statusEndpoint)
 		require.Contains(
 			t,
 			buf.String(),
 			fmt.Sprintf("GET %s: 400", base.ResolveReference(path)),
 		)
-
-		require.True(t, gock.IsDone())
 	})
 
 	t.Run("missing base url", func(t *testing.T) {
@@ -187,9 +264,7 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _ := prepareStatusCmd(pipelineId, environment)
-
-		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
 		err := cmd.ExecuteContext(ctx)
 		require.EqualError(t, err, "API base URL not specified nor configured")
 	})
@@ -203,9 +278,7 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _ := prepareStatusCmd(pipelineId, environment)
-
-		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
 		err := cmd.ExecuteContext(ctx)
 		require.EqualError(t, err, "missing API token - please login")
 	})
@@ -219,15 +292,13 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Set("apitoken", apiToken)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _ := prepareStatusCmd(pipelineId, environment)
-
-		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
 		err := cmd.ExecuteContext(ctx)
 		require.Contains(t, err.Error(), "no such flag -project")
 	})
 }
 
-func prepareStatusCmd(pid int, environment string) (*cobra.Command, *bytes.Buffer) {
+func prepareStatusCmd(pid int, environment string) (*cobra.Command, *bytes.Buffer, context.Context) {
 	buf := &bytes.Buffer{}
 	cmd := NewStatusCmd()
 
@@ -238,5 +309,7 @@ func prepareStatusCmd(pid int, environment string) (*cobra.Command, *bytes.Buffe
 		cmd.Flags().Set("environment", environment)
 	}
 
-	return cmd, buf
+	ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
+
+	return cmd, buf, ctx
 }

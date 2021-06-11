@@ -9,6 +9,7 @@ import (
 
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 
 	"github.com/stretchr/testify/require"
 )
@@ -32,7 +33,7 @@ func TestAddMiaClientToFactory(t *testing.T) {
 		require.NotNil(t, f)
 		opts := sdk.Options{}
 		err := f.addMiaClientToFactory(opts)
-		require.EqualError(t, err, fmt.Sprintf("%s: newSdk not defined", sdk.ErrCreateClient))
+		require.EqualError(t, err, fmt.Sprintf("%s: newSdk not defined", sdkErrors.ErrCreateClient))
 	})
 
 	t.Run("throws if options are not passed", func(t *testing.T) {
@@ -42,7 +43,7 @@ func TestAddMiaClientToFactory(t *testing.T) {
 		require.NotNil(t, f)
 		opts := sdk.Options{}
 		err := f.addMiaClientToFactory(opts)
-		require.EqualError(t, err, fmt.Sprintf("%s: client options are not correct", sdk.ErrCreateClient))
+		require.EqualError(t, err, fmt.Sprintf("%s: client options are not correct", sdkErrors.ErrCreateClient))
 	})
 
 	t.Run("method add MiaClient to factory", func(t *testing.T) {
@@ -88,7 +89,7 @@ func TestFromContext(t *testing.T) {
 
 		require.Nil(t, f)
 		require.Error(t, err)
-		require.EqualError(t, err, fmt.Sprintf("%s: client options are not correct", sdk.ErrCreateClient))
+		require.EqualError(t, err, fmt.Sprintf("%s: client options are not correct", sdkErrors.ErrCreateClient))
 	})
 
 	t.Run("returns factory", func(t *testing.T) {
@@ -101,13 +102,10 @@ func TestFromContext(t *testing.T) {
 		}
 
 		f, err := FromContext(ctx, opts)
-		require.NoError(t, err)
-
-		miaClient, err := sdk.New(opts)
 
 		require.NoError(t, err)
 		require.Equal(t, renderer.New(&bytes.Buffer{}), f.Renderer)
-		require.Equal(t, miaClient, f.MiaClient)
+		require.NotNil(t, f.MiaClient)
 		require.Equal(t, reflect.ValueOf(sdk.New).Pointer(), reflect.ValueOf(f.miaClientCreator).Pointer())
 	})
 }

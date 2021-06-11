@@ -1,4 +1,4 @@
-package sdk
+package deploy
 
 import (
 	"errors"
@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 )
 
 const (
@@ -22,6 +23,13 @@ const (
 	Failed                  = "failed"
 	Canceled                = "canceled"
 )
+
+// IDeploy is a client interface used to interact with deployment pipelines.
+type IDeploy interface {
+	GetHistory(DeployHistoryQuery) ([]DeployItem, error)
+	Trigger(string, DeployConfig) (DeployResponse, error)
+	GetDeployStatus(string, int, string) (StatusResponse, error)
+}
 
 // DeployItem represents a single item of the deploy history.
 type DeployItem struct {
@@ -111,7 +119,7 @@ func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error)
 		if errors.As(err, &httpErr) {
 			return nil, httpErr
 		}
-		return nil, fmt.Errorf("%w: %s", ErrGeneric, err)
+		return nil, fmt.Errorf("%w: %s", sdkErrors.ErrGeneric, err)
 	}
 	return history, nil
 }

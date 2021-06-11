@@ -6,9 +6,9 @@ import (
 	"os"
 	"path"
 
-	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/cmd/console"
 	"github.com/mia-platform/miactl/cmd/login"
+	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/sdk"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -64,6 +64,7 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().StringVar(&opts.APIToken, "apiToken", "", "api access token")
 	rootCmd.PersistentFlags().StringVarP(&projectID, "project", "p", "", "specify desired project ID")
 	verbose = rootCmd.PersistentFlags().BoolP("verbose", "v", false, "whether to output details in verbose mode")
+	rootCmd.PersistentFlags().BoolVar(&opts.SkipCertificate, "insecure", false, "whether to not check server certificate")
 
 	rootCmd.MarkFlagRequired("apiBaseUrl")
 

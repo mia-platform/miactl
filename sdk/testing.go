@@ -1,17 +1,19 @@
 package sdk
 
+import "github.com/mia-platform/miactl/sdk/deploy"
+
 // ProjectsMock is useful to be used to mock projects client
 type ProjectsMock struct {
 	Error    error
 	Options  Options
-	Projects Projects
+	Projects deploy.Projects
 }
 
 // DeployMock is useful to be used to mock deploy client.
 type DeployMock struct {
 	Error    error
-	AssertFn func(DeployHistoryQuery)
-	History  []DeployItem
+	AssertFn func(deploy.DeployHistoryQuery)
+	History  []deploy.DeployItem
 }
 
 // MockClientError passes error to mia client mock
@@ -19,8 +21,8 @@ type MockClientError struct {
 	ProjectsError error
 
 	DeployError    error
-	DeployAssertFn func(DeployHistoryQuery)
-	DeployHistory  []DeployItem
+	DeployAssertFn func(deploy.DeployHistoryQuery)
+	DeployHistory  []deploy.DeployItem
 }
 
 // WrapperMockMiaClient creates a mock of mia client
@@ -47,12 +49,12 @@ func (p *ProjectsMock) SetReturnError(err error) {
 
 // SetReturnProjects method set projects to ProjectsMock. A project mock is
 // returned by default calling Get function
-func (p *ProjectsMock) SetReturnProjects(projects Projects) {
+func (p *ProjectsMock) SetReturnProjects(projects deploy.Projects) {
 	p.Projects = projects
 }
 
 // Get method mock. It returns error or a list of projects
-func (p ProjectsMock) Get() (Projects, error) {
+func (p ProjectsMock) Get() (deploy.Projects, error) {
 	if p.Error != nil {
 		return nil, p.Error
 	}
@@ -62,31 +64,31 @@ func (p ProjectsMock) Get() (Projects, error) {
 	return defaultMockProjects, nil
 }
 
-var defaultMockProjects = Projects{
-	Project{
+var defaultMockProjects = deploy.Projects{
+	deploy.Project{
 		ID:                   "id1",
 		Name:                 "Project 1",
 		ConfigurationGitPath: "/git/path",
-		Environments: []Environment{
+		Environments: []deploy.Environment{
 			{
-				Cluster: Cluster{
+				Cluster: deploy.Cluster{
 					Hostname: "cluster-hostname",
 				},
 				DisplayName: "development",
 			},
 		},
-		Pipelines: Pipelines{
+		Pipelines: deploy.Pipelines{
 			Type: "pipeline-type",
 		},
 		ProjectID: "project-1",
 	},
-	Project{
+	deploy.Project{
 		ID:                   "id2",
 		Name:                 "Project 2",
 		ConfigurationGitPath: "/git/path",
-		Environments: []Environment{
+		Environments: []deploy.Environment{
 			{
-				Cluster: Cluster{
+				Cluster: deploy.Cluster{
 					Hostname: "cluster-hostname",
 				},
 				DisplayName: "development",
@@ -97,7 +99,7 @@ var defaultMockProjects = Projects{
 }
 
 // GetHistory method mock. It returns error or a list of deploy items.
-func (d DeployMock) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
+func (d DeployMock) GetHistory(query deploy.DeployHistoryQuery) ([]deploy.DeployItem, error) {
 	if d.Error != nil {
 		return nil, d.Error
 	}
@@ -110,11 +112,11 @@ func (d DeployMock) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
 }
 
 // Trigger method mock. Added just to satisfy the interface
-func (d DeployMock) Trigger(projectId string, cfg DeployConfig) (DeployResponse, error) {
-	return DeployResponse{}, nil
+func (d DeployMock) Trigger(projectId string, cfg deploy.DeployConfig) (deploy.DeployResponse, error) {
+	return deploy.DeployResponse{}, nil
 }
 
 // StatusMonitor method mock. Added just to satisfy the interface
-func (d DeployMock) GetDeployStatus(projectId string, pipelineId int, environment string) (StatusResponse, error) {
-	return StatusResponse{}, nil
+func (d DeployMock) GetDeployStatus(projectId string, pipelineId int, environment string) (deploy.StatusResponse, error) {
+	return deploy.StatusResponse{}, nil
 }

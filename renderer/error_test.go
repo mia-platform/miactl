@@ -9,9 +9,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mia-platform/miactl/sdk"
-
 	"github.com/davidebianchi/go-jsonclient"
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -23,7 +22,7 @@ func TestError(t *testing.T) {
 	})
 
 	t.Run("returns error message for generic error", func(t *testing.T) {
-		genericErr := fmt.Errorf("%w: test error", sdk.ErrGeneric)
+		genericErr := fmt.Errorf("%w: test error", sdkErrors.ErrGeneric)
 		buf := &bytes.Buffer{}
 		errorMessage := NewError(buf, genericErr)
 		require.Equal(t, &writeError{
@@ -33,7 +32,7 @@ func TestError(t *testing.T) {
 	})
 
 	t.Run("returns error message for create client error", func(t *testing.T) {
-		clientErr := fmt.Errorf("%w: test error", sdk.ErrCreateClient)
+		clientErr := fmt.Errorf("%w: test error", sdkErrors.ErrCreateClient)
 		buf := &bytes.Buffer{}
 		errorMessage := NewError(buf, clientErr)
 		require.Equal(t, &writeError{
@@ -85,12 +84,12 @@ func TestError(t *testing.T) {
 	})
 
 	t.Run("correctly render message", func(t *testing.T) {
-		genericErr := fmt.Errorf("%w: test error", sdk.ErrGeneric)
+		genericErr := fmt.Errorf("%w: test error", sdkErrors.ErrGeneric)
 		buf := &bytes.Buffer{}
 		errorMessage := NewError(buf, genericErr)
 		errorMessage.Render()
 
-		require.Equal(t, buf.String(), fmt.Sprintf("%s: test error\n", sdk.ErrGeneric))
+		require.Equal(t, buf.String(), fmt.Sprintf("%s: test error\n", sdkErrors.ErrGeneric))
 	})
 }
 

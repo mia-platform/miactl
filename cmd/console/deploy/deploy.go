@@ -6,6 +6,7 @@ import (
 
 	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/sdk"
+	"github.com/mia-platform/miactl/sdk/deploy"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -13,12 +14,13 @@ import (
 
 func NewDeployCmd() *cobra.Command {
 	var (
-		baseURL   string
-		apiToken  string
-		projectId string
+		baseURL         string
+		apiToken        string
+		projectId       string
+		skipCertificate bool
 	)
 
-	cfg := sdk.DeployConfig{}
+	cfg := deploy.DeployConfig{}
 
 	cmd := &cobra.Command{
 		Use:   "deploy",
@@ -39,12 +41,16 @@ func NewDeployCmd() *cobra.Command {
 				return cmd.MarkFlagRequired("project")
 			}
 
+			// set the flag only in case it is defined
+			skipCertificate, _ = cmd.Flags().GetBool("insecure")
+
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := factory.FromContext(cmd.Context(), sdk.Options{
-				APIBaseURL: baseURL,
-				APIToken:   apiToken,
+				APIBaseURL:      baseURL,
+				APIToken:        apiToken,
+				SkipCertificate: skipCertificate,
 			})
 			if err != nil {
 				return err
@@ -64,8 +70,11 @@ func NewDeployCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&cfg.Environment, "environment", "", "the environment where to deploy the project")
 	cmd.Flags().StringVar(&cfg.Revision, "revision", "", "which version of your project should be released")
-	cfg.DeployAll = *cmd.Flags().Bool("deploy-all", false, "deploy all the project services, regardless of whether they have been updated or not")
-	cfg.ForceDeployNoSemVer = *cmd.Flags().Bool("force-no-semver", false, "whether to always deploy pods that do not follow semver")
+	cmd.Flags().BoolVar(&cfg.DeployAll, "deploy-all", false, "deploy all the project services, regardless of whether they have been updated or not")
+	cmd.Flags().BoolVar(&cfg.ForceDeployNoSemVer, "force-no-semver", false, "whether to always deploy pods that do not follow semver")
+	// Note: although this flag is defined as a persistent flag in the root command,
+	// in order to be set during tests it must be defined also at command level
+	cmd.Flags().BoolVar(&skipCertificate, "insecure", false, "whether to not check server certificate")
 
 	cmd.MarkFlagRequired("environment")
 	cmd.MarkFlagRequired("revision")
@@ -76,7 +85,7 @@ func NewDeployCmd() *cobra.Command {
 	return cmd
 }
 
-func visualizeResponse(f *factory.Factory, projectId string, rs sdk.DeployResponse) {
+func visualizeResponse(f *factory.Factory, projectId string, rs deploy.DeployResponse) {
 	headers := []string{"Project Id", "Deploy Id", "View Pipeline"}
 	table := f.Renderer.Table(headers)
 	table.Append([]string{projectId, strconv.FormatInt(int64(rs.Id), 10), rs.Url})

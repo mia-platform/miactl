@@ -11,6 +11,8 @@ import (
 	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/renderer"
 	"github.com/mia-platform/miactl/sdk"
+	"github.com/mia-platform/miactl/sdk/deploy"
+	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,7 +49,7 @@ func TestGetCommandRenderAndReturnsError(t *testing.T) {
 		cmd := NewRootCmd()
 		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
 		out, err := executeCommandWithContext(ctx, cmd, "get", "projects")
-		expectedErrMessage := fmt.Sprintf("%s: client options are not correct", sdk.ErrCreateClient)
+		expectedErrMessage := fmt.Sprintf("%s: client options are not correct", sdkErrors.ErrCreateClient)
 		require.Contains(t, out, expectedErrMessage)
 		require.EqualError(t, err, expectedErrMessage)
 	})
@@ -72,11 +74,11 @@ func TestGetCommand(t *testing.T) {
 
 	t.Run("get projects returns error", func(t *testing.T) {
 		out, err := executeRootCommandWithContext(sdk.MockClientError{
-			ProjectsError: sdk.ErrHTTP,
+			ProjectsError: sdkErrors.ErrHTTP,
 		}, "get", "projects", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
 		require.NoError(t, err)
 
-		require.Equal(t, fmt.Sprintf("%s\n", sdk.ErrHTTP), out)
+		require.Equal(t, fmt.Sprintf("%s\n", sdkErrors.ErrHTTP), out)
 	})
 
 }
@@ -100,13 +102,13 @@ func TestGetDeployments(t *testing.T) {
 		require.True(t, strings.HasPrefix(out, "Some error"))
 	})
 
-	history := []sdk.DeployItem{
+	history := []deploy.DeployItem{
 		{
 			ID:          123,
 			Status:      "running",
 			DeployType:  "deploy_all",
 			Ref:         "v1.2.3",
-			User:        sdk.DeployUser{Name: "John Smith"},
+			User:        deploy.DeployUser{Name: "John Smith"},
 			Duration:    12.3,
 			FinishedAt:  time.Date(2020, 01, 12, 22, 33, 44, 12, &time.Location{}),
 			WebURL:      "https://web.url/",
@@ -117,7 +119,7 @@ func TestGetDeployments(t *testing.T) {
 			Status:      "pending",
 			DeployType:  "deploy_all",
 			Ref:         "master",
-			User:        sdk.DeployUser{Name: "Rick Astley"},
+			User:        deploy.DeployUser{Name: "Rick Astley"},
 			Duration:    22.99,
 			FinishedAt:  time.Date(2020, 02, 12, 22, 33, 44, 12, &time.Location{}),
 			WebURL:      "https://web.url.2/",
@@ -127,8 +129,8 @@ func TestGetDeployments(t *testing.T) {
 
 	t.Run("works with projectId flag", func(t *testing.T) {
 		mockErrors := sdk.MockClientError{
-			DeployAssertFn: func(query sdk.DeployHistoryQuery) {
-				require.Equal(t, sdk.DeployHistoryQuery{
+			DeployAssertFn: func(query deploy.DeployHistoryQuery) {
+				require.Equal(t, deploy.DeployHistoryQuery{
 					ProjectID: "project-id",
 				}, query)
 			},
@@ -143,8 +145,8 @@ func TestGetDeployments(t *testing.T) {
 
 	t.Run("works with projectId shorthand flag", func(t *testing.T) {
 		mockErrors := sdk.MockClientError{
-			DeployAssertFn: func(query sdk.DeployHistoryQuery) {
-				require.Equal(t, sdk.DeployHistoryQuery{
+			DeployAssertFn: func(query deploy.DeployHistoryQuery) {
+				require.Equal(t, deploy.DeployHistoryQuery{
 					ProjectID: "project-id",
 				}, query)
 			},
