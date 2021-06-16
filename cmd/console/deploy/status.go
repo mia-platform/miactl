@@ -69,8 +69,7 @@ func NewStatusCmd() *cobra.Command {
 
 			result, err := f.MiaClient.Deploy.GetDeployStatus(projectId, pipelineId, environment)
 			if err != nil {
-				f.Renderer.Error(err).Render()
-				return nil
+				return err
 			}
 
 			visualizeStatusResponse(f, projectId, result)

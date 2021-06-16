@@ -118,6 +118,39 @@ func TestLogin(t *testing.T) {
 		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
 	})
 
+	t.Run("failed login - certificate issue", func(t *testing.T) {
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: "../../testdata/server-cert.pem",
+			KeyPath:  "../../testdata/server-key.pem",
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint:    "/api/oauth/token",
+				Method:      http.MethodPost,
+				RequestBody: nil,
+				Reply: map[string]interface{}{
+					"accessToken":  expectedAccessToken,
+					"refreshToken": "cmVmcmVzaFRva2Vu",
+					"expiresAt":    1619799800,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		secureClient := getTestClient(t, s.URL, false, nil)
+		accessToken, err := secureClient.Login(username, password, providerID)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "auth error:")
+		require.Contains(t, err.Error(), "x509: certificate signed by unknown authority")
+		require.Empty(t, accessToken, "Access token must be empty string")
+	})
+
 	t.Run("failed login", func(t *testing.T) {
 		mockConfigs := mocks.ServerConfigs{
 			{

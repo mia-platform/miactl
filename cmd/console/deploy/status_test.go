@@ -267,6 +267,48 @@ func TestNewStatusCmd(t *testing.T) {
 		require.Equal(t, expectedRow, tableRows[1])
 	})
 
+	t.Run("error getting pipeline status - certificate issue", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+		expectedStatus := deploy.Running
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: serverCertPath,
+			KeyPath:  serverKeyPath,
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: statusEndpoint,
+				Method:   http.MethodGet,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				Reply: map[string]interface{}{
+					"id":     pipelineId,
+					"status": expectedStatus,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
+		viper.Set("apitoken", apiToken)
+		viper.Set("project", projectId)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
+		err = cmd.ExecuteContext(ctx)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "x509: certificate signed by unknown authority")
+	})
+
 	t.Run("error getting pipeline status", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
@@ -293,14 +335,15 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
-		require.NoError(t, cmd.ExecuteContext(ctx))
+		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
+		err = cmd.ExecuteContext(ctx)
+		require.Error(t, err)
 
 		base, _ := url.Parse(s.URL)
 		path, _ := url.Parse(statusEndpoint)
 		require.Contains(
 			t,
-			buf.String(),
+			err.Error(),
 			fmt.Sprintf("GET %s: 400", base.ResolveReference(path)),
 		)
 	})
