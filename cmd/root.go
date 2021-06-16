@@ -29,6 +29,10 @@ func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:          "miactl",
 		SilenceUsage: true,
+		/* SilenceErrors must be set to true, since a custom error visualization
+		logic is implemented in the execute command below.
+		On the contrary, errors are visualized twice or more */
+		SilenceErrors: true,
 	}
 	setRootPersistentFlag(rootCmd)
 

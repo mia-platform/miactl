@@ -61,8 +61,7 @@ func NewDeployCmd() *cobra.Command {
 
 			deployData, err := f.MiaClient.Deploy.Trigger(projectId, cfg)
 			if err != nil {
-				f.Renderer.Error(err).Render()
-				return nil
+				return err
 			}
 
 			visualizeResponse(f, projectId, deployData)

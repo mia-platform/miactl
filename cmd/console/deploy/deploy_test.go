@@ -228,15 +228,15 @@ func TestNewDeployCmd(t *testing.T) {
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareCmd(t, environment, revision)
+		cmd, _, ctx := prepareCmd(t, environment, revision)
 		err = cmd.ExecuteContext(ctx)
-		require.NoError(t, err)
+		require.Error(t, err)
 
 		base, _ := url.Parse(s.URL)
 		path, _ := url.Parse(triggerEndpoint)
 		require.Contains(
 			t,
-			buf.String(),
+			err.Error(),
 			fmt.Sprintf("POST %s: 400", base.ResolveReference(path)),
 		)
 	})
