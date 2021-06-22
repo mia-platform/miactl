@@ -1,6 +1,6 @@
 module github.com/mia-platform/miactl
 
-go 1.15
+go 1.16
 
 require (
 	github.com/davidebianchi/go-jsonclient v1.2.0

@@ -9,7 +9,7 @@ jobs:
      runs-on: ${{ matrix.os }}
      strategy:
        matrix:
-         go_version: [1.13, 1.14, 1.15]
+         go_version: [1.15, 1.16]
          os: [macos-latest, ubuntu-latest]
      steps:
        - uses: actions/checkout@v1
@@ -28,6 +28,6 @@ jobs:
          run: |
           go test ./... -count=1 -race -cover
        - name: Build
-         if: matrix.go_version == 1.15
+         if: matrix.go_version == 1.16
          run: |
            go build -v .

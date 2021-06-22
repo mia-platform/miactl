@@ -16,10 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - get status of a pipeline release
 - insecure flag to skip check on certificate authority
 - flag to use custom certificate autorithy
+- add support to go v1.16
 
 ### Update
 
 - upgrade dependencies
+
+### Changed
+
+- drop support to go v1.13 and v.14
 
 ## 0.2.0
 
