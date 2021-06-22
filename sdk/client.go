@@ -2,7 +2,9 @@ package sdk
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -14,11 +16,12 @@ import (
 
 // Options struct define options to create the sdk client
 type Options struct {
-	APIKey          string
-	APICookie       string
-	APIBaseURL      string
-	APIToken        string
-	SkipCertificate bool
+	APIKey                string
+	APICookie             string
+	APIBaseURL            string
+	APIToken              string
+	SkipCertificate       bool
+	AdditionalCertificate string
 }
 
 // MiaClient is the client of the sdk to be used to communicate with Mia
@@ -51,9 +54,9 @@ func New(opts Options) (*MiaClient, error) {
 		Headers: headers,
 	}
 
-	customTransport := http.DefaultTransport.(*http.Transport).Clone()
-	customTransport.TLSClientConfig = &tls.Config{
-		InsecureSkipVerify: opts.SkipCertificate,
+	customTransport, err := getCustomTransport(opts.SkipCertificate, opts.AdditionalCertificate)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", sdkErrors.ErrCreateClient, err)
 	}
 	clientOptions.HTTPClient = &http.Client{
 		Timeout:   time.Second * 10,
@@ -70,4 +73,34 @@ func New(opts Options) (*MiaClient, error) {
 		Deploy:   &deploy.DeployClient{JSONClient: JSONClient},
 		Auth:     &auth.AuthClient{JSONClient: JSONClient},
 	}, nil
+}
+
+func getCustomTransport(skipCertificate bool, additionalCertificate string) (*http.Transport, error) {
+	customTransport := http.DefaultTransport.(*http.Transport).Clone()
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: skipCertificate,
+	}
+
+	if additionalCertificate != "" {
+		rootCAs, err := x509.SystemCertPool()
+		if err != nil {
+			fmt.Println("error loading system cert pool - usign a new one")
+			rootCAs = x509.NewCertPool()
+		}
+
+		cert, err := ioutil.ReadFile(additionalCertificate)
+		if err != nil {
+			return nil, err
+		}
+
+		if ok := rootCAs.AppendCertsFromPEM(cert); !ok {
+			fmt.Println("no certs appended, using system certs only")
+		}
+
+		tlsConfig.RootCAs = rootCAs
+	}
+
+	customTransport.TLSClientConfig = tlsConfig
+
+	return customTransport, nil
 }

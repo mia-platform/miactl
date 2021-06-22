@@ -21,7 +21,7 @@ var (
 	cfgFile   string
 	projectID string
 	opts      = sdk.Options{}
-	verbose   *bool
+	verbose   bool
 )
 
 // NewRootCmd creates a new root command
@@ -29,6 +29,10 @@ func NewRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:          "miactl",
 		SilenceUsage: true,
+		/* SilenceErrors must be set to true, since a custom error visualization
+		logic is implemented in the execute command below.
+		On the contrary, errors are visualized twice or more */
+		SilenceErrors: true,
 	}
 	setRootPersistentFlag(rootCmd)
 
@@ -63,15 +67,21 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().StringVar(&opts.APIBaseURL, "apiBaseUrl", "", "api base url")
 	rootCmd.PersistentFlags().StringVar(&opts.APIToken, "apiToken", "", "api access token")
 	rootCmd.PersistentFlags().StringVarP(&projectID, "project", "p", "", "specify desired project ID")
-	verbose = rootCmd.PersistentFlags().BoolP("verbose", "v", false, "whether to output details in verbose mode")
+	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "whether to output details in verbose mode")
 	rootCmd.PersistentFlags().BoolVar(&opts.SkipCertificate, "insecure", false, "whether to not check server certificate")
+	rootCmd.PersistentFlags().StringVar(
+		&opts.AdditionalCertificate,
+		"ca-cert",
+		"",
+		"file path to additional CA certificate, which can be employed to verify server certificate",
+	)
 
 	rootCmd.MarkFlagRequired("apiBaseUrl")
 
 	viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
 	viper.BindPFlag("apitoken", rootCmd.PersistentFlags().Lookup("apiToken"))
 	viper.BindPFlag("project", rootCmd.PersistentFlags().Lookup("project"))
-	viper.BindPFlag("verbose", rootCmd.PersistentFlags().Lookup("verbose"))
+	viper.BindPFlag("ca-cert", rootCmd.PersistentFlags().Lookup("ca-cert"))
 }
 
 // initConfig reads in config file and ENV variables if set.
@@ -103,7 +113,7 @@ func initConfig() {
 	if err := viper.ReadInConfig(); err != nil {
 		fmt.Println("Error loading file:", viper.ConfigFileUsed())
 	}
-	if *verbose {
+	if verbose {
 		fmt.Printf("Using config file: %s\n\n", viper.ConfigFileUsed())
 	}
 }

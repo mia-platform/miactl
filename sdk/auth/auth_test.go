@@ -2,7 +2,9 @@ package auth
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
@@ -19,7 +21,7 @@ func TestLogin(t *testing.T) {
 		password            = "secret"
 		appID               = "film"
 		providerID          = "provia"
-		baseURL             = "http://auth-provider/"
+		baseURL             = "https://auth-provider/"
 		expectedAccessToken = "YWNjZXNzVG9rZW4="
 	)
 
@@ -42,7 +44,7 @@ func TestLogin(t *testing.T) {
 		require.NoError(t, err, "mock must start correctly")
 		defer s.Close()
 
-		secureClient := getTestClient(t, s.URL, false)
+		secureClient := getTestClient(t, s.URL, false, nil)
 		accessToken, err := secureClient.Login(username, password, providerID)
 
 		require.Nil(t, err)
@@ -73,11 +75,80 @@ func TestLogin(t *testing.T) {
 		require.NoError(t, err, "mock must start correctly")
 		defer s.Close()
 
-		insecureClient := getTestClient(t, s.URL, true)
+		insecureClient := getTestClient(t, s.URL, true, nil)
 		accessToken, err := insecureClient.Login(username, password, providerID)
 
 		require.Nil(t, err)
 		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
+	})
+
+	t.Run("successful login - use custom certificate", func(t *testing.T) {
+		const certificatePath = "../../testdata/ca-cert.pem"
+		certificate, err := ioutil.ReadFile(certificatePath)
+		if err != nil {
+			t.Fatal(err)
+		}
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: "../../testdata/server-cert.pem",
+			KeyPath:  "../../testdata/server-key.pem",
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint:    "/api/oauth/token",
+				Method:      http.MethodPost,
+				RequestBody: nil,
+				Reply: map[string]interface{}{
+					"accessToken":  expectedAccessToken,
+					"refreshToken": "cmVmcmVzaFRva2Vu",
+					"expiresAt":    1619799800,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		secureClient := getTestClient(t, s.URL, false, certificate)
+		accessToken, err := secureClient.Login(username, password, providerID)
+
+		require.Nil(t, err)
+		require.Equal(t, expectedAccessToken, accessToken, "Access token differs from expected")
+	})
+
+	t.Run("failed login - certificate issue", func(t *testing.T) {
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: "../../testdata/server-cert.pem",
+			KeyPath:  "../../testdata/server-key.pem",
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint:    "/api/oauth/token",
+				Method:      http.MethodPost,
+				RequestBody: nil,
+				Reply: map[string]interface{}{
+					"accessToken":  expectedAccessToken,
+					"refreshToken": "cmVmcmVzaFRva2Vu",
+					"expiresAt":    1619799800,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		secureClient := getTestClient(t, s.URL, false, nil)
+		accessToken, err := secureClient.Login(username, password, providerID)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "auth error:")
+		require.Contains(t, err.Error(), "x509: certificate signed by unknown authority")
+		require.Empty(t, accessToken, "Access token must be empty string")
 	})
 
 	t.Run("failed login", func(t *testing.T) {
@@ -95,7 +166,7 @@ func TestLogin(t *testing.T) {
 		require.NoError(t, err, "mock must start correctly")
 		defer s.Close()
 
-		secureClient := getTestClient(t, s.URL, false)
+		secureClient := getTestClient(t, s.URL, false, nil)
 		accessToken, err := secureClient.Login(username, password, providerID)
 
 		require.Error(t, err)
@@ -104,13 +175,20 @@ func TestLogin(t *testing.T) {
 	})
 }
 
-func getTestClient(t *testing.T, url string, skipCertificate bool) IAuth {
+func getTestClient(t *testing.T, url string, skipCertificate bool, certificate []byte) IAuth {
 	t.Helper()
 
 	customTransport := http.DefaultTransport.(*http.Transport).Clone()
-	customTransport.TLSClientConfig = &tls.Config{
+	tlsConfig := tls.Config{
 		InsecureSkipVerify: skipCertificate,
 	}
+	if certificate != nil {
+		rootCAs := x509.NewCertPool()
+		require.True(t, rootCAs.AppendCertsFromPEM(certificate))
+		tlsConfig.RootCAs = rootCAs
+	}
+	customTransport.TLSClientConfig = &tlsConfig
+
 	if !strings.HasSuffix(url, "/") {
 		url = fmt.Sprintf("%s/", url)
 	}

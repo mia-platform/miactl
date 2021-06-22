@@ -25,32 +25,28 @@ var apiBaseURLFlag = fmt.Sprintf(`--apiBaseUrl=%s`, apiBaseURLValue)
 
 func TestGetCommandRenderAndReturnsError(t *testing.T) {
 	t.Run("without context", func(t *testing.T) {
-		out, err := executeCommand(NewRootCmd(), "get", "projects")
+		_, err := executeCommand(NewRootCmd(), "get", "projects")
 		expectedErrMessage := fmt.Sprintf("%s", "context error")
-		require.Contains(t, out, expectedErrMessage)
 		require.EqualError(t, err, expectedErrMessage)
 	})
 
 	t.Run("without correct args", func(t *testing.T) {
-		out, err := executeCommand(NewRootCmd(), "get", "not-correct-arg")
+		_, err := executeCommand(NewRootCmd(), "get", "not-correct-arg")
 		expectedErrMessage := `invalid argument "not-correct-arg" for "miactl get"`
-		require.Contains(t, out, expectedErrMessage)
 		require.EqualError(t, err, expectedErrMessage)
 	})
 
 	t.Run("without args", func(t *testing.T) {
-		out, err := executeCommand(NewRootCmd(), "get")
+		_, err := executeCommand(NewRootCmd(), "get")
 		expectedErrMessage := `accepts 1 arg(s), received 0`
-		require.Contains(t, out, expectedErrMessage)
 		require.EqualError(t, err, expectedErrMessage)
 	})
 
 	t.Run("without required flags", func(t *testing.T) {
 		cmd := NewRootCmd()
 		ctx := factory.WithValue(context.Background(), cmd.OutOrStdout())
-		out, err := executeCommandWithContext(ctx, cmd, "get", "projects")
+		_, err := executeCommandWithContext(ctx, cmd, "get", "projects")
 		expectedErrMessage := fmt.Sprintf("%s: client options are not correct", sdkErrors.ErrCreateClient)
-		require.Contains(t, out, expectedErrMessage)
 		require.EqualError(t, err, expectedErrMessage)
 	})
 }
@@ -85,9 +81,9 @@ func TestGetCommand(t *testing.T) {
 
 func TestGetDeployments(t *testing.T) {
 	t.Run("returns error if no project ID is provided", func(t *testing.T) {
-		out, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "deployments", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
+		_, err := executeRootCommandWithContext(sdk.MockClientError{}, "get", "deployments", apiKeyFlag, apiBaseURLFlag, apiCookieFlag)
 		require.Error(t, err)
-		require.True(t, strings.HasPrefix(out, "Error: required flag(s) \"project\" not set"))
+		require.True(t, strings.HasPrefix(err.Error(), "required flag(s) \"project\" not set"))
 	})
 
 	var projectIDFlag = fmt.Sprintf("--project=%s", "project-id")

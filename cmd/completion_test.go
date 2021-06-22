@@ -8,16 +8,14 @@ import (
 
 func TestCompletion(t *testing.T) {
 	t.Run("without correct args", func(t *testing.T) {
-		out, err := executeCommand(NewRootCmd(), "completion", "not-correct-arg")
+		_, err := executeCommand(NewRootCmd(), "completion", "not-correct-arg")
 		expectedErrMessage := `invalid argument "not-correct-arg" for "miactl completion"`
-		require.Contains(t, out, expectedErrMessage)
 		require.EqualError(t, err, expectedErrMessage)
 	})
 
 	t.Run("without args", func(t *testing.T) {
-		out, err := executeCommand(NewRootCmd(), "completion")
+		_, err := executeCommand(NewRootCmd(), "completion")
 		expectedErrMessage := `accepts 1 arg(s), received 0`
-		require.Contains(t, out, expectedErrMessage)
 		require.EqualError(t, err, expectedErrMessage)
 	})
 

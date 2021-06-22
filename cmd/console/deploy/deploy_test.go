@@ -20,11 +20,14 @@ import (
 
 func TestNewDeployCmd(t *testing.T) {
 	const (
-		projectId   = "4h6UBlNiZOk2"
-		revision    = "master"
-		environment = "development"
-		baseURL     = "http://console-base-url/"
-		apiToken    = "YWNjZXNzVG9rZW4="
+		projectId      = "4h6UBlNiZOk2"
+		revision       = "master"
+		environment    = "development"
+		baseURL        = "http://console-base-url/"
+		apiToken       = "YWNjZXNzVG9rZW4="
+		serverCertPath = "../../../testdata/server-cert.pem"
+		serverKeyPath  = "../../../testdata/server-key.pem"
+		caCertPath     = "../../../testdata/ca-cert.pem"
 	)
 	const expectedPipelineId = 458467
 	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
@@ -85,8 +88,8 @@ func TestNewDeployCmd(t *testing.T) {
 		defer viper.Reset()
 
 		serverCfg := mocks.CertificatesConfig{
-			CertPath: "../../../testdata/server-cert.pem",
-			KeyPath:  "../../../testdata/server-key.pem",
+			CertPath: serverCertPath,
+			KeyPath:  serverKeyPath,
 		}
 
 		mockConfigs := mocks.ServerConfigs{
@@ -136,6 +139,62 @@ func TestNewDeployCmd(t *testing.T) {
 		require.Equal(t, expectedRow, tableRows[1])
 	})
 
+	t.Run("successful deploy - select custom CA certificate", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: serverCertPath,
+			KeyPath:  serverKeyPath,
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: triggerEndpoint,
+				Method:   http.MethodPost,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				RequestBody: deploy.DeployRequest{
+					Environment:             environment,
+					Revision:                revision,
+					DeployType:              deploy.SmartDeploy,
+					ForceDeployWhenNoSemver: false,
+				},
+				Reply: map[string]interface{}{
+					"id":  expectedPipelineId,
+					"url": expectedPipelineURL,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
+		viper.Set("apitoken", apiToken)
+		viper.Set("project", projectId)
+		viper.Set("ca-cert", caCertPath)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		cmd, buf, ctx := prepareCmd(t, environment, revision)
+
+		err = cmd.ExecuteContext(ctx)
+		require.NoError(t, err)
+
+		tableRows := renderer.CleanTableRows(buf.String())
+
+		expectedHeaders := "PROJECT ID | DEPLOY ID | VIEW PIPELINE"
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, expectedPipelineId, expectedPipelineURL)
+
+		require.Equal(t, expectedHeaders, tableRows[0])
+		require.Equal(t, expectedRow, tableRows[1])
+	})
+
 	t.Run("failed deploy", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
@@ -169,17 +228,65 @@ func TestNewDeployCmd(t *testing.T) {
 		viper.Set("project", projectId)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareCmd(t, environment, revision)
+		cmd, _, ctx := prepareCmd(t, environment, revision)
 		err = cmd.ExecuteContext(ctx)
-		require.NoError(t, err)
+		require.Error(t, err)
 
 		base, _ := url.Parse(s.URL)
 		path, _ := url.Parse(triggerEndpoint)
 		require.Contains(
 			t,
-			buf.String(),
+			err.Error(),
 			fmt.Sprintf("POST %s: 400", base.ResolveReference(path)),
 		)
+	})
+
+	t.Run("failed deploy - certificate issue", func(t *testing.T) {
+		viper.Reset()
+		defer viper.Reset()
+
+		serverCfg := mocks.CertificatesConfig{
+			CertPath: serverCertPath,
+			KeyPath:  serverKeyPath,
+		}
+
+		mockConfigs := mocks.ServerConfigs{
+			{
+				Endpoint: triggerEndpoint,
+				Method:   http.MethodPost,
+				RequestHeaders: map[string]string{
+					"Authorization": expectedBearer,
+				},
+				RequestBody: deploy.DeployRequest{
+					Environment:             environment,
+					Revision:                revision,
+					DeployType:              deploy.SmartDeploy,
+					ForceDeployWhenNoSemver: false,
+				},
+				Reply: map[string]interface{}{
+					"id":  expectedPipelineId,
+					"url": expectedPipelineURL,
+				},
+				ReplyStatus: http.StatusOK,
+			},
+		}
+
+		s, err := mocks.HTTPServer(t, mockConfigs, &serverCfg)
+		require.NoError(t, err, "mock must start correctly")
+		defer s.Close()
+
+		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
+
+		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
+		viper.Set("apitoken", apiToken)
+		viper.Set("project", projectId)
+		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
+
+		cmd, _, ctx := prepareCmd(t, environment, revision)
+
+		err = cmd.ExecuteContext(ctx)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "x509: certificate signed by unknown authority")
 	})
 
 	t.Run("missing base url", func(t *testing.T) {
