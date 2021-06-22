@@ -54,7 +54,6 @@ brews:
     tap:
       owner: mia-platform
       name: homebrew-tap
-      token: "{{ .Env.BOT_GITHUB_TOKEN }}"
     commit_author:
       name: "{{ .Env.BOT_USER }}"
       email: "{{ .Env.BOT_USER_EMAIL }}"
