@@ -55,8 +55,8 @@ brews:
       owner: mia-platform
       name: homebrew-tap
     commit_author:
-      name: thobianchi
-      email: thomas.bianchi8@gmail.com
+      name: bot-targa
+      email: github@mia-platform.eu
     folder: Formula
     homepage: https://mia-platform.eu
     description: miactl is the cli of the mia-platform DevOps Console
