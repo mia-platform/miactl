@@ -51,12 +51,13 @@ changelog:
 # Homebrews
 brews:
   - name: miactl
-    github:
+    tap:
       owner: mia-platform
       name: homebrew-tap
+      token: "{{ .Env.BOT_GITHUB_TOKEN }}"
     commit_author:
-      name: bot-targa
-      email: github@mia-platform.eu
+      name: "{{ .Env.BOT_USER }}"
+      email: "{{ .Env.BOT_USER_EMAIL }}"
     folder: Formula
     homepage: https://mia-platform.eu
     description: miactl is the cli of the mia-platform DevOps Console
