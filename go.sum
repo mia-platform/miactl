@@ -70,8 +70,8 @@ github.com/cpuguy83/go-md2man/v2 v2.0.0/go.mod h1:maD7wRr/U5Z6m/iR4s+kqSMx2CaBsr
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/davidebianchi/go-jsonclient v1.2.0 h1:xM7YoyARq3AKmUVPn2DB1tMV14YgXbkdzX7oXMB/5Kw=
-github.com/davidebianchi/go-jsonclient v1.2.0/go.mod h1:CDSdLQE0osEoFm7EOQ8Kw/70QOL/eOUu11UBk4mLvPE=
+github.com/davidebianchi/go-jsonclient v1.3.0 h1:6579uXOHEDcClHK8b3j/xWbQV4Khpn7aMcH7tOmRjwY=
+github.com/davidebianchi/go-jsonclient v1.3.0/go.mod h1:lIOd35jxGfGENA/M0s1klHJgagIDj2KM1O6A/V5vpPI=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=
 github.com/dgryski/go-sip13 v0.0.0-20181026042036-e10d5fee7954/go.mod h1:vAd38F8PWV+bWy6jNmig1y/TA+kYO4g3RSRF0IAv0no=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
