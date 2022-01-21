@@ -11,10 +11,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type assertionFn func(t *testing.T, req *http.Request)
+type requestAssertionFn func(t *testing.T, req *http.Request)
 
 type response struct {
-	assertions assertionFn
+	assertions requestAssertionFn
 	body       string
 	status     int
 }
@@ -32,7 +32,7 @@ func testCreateClient(t *testing.T, url string) *jsonclient.Client {
 	return client
 }
 
-func testCreateResponseServer(t *testing.T, assertions assertionFn, responseBody string, statusCode int) *httptest.Server {
+func testCreateResponseServer(t *testing.T, assertions requestAssertionFn, responseBody string, statusCode int) *httptest.Server {
 	t.Helper()
 	responses := []response{
 		{assertions: assertions, body: responseBody, status: statusCode},

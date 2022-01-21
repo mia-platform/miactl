@@ -29,6 +29,7 @@ type IDeploy interface {
 	GetHistory(DeployHistoryQuery) ([]DeployItem, error)
 }
 
+// IAuth is a client interface used to interact with auth api.
 type IAuth interface {
 	GetProviders(appID string) ([]Provider, error)
 }

@@ -1,0 +1,10 @@
+[
+  {
+    "id": "my-provider-1",
+    "type": "gitlab"
+  },
+  {
+    "id": "my-provider-2",
+    "type": "github"
+  }
+]
