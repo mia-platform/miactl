@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - new command to trigger a new deploy per environment
 - get status of a pipeline release
 - insecure flag to skip check on certificate authority
-- flag to use custom certificate autorithy
+- flag to use custom certificate authority
 - add support to go v1.16
 
 ### Update
