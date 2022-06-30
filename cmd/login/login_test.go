@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"regexp"
 	"testing"
 
 	"github.com/mia-platform/miactl/factory"
@@ -187,7 +188,7 @@ func TestNewLoginCmd(t *testing.T) {
 		err = cmd.ExecuteContext(ctx)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "auth error:")
-		require.Contains(t, err.Error(), "x509: certificate signed by unknown authority")
+		require.Regexp(t, regexp.MustCompile("x509: certificate signed by unknown authority|certificate is not standards compliant"), err)
 
 		accessToken := viper.GetString("apitoken")
 		require.Empty(t, accessToken, "Access token must be empty string")

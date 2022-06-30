@@ -34,6 +34,6 @@ func TestCompletion(t *testing.T) {
 	t.Run("with zsh arg", func(t *testing.T) {
 		out, err := executeCommand(NewRootCmd(), "completion", "zsh")
 		require.Nil(t, err)
-		require.Contains(t, out, "#compdef _miactl miactl")
+		require.Contains(t, out, "#compdef miactl")
 	})
 }

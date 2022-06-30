@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
@@ -147,7 +148,7 @@ func TestLogin(t *testing.T) {
 
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "auth error:")
-		require.Contains(t, err.Error(), "x509: certificate signed by unknown authority")
+		require.Regexp(t, regexp.MustCompile("x509: certificate signed by unknown authority|certificate is not standards compliant"), err)
 		require.Empty(t, accessToken, "Access token must be empty string")
 	})
 

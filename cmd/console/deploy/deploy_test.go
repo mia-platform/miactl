@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"testing"
 
 	"github.com/mia-platform/miactl/factory"
@@ -286,7 +287,7 @@ func TestNewDeployCmd(t *testing.T) {
 
 		err = cmd.ExecuteContext(ctx)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "x509: certificate signed by unknown authority")
+		require.Regexp(t, regexp.MustCompile("x509: certificate signed by unknown authority|certificate is not standards compliant"), err)
 	})
 
 	t.Run("missing base url", func(t *testing.T) {
