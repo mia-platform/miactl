@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -306,7 +307,7 @@ func TestNewStatusCmd(t *testing.T) {
 		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
 		err = cmd.ExecuteContext(ctx)
 		require.Error(t, err)
-		require.Contains(t, err.Error(), "x509: certificate signed by unknown authority")
+		require.Regexp(t, regexp.MustCompile("x509: certificate signed by unknown authority|certificate is not standards compliant"), err)
 	})
 
 	t.Run("error getting pipeline status", func(t *testing.T) {
