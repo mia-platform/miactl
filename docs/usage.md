@@ -19,7 +19,7 @@ This command is only available for console super administrator
 :::
 
 ```bash
-$ miactl add user --username="john.smith@example.com"
+$ miactl add user "john.smith@example.com" --fullname="John Smith" --firstname="John" --lastname="Smith"
 ```
 
 ### Delete existing user
@@ -29,5 +29,5 @@ This command is only available for console super administrator
 :::
 
 ```bash
-$ miactl delete user --username="john.smith@example.com"
+$ miactl delete user "john.smith@example.com"
 ```
