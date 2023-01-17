@@ -19,21 +19,22 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	projectID      = "4h6UBlNiZOk2"
+	revision       = "master"
+	environment    = "development"
+	baseURL        = "http://console-base-url/"
+	apiToken       = "YWNjZXNzVG9rZW4="
+	serverCertPath = "../../../testdata/server-cert.pem"
+	serverKeyPath  = "../../../testdata/server-key.pem"
+	caCertPath     = "../../../testdata/ca-cert.pem"
+)
+
 func TestNewDeployCmd(t *testing.T) {
-	const (
-		projectId      = "4h6UBlNiZOk2"
-		revision       = "master"
-		environment    = "development"
-		baseURL        = "http://console-base-url/"
-		apiToken       = "YWNjZXNzVG9rZW4="
-		serverCertPath = "../../../testdata/server-cert.pem"
-		serverKeyPath  = "../../../testdata/server-key.pem"
-		caCertPath     = "../../../testdata/ca-cert.pem"
-	)
-	const expectedPipelineId = 458467
+	const expectedPipelineID = 458467
 	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
-	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
-	triggerEndpoint := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", projectId)
+	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineID)
+	triggerEndpoint := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", projectID)
 
 	t.Run("successful deploy", func(t *testing.T) {
 		viper.Reset()
@@ -46,14 +47,14 @@ func TestNewDeployCmd(t *testing.T) {
 				RequestHeaders: map[string]string{
 					"Authorization": expectedBearer,
 				},
-				RequestBody: deploy.DeployRequest{
+				RequestBody: deploy.Request{
 					Environment:             environment,
 					Revision:                revision,
 					DeployType:              deploy.SmartDeploy,
 					ForceDeployWhenNoSemver: false,
 				},
 				Reply: map[string]interface{}{
-					"id":  expectedPipelineId,
+					"id":  expectedPipelineID,
 					"url": expectedPipelineURL,
 				},
 				ReplyStatus: http.StatusOK,
@@ -68,17 +69,17 @@ func TestNewDeployCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareCmd(t, environment, revision)
+		cmd, buf, ctx := prepareCmd(t)
 		err = cmd.ExecuteContext(ctx)
 		require.NoError(t, err)
 
 		tableRows := renderer.CleanTableRows(buf.String())
 
 		expectedHeaders := "PROJECT ID | DEPLOY ID | VIEW PIPELINE"
-		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, expectedPipelineId, expectedPipelineURL)
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectID, expectedPipelineID, expectedPipelineURL)
 
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
@@ -100,14 +101,14 @@ func TestNewDeployCmd(t *testing.T) {
 				RequestHeaders: map[string]string{
 					"Authorization": expectedBearer,
 				},
-				RequestBody: deploy.DeployRequest{
+				RequestBody: deploy.Request{
 					Environment:             environment,
 					Revision:                revision,
 					DeployType:              deploy.SmartDeploy,
 					ForceDeployWhenNoSemver: false,
 				},
 				Reply: map[string]interface{}{
-					"id":  expectedPipelineId,
+					"id":  expectedPipelineID,
 					"url": expectedPipelineURL,
 				},
 				ReplyStatus: http.StatusOK,
@@ -122,10 +123,10 @@ func TestNewDeployCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareCmd(t, environment, revision)
+		cmd, buf, ctx := prepareCmd(t)
 		cmd.Flags().Set("insecure", "true")
 
 		err = cmd.ExecuteContext(ctx)
@@ -134,7 +135,7 @@ func TestNewDeployCmd(t *testing.T) {
 		tableRows := renderer.CleanTableRows(buf.String())
 
 		expectedHeaders := "PROJECT ID | DEPLOY ID | VIEW PIPELINE"
-		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, expectedPipelineId, expectedPipelineURL)
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectID, expectedPipelineID, expectedPipelineURL)
 
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
@@ -156,14 +157,14 @@ func TestNewDeployCmd(t *testing.T) {
 				RequestHeaders: map[string]string{
 					"Authorization": expectedBearer,
 				},
-				RequestBody: deploy.DeployRequest{
+				RequestBody: deploy.Request{
 					Environment:             environment,
 					Revision:                revision,
 					DeployType:              deploy.SmartDeploy,
 					ForceDeployWhenNoSemver: false,
 				},
 				Reply: map[string]interface{}{
-					"id":  expectedPipelineId,
+					"id":  expectedPipelineID,
 					"url": expectedPipelineURL,
 				},
 				ReplyStatus: http.StatusOK,
@@ -178,11 +179,11 @@ func TestNewDeployCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.Set("ca-cert", caCertPath)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareCmd(t, environment, revision)
+		cmd, buf, ctx := prepareCmd(t)
 
 		err = cmd.ExecuteContext(ctx)
 		require.NoError(t, err)
@@ -190,7 +191,7 @@ func TestNewDeployCmd(t *testing.T) {
 		tableRows := renderer.CleanTableRows(buf.String())
 
 		expectedHeaders := "PROJECT ID | DEPLOY ID | VIEW PIPELINE"
-		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, expectedPipelineId, expectedPipelineURL)
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectID, expectedPipelineID, expectedPipelineURL)
 
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
@@ -207,7 +208,7 @@ func TestNewDeployCmd(t *testing.T) {
 				RequestHeaders: map[string]string{
 					"Authorization": expectedBearer,
 				},
-				RequestBody: deploy.DeployRequest{
+				RequestBody: deploy.Request{
 					Environment:             environment,
 					Revision:                revision,
 					DeployType:              deploy.SmartDeploy,
@@ -226,10 +227,10 @@ func TestNewDeployCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareCmd(t, environment, revision)
+		cmd, _, ctx := prepareCmd(t)
 		err = cmd.ExecuteContext(ctx)
 		require.Error(t, err)
 
@@ -258,14 +259,14 @@ func TestNewDeployCmd(t *testing.T) {
 				RequestHeaders: map[string]string{
 					"Authorization": expectedBearer,
 				},
-				RequestBody: deploy.DeployRequest{
+				RequestBody: deploy.Request{
 					Environment:             environment,
 					Revision:                revision,
 					DeployType:              deploy.SmartDeploy,
 					ForceDeployWhenNoSemver: false,
 				},
 				Reply: map[string]interface{}{
-					"id":  expectedPipelineId,
+					"id":  expectedPipelineID,
 					"url": expectedPipelineURL,
 				},
 				ReplyStatus: http.StatusOK,
@@ -280,10 +281,10 @@ func TestNewDeployCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareCmd(t, environment, revision)
+		cmd, _, ctx := prepareCmd(t)
 
 		err = cmd.ExecuteContext(ctx)
 		require.Error(t, err)
@@ -297,10 +298,10 @@ func TestNewDeployCmd(t *testing.T) {
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareCmd(t, environment, revision)
+		cmd, _, ctx := prepareCmd(t)
 		err := cmd.ExecuteContext(ctx)
 		require.EqualError(t, err, "API base URL not specified nor configured")
 	})
@@ -311,10 +312,10 @@ func TestNewDeployCmd(t *testing.T) {
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 		viper.Set("apibaseurl", baseURL)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareCmd(t, environment, revision)
+		cmd, _, ctx := prepareCmd(t)
 		err := cmd.ExecuteContext(ctx)
 		require.EqualError(t, err, "missing API token - please login")
 	})
@@ -328,7 +329,7 @@ func TestNewDeployCmd(t *testing.T) {
 		viper.Set("apitoken", apiToken)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareCmd(t, environment, revision)
+		cmd, _, ctx := prepareCmd(t)
 		err := cmd.ExecuteContext(ctx)
 		require.Contains(t, err.Error(), "no such flag -project")
 	})
@@ -340,7 +341,7 @@ func TestNewDeployCmd(t *testing.T) {
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 		viper.Set("apibaseurl", baseURL)
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
 		buf := &bytes.Buffer{}
@@ -362,7 +363,7 @@ func TestNewDeployCmd(t *testing.T) {
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 		viper.Set("apibaseurl", baseURL)
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
 		buf := &bytes.Buffer{}
@@ -378,7 +379,7 @@ func TestNewDeployCmd(t *testing.T) {
 	})
 }
 
-func prepareCmd(t *testing.T, environment, revision string) (*cobra.Command, *bytes.Buffer, context.Context) {
+func prepareCmd(t *testing.T) (*cobra.Command, *bytes.Buffer, context.Context) {
 	t.Helper()
 
 	buf := &bytes.Buffer{}

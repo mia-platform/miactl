@@ -14,8 +14,8 @@ type IProjects interface {
 	Get() (Projects, error)
 }
 
-// DeployHistoryQuery wraps query filters for project deployments.
-type DeployHistoryQuery struct {
+// HistoryQuery wraps query filters for project deployments.
+type HistoryQuery struct {
 	ProjectID string
 }
 
@@ -27,8 +27,8 @@ type Cluster struct {
 
 // Environment of the project
 type Environment struct {
-	DisplayName string  `json:"label"`
-	EnvID       string  `json:"value"`
+	DisplayName string  `json:"label"` //nolint:tagliatelle
+	EnvID       string  `json:"value"` //nolint:tagliatelle
 	Cluster     Cluster `json:"cluster"`
 }
 
@@ -39,7 +39,7 @@ type Pipelines struct {
 
 // Project define the mia-platform console project
 type Project struct {
-	ID                   string        `json:"_id"`
+	ID                   string        `json:"_id"` //nolint:tagliatelle
 	Name                 string        `json:"name"`
 	ConfigurationGitPath string        `json:"configurationGitPath"`
 	Environments         []Environment `json:"environments"`
@@ -92,6 +92,7 @@ func getProjectByID(client *jsonclient.Client, projectID string) (*Project, erro
 
 	var project *Project
 	for _, p := range projects {
+		p := p
 		if p.ProjectID == projectID {
 			project = &p
 			break

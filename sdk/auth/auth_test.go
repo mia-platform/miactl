@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -85,7 +85,7 @@ func TestLogin(t *testing.T) {
 
 	t.Run("successful login - use custom certificate", func(t *testing.T) {
 		const certificatePath = "../../testdata/ca-cert.pem"
-		certificate, err := ioutil.ReadFile(certificatePath)
+		certificate, err := os.ReadFile(certificatePath)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -204,7 +204,7 @@ func getTestClient(t *testing.T, url string, skipCertificate bool, certificate [
 	client, err := jsonclient.New(clientOptions)
 	require.NoError(t, err, "error creating client")
 
-	return AuthClient{
+	return Client{
 		JSONClient: client,
 	}
 }

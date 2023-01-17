@@ -3,7 +3,7 @@ package mocks
 import (
 	"crypto/tls"
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -49,8 +49,8 @@ func HTTPServer(t *testing.T, cfgs ServerConfigs, tlsCfg *CertificatesConfig) (*
 
 			// check body only if required (e.g. not needed for GET/DELETE method)
 			if c.RequestBody != nil {
-				rawRequestBody, _ := ioutil.ReadAll(req.Body)
-				// remove the EOF/EOL (0xa byte) added by the ioutil.ReadAll to the request body bytes
+				rawRequestBody, _ := io.ReadAll(req.Body)
+				// remove the EOF/EOL (0xa byte) added by the io.ReadAll to the request body bytes
 				requestBody := rawRequestBody[:len(rawRequestBody)-1]
 
 				require.Equal(t, expectedRequestBody, requestBody)
@@ -73,6 +73,7 @@ func HTTPServer(t *testing.T, cfgs ServerConfigs, tlsCfg *CertificatesConfig) (*
 		}
 		server.TLS = &tls.Config{
 			Certificates: []tls.Certificate{cert},
+			MinVersion:   tls.VersionTLS12,
 		}
 		server.StartTLS()
 	} else {

@@ -18,7 +18,7 @@ func TestWithValue(t *testing.T) {
 	t.Run("save factory to passed context", func(t *testing.T) {
 		ctx := context.Background()
 		ctx = WithValue(ctx, &bytes.Buffer{})
-		f := ctx.Value(FactoryContextKey{})
+		f := ctx.Value(ContextKey{})
 		require.NotNil(t, f)
 		if _, ok := f.(Factory); ok {
 			return

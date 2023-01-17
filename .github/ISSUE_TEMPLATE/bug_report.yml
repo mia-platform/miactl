@@ -1,0 +1,52 @@
+name: Bug Report
+description: Report a bug that you have experienced
+title: "[Bug]: "
+labels:
+- bug
+- needs triage
+body:
+- type: markdown
+  attributes:
+    value: "## Thank you for contributing to our project!"
+- type: markdown
+  attributes:
+    value: Thanks for taking the time to fill out this bug report.
+- id: version
+  type: input
+  attributes:
+    label: What version or versions you have tested?
+    description: Add one or more version where the bug is present
+    placeholder: ex. 1.0.0 or 1.0.0,1.0.1
+- id: operating-systems
+  type: checkboxes
+  attributes:
+    label: Which operating systems have you used?
+    description: You may select more than one.
+    options:
+    - label: macOS
+    - label: Windows
+    - label: Linux
+- id: expectation
+  type: textarea
+  attributes:
+    label: What did you expect to happen?
+    description: |
+      Describe what did you expect to happen if this bug wasn’t there.
+  validations:
+    required: true
+- id: problem
+  type: textarea
+  attributes:
+    label: What happened instead?
+    description: |
+      Please describe what happened and provide every detail you can for reproducing it.
+  validations:
+    required: true
+- id: code-of-conduct
+  type: checkboxes
+  attributes:
+    label: Code of Conduct
+    description: By submitting this issue, you agree to follow our [Code of Conduct](./CODE_OF_CONDUCT.md)
+    options:
+      - label: I agree to follow this project’s Code of Conduct
+        required: true

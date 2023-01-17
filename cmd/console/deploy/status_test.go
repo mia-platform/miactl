@@ -22,11 +22,11 @@ import (
 
 func TestNewStatusCmd(t *testing.T) {
 	const (
-		projectId      = "4h6UBlNiZOk2"
+		projectID      = "4h6UBlNiZOk2"
 		baseURL        = "http://console-base-url/"
 		apiToken       = "YWNjZXNzVG9rZW4="
 		environment    = "test"
-		pipelineId     = 457321
+		pipelineID     = 457321
 		serverCertPath = "../../../testdata/server-cert.pem"
 		serverKeyPath  = "../../../testdata/server-key.pem"
 		caCertPath     = "../../../testdata/ca-cert.pem"
@@ -46,11 +46,11 @@ func TestNewStatusCmd(t *testing.T) {
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
 		for pid, status := range expectedStatuses {
-			statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pid)
+			statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectID, pid)
 
 			mockConfigs := mocks.ServerConfigs{
 				{
@@ -80,7 +80,7 @@ func TestNewStatusCmd(t *testing.T) {
 			tableRows := renderer.CleanTableRows(buf.String())
 
 			expectedHeaders := "PROJECT ID | DEPLOY ID | STATUS"
-			expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pid, status)
+			expectedRow := fmt.Sprintf("%s | %d | %s", projectID, pid, status)
 			require.Equal(t, expectedHeaders, tableRows[0])
 			require.Equal(t, expectedRow, tableRows[1])
 		}
@@ -90,7 +90,7 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
 		expectedStatus := deploy.Failed
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectID, pipelineID)
 
 		mockConfigs := mocks.ServerConfigs{
 			{
@@ -100,7 +100,7 @@ func TestNewStatusCmd(t *testing.T) {
 					"Authorization": expectedBearer,
 				},
 				Reply: map[string]interface{}{
-					"id":     pipelineId,
+					"id":     pipelineID,
 					"status": expectedStatus,
 				},
 				ReplyStatus: http.StatusOK,
@@ -114,16 +114,16 @@ func TestNewStatusCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
+		cmd, buf, ctx := prepareStatusCmd(pipelineID, "")
 		require.EqualError(t, cmd.ExecuteContext(ctx), "Deploy pipeline failed")
 
 		tableRows := renderer.CleanTableRows(buf.String())
 
 		expectedHeaders := "PROJECT ID | DEPLOY ID | STATUS"
-		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectID, pipelineID, expectedStatus)
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
 	})
@@ -132,7 +132,7 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
 		expectedStatus := deploy.Running
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectID, pipelineID)
 
 		serverCfg := mocks.CertificatesConfig{
 			CertPath: serverCertPath,
@@ -147,7 +147,7 @@ func TestNewStatusCmd(t *testing.T) {
 					"Authorization": expectedBearer,
 				},
 				Reply: map[string]interface{}{
-					"id":     pipelineId,
+					"id":     pipelineID,
 					"status": expectedStatus,
 				},
 				ReplyStatus: http.StatusOK,
@@ -161,17 +161,17 @@ func TestNewStatusCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
+		cmd, buf, ctx := prepareStatusCmd(pipelineID, "")
 		cmd.Flags().Set("insecure", "true")
 		require.NoError(t, cmd.ExecuteContext(ctx))
 
 		tableRows := renderer.CleanTableRows(buf.String())
 
 		expectedHeaders := "PROJECT ID | DEPLOY ID | STATUS"
-		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectID, pipelineID, expectedStatus)
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
 	})
@@ -180,7 +180,7 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
 		expectedStatus := deploy.Running
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectID, pipelineID)
 
 		serverCfg := mocks.CertificatesConfig{
 			CertPath: serverCertPath,
@@ -195,7 +195,7 @@ func TestNewStatusCmd(t *testing.T) {
 					"Authorization": expectedBearer,
 				},
 				Reply: map[string]interface{}{
-					"id":     pipelineId,
+					"id":     pipelineID,
 					"status": expectedStatus,
 				},
 				ReplyStatus: http.StatusOK,
@@ -209,17 +209,17 @@ func TestNewStatusCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.Set("ca-cert", caCertPath)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareStatusCmd(pipelineId, "")
+		cmd, buf, ctx := prepareStatusCmd(pipelineID, "")
 		require.NoError(t, cmd.ExecuteContext(ctx))
 
 		tableRows := renderer.CleanTableRows(buf.String())
 
 		expectedHeaders := "PROJECT ID | DEPLOY ID | STATUS"
-		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectID, pipelineID, expectedStatus)
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
 	})
@@ -228,7 +228,7 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
 		expectedStatus := deploy.Pending
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectID, pipelineID)
 
 		mockConfigs := mocks.ServerConfigs{
 			{
@@ -241,7 +241,7 @@ func TestNewStatusCmd(t *testing.T) {
 					"Authorization": expectedBearer,
 				},
 				Reply: map[string]interface{}{
-					"id":     pipelineId,
+					"id":     pipelineID,
 					"status": expectedStatus,
 				},
 				ReplyStatus: http.StatusOK,
@@ -254,16 +254,16 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, buf, ctx := prepareStatusCmd(pipelineId, environment)
+		cmd, buf, ctx := prepareStatusCmd(pipelineID, environment)
 		require.NoError(t, cmd.ExecuteContext(ctx))
 
 		tableRows := renderer.CleanTableRows(buf.String())
 
 		expectedHeaders := "PROJECT ID | DEPLOY ID | STATUS"
-		expectedRow := fmt.Sprintf("%s | %d | %s", projectId, pipelineId, expectedStatus)
+		expectedRow := fmt.Sprintf("%s | %d | %s", projectID, pipelineID, expectedStatus)
 		require.Equal(t, expectedHeaders, tableRows[0])
 		require.Equal(t, expectedRow, tableRows[1])
 	})
@@ -272,7 +272,7 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
 		expectedStatus := deploy.Running
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectID, pipelineID)
 
 		serverCfg := mocks.CertificatesConfig{
 			CertPath: serverCertPath,
@@ -287,7 +287,7 @@ func TestNewStatusCmd(t *testing.T) {
 					"Authorization": expectedBearer,
 				},
 				Reply: map[string]interface{}{
-					"id":     pipelineId,
+					"id":     pipelineID,
 					"status": expectedStatus,
 				},
 				ReplyStatus: http.StatusOK,
@@ -301,10 +301,10 @@ func TestNewStatusCmd(t *testing.T) {
 
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
+		cmd, _, ctx := prepareStatusCmd(pipelineID, "")
 		err = cmd.ExecuteContext(ctx)
 		require.Error(t, err)
 		require.Regexp(t, regexp.MustCompile("x509: certificate signed by unknown authority|certificate is not standards compliant"), err)
@@ -313,7 +313,7 @@ func TestNewStatusCmd(t *testing.T) {
 	t.Run("error getting pipeline status", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
-		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+		statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectID, pipelineID)
 
 		mockConfigs := mocks.ServerConfigs{
 			{
@@ -333,10 +333,10 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
+		cmd, _, ctx := prepareStatusCmd(pipelineID, "")
 		err = cmd.ExecuteContext(ctx)
 		require.Error(t, err)
 
@@ -356,10 +356,10 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 
 		viper.Set("apitoken", apiToken)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
+		cmd, _, ctx := prepareStatusCmd(pipelineID, "")
 		err := cmd.ExecuteContext(ctx)
 		require.EqualError(t, err, "API base URL not specified nor configured")
 	})
@@ -370,10 +370,10 @@ func TestNewStatusCmd(t *testing.T) {
 
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 		viper.Set("apibaseurl", baseURL)
-		viper.Set("project", projectId)
+		viper.Set("project", projectID)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
+		cmd, _, ctx := prepareStatusCmd(pipelineID, "")
 		err := cmd.ExecuteContext(ctx)
 		require.EqualError(t, err, "missing API token - please login")
 	})
@@ -387,7 +387,7 @@ func TestNewStatusCmd(t *testing.T) {
 		viper.Set("apitoken", apiToken)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, _, ctx := prepareStatusCmd(pipelineId, "")
+		cmd, _, ctx := prepareStatusCmd(pipelineID, "")
 		err := cmd.ExecuteContext(ctx)
 		require.Contains(t, err.Error(), "no such flag -project")
 	})

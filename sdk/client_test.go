@@ -27,8 +27,8 @@ func TestNew(t *testing.T) {
 	t.Run("throws with wrong base url", func(t *testing.T) {
 		client, err := New(Options{
 			APIBaseURL: "wrong	",
-			APIKey:    "apiKey",
-			APICookie: "sid=asd",
+			APIKey:     "apiKey",
+			APICookie:  "sid=asd",
 		})
 		require.Error(t, err)
 		require.Nil(t, client)

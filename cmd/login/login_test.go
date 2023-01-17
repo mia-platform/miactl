@@ -14,20 +14,20 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewLoginCmd(t *testing.T) {
-	const (
-		username            = "random"
-		password            = "secret"
-		appID               = "film"
-		providerID          = "provia"
-		baseURL             = "http://auth-provider/"
-		endpoint            = "/api/oauth/token"
-		expectedAccessToken = "YWNjZXNzVG9rZW4tMg=="
-		serverCertPath      = "../../testdata/server-cert.pem"
-		serverKeyPath       = "../../testdata/server-key.pem"
-		caCertPath          = "../../testdata/ca-cert.pem"
-	)
+const (
+	username            = "random"
+	password            = "secret"
+	appID               = "film"
+	providerID          = "provia"
+	baseURL             = "http://auth-provider/"
+	endpoint            = "/api/oauth/token"
+	expectedAccessToken = "YWNjZXNzVG9rZW4tMg=="
+	serverCertPath      = "../../testdata/server-cert.pem"
+	serverKeyPath       = "../../testdata/server-key.pem"
+	caCertPath          = "../../testdata/ca-cert.pem"
+)
 
+func TestNewLoginCmd(t *testing.T) {
 	t.Run("successful login", func(t *testing.T) {
 		viper.Reset()
 		defer viper.Reset()
@@ -56,7 +56,7 @@ func TestNewLoginCmd(t *testing.T) {
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, ctx := getLoginCommand(username, password, providerID)
+		cmd, ctx := getLoginCommand(t)
 		err = cmd.ExecuteContext(ctx)
 		require.Nil(t, err)
 
@@ -97,7 +97,7 @@ func TestNewLoginCmd(t *testing.T) {
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, ctx := getLoginCommand(username, password, providerID)
+		cmd, ctx := getLoginCommand(t)
 		cmd.Flags().Set("insecure", "true")
 
 		err = cmd.ExecuteContext(ctx)
@@ -141,7 +141,7 @@ func TestNewLoginCmd(t *testing.T) {
 		viper.Set("ca-cert", caCertPath)
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, ctx := getLoginCommand(username, password, providerID)
+		cmd, ctx := getLoginCommand(t)
 
 		err = cmd.ExecuteContext(ctx)
 		require.Nil(t, err)
@@ -183,7 +183,7 @@ func TestNewLoginCmd(t *testing.T) {
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, ctx := getLoginCommand(username, password, providerID)
+		cmd, ctx := getLoginCommand(t)
 
 		err = cmd.ExecuteContext(ctx)
 		require.Error(t, err)
@@ -218,7 +218,7 @@ func TestNewLoginCmd(t *testing.T) {
 		viper.Set("apibaseurl", fmt.Sprintf("%s/", s.URL))
 		viper.WriteConfigAs("/tmp/.miaplatformctl.yaml")
 
-		cmd, ctx := getLoginCommand(username, password, providerID)
+		cmd, ctx := getLoginCommand(t)
 		err = cmd.ExecuteContext(ctx)
 		require.Error(t, err)
 		require.Contains(t, err.Error(), "auth error:")
@@ -234,7 +234,7 @@ func TestNewLoginCmd(t *testing.T) {
 		// define from where login command should read config
 		viper.SetConfigFile("/tmp/.miaplatformctl.yaml")
 
-		cmd, ctx := getLoginCommand(username, password, providerID)
+		cmd, ctx := getLoginCommand(t)
 		err := cmd.ExecuteContext(ctx)
 		require.EqualError(t, err, "API base URL not specified nor configured")
 
@@ -243,7 +243,8 @@ func TestNewLoginCmd(t *testing.T) {
 	})
 }
 
-func getLoginCommand(username, password, providerID string) (*cobra.Command, context.Context) {
+func getLoginCommand(t *testing.T) (*cobra.Command, context.Context) {
+	t.Helper()
 	// Note: this is not testing the whole cli,
 	// which means that interactions with global
 	// flags must be tested in the main cmd package

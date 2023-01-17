@@ -1,0 +1,21 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+- repo: local
+  hooks:
+  - id: run-lint
+    name: Run make lint
+    entry: make lint
+    language: system
+    pass_filenames: false
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.4.0
+  hooks:
+  - id: check-case-conflict
+    name: Check filename case conflicts
+  - id: check-merge-conflict
+    name: Check that no merge conflict marker exists
+  - id: check-executables-have-shebangs
+    name: Check that executable files have shebangs
+  - id: check-shebang-scripts-are-executable
+    name: Check that files with shebangs are executable

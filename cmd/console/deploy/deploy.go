@@ -16,12 +16,12 @@ func NewDeployCmd() *cobra.Command {
 	var (
 		baseURL         string
 		apiToken        string
-		projectId       string
+		projectID       string
 		skipCertificate bool
 		certificatePath string
 	)
 
-	cfg := deploy.DeployConfig{}
+	cfg := deploy.Config{}
 
 	cmd := &cobra.Command{
 		Use:   "deploy",
@@ -30,7 +30,7 @@ func NewDeployCmd() *cobra.Command {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			baseURL = viper.GetString("apibaseurl")
 			apiToken = viper.GetString("apitoken")
-			projectId = viper.GetString("project")
+			projectID = viper.GetString("project")
 
 			if baseURL == "" {
 				return errors.New("API base URL not specified nor configured")
@@ -38,7 +38,7 @@ func NewDeployCmd() *cobra.Command {
 			if apiToken == "" {
 				return errors.New("missing API token - please login")
 			}
-			if projectId == "" {
+			if projectID == "" {
 				return cmd.MarkFlagRequired("project")
 			}
 
@@ -59,12 +59,12 @@ func NewDeployCmd() *cobra.Command {
 				return err
 			}
 
-			deployData, err := f.MiaClient.Deploy.Trigger(projectId, cfg)
+			deployData, err := f.MiaClient.Deploy.Trigger(projectID, cfg)
 			if err != nil {
 				return err
 			}
 
-			visualizeResponse(f, projectId, deployData)
+			visualizeResponse(f, projectID, deployData)
 
 			return nil
 		},
@@ -87,9 +87,9 @@ func NewDeployCmd() *cobra.Command {
 	return cmd
 }
 
-func visualizeResponse(f *factory.Factory, projectId string, rs deploy.DeployResponse) {
+func visualizeResponse(f *factory.Factory, projectID string, rs deploy.Response) {
 	headers := []string{"Project Id", "Deploy Id", "View Pipeline"}
 	table := f.Renderer.Table(headers)
-	table.Append([]string{projectId, strconv.FormatInt(int64(rs.Id), 10), rs.Url})
+	table.Append([]string{projectID, strconv.FormatInt(int64(rs.ID), 10), rs.URL})
 	table.Render()
 }

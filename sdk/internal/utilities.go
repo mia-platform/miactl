@@ -2,9 +2,9 @@ package internal
 
 import (
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/davidebianchi/go-jsonclient"
@@ -66,7 +66,7 @@ func CreateMultiTestResponseServer(t *testing.T, responses Responses) *httptest.
 func ReadTestData(t *testing.T, fileName string) string {
 	t.Helper()
 
-	fileContent, err := ioutil.ReadFile(fmt.Sprintf("../testdata/%s", fileName))
+	fileContent, err := os.ReadFile(fmt.Sprintf("../testdata/%s", fileName))
 	require.NoError(t, err)
 	return string(fileContent)
 }

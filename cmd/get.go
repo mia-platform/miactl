@@ -21,13 +21,13 @@ func newGetCmd() *cobra.Command {
 		Use:       "get",
 		ValidArgs: validArgs,
 		Args: func(cmd *cobra.Command, args []string) error {
-			return cobra.ExactValidArgs(1)(cmd, args)
+			return cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs)(cmd, args)
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			switch args[0] {
 			case "projects", "project":
 			case "deployment", "deployments":
-				cmd.MarkFlagRequired("project")
+				return cmd.MarkFlagRequired("project")
 			}
 			return nil
 		},
@@ -71,7 +71,7 @@ func getProjects(f *factory.Factory) {
 }
 
 func getDeploysForProject(f *factory.Factory) {
-	query := deploy.DeployHistoryQuery{
+	query := deploy.HistoryQuery{
 		ProjectID: projectID,
 	}
 
@@ -91,7 +91,7 @@ func getDeploysForProject(f *factory.Factory) {
 			deploy.Environment,
 			deploy.Ref,
 			deploy.User.Name,
-			time.Duration(time.Duration(deploy.Duration) * time.Second).String(),
+			(time.Duration(deploy.Duration) * time.Second).String(),
 			renderer.FormatDate(deploy.FinishedAt),
 			deploy.WebURL,
 		})

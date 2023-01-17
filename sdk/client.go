@@ -4,8 +4,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
@@ -70,15 +70,15 @@ func New(opts Options) (*MiaClient, error) {
 
 	return &MiaClient{
 		Projects: &deploy.ProjectsClient{JSONClient: JSONClient},
-		Deploy:   &deploy.DeployClient{JSONClient: JSONClient},
-		Auth:     &auth.AuthClient{JSONClient: JSONClient},
+		Deploy:   &deploy.Client{JSONClient: JSONClient},
+		Auth:     &auth.Client{JSONClient: JSONClient},
 	}, nil
 }
 
 func getCustomTransport(skipCertificate bool, additionalCertificate string) (*http.Transport, error) {
 	customTransport := http.DefaultTransport.(*http.Transport).Clone()
 	tlsConfig := &tls.Config{
-		InsecureSkipVerify: skipCertificate,
+		InsecureSkipVerify: skipCertificate, //nolint:gosec
 	}
 
 	if additionalCertificate != "" {
@@ -88,7 +88,7 @@ func getCustomTransport(skipCertificate bool, additionalCertificate string) (*ht
 			rootCAs = x509.NewCertPool()
 		}
 
-		cert, err := ioutil.ReadFile(additionalCertificate)
+		cert, err := os.ReadFile(additionalCertificate)
 		if err != nil {
 			return nil, err
 		}

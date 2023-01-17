@@ -3,9 +3,6 @@ package cmd
 import (
 	"bytes"
 	"context"
-	"io/ioutil"
-	"path/filepath"
-	"testing"
 
 	"github.com/mia-platform/miactl/factory"
 	"github.com/mia-platform/miactl/sdk"
@@ -57,13 +54,4 @@ func executeCommandC(root *cobra.Command, args ...string) (c *cobra.Command, out
 	c, err = root.ExecuteC()
 
 	return c, buf.String(), err
-}
-
-func helperLoadBytes(t *testing.T, name string) []byte {
-	path := filepath.Join("testdata", name)
-	bytes, err := ioutil.ReadFile(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return bytes
 }

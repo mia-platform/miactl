@@ -38,20 +38,21 @@ func newCompletionCmd(rootCmd *cobra.Command) *cobra.Command {
 		Long:      longUsage,
 		ValidArgs: validArgs,
 		Args: func(cmd *cobra.Command, args []string) error {
-			return cobra.ExactValidArgs(1)(cmd, args)
+			return cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs)(cmd, args)
 		},
-		Run: func(cmd *cobra.Command, args []string) {
-
+		RunE: func(cmd *cobra.Command, args []string) error {
 			shell := args[0]
 
 			switch shell {
 			case "bash":
-				rootCmd.GenBashCompletion(cmd.OutOrStdout())
+				return rootCmd.GenBashCompletion(cmd.OutOrStdout())
 			case "fish":
-				rootCmd.GenFishCompletion(cmd.OutOrStdout(), true)
+				return rootCmd.GenFishCompletion(cmd.OutOrStdout(), true)
 			case "zsh":
-				rootCmd.GenZshCompletion(cmd.OutOrStdout())
+				return rootCmd.GenZshCompletion(cmd.OutOrStdout())
 			}
+
+			return nil
 		},
 	}
 

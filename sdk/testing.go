@@ -12,8 +12,8 @@ type ProjectsMock struct {
 // DeployMock is useful to be used to mock deploy client.
 type DeployMock struct {
 	Error    error
-	AssertFn func(deploy.DeployHistoryQuery)
-	History  []deploy.DeployItem
+	AssertFn func(deploy.HistoryQuery)
+	History  []deploy.Item
 }
 
 // MockClientError passes error to mia client mock
@@ -21,8 +21,8 @@ type MockClientError struct {
 	ProjectsError error
 
 	DeployError    error
-	DeployAssertFn func(deploy.DeployHistoryQuery)
-	DeployHistory  []deploy.DeployItem
+	DeployAssertFn func(deploy.HistoryQuery)
+	DeployHistory  []deploy.Item
 }
 
 // WrapperMockMiaClient creates a mock of mia client
@@ -99,7 +99,7 @@ var defaultMockProjects = deploy.Projects{
 }
 
 // GetHistory method mock. It returns error or a list of deploy items.
-func (d DeployMock) GetHistory(query deploy.DeployHistoryQuery) ([]deploy.DeployItem, error) {
+func (d DeployMock) GetHistory(query deploy.HistoryQuery) ([]deploy.Item, error) {
 	if d.Error != nil {
 		return nil, d.Error
 	}
@@ -112,11 +112,11 @@ func (d DeployMock) GetHistory(query deploy.DeployHistoryQuery) ([]deploy.Deploy
 }
 
 // Trigger method mock. Added just to satisfy the interface
-func (d DeployMock) Trigger(projectId string, cfg deploy.DeployConfig) (deploy.DeployResponse, error) {
-	return deploy.DeployResponse{}, nil
+func (d DeployMock) Trigger(projectID string, cfg deploy.Config) (deploy.Response, error) {
+	return deploy.Response{}, nil
 }
 
 // StatusMonitor method mock. Added just to satisfy the interface
-func (d DeployMock) GetDeployStatus(projectId string, pipelineId int, environment string) (deploy.StatusResponse, error) {
+func (d DeployMock) GetDeployStatus(projectID string, pipelineID int, environment string) (deploy.StatusResponse, error) {
 	return deploy.StatusResponse{}, nil
 }

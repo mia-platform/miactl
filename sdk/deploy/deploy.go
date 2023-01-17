@@ -11,96 +11,96 @@ import (
 )
 
 const (
-	SmartDeploy DeployStrategy = "smart_deploy"
-	DeployAll                  = "deploy_all"
+	SmartDeploy Strategy = "smart_deploy"
+	DeployAll   Strategy = "deploy_all"
 )
 
 const (
-	Created  PipelineStatus = "created"
-	Pending                 = "pending"
-	Running                 = "running"
-	Success                 = "success"
-	Failed                  = "failed"
-	Canceled                = "canceled"
+	Created  = "created"
+	Pending  = "pending"
+	Running  = "running"
+	Success  = "success"
+	Failed   = "failed"
+	Canceled = "canceled"
 )
 
 // IDeploy is a client interface used to interact with deployment pipelines.
 type IDeploy interface {
-	GetHistory(DeployHistoryQuery) ([]DeployItem, error)
-	Trigger(string, DeployConfig) (DeployResponse, error)
+	GetHistory(HistoryQuery) ([]Item, error)
+	Trigger(string, Config) (Response, error)
 	GetDeployStatus(string, int, string) (StatusResponse, error)
 }
 
-// DeployItem represents a single item of the deploy history.
-type DeployItem struct {
+// Item represents a single item of the deploy history.
+type Item struct {
 	ID          int        `json:"id"`
 	Status      string     `json:"status"`
 	Ref         string     `json:"ref"`
 	Commit      CommitInfo `json:"commit"`
-	User        DeployUser `json:"user"`
+	User        User       `json:"user"`
 	DeployType  string     `json:"deployType"`
-	WebURL      string     `json:"webURL"`
+	WebURL      string     `json:"webURL"` //nolint:tagliatelle
 	Duration    float64    `json:"duration"`
 	FinishedAt  time.Time  `json:"finishedAt"`
-	Environment string     `json:"env"`
+	Environment string     `json:"env"` //nolint:tagliatelle
 }
 
 // CommitInfo represents available information regarding a specific commit.
 type CommitInfo struct {
-	URL        string    `json:"url"`
-	AuthorName string    `json:"authorName"`
-	CommitDate time.Time `json:"committedDate"`
-	AvatarURL  string    `json:"avatarURL"`
-	Hash       string    `json:"sha"`
+	URL           string    `json:"url"`
+	AuthorName    string    `json:"authorName"`
+	CommittedDate time.Time `json:"committedDate"`
+	AvatarURL     string    `json:"avatarURL"` //nolint:tagliatelle
+	Sha           string    `json:"sha"`
 }
 
-// DeployUser holds the information regarding the user who started
+// User holds the information regarding the user who started
 // a specific deploy.
-type DeployUser struct {
+type User struct {
 	Name string `json:"name"`
 }
 
-// DeployClient implements IDeploy interface to interact with Mia Platform deploy API.
-type DeployClient struct {
+// Client implements IDeploy interface to interact with Mia Platform deploy API.
+type Client struct {
 	JSONClient *jsonclient.Client
 }
 
-// DeployStrategy represents the type of deploy strategies that are available on the Console.
-type DeployStrategy string
+// Strategy represents the type of deploy strategies that are available on the Console.
+type Strategy string
 
-// DeployConfig is the details needed to trigger a deploy.
-type DeployConfig struct {
+// Config is the details needed to trigger a deploy.
+type Config struct {
 	Environment         string
 	Revision            string
 	DeployAll           bool
 	ForceDeployNoSemVer bool
 }
 
-// DeployRequest is the body parameters needed to trigger a pipeline deploy.
-type DeployRequest struct {
-	Environment             string         `json:"environment"`
-	Revision                string         `json:"revision"`
-	DeployType              DeployStrategy `json:"deployType"`
-	ForceDeployWhenNoSemver bool           `json:"forceDeployWhenNoSemver"`
+// Request is the body parameters needed to trigger a pipeline deploy.
+type Request struct {
+	Environment             string   `json:"environment"`
+	Revision                string   `json:"revision"`
+	DeployType              Strategy `json:"deployType"`
+	ForceDeployWhenNoSemver bool     `json:"forceDeployWhenNoSemver"`
 }
 
-// DeployResponse is the response of the service after triggering a deploy pipeline.
-type DeployResponse struct {
-	Id  int    `json:"id"`
-	Url string `json:"url"`
+// Response is the response of the service after triggering a deploy pipeline.
+type Response struct {
+	ID  int    `json:"id"`
+	URL string `json:"url"`
 }
 
 // StatusResponse is the response of the service regarding a deploy pipeline.
 type StatusResponse struct {
-	PipelineId int    `json:"id"`
-	Status     string `json:"status"`
+	ID     int    `json:"id"`
+	Status string `json:"status"`
 }
 
 // PipelineStatus is one of the possible states in which a deploy pipeline can be found.
 type PipelineStatus string
 
 // GetHistory interacts with Mia Platform APIs to retrieve a list of the latest deploy.
-func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error) {
+func (d Client) GetHistory(query HistoryQuery) ([]Item, error) {
 	project, err := getProjectByID(d.JSONClient, query.ProjectID)
 	if err != nil {
 		return nil, err
@@ -113,7 +113,7 @@ func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error)
 		return nil, err
 	}
 
-	var history []DeployItem
+	var history []Item
 	if _, err := d.JSONClient.Do(historyReq, &history); err != nil {
 		var httpErr *jsonclient.HTTPError
 		if errors.As(err, &httpErr) {
@@ -125,30 +125,30 @@ func (d DeployClient) GetHistory(query DeployHistoryQuery) ([]DeployItem, error)
 }
 
 // Trigger interacts with Mia Platform APIs to launch a deploy pipeline with specified configuration.
-func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployResponse, error) {
-	data := DeployRequest{
+func (d Client) Trigger(projectID string, cfg Config) (Response, error) {
+	data := Request{
 		Environment:             cfg.Environment,
 		Revision:                cfg.Revision,
 		DeployType:              SmartDeploy,
 		ForceDeployWhenNoSemver: cfg.ForceDeployNoSemVer,
 	}
 
-	if cfg.DeployAll == true {
+	if cfg.DeployAll {
 		data.DeployType = DeployAll
 		data.ForceDeployWhenNoSemver = true
 	}
 
-	path := fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectId)
+	path := fmt.Sprintf("api/deploy/projects/%s/trigger/pipeline/", projectID)
 
 	request, err := d.JSONClient.NewRequest(http.MethodPost, path, data)
 	if err != nil {
-		return DeployResponse{}, fmt.Errorf("error creating deploy request: %w", err)
+		return Response{}, fmt.Errorf("error creating deploy request: %w", err)
 	}
-	var response DeployResponse
+	var response Response
 
 	rawRes, err := d.JSONClient.Do(request, &response)
 	if err != nil {
-		return DeployResponse{}, fmt.Errorf("deploy error: %w", err)
+		return Response{}, fmt.Errorf("deploy error: %w", err)
 	}
 	rawRes.Body.Close()
 
@@ -156,8 +156,8 @@ func (d DeployClient) Trigger(projectId string, cfg DeployConfig) (DeployRespons
 }
 
 // GetDeployStatus interacts with Mia Platform APIs to retrieve selected pipeline status
-func (d DeployClient) GetDeployStatus(projectId string, pipelineId int, environment string) (StatusResponse, error) {
-	statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+func (d Client) GetDeployStatus(projectID string, pipelineID int, environment string) (StatusResponse, error) {
+	statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectID, pipelineID)
 	if environment != "" {
 		statusEndpoint = fmt.Sprintf("%s?environment=%s", statusEndpoint, environment)
 	}

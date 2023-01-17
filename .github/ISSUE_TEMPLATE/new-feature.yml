@@ -1,0 +1,29 @@
+name: New Feature
+description: Describe a new feature that you want implemented
+title: "[Feature]: "
+labels:
+- enhancement
+- needs triage
+body:
+- type: markdown
+  attributes:
+    value: "## Thank you for contributing to our project!"
+- type: markdown
+  attributes:
+    value: Thanks for taking the time to fill out this feature request.
+- id: new-feature
+  type: textarea
+  attributes:
+    label: Describe the feature
+    description: |
+      Please describe what you want to be implemented and why.
+  validations:
+    required: true
+- id: code-of-conduct
+  type: checkboxes
+  attributes:
+    label: Code of Conduct
+    description: By submitting this feature, you agree to follow our [Code of Conduct](./CODE_OF_CONDUCT.md)
+    options:
+      - label: I agree to follow this project’s Code of Conduct
+        required: true

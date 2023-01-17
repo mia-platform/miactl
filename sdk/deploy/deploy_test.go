@@ -44,7 +44,7 @@ func TestDeployGetHistory(t *testing.T) {
 		defer s.Close()
 		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
 
-		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-NaN"})
+		history, err := client.GetHistory(HistoryQuery{ProjectID: "project-NaN"})
 		require.Nil(t, history)
 		require.EqualError(t, err, fmt.Sprintf("%s: project-NaN", sdkErrors.ErrProjectNotFound))
 		require.True(t, errors.Is(err, sdkErrors.ErrProjectNotFound))
@@ -61,13 +61,13 @@ func TestDeployGetHistory(t *testing.T) {
 
 		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
 
-		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
+		history, err := client.GetHistory(HistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
 		require.Error(t, err)
 		require.True(t, errors.Is(err, jsonclient.ErrHTTP))
 	})
 
-	t.Run("Error on malformed history items (invalid DeployItem.ID)", func(t *testing.T) {
+	t.Run("Error on malformed history items (invalid Item.ID)", func(t *testing.T) {
 		historyResponseBody := utils.ReadTestData(t, "deploy-history-invalid-payload.json")
 		responses := utils.Responses{
 			{Assertions: projectRequestAssertions, Body: projectsListResponseBody, Status: 200},
@@ -78,10 +78,10 @@ func TestDeployGetHistory(t *testing.T) {
 
 		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
 
-		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
+		history, err := client.GetHistory(HistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, history)
 		require.Error(t, err)
-		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal string into Go struct field DeployItem.id of type int", sdkErrors.ErrGeneric))
+		require.EqualError(t, err, fmt.Sprintf("%s: json: cannot unmarshal string into Go struct field Item.id of type int", sdkErrors.ErrGeneric))
 		require.True(t, errors.Is(err, sdkErrors.ErrGeneric))
 	})
 
@@ -96,7 +96,7 @@ func TestDeployGetHistory(t *testing.T) {
 
 		client := testCreateDeployClientCookie(t, fmt.Sprintf("%s/", s.URL))
 
-		history, err := client.GetHistory(DeployHistoryQuery{ProjectID: "project-2"})
+		history, err := client.GetHistory(HistoryQuery{ProjectID: "project-2"})
 		require.Nil(t, err)
 		require.Equal(t, 3, len(history))
 
@@ -105,17 +105,17 @@ func TestDeployGetHistory(t *testing.T) {
 		require.NoError(t, err)
 		finishedAt, err := time.Parse(time.RFC3339, "2020-04-24T21:52:00.491Z")
 		require.NoError(t, err)
-		require.Equal(t, DeployItem{
+		require.Equal(t, Item{
 			ID:     1234,
 			Status: "success",
 			Ref:    "v1.4.2",
 			Commit: CommitInfo{
-				URL:        "https://the-repo/123456789",
-				AuthorName: "John Doe",
-				CommitDate: commitDate,
-				Hash:       "123456789",
+				URL:           "https://the-repo/123456789",
+				AuthorName:    "John Doe",
+				CommittedDate: commitDate,
+				Sha:           "123456789",
 			},
-			User: DeployUser{
+			User: User{
 				Name: "John Doe",
 			},
 			DeployType:  "deploy_all",
@@ -130,17 +130,17 @@ func TestDeployGetHistory(t *testing.T) {
 		require.NoError(t, err)
 		finishedAt, err = time.Parse(time.RFC3339, "2020-04-24T21:05:08.633Z")
 		require.NoError(t, err)
-		require.Equal(t, DeployItem{
+		require.Equal(t, Item{
 			ID:     1235,
 			Status: "success",
 			Ref:    "v1.4.1",
 			Commit: CommitInfo{
-				URL:        "https://the-repo/9876543",
-				AuthorName: "Tim Applepie",
-				CommitDate: commitDate,
-				Hash:       "9876543",
+				URL:           "https://the-repo/9876543",
+				AuthorName:    "Tim Applepie",
+				CommittedDate: commitDate,
+				Sha:           "9876543",
 			},
-			User: DeployUser{
+			User: User{
 				Name: "Tim Applepie",
 			},
 			DeployType:  "deploy_all",
@@ -155,17 +155,17 @@ func TestDeployGetHistory(t *testing.T) {
 		require.NoError(t, err)
 		finishedAt, err = time.Parse(time.RFC3339, "2020-04-24T21:02:10.540Z")
 		require.NoError(t, err)
-		require.Equal(t, DeployItem{
+		require.Equal(t, Item{
 			ID:     2414,
 			Status: "failed",
 			Ref:    "v1.4.0",
 			Commit: CommitInfo{
-				URL:        "https://the-repo/987123456",
-				AuthorName: "F. Nietzsche",
-				CommitDate: commitDate,
-				Hash:       "987123456",
+				URL:           "https://the-repo/987123456",
+				AuthorName:    "F. Nietzsche",
+				CommittedDate: commitDate,
+				Sha:           "987123456",
 			},
-			User: DeployUser{
+			User: User{
 				Name: "F. Nietzsche",
 			},
 			DeployType:  "deploy_all",
@@ -179,17 +179,17 @@ func TestDeployGetHistory(t *testing.T) {
 
 func TestTrigger(t *testing.T) {
 	const (
-		projectId   = "27ebd48c25a7"
+		projectID   = "27ebd48c25a7"
 		revision    = "master"
 		environment = "development"
 		baseURL     = "http://console-base-url/"
 		apiToken    = "YWNjZXNzVG9rZW4="
 	)
-	const expectedPipelineId = 458467
+	const expectedPipelineID = 458467
 	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
 	authHeaders := jsonclient.Headers{"Authorization": expectedBearer}
-	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineId)
-	triggerEndpoint := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", projectId)
+	expectedPipelineURL := fmt.Sprintf("https://pipeline-url/%d", expectedPipelineID)
+	triggerEndpoint := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", projectID)
 
 	t.Run("success - default behaviour", func(t *testing.T) {
 		mockConfigs := mocks.ServerConfigs{
@@ -199,14 +199,14 @@ func TestTrigger(t *testing.T) {
 				RequestHeaders: map[string]string{
 					"Authorization": expectedBearer,
 				},
-				RequestBody: DeployRequest{
+				RequestBody: Request{
 					Environment:             environment,
 					Revision:                revision,
 					DeployType:              SmartDeploy,
 					ForceDeployWhenNoSemver: false,
 				},
 				Reply: map[string]interface{}{
-					"id":  expectedPipelineId,
+					"id":  expectedPipelineID,
 					"url": expectedPipelineURL,
 				},
 				ReplyStatus: http.StatusOK,
@@ -218,16 +218,16 @@ func TestTrigger(t *testing.T) {
 		defer s.Close()
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
-		cfg := DeployConfig{
+		cfg := Config{
 			Environment: environment,
 			Revision:    revision,
 		}
-		expectedResponse := DeployResponse{
-			Id:  expectedPipelineId,
-			Url: expectedPipelineURL,
+		expectedResponse := Response{
+			ID:  expectedPipelineID,
+			URL: expectedPipelineURL,
 		}
 
-		deployResponse, err := client.Trigger(projectId, cfg)
+		deployResponse, err := client.Trigger(projectID, cfg)
 
 		require.NoError(t, err, "no error expected")
 		require.Equal(t, expectedResponse, deployResponse)
@@ -241,14 +241,14 @@ func TestTrigger(t *testing.T) {
 				RequestHeaders: map[string]string{
 					"Authorization": expectedBearer,
 				},
-				RequestBody: DeployRequest{
+				RequestBody: Request{
 					Environment:             environment,
 					Revision:                revision,
 					DeployType:              DeployAll,
 					ForceDeployWhenNoSemver: true,
 				},
 				Reply: map[string]interface{}{
-					"id":  expectedPipelineId,
+					"id":  expectedPipelineID,
 					"url": expectedPipelineURL,
 				},
 				ReplyStatus: http.StatusOK,
@@ -260,17 +260,17 @@ func TestTrigger(t *testing.T) {
 		defer s.Close()
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
-		cfg := DeployConfig{
+		cfg := Config{
 			Environment: environment,
 			Revision:    revision,
 			DeployAll:   true,
 		}
-		expectedResponse := DeployResponse{
-			Id:  expectedPipelineId,
-			Url: expectedPipelineURL,
+		expectedResponse := Response{
+			ID:  expectedPipelineID,
+			URL: expectedPipelineURL,
 		}
 
-		deployResponse, err := client.Trigger(projectId, cfg)
+		deployResponse, err := client.Trigger(projectID, cfg)
 
 		require.NoError(t, err, "no error expected")
 		require.Equal(t, expectedResponse, deployResponse)
@@ -284,7 +284,7 @@ func TestTrigger(t *testing.T) {
 				RequestHeaders: map[string]string{
 					"Authorization": expectedBearer,
 				},
-				RequestBody: DeployRequest{
+				RequestBody: Request{
 					Environment:             environment,
 					Revision:                revision,
 					DeployType:              SmartDeploy,
@@ -299,12 +299,12 @@ func TestTrigger(t *testing.T) {
 		defer s.Close()
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
-		cfg := DeployConfig{
+		cfg := Config{
 			Environment: environment,
 			Revision:    revision,
 		}
 
-		deployResponse, err := client.Trigger(projectId, cfg)
+		deployResponse, err := client.Trigger(projectID, cfg)
 
 		base, _ := url.Parse(s.URL)
 		path, _ := url.Parse(triggerEndpoint)
@@ -318,15 +318,15 @@ func TestTrigger(t *testing.T) {
 }
 func TestGetDeployStatus(t *testing.T) {
 	const (
-		projectId   = "u543t8sdf34t5"
-		pipelineId  = 32562
+		projectID   = "u543t8sdf34t5"
+		pipelineID  = 32562
 		baseURL     = "http://console-base-url/"
 		apiToken    = "YWNjZXNzVG9rZW4="
 		environment = "preprod"
 	)
 	expectedBearer := fmt.Sprintf("Bearer %s", apiToken)
 	authHeaders := jsonclient.Headers{"Authorization": expectedBearer}
-	statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectId, pipelineId)
+	statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", projectID, pipelineID)
 
 	t.Run("get status", func(t *testing.T) {
 		mockConfigs := mocks.ServerConfigs{
@@ -340,7 +340,7 @@ func TestGetDeployStatus(t *testing.T) {
 					"Authorization": expectedBearer,
 				},
 				Reply: map[string]interface{}{
-					"id":     pipelineId,
+					"id":     pipelineID,
 					"status": Success,
 				},
 				ReplyStatus: http.StatusOK,
@@ -353,11 +353,11 @@ func TestGetDeployStatus(t *testing.T) {
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
 		expectedResponse := StatusResponse{
-			PipelineId: pipelineId,
-			Status:     Success,
+			ID:     pipelineID,
+			Status: Success,
 		}
 
-		response, err := client.GetDeployStatus(projectId, pipelineId, environment)
+		response, err := client.GetDeployStatus(projectID, pipelineID, environment)
 
 		require.NoError(t, err)
 		require.Equal(t, expectedResponse, response)
@@ -383,7 +383,7 @@ func TestGetDeployStatus(t *testing.T) {
 		defer s.Close()
 		client := createDeployClient(t, fmt.Sprintf("%s/", s.URL), authHeaders)
 
-		response, err := client.GetDeployStatus(projectId, pipelineId, environment)
+		response, err := client.GetDeployStatus(projectID, pipelineID, environment)
 		require.Empty(t, response)
 
 		require.Error(t, err)
@@ -402,7 +402,7 @@ func testCreateDeployClientCookie(t *testing.T, url string) IDeploy {
 	})
 	require.NoError(t, err, "error creating client")
 
-	return DeployClient{
+	return Client{
 		JSONClient: client,
 	}
 }
@@ -416,7 +416,7 @@ func createDeployClient(t *testing.T, url string, headers jsonclient.Headers) ID
 	})
 	require.NoError(t, err, "error creating client")
 
-	return DeployClient{
+	return Client{
 		JSONClient: client,
 	}
 }

@@ -1,0 +1,29 @@
+name: Documenation
+description: Request a missing documentation or the correction of a wrong one
+title: "[Docs]: "
+labels:
+- documentation
+- needs triage
+body:
+- type: markdown
+  attributes:
+    value: "## Thank you for contributing to our project!"
+- type: markdown
+  attributes:
+    value: Thanks for taking the time to fill out this documenation request.
+- id: documentation
+  type: textarea
+  attributes:
+    label: Documentation Revision
+    description: |
+      Please describe what you want to be documented or the docs that must be corrected and why.
+  validations:
+    required: true
+- id: code-of-conduct
+  type: checkboxes
+  attributes:
+    label: Code of Conduct
+    description: By submitting this documentation revision, you agree to follow our [Code of Conduct](./CODE_OF_CONDUCT.md)
+    options:
+      - label: I agree to follow this project’s Code of Conduct
+        required: true

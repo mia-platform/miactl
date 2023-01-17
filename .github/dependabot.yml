@@ -1,8 +1,18 @@
 version: 2
+
 updates:
-- package-ecosystem: gomod
-  directory: "/"
+# keep up to date the github-actions
+- package-ecosystem: github-actions
+  directory: /
+  schedule:
+    interval: monthly
+
+# enable go dependencies security updates
+- directory: /
+  open-pull-requests-limit: 0
+  package-ecosystem: gomod
+  rebase-strategy: auto
   schedule:
     interval: daily
-    time: "04:00"
-  open-pull-requests-limit: 10
+    time: "07:00"
+    timezone: Europe/Rome

@@ -26,7 +26,7 @@ var apiBaseURLFlag = fmt.Sprintf(`--apiBaseUrl=%s`, apiBaseURLValue)
 func TestGetCommandRenderAndReturnsError(t *testing.T) {
 	t.Run("without context", func(t *testing.T) {
 		_, err := executeCommand(NewRootCmd(), "get", "projects")
-		expectedErrMessage := fmt.Sprintf("%s", "context error")
+		expectedErrMessage := "context error"
 		require.EqualError(t, err, expectedErrMessage)
 	})
 
@@ -76,7 +76,6 @@ func TestGetCommand(t *testing.T) {
 
 		require.Equal(t, fmt.Sprintf("%s\n", sdkErrors.ErrHTTP), out)
 	})
-
 }
 
 func TestGetDeployments(t *testing.T) {
@@ -98,13 +97,13 @@ func TestGetDeployments(t *testing.T) {
 		require.True(t, strings.HasPrefix(out, "Some error"))
 	})
 
-	history := []deploy.DeployItem{
+	history := []deploy.Item{
 		{
 			ID:          123,
 			Status:      "running",
 			DeployType:  "deploy_all",
 			Ref:         "v1.2.3",
-			User:        deploy.DeployUser{Name: "John Smith"},
+			User:        deploy.User{Name: "John Smith"},
 			Duration:    12.3,
 			FinishedAt:  time.Date(2020, 01, 12, 22, 33, 44, 12, &time.Location{}),
 			WebURL:      "https://web.url/",
@@ -115,7 +114,7 @@ func TestGetDeployments(t *testing.T) {
 			Status:      "pending",
 			DeployType:  "deploy_all",
 			Ref:         "master",
-			User:        deploy.DeployUser{Name: "Rick Astley"},
+			User:        deploy.User{Name: "Rick Astley"},
 			Duration:    22.99,
 			FinishedAt:  time.Date(2020, 02, 12, 22, 33, 44, 12, &time.Location{}),
 			WebURL:      "https://web.url.2/",
@@ -125,8 +124,8 @@ func TestGetDeployments(t *testing.T) {
 
 	t.Run("works with projectId flag", func(t *testing.T) {
 		mockErrors := sdk.MockClientError{
-			DeployAssertFn: func(query deploy.DeployHistoryQuery) {
-				require.Equal(t, deploy.DeployHistoryQuery{
+			DeployAssertFn: func(query deploy.HistoryQuery) {
+				require.Equal(t, deploy.HistoryQuery{
 					ProjectID: "project-id",
 				}, query)
 			},
@@ -141,8 +140,8 @@ func TestGetDeployments(t *testing.T) {
 
 	t.Run("works with projectId shorthand flag", func(t *testing.T) {
 		mockErrors := sdk.MockClientError{
-			DeployAssertFn: func(query deploy.DeployHistoryQuery) {
-				require.Equal(t, deploy.DeployHistoryQuery{
+			DeployAssertFn: func(query deploy.HistoryQuery) {
+				require.Equal(t, deploy.HistoryQuery{
 					ProjectID: "project-id",
 				}, query)
 			},

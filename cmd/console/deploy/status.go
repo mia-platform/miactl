@@ -17,7 +17,7 @@ func NewStatusCmd() *cobra.Command {
 	var (
 		baseURL         string
 		apiToken        string
-		projectId       string
+		projectID       string
 		environment     string
 		skipCertificate bool
 		certificatePath string
@@ -32,7 +32,7 @@ func NewStatusCmd() *cobra.Command {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			baseURL = viper.GetString("apibaseurl")
 			apiToken = viper.GetString("apitoken")
-			projectId = viper.GetString("project")
+			projectID = viper.GetString("project")
 
 			if baseURL == "" {
 				return errors.New("API base URL not specified nor configured")
@@ -40,7 +40,7 @@ func NewStatusCmd() *cobra.Command {
 			if apiToken == "" {
 				return errors.New("missing API token - please login")
 			}
-			if projectId == "" {
+			if projectID == "" {
 				return cmd.MarkFlagRequired("project")
 			}
 
@@ -61,18 +61,18 @@ func NewStatusCmd() *cobra.Command {
 				return err
 			}
 
-			pipelineId, err := strconv.Atoi(args[0])
+			pipelineID, err := strconv.Atoi(args[0])
 			if err != nil {
 				f.Renderer.Error(fmt.Errorf("unexpected pipeline id: %w", err)).Render()
 				return nil
 			}
 
-			result, err := f.MiaClient.Deploy.GetDeployStatus(projectId, pipelineId, environment)
+			result, err := f.MiaClient.Deploy.GetDeployStatus(projectID, pipelineID, environment)
 			if err != nil {
 				return err
 			}
 
-			visualizeStatusResponse(f, projectId, result)
+			visualizeStatusResponse(f, projectID, result)
 
 			switch result.Status {
 			case deploy.Failed:
@@ -93,9 +93,9 @@ func NewStatusCmd() *cobra.Command {
 	return cmd
 }
 
-func visualizeStatusResponse(f *factory.Factory, projectId string, rs deploy.StatusResponse) {
+func visualizeStatusResponse(f *factory.Factory, projectID string, rs deploy.StatusResponse) {
 	headers := []string{"Project Id", "Deploy Id", "Status"}
 	table := f.Renderer.Table(headers)
-	table.Append([]string{projectId, strconv.FormatInt(int64(rs.PipelineId), 10), rs.Status})
+	table.Append([]string{projectID, strconv.FormatInt(int64(rs.ID), 10), rs.Status})
 	table.Render()
 }

@@ -1,0 +1,21 @@
+default: true
+MD003:
+  style: atx
+MD010: false
+MD013:
+  line_length: 120
+  heading_line_length: 80
+  code_blocks: false
+  tables: false
+  headings: true
+  strict: false
+  stern: false
+MD024:
+  siblings_only: true
+MD029:
+  style: one
+MD033:
+  allowed_elements:
+  - center
+MD046:
+  style: fenced

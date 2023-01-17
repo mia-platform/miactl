@@ -9,7 +9,7 @@ import (
 
 const miactlAppID = "miactl"
 
-type AuthClient struct {
+type Client struct {
 	JSONClient *jsonclient.Client
 }
 
@@ -18,7 +18,7 @@ type IAuth interface {
 }
 
 type tokenRequest struct {
-	GrantType  string `json:"grant_type"`
+	GrantType  string `json:"grant_type"` //nolint:tagliatelle
 	Username   string `json:"username"`
 	Password   string `json:"password"`
 	AppID      string `json:"appId"`
@@ -28,10 +28,10 @@ type tokenRequest struct {
 type tokenResponse struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
-	ExpireAt     int64  `json:"expiresAt"`
+	ExpiresAt    int64  `json:"expiresAt"`
 }
 
-func (a AuthClient) Login(username, password, providerID string) (string, error) {
+func (a Client) Login(username, password, providerID string) (string, error) {
 	data := tokenRequest{
 		GrantType:  "password",
 		Username:   username,

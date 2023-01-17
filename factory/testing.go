@@ -9,7 +9,7 @@ import (
 
 // WithTestValue add factory to passed context
 func WithValueTest(ctx context.Context, writerMock io.Writer, miaClientMock miaClientCreator) context.Context {
-	return context.WithValue(ctx, FactoryContextKey{}, Factory{
+	return context.WithValue(ctx, ContextKey{}, Factory{
 		Renderer:         renderer.New(writerMock),
 		miaClientCreator: miaClientMock,
 	})

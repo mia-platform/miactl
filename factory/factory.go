@@ -11,8 +11,8 @@ import (
 	sdkErrors "github.com/mia-platform/miactl/sdk/errors"
 )
 
-// FactoryContextKey key of the factory in context
-type FactoryContextKey struct{}
+// ContextKey key of the factory in context
+type ContextKey struct{}
 
 type miaClientCreator func(opts sdk.Options) (*sdk.MiaClient, error)
 
@@ -38,7 +38,7 @@ func (o *Factory) addMiaClientToFactory(opts sdk.Options) error {
 
 // WithValue add factory to passed context
 func WithValue(ctx context.Context, writer io.Writer) context.Context {
-	return context.WithValue(ctx, FactoryContextKey{}, Factory{
+	return context.WithValue(ctx, ContextKey{}, Factory{
 		Renderer:         renderer.New(writer),
 		miaClientCreator: sdk.New,
 	})
@@ -46,7 +46,7 @@ func WithValue(ctx context.Context, writer io.Writer) context.Context {
 
 // FromContext returns factory from context
 func FromContext(ctx context.Context, opts sdk.Options) (*Factory, error) {
-	factory, ok := ctx.Value(FactoryContextKey{}).(Factory)
+	factory, ok := ctx.Value(ContextKey{}).(Factory)
 	if !ok {
 		return nil, errors.New("context error")
 	}

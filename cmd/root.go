@@ -103,7 +103,8 @@ func initConfig() {
 
 		// create a default config file if it does not exist
 		if err := viper.SafeWriteConfig(); err != nil {
-			viper.SafeWriteConfigAs(path.Join(home, cfgFileName))
+			err = viper.SafeWriteConfigAs(path.Join(home, cfgFileName))
+			fmt.Println(err)
 		}
 	}
 

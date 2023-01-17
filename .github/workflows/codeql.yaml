@@ -1,0 +1,33 @@
+name: Code Scanning
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - "*"
+  pull_request:
+    branches:
+    - main
+    paths-ignore:
+    - "**/*.md"
+    - docs/**
+    - examples/**
+  schedule:
+  - cron: 0 5 * * 1 # Run every monday at 5 UTC
+
+jobs:
+  codeql:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v2
+      with:
+        languages: go
+    - name: Run Build
+      run: make build
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v2

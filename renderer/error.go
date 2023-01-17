@@ -11,6 +11,10 @@ import (
 	"github.com/davidebianchi/go-jsonclient"
 )
 
+const (
+	unauthorized = 401
+)
+
 // IError is the error interface
 type IError interface {
 	Render()
@@ -36,7 +40,7 @@ func NewError(writer io.Writer, err error) IError {
 		return nil
 	}
 	var httpErr *jsonclient.HTTPError
-	switch true {
+	switch {
 	case errors.As(err, &httpErr):
 		return &writeError{
 			Message: httpErrorMessage(httpErr),
@@ -56,7 +60,7 @@ func NewError(writer io.Writer, err error) IError {
 
 func httpErrorMessage(httpErr *jsonclient.HTTPError) string {
 	switch httpErr.StatusCode {
-	case 401:
+	case unauthorized:
 		return "Unauthorized access, returns 401. Please check your credentials."
 	default:
 		return httpErr.Error()
