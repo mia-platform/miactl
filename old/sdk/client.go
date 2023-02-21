@@ -22,6 +22,8 @@ type Options struct {
 	APIToken              string
 	SkipCertificate       bool
 	AdditionalCertificate string
+	ProjectID             string
+	CompanyID             string
 }
 
 // MiaClient is the client of the sdk to be used to communicate with Mia

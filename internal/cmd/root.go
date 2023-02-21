@@ -7,6 +7,7 @@ import (
 	"path"
 
 	"github.com/mia-platform/miactl/internal/cmd/console"
+	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/old/factory"
 	"github.com/mia-platform/miactl/old/sdk"
@@ -15,7 +16,8 @@ import (
 	"github.com/spf13/viper"
 )
 
-const cfgFileName = ".miaplatformctl.yaml"
+const cfgDir = ".config/miactl"
+const cfgFileName = "config"
 
 var (
 	cfgFile   string
@@ -40,6 +42,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newGetCmd())
 	rootCmd.AddCommand(login.NewLoginCmd())
 	rootCmd.AddCommand(console.NewConsoleCmd())
+	rootCmd.AddCommand(miacontext.NewSetContextCommand())
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
@@ -61,12 +64,13 @@ func init() {
 }
 
 func setRootPersistentFlag(rootCmd *cobra.Command) {
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.miaplatformctl.yaml)")
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/miactl/config.yaml)")
+	rootCmd.PersistentFlags().StringVar(&opts.ProjectID, "projectID", "", "The ID of the project")
+	rootCmd.PersistentFlags().StringVar(&opts.CompanyID, "companyID", "", "The ID of the company")
 	rootCmd.PersistentFlags().StringVar(&opts.APIKey, "apiKey", "", "API Key")
 	rootCmd.PersistentFlags().StringVar(&opts.APICookie, "apiCookie", "", "api cookie sid")
 	rootCmd.PersistentFlags().StringVar(&opts.APIBaseURL, "apiBaseUrl", "", "api base url")
 	rootCmd.PersistentFlags().StringVar(&opts.APIToken, "apiToken", "", "api access token")
-	rootCmd.PersistentFlags().StringVarP(&projectID, "project", "p", "", "specify desired project ID")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "whether to output details in verbose mode")
 	rootCmd.PersistentFlags().BoolVar(&opts.SkipCertificate, "insecure", false, "whether to not check server certificate")
 	rootCmd.PersistentFlags().StringVar(
@@ -78,14 +82,17 @@ func setRootPersistentFlag(rootCmd *cobra.Command) {
 
 	rootCmd.MarkFlagRequired("apiBaseUrl")
 
+	viper.BindPFlag("projectID", rootCmd.PersistentFlags().Lookup("projectID"))
+	viper.BindPFlag("companyID", rootCmd.PersistentFlags().Lookup("companyID"))
 	viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
 	viper.BindPFlag("apitoken", rootCmd.PersistentFlags().Lookup("apiToken"))
-	viper.BindPFlag("project", rootCmd.PersistentFlags().Lookup("project"))
 	viper.BindPFlag("ca-cert", rootCmd.PersistentFlags().Lookup("ca-cert"))
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
+	viper.SetConfigType("yaml")
+
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -97,13 +104,19 @@ func initConfig() {
 			os.Exit(1)
 		}
 
+		cfgPath := path.Join(home, cfgDir)
+
 		// Search config in home directory with name ".miaplatformctl" (without extension).
-		viper.AddConfigPath(home)
-		viper.SetConfigName(".miaplatformctl")
+		viper.AddConfigPath(cfgPath)
+		viper.SetConfigName(cfgFileName)
 
 		// create a default config file if it does not exist
+		if err := os.MkdirAll(cfgPath, os.ModePerm); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		if err := viper.SafeWriteConfig(); err != nil {
-			err = viper.SafeWriteConfigAs(path.Join(home, cfgFileName))
+			err = viper.SafeWriteConfigAs(path.Join(cfgPath, cfgFileName))
 			fmt.Println(err)
 		}
 	}
