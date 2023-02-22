@@ -3,24 +3,39 @@ package context
 import (
 	"fmt"
 
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-func NewSetContextCommand() *cobra.Command {
-	var (
-		consoleUrl string
-		companyID  string
-		projectID  string
-	)
+var contextName string
 
+func NewSetContextCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set-context [flags]",
 		Short: "set current context for miactl",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			viper.Set("apibaseurl", consoleUrl)
-			viper.Set("projectid", projectID)
-			viper.Set("companyid", companyID)
+
+			contextMap := make(map[string]interface{})
+			if viper.Get("contexts") != nil {
+				contextMap = viper.Get("contexts").(map[string]interface{})
+			}
+			if contextMap[contextName] == nil {
+				newContext := map[string]string{"apibaseurl": clioptions.Opts.APIBaseURL, "projectid": clioptions.Opts.ProjectID, "companyid": clioptions.Opts.CompanyID}
+				contextMap[contextName] = newContext
+			} else {
+				oldContext := contextMap[contextName].(map[string]string)
+				if clioptions.Opts.APIBaseURL != "https://console.cloud.mia-platform.eu" {
+					oldContext["apibaseurl"] = clioptions.Opts.APIBaseURL
+				}
+				if clioptions.Opts.ProjectID != "" {
+					oldContext["projectid"] = clioptions.Opts.APIBaseURL
+				}
+				if clioptions.Opts.CompanyID != "" {
+					oldContext["companyid"] = clioptions.Opts.APIBaseURL
+				}
+			}
+			viper.Set("contexts", contextMap)
 			if err := viper.WriteConfig(); err != nil {
 				fmt.Println("error saving API token in the configuration")
 				return err
@@ -31,13 +46,7 @@ func NewSetContextCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&projectID, "project-id", "", "The ID of the project")
-	cmd.Flags().StringVar(&companyID, "company-id", "", "The ID of the company")
-	cmd.Flags().StringVar(&consoleUrl, "console-url", "", "The URL of the console")
-	// Note: although this flag is defined as a persistent flag in the root command,
-	// in order to be set during tests it must be defined also at command level
-
-	cmd.MarkFlagRequired("company-id")
+	cmd.Flags().StringVar(&contextName, "context-name", "default", "The name of the context to add")
 
 	return cmd
 }

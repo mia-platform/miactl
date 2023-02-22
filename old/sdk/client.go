@@ -24,6 +24,7 @@ type Options struct {
 	AdditionalCertificate string
 	ProjectID             string
 	CompanyID             string
+	Context               string
 }
 
 // MiaClient is the client of the sdk to be used to communicate with Mia

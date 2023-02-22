@@ -6,11 +6,11 @@ import (
 	"os"
 	"path"
 
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/console"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/old/factory"
-	"github.com/mia-platform/miactl/old/sdk"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -22,7 +22,6 @@ const cfgFileName = "config"
 var (
 	cfgFile   string
 	projectID string
-	opts      = sdk.Options{}
 	verbose   bool
 )
 
@@ -65,34 +64,31 @@ func init() {
 
 func setRootPersistentFlag(rootCmd *cobra.Command) {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/miactl/config.yaml)")
-	rootCmd.PersistentFlags().StringVar(&opts.ProjectID, "projectID", "", "The ID of the project")
-	rootCmd.PersistentFlags().StringVar(&opts.CompanyID, "companyID", "", "The ID of the company")
-	rootCmd.PersistentFlags().StringVar(&opts.APIKey, "apiKey", "", "API Key")
-	rootCmd.PersistentFlags().StringVar(&opts.APICookie, "apiCookie", "", "api cookie sid")
-	rootCmd.PersistentFlags().StringVar(&opts.APIBaseURL, "apiBaseUrl", "", "api base url")
-	rootCmd.PersistentFlags().StringVar(&opts.APIToken, "apiToken", "", "api access token")
+	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.ProjectID, "project-id", "", "The ID of the project")
+	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.CompanyID, "company-id", "", "The ID of the company")
+	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.APIKey, "apiKey", "", "API Key")
+	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.APICookie, "apiCookie", "", "api cookie sid")
+	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.APIBaseURL, "endpoint", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
+	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.APIToken, "apiToken", "", "api access token")
+	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.Context, "context", "", "The name of the context to use")
 	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "whether to output details in verbose mode")
-	rootCmd.PersistentFlags().BoolVar(&opts.SkipCertificate, "insecure", false, "whether to not check server certificate")
+	rootCmd.PersistentFlags().BoolVar(&clioptions.Opts.SkipCertificate, "insecure", false, "whether to not check server certificate")
 	rootCmd.PersistentFlags().StringVar(
-		&opts.AdditionalCertificate,
+		&clioptions.Opts.AdditionalCertificate,
 		"ca-cert",
 		"",
 		"file path to additional CA certificate, which can be employed to verify server certificate",
 	)
 
-	rootCmd.MarkFlagRequired("apiBaseUrl")
-
-	viper.BindPFlag("projectID", rootCmd.PersistentFlags().Lookup("projectID"))
-	viper.BindPFlag("companyID", rootCmd.PersistentFlags().Lookup("companyID"))
-	viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
+	// viper.BindPFlag("projectID", rootCmd.PersistentFlags().Lookup("projectID"))
+	// viper.BindPFlag("companyID", rootCmd.PersistentFlags().Lookup("companyID"))
+	// viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
 	viper.BindPFlag("apitoken", rootCmd.PersistentFlags().Lookup("apiToken"))
 	viper.BindPFlag("ca-cert", rootCmd.PersistentFlags().Lookup("ca-cert"))
 }
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	viper.SetConfigType("yaml")
-
 	if cfgFile != "" {
 		// Use config file from the flag.
 		viper.SetConfigFile(cfgFile)
@@ -107,16 +103,17 @@ func initConfig() {
 		cfgPath := path.Join(home, cfgDir)
 
 		// Search config in home directory with name ".miaplatformctl" (without extension).
-		viper.AddConfigPath(cfgPath)
 		viper.SetConfigName(cfgFileName)
+		viper.SetConfigType("yaml")
+		viper.AddConfigPath(cfgPath)
+		viper.Set("current-context", "")
 
 		// create a default config file if it does not exist
 		if err := os.MkdirAll(cfgPath, os.ModePerm); err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		if err := viper.SafeWriteConfig(); err != nil {
-			err = viper.SafeWriteConfigAs(path.Join(cfgPath, cfgFileName))
+		if err := viper.SafeWriteConfigAs(path.Join(cfgPath, cfgFileName)); err != nil {
 			fmt.Println(err)
 		}
 	}

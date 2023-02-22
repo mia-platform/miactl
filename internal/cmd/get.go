@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/old/factory"
 	"github.com/mia-platform/miactl/old/renderer"
 	"github.com/mia-platform/miactl/old/sdk/deploy"
@@ -32,7 +33,7 @@ func newGetCmd() *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f, err := factory.FromContext(cmd.Context(), opts)
+			f, err := factory.FromContext(cmd.Context(), clioptions.Opts)
 			if err != nil {
 				return err
 			}
