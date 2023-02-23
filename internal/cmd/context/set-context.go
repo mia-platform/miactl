@@ -24,15 +24,15 @@ func NewSetContextCommand() *cobra.Command {
 				newContext := map[string]string{"apibaseurl": clioptions.Opts.APIBaseURL, "projectid": clioptions.Opts.ProjectID, "companyid": clioptions.Opts.CompanyID}
 				contextMap[contextName] = newContext
 			} else {
-				oldContext := contextMap[contextName].(map[string]string)
+				oldContext := contextMap[contextName].(map[string]interface{})
 				if clioptions.Opts.APIBaseURL != "https://console.cloud.mia-platform.eu" {
 					oldContext["apibaseurl"] = clioptions.Opts.APIBaseURL
 				}
 				if clioptions.Opts.ProjectID != "" {
-					oldContext["projectid"] = clioptions.Opts.APIBaseURL
+					oldContext["projectid"] = clioptions.Opts.ProjectID
 				}
 				if clioptions.Opts.CompanyID != "" {
-					oldContext["companyid"] = clioptions.Opts.APIBaseURL
+					oldContext["companyid"] = clioptions.Opts.CompanyID
 				}
 			}
 			viper.Set("contexts", contextMap)
