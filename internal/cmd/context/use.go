@@ -8,17 +8,16 @@ import (
 	"github.com/spf13/viper"
 )
 
-var contextName string
-
 func NewUseContextCmd(opts *clioptions.RootOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "use [flags]",
 		Short: "update available contexts for miactl",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := contextLookUp(contextName); err != nil {
+			if err := contextLookUp(args[0]); err != nil {
 				return fmt.Errorf("error looking up the context in the config file: %w", err)
 			}
-			viper.Set("current-context", contextName)
+			viper.Set("current-context", args[0])
 			if err := viper.WriteConfig(); err != nil {
 				return fmt.Errorf("error updating the configuration: %w", err)
 			}
@@ -26,8 +25,6 @@ func NewUseContextCmd(opts *clioptions.RootOptions) *cobra.Command {
 			return nil
 		},
 	}
-
-	cmd.Flags().StringVar(&contextName, "context-name", "default", "The name of the context to add or update")
 
 	return cmd
 }

@@ -12,23 +12,24 @@ func NewSetContextCmd(opts *clioptions.RootOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set [flags]",
 		Short: "update available contexts for miactl",
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return updateContextMap(cmd, opts)
+			return updateContextMap(cmd, opts, args[0])
 		},
 	}
 	return cmd
 }
 
-func updateContextMap(cmd *cobra.Command, opts *clioptions.RootOptions) error {
+func updateContextMap(cmd *cobra.Command, opts *clioptions.RootOptions, contextName string) error {
 	contextMap := make(map[string]interface{})
 	if viper.Get("contexts") != nil {
 		contextMap = viper.Get("contexts").(map[string]interface{})
 	}
-	if contextMap[opts.Context] == nil {
+	if contextMap[contextName] == nil {
 		newContext := map[string]string{"apibaseurl": opts.APIBaseURL, "projectid": opts.ProjectID, "companyid": opts.CompanyID}
-		contextMap[opts.Context] = newContext
+		contextMap[contextName] = newContext
 	} else {
-		oldContext := contextMap[opts.Context].(map[string]interface{})
+		oldContext := contextMap[contextName].(map[string]interface{})
 		if opts.APIBaseURL != "https://console.cloud.mia-platform.eu" {
 			oldContext["apibaseurl"] = opts.APIBaseURL
 		}
