@@ -6,7 +6,6 @@ import (
 	"os"
 	"path"
 
-	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/console"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/login"
@@ -63,22 +62,6 @@ func init() {
 }
 
 func setRootPersistentFlag(rootCmd *cobra.Command) {
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.config/miactl/config.yaml)")
-	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.ProjectID, "project-id", "", "The ID of the project")
-	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.CompanyID, "company-id", "", "The ID of the company")
-	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.APIKey, "apiKey", "", "API Key")
-	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.APICookie, "apiCookie", "", "api cookie sid")
-	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.APIBaseURL, "endpoint", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
-	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.APIToken, "apiToken", "", "api access token")
-	rootCmd.PersistentFlags().StringVar(&clioptions.Opts.Context, "context", "", "The name of the context to use")
-	rootCmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "whether to output details in verbose mode")
-	rootCmd.PersistentFlags().BoolVar(&clioptions.Opts.SkipCertificate, "insecure", false, "whether to not check server certificate")
-	rootCmd.PersistentFlags().StringVar(
-		&clioptions.Opts.AdditionalCertificate,
-		"ca-cert",
-		"",
-		"file path to additional CA certificate, which can be employed to verify server certificate",
-	)
 
 	// viper.BindPFlag("projectID", rootCmd.PersistentFlags().Lookup("projectID"))
 	// viper.BindPFlag("companyID", rootCmd.PersistentFlags().Lookup("companyID"))
