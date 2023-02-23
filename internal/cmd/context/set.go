@@ -3,40 +3,40 @@ package context
 import (
 	"fmt"
 
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-func NewSetContextCmd() *cobra.Command {
+func NewSetContextCmd(opts *clioptions.RootOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set [flags]",
 		Short: "update available contexts for miactl",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return updateContextMap(cmd)
+			return updateContextMap(cmd, opts)
 		},
 	}
 	return cmd
 }
 
-func updateContextMap(cmd *cobra.Command) error {
-	o := getOptions(cmd)
+func updateContextMap(cmd *cobra.Command, opts *clioptions.RootOptions) error {
 	contextMap := make(map[string]interface{})
 	if viper.Get("contexts") != nil {
 		contextMap = viper.Get("contexts").(map[string]interface{})
 	}
-	if contextMap[o.name] == nil {
-		newContext := map[string]string{"apibaseurl": o.endpoint, "projectid": o.projectID, "companyid": o.companyID}
-		contextMap[o.name] = newContext
+	if contextMap[opts.Context] == nil {
+		newContext := map[string]string{"apibaseurl": opts.APIBaseURL, "projectid": opts.ProjectID, "companyid": opts.CompanyID}
+		contextMap[opts.Context] = newContext
 	} else {
-		oldContext := contextMap[o.name].(map[string]interface{})
-		if o.endpoint != "https://console.cloud.mia-platform.eu" {
-			oldContext["apibaseurl"] = o.endpoint
+		oldContext := contextMap[opts.Context].(map[string]interface{})
+		if opts.APIBaseURL != "https://console.cloud.mia-platform.eu" {
+			oldContext["apibaseurl"] = opts.APIBaseURL
 		}
-		if o.projectID != "" {
-			oldContext["projectid"] = o.projectID
+		if opts.ProjectID != "" {
+			oldContext["projectid"] = opts.ProjectID
 		}
-		if o.companyID != "" {
-			oldContext["companyid"] = o.companyID
+		if opts.CompanyID != "" {
+			oldContext["companyid"] = opts.CompanyID
 		}
 	}
 	viper.Set("contexts", contextMap)

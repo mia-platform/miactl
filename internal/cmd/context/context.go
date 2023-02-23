@@ -5,48 +5,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type contextFlags struct {
-	RootOptions *clioptions.RootOptions
-}
-
-type contextOptions struct {
-	name      string
-	endpoint  string
-	projectID string
-	companyID string
-}
-
 func NewContextCmd() *cobra.Command {
-	flags := newContextFlags()
+	options := clioptions.NewRootOptions()
 	cmd := &cobra.Command{
 		Use:   "context",
 		Short: "perform operations on cluster contexts",
 	}
 
-	cmd.AddCommand(NewSetContextCmd())
-	cmd.AddCommand(NewUseContextCmd())
+	cmd.AddCommand(NewSetContextCmd(options))
+	cmd.AddCommand(NewUseContextCmd(options))
 
-	flags.addFlags(cmd)
+	options.AddFlags(cmd)
 
 	return cmd
-}
-
-func (f *contextFlags) addFlags(c *cobra.Command) {
-	//root flags
-	f.RootOptions.AddFlags(c)
-}
-
-func newContextFlags() *contextFlags {
-	return &contextFlags{
-		RootOptions: clioptions.NewRootOptions(),
-	}
-}
-
-func getOptions(c *cobra.Command) *contextOptions {
-	return &contextOptions{
-		name:      clioptions.GetFlagString(c, "context"),
-		endpoint:  clioptions.GetFlagString(c, "endpoint"),
-		projectID: clioptions.GetFlagString(c, "project-id"),
-		companyID: clioptions.GetFlagString(c, "company-id"),
-	}
 }

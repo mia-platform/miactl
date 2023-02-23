@@ -3,13 +3,14 @@ package context
 import (
 	"fmt"
 
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 var contextName string
 
-func NewUseContextCmd() *cobra.Command {
+func NewUseContextCmd(opts *clioptions.RootOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "use [flags]",
 		Short: "update available contexts for miactl",
