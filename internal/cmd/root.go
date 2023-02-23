@@ -40,7 +40,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(newGetCmd())
 	rootCmd.AddCommand(login.NewLoginCmd())
 	rootCmd.AddCommand(console.NewConsoleCmd())
-	rootCmd.AddCommand(miacontext.NewSetContextCommand())
+	rootCmd.AddCommand(miacontext.NewContextCmd())
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
