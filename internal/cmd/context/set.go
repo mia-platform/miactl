@@ -10,7 +10,7 @@ import (
 
 func NewSetContextCmd(opts *clioptions.RootOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "miactl context set <context_name> [flags]",
+		Use:   "set CONTEXT [flags]",
 		Short: "update available contexts for miactl",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
