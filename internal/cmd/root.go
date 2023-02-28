@@ -62,7 +62,6 @@ func init() {
 }
 
 func setRootPersistentFlag(rootCmd *cobra.Command) {
-
 	// viper.BindPFlag("projectID", rootCmd.PersistentFlags().Lookup("projectID"))
 	// viper.BindPFlag("companyID", rootCmd.PersistentFlags().Lookup("companyID"))
 	// viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
