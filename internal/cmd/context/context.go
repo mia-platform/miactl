@@ -13,21 +13,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package console
+package context
 
 import (
-	"github.com/mia-platform/miactl/internal/cmd/console/deploy"
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
 )
 
-func NewConsoleCmd() *cobra.Command {
-	// Note: console should act as a resource that receives commands to be executed
+func NewContextCmd() *cobra.Command {
+	options := clioptions.NewRootOptions()
 	cmd := &cobra.Command{
-		Use:   "console",
-		Short: "select console resource",
+		Use:   "context",
+		Short: "perform operations on cluster contexts",
 	}
 
-	cmd.AddCommand(deploy.NewDeployCmd())
+	cmd.AddCommand(NewSetContextCmd(options))
+	cmd.AddCommand(NewUseContextCmd(options))
+
+	options.AddFlags(cmd)
 
 	return cmd
 }

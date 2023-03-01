@@ -13,21 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package console
+package clioptions
 
-import (
-	"github.com/mia-platform/miactl/internal/cmd/console/deploy"
-	"github.com/spf13/cobra"
-)
+import "github.com/mia-platform/miactl/old/sdk"
 
-func NewConsoleCmd() *cobra.Command {
-	// Note: console should act as a resource that receives commands to be executed
-	cmd := &cobra.Command{
-		Use:   "console",
-		Short: "select console resource",
-	}
-
-	cmd.AddCommand(deploy.NewDeployCmd())
-
-	return cmd
-}
+var Opts = sdk.Options{}

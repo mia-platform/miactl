@@ -13,21 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package console
+package context
 
 import (
-	"github.com/mia-platform/miactl/internal/cmd/console/deploy"
-	"github.com/spf13/cobra"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-func NewConsoleCmd() *cobra.Command {
-	// Note: console should act as a resource that receives commands to be executed
-	cmd := &cobra.Command{
-		Use:   "console",
-		Short: "select console resource",
-	}
-
-	cmd.AddCommand(deploy.NewDeployCmd())
-
-	return cmd
+func TestNewContextCmd(t *testing.T) {
+	t.Run("test command creation", func(t *testing.T) {
+		cmd := NewContextCmd()
+		require.NotNil(t, cmd)
+	})
 }

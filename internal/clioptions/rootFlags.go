@@ -13,21 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package console
+package clioptions
 
-import (
-	"github.com/mia-platform/miactl/internal/cmd/console/deploy"
-	"github.com/spf13/cobra"
-)
+import "github.com/spf13/cobra"
 
-func NewConsoleCmd() *cobra.Command {
-	// Note: console should act as a resource that receives commands to be executed
-	cmd := &cobra.Command{
-		Use:   "console",
-		Short: "select console resource",
-	}
+type RootOptions struct {
+	CfgFile string
+	Verbose bool
+}
 
-	cmd.AddCommand(deploy.NewDeployCmd())
+func (f *RootOptions) AddFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVar(&f.CfgFile, "config", "", "config file (default is $HOME/.config/miactl/config.yaml)")
+	cmd.PersistentFlags().BoolVarP(&f.Verbose, "verbose", "v", false, "whether to output details in verbose mode")
+}
 
-	return cmd
+func NewRootOptions() *RootOptions {
+	return &RootOptions{}
 }
