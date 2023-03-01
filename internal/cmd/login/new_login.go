@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/coreos/go-oidc"
+	oidc "github.com/coreos/go-oidc"
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,16 +17,22 @@ func NewLoginCmd() *cobra.Command {
 		Use:   "login",
 		Short: "Authenticate to the Mia-Platform console",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			provider, err := oidc.NewProvider(context.Background(), "https://login.mia-platform.eu/oauth2/aus2m8z66r5k6Cbip417")
+			provider, err := oidc.NewProvider(context.Background(), "OVERRIDEME")
 			if err != nil {
 				return fmt.Errorf("error creating the provider: %w", err)
 			}
+			fmt.Println("provider created")
+
+			server := &http.Server{
+				Addr: ":5556",
+			}
 
 			config := oauth2.Config{
-				ClientID:     "client-id", // change the placeholder with the correct ID of the client
-				ClientSecret: "client-secret",
-				RedirectURL:  "https://redirect-url", // change with the correct redirect URL (should be included in the allowed Sign-in redirect URIs list)
+				ClientID:     "OVERRIDEME", // change the placeholder with the correct ID of the client
+				ClientSecret: "OVERRIDEME",
+				RedirectURL:  "http://localhost:5556/callback", // change with the correct redirect URL (should be included in the allowed Sign-in redirect URIs list)
 				Endpoint:     provider.Endpoint(),
+				Scopes:       []string{oidc.ScopeOpenID},
 			}
 
 			http.HandleFunc("/callback", func(w http.ResponseWriter, r *http.Request) {
@@ -37,10 +43,18 @@ func NewLoginCmd() *cobra.Command {
 					return
 				}
 				viper.Set("apitoken", token)
+				fmt.Println(token)
 				if err = viper.WriteConfig(); err != nil {
 					fmt.Println("error saving API token in the configuration")
 					return
 				}
+
+				//closing the server
+				err = server.Shutdown(context.Background())
+				if err != nil {
+					fmt.Printf("%v", err)
+				}
+
 			})
 
 			url := config.AuthCodeURL("state", oauth2.AccessTypeOffline)
@@ -49,6 +63,8 @@ func NewLoginCmd() *cobra.Command {
 				fmt.Println("Please open the following URL in your browser and complete the authentication process:")
 				fmt.Println(url)
 			}
+
+			server.ListenAndServe()
 
 			return nil
 		},
