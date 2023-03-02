@@ -1,89 +1,89 @@
 package login
 
 import (
-	"context"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 
-	oidc "github.com/coreos/go-oidc"
+	"github.com/davidebianchi/go-jsonclient"
 	"github.com/skratchdot/open-golang/open"
-	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
-	"golang.org/x/oauth2"
 )
 
-func NewLoginCmd() *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "login",
-		Short: "Authenticate to the Mia-Platform console",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			callbackUrl, err := url.Parse("http://localhost:5556/callback")
-			if err != nil {
-				fmt.Printf("%v", "Error trying to parse the Callback URL")
-			}
-
-			server, err := ConfigureAuth("OVERRIDEME", callbackUrl, "OVERRIDEME", "OVERRIDEME")
-			if err != nil {
-				fmt.Printf("%v", "Error trying to configure OIDC auth")
-			}
-
-			server.ListenAndServe()
-
-			return nil
-		},
-	}
-	return cmd
+type tokens struct {
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	ExpiresAt    int64  `json:"expiresAt"`
 }
 
-func ConfigureAuth(issuerUrl string, callbackUrl *url.URL, clientID string, clientSecret string) (http.Server, error) {
-	provider, err := oidc.NewProvider(context.Background(), issuerUrl)
-	fmt.Println(err)
+type Provider struct {
+	ID   string `json:"id"`
+	Type string `json:"type"`
+}
+
+const (
+	appID       = "miactl"
+	callbackUrl = "127.0.0.1:53535"
+)
+
+func GetTokensWithOIDC(endpoint string, providerID string) (*tokens, error) {
+
+	jsonClient, err := jsonclient.New(jsonclient.Options{BaseURL: fmt.Sprintf("%s/api/", endpoint)})
 	if err != nil {
-		return http.Server{}, fmt.Errorf("error creating the provider: %w", err)
-	}
-	fmt.Println("provider created")
-
-	server := &http.Server{
-		Addr: callbackUrl.Host,
+		fmt.Printf("%v", "error generating JsonClient")
 	}
 
-	config := oauth2.Config{
-		ClientID:     clientID, // change the placeholder with the correct ID of the client
-		ClientSecret: clientSecret,
-		RedirectURL:  callbackUrl.String(), // change with the correct redirect URL (should be included in the allowed Sign-in redirect URIs list)
-		Endpoint:     provider.Endpoint(),
-		Scopes:       []string{oidc.ScopeOpenID},
+	listener, err := net.Listen("tcp4", callbackUrl)
+	if err != nil {
+		return &tokens{}, err
 	}
 
-	http.HandleFunc(callbackUrl.Path, func(w http.ResponseWriter, r *http.Request) {
-		code := r.URL.Query().Get("code")
-		token, err := config.Exchange(context.Background(), code)
-		if err != nil {
-			http.Error(w, "Failed to exchange token: "+err.Error(), http.StatusInternalServerError)
-			return
-		}
-		viper.Set("apitoken", token)
-		fmt.Println(token)
-		if err = viper.WriteConfig(); err != nil {
-			fmt.Println("error saving API token in the configuration")
-			return
-		}
+	q := url.Values{}
+	q.Set("appId", appID)
+	q.Set("providerId", providerID)
 
-		//closing the server
-		err = server.Shutdown(context.Background())
-		if err != nil {
-			fmt.Printf("%v", err)
-		}
+	startURL := fmt.Sprintf("%s/api/authorize?%s", endpoint, q.Encode())
 
-	})
-
-	url := config.AuthCodeURL("state", oauth2.AccessTypeOffline)
-	if err := open.Run(url); err != nil {
+	if err := open.Run(startURL); err != nil {
 		fmt.Println("Failed to open browser:", err)
 		fmt.Println("Please open the following URL in your browser and complete the authentication process:")
-		fmt.Println(url)
+		fmt.Println(startURL)
 	}
 
-	return *server, nil
+	var code string
+	var state string
+
+	callbackPath := "/oauth/callback"
+	_ = http.Serve(listener, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.URL.Path != callbackPath || req.Method != http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		defer listener.Close()
+
+		qs := req.URL.Query()
+		code = qs.Get("code")
+		state = qs.Get("state")
+
+		w.Header().Set("content-type", "text/html")
+		w.WriteHeader(http.StatusOK)
+
+		w.Write([]byte("You are successfully authenticated"))
+	}))
+
+	req, err := jsonClient.NewRequest(http.MethodPost, "oauth/token", map[string]interface{}{
+		"code":  code,
+		"state": state,
+	})
+	if err != nil {
+		return &tokens{}, err
+	}
+
+	token := &tokens{}
+	_, err = jsonClient.Do(req, token)
+	if err != nil {
+		return &tokens{}, err
+	}
+
+	return token, nil
 }
