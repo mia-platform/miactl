@@ -18,12 +18,14 @@ package context
 import (
 	"testing"
 
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewContextCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
-		cmd := NewContextCmd()
+		opts := clioptions.NewCLIOptions()
+		cmd := NewContextCmd(opts)
 		require.NotNil(t, cmd)
 	})
 }

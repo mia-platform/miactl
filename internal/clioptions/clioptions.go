@@ -15,6 +15,52 @@
 
 package clioptions
 
-import "github.com/mia-platform/miactl/old/sdk"
+import (
+	"github.com/mia-platform/miactl/old/sdk"
+	"github.com/spf13/cobra"
+)
 
 var Opts = sdk.Options{}
+
+type CLIOptions struct {
+	CfgFile               string
+	Verbose               bool
+	APIKey                string
+	APICookie             string
+	APIToken              string
+	SkipCertificate       bool
+	AdditionalCertificate string
+	Context               string
+	ProjectID             string
+	CompanyID             string
+	APIBaseURL            string
+}
+
+func NewCLIOptions() *CLIOptions {
+	return &CLIOptions{}
+}
+
+func (f *CLIOptions) AddRootFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVar(&f.CfgFile, "config", "", "config file (default is $HOME/.config/miactl/config.yaml)")
+	cmd.PersistentFlags().BoolVarP(&f.Verbose, "verbose", "v", false, "whether to output details in verbose mode")
+}
+
+func (f *CLIOptions) AddConnectionFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVar(&f.APIKey, "apiKey", "", "API Key")
+	cmd.PersistentFlags().StringVar(&f.APICookie, "apiCookie", "", "api cookie sid")
+	cmd.PersistentFlags().StringVar(&f.APIToken, "apiToken", "", "api access token")
+	cmd.PersistentFlags().StringVar(&f.Context, "context", "", "The name of the context to use")
+	cmd.PersistentFlags().BoolVar(&f.SkipCertificate, "insecure", false, "whether to not check server certificate")
+	cmd.PersistentFlags().StringVar(
+		&f.AdditionalCertificate,
+		"ca-cert",
+		"",
+		"file path to additional CA certificate, which can be employed to verify server certificate",
+	)
+}
+
+func (f *CLIOptions) AddContextFlags(cmd *cobra.Command) {
+	cmd.Flags().StringVar(&f.ProjectID, "project-id", "", "The ID of the project")
+	cmd.Flags().StringVar(&f.APIBaseURL, "endpoint", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
+	cmd.Flags().StringVar(&f.CompanyID, "company-id", "", "The ID of the company")
+}

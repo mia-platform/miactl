@@ -21,6 +21,7 @@ import (
 	"os"
 	"path"
 
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/console"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/login"
@@ -49,13 +50,15 @@ func NewRootCmd() *cobra.Command {
 		On the contrary, errors are visualized twice or more */
 		SilenceErrors: true,
 	}
-	setRootPersistentFlag(rootCmd)
+
+	options := clioptions.NewCLIOptions()
+	options.AddRootFlags(rootCmd)
 
 	// add sub command to root command
 	rootCmd.AddCommand(newGetCmd())
 	rootCmd.AddCommand(login.NewLoginCmd())
 	rootCmd.AddCommand(console.NewConsoleCmd())
-	rootCmd.AddCommand(miacontext.NewContextCmd())
+	rootCmd.AddCommand(miacontext.NewContextCmd(options))
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
 	return rootCmd
@@ -74,14 +77,6 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
-}
-
-func setRootPersistentFlag(rootCmd *cobra.Command) {
-	// viper.BindPFlag("projectID", rootCmd.PersistentFlags().Lookup("projectID"))
-	// viper.BindPFlag("companyID", rootCmd.PersistentFlags().Lookup("companyID"))
-	// viper.BindPFlag("apibaseurl", rootCmd.PersistentFlags().Lookup("apiBaseUrl"))
-	viper.BindPFlag("apitoken", rootCmd.PersistentFlags().Lookup("apiToken"))
-	viper.BindPFlag("ca-cert", rootCmd.PersistentFlags().Lookup("ca-cert"))
 }
 
 // initConfig reads in config file and ENV variables if set.

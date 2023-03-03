@@ -20,8 +20,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func NewContextCmd() *cobra.Command {
-	options := clioptions.NewRootOptions()
+func NewContextCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "context",
 		Short: "perform operations on cluster contexts",
@@ -29,8 +28,6 @@ func NewContextCmd() *cobra.Command {
 
 	cmd.AddCommand(NewSetContextCmd(options))
 	cmd.AddCommand(NewUseContextCmd(options))
-
-	options.AddFlags(cmd)
 
 	return cmd
 }

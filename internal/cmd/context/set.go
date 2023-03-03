@@ -23,14 +23,13 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewSetContextCmd(rootOptions *clioptions.RootOptions) *cobra.Command {
-	contextOptions := clioptions.NewContextOptions(rootOptions)
+func NewSetContextCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set CONTEXT [flags]",
 		Short: "update available contexts for miactl",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			updatedContexts := updateContextMap(contextOptions, args[0])
+			updatedContexts := updateContextMap(options, args[0])
 			viper.Set("contexts", updatedContexts)
 			if err := viper.WriteConfig(); err != nil {
 				fmt.Println("error saving the configuration")
@@ -40,11 +39,11 @@ func NewSetContextCmd(rootOptions *clioptions.RootOptions) *cobra.Command {
 			return nil
 		},
 	}
-	contextOptions.AddContextFlags(cmd)
+	options.AddContextFlags(cmd)
 	return cmd
 }
 
-func updateContextMap(opts *clioptions.ContextOptions, contextName string) map[string]interface{} {
+func updateContextMap(opts *clioptions.CLIOptions, contextName string) map[string]interface{} {
 	contextMap := make(map[string]interface{})
 	if viper.Get("contexts") != nil {
 		contextMap = viper.Get("contexts").(map[string]interface{})
