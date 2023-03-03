@@ -13,6 +13,8 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var testToken string
+
 func TestWithBody(t *testing.T) {
 	req := &Request{}
 	values := map[string]string{"key": "value"}
@@ -49,17 +51,14 @@ func TestPost(t *testing.T) {
 func TestRequestBuilder(t *testing.T) {
 	opts := &sdk.Options{
 		APIBaseURL: "url",
-		APIToken:   "token",
 	}
 	expectedReq := &Request{
 		url:    "url",
-		token:  "token",
 		client: &http.Client{},
-		authFn: mockSuccessAuthFn,
+		authFn: mockValidToken,
 	}
-	actualReq := RequestBuilder(*opts, mockSuccessAuthFn)
+	actualReq := RequestBuilder(*opts, mockValidToken)
 	require.Equal(t, expectedReq.url, actualReq.url)
-	require.Equal(t, expectedReq.token, actualReq.token)
 	require.NotNil(t, actualReq.authFn)
 }
 
@@ -85,52 +84,71 @@ func TestExecute(t *testing.T) {
 	)
 
 	// Test request with valid token
+	testToken = ""
 	validReq := &Request{
 		url:    "https://testurl.io/testget",
-		token:  "valid_token",
 		client: &http.Client{},
-		authFn: mockSuccessAuthFn,
+		authFn: mockValidToken,
 	}
 	resp, err := validReq.Execute()
 	require.Nil(t, err)
 	require.Equal(t, "200", resp.Status)
 
 	// Test request with expired token
+	testToken = ""
 	expReq := &Request{
 		url:    "https://testurl.io/testget",
-		token:  "expired_token",
 		client: &http.Client{},
-		authFn: mockSuccessAuthFn,
+		authFn: mockExpiredToken,
 	}
 	resp, err = expReq.Execute()
 	require.Nil(t, err)
 	require.Equal(t, "200", resp.Status)
 
-	// Test request without token
-	unauthReq := &Request{
-		url:    "https://testurl.io/testget",
-		client: &http.Client{},
-		authFn: mockSuccessAuthFn,
-	}
-	resp, err = unauthReq.Execute()
-	require.Nil(t, err)
-	require.Equal(t, "200", resp.Status)
-
-	// Test request without token
+	// Test auth error
+	testToken = ""
 	failAuthReq := &Request{
 		url:    "https://testurl.io/testget",
 		client: &http.Client{},
-		authFn: mockFailAuthFn,
+		authFn: mockFailAuth,
 	}
 	resp, err = failAuthReq.Execute()
+	require.Nil(t, resp)
+	require.Equal(t, "error retrieving token: authentication failed", err.Error())
+
+	// Test token refresh error
+	testToken = ""
+	failRefreshReq := &Request{
+		url:    "https://testurl.io/testget",
+		client: &http.Client{},
+		authFn: mockFailRefresh,
+	}
+	resp, err = failRefreshReq.Execute()
 	require.Equal(t, "401", resp.Status)
-	require.Equal(t, "error in authentication flow: authentication failed", err.Error())
+	require.Equal(t, "error refreshing token: authentication failed", err.Error())
 }
 
-func mockSuccessAuthFn(url string) (string, error) {
+func mockValidToken(url string) (string, error) {
 	return "valid_token", nil
 }
 
-func mockFailAuthFn(url string) (string, error) {
+func mockExpiredToken(url string) (string, error) {
+	if testToken == "" {
+		testToken = "expired_token"
+	} else {
+		testToken = "valid_token"
+	}
+	return testToken, nil
+}
+
+func mockFailAuth(url string) (string, error) {
+	return "", fmt.Errorf("authentication failed")
+}
+
+func mockFailRefresh(url string) (string, error) {
+	if testToken == "" {
+		testToken = "expired_token"
+		return testToken, nil
+	}
 	return "", fmt.Errorf("authentication failed")
 }
