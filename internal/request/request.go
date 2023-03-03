@@ -75,7 +75,7 @@ func (req *Request) Execute() (*http.Response, error) {
 	if resp.Status == unauthorized {
 		newToken, err := req.authFn(req.url)
 		if err != nil {
-			return nil, fmt.Errorf("error in authentication flow: %w", err)
+			return resp, fmt.Errorf("error in authentication flow: %w", err)
 		}
 		httpReq.Header.Set("Authorization", "Bearer "+newToken)
 		resp, err = req.client.Do(httpReq)
