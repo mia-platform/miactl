@@ -10,7 +10,7 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
-type tokens struct {
+type Tokens struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 	ExpiresAt    int64  `json:"expiresAt"`
@@ -26,7 +26,7 @@ const (
 	callbackUrl = "127.0.0.1:53535"
 )
 
-func GetTokensWithOIDC(endpoint string, providerID string) (*tokens, error) {
+func GetTokensWithOIDC(endpoint string, providerID string) (*Tokens, error) {
 
 	jsonClient, err := jsonclient.New(jsonclient.Options{BaseURL: fmt.Sprintf("%s/api/", endpoint)})
 	if err != nil {
@@ -35,7 +35,7 @@ func GetTokensWithOIDC(endpoint string, providerID string) (*tokens, error) {
 
 	listener, err := net.Listen("tcp4", callbackUrl)
 	if err != nil {
-		return &tokens{}, err
+		return &Tokens{}, err
 	}
 
 	q := url.Values{}
@@ -76,13 +76,13 @@ func GetTokensWithOIDC(endpoint string, providerID string) (*tokens, error) {
 		"state": state,
 	})
 	if err != nil {
-		return &tokens{}, err
+		return &Tokens{}, err
 	}
 
-	token := &tokens{}
+	token := &Tokens{}
 	_, err = jsonClient.Do(req, token)
 	if err != nil {
-		return &tokens{}, err
+		return &Tokens{}, err
 	}
 
 	return token, nil
