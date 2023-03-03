@@ -25,7 +25,6 @@ import (
 
 type Request struct {
 	url    string
-	token  string
 	method string
 	body   io.ReadCloser
 	client *http.Client
@@ -55,7 +54,6 @@ func (r *Request) Post(body io.ReadCloser) *Request {
 func RequestBuilder(opts sdk.Options, authFn Authenticate) *Request {
 	req := &Request{
 		url:    opts.APIBaseURL,
-		token:  opts.APIToken,
 		client: &http.Client{},
 		authFn: authFn,
 	}
@@ -67,7 +65,11 @@ func (req *Request) Execute() (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building the http request: %w", err)
 	}
-	httpReq.Header.Set("Authorization", "Bearer "+req.token)
+	token, err := req.authFn(req.url)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving token: %w", err)
+	}
+	httpReq.Header.Set("Authorization", "Bearer "+token)
 	resp, err := req.client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending the http request: %w", err)
@@ -75,7 +77,7 @@ func (req *Request) Execute() (*http.Response, error) {
 	if resp.Status == unauthorized {
 		newToken, err := req.authFn(req.url)
 		if err != nil {
-			return resp, fmt.Errorf("error in authentication flow: %w", err)
+			return resp, fmt.Errorf("error refreshing token: %w", err)
 		}
 		httpReq.Header.Set("Authorization", "Bearer "+newToken)
 		resp, err = req.client.Do(httpReq)
