@@ -16,11 +16,14 @@
 package httphandler
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
-	"github.com/mia-platform/miactl/old/sdk"
+	"github.com/mia-platform/miactl/internal/clioptions"
 )
 
 type Request struct {
@@ -51,13 +54,23 @@ func (r *Request) Post(body io.ReadCloser) *Request {
 	return r
 }
 
-func RequestBuilder(opts sdk.Options, authFn Authenticate) *Request {
+func RequestBuilder(opts *clioptions.CLIOptions, authFn Authenticate) (*Request, error) {
+	var client *http.Client
+	if opts.CACert != "" {
+		transport, err := createCustomTransport(opts.CACert)
+		if err != nil {
+			return nil, fmt.Errorf("error creating custom transport: %w", err)
+		}
+		client = &http.Client{
+			Transport: transport,
+		}
+	}
 	req := &Request{
 		url:    opts.APIBaseURL,
-		client: &http.Client{},
+		client: client,
 		authFn: authFn,
 	}
-	return req
+	return req, nil
 }
 
 func (r *Request) Execute() (*http.Response, error) {
@@ -86,4 +99,31 @@ func (r *Request) Execute() (*http.Response, error) {
 		}
 	}
 	return resp, nil
+}
+
+func createCustomTransport(caCertPath string) (*http.Transport, error) {
+	var rootCAs *x509.CertPool
+	// load the contents of the CA certificate file
+	caCert, err := os.ReadFile(caCertPath)
+	if err != nil {
+		return nil, fmt.Errorf("error reading CA certificate from path %s: %w", caCertPath, err)
+	}
+
+	// create a new CertPool object and parse the CA certificate
+	rootCAs = x509.NewCertPool()
+	if ok := rootCAs.AppendCertsFromPEM(caCert); !ok {
+		return nil, fmt.Errorf("failed to parse CA certificate")
+	}
+
+	// create a new TLS configuration object and set the root CAs
+	tlsConfig := &tls.Config{
+		RootCAs: rootCAs,
+	}
+
+	// create a new HTTP transport object and set the TLS configuration
+	transport := &http.Transport{
+		TLSClientConfig: tlsConfig,
+	}
+
+	return transport, nil
 }

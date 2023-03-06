@@ -17,22 +17,35 @@ package httphandler
 
 import (
 	"bytes"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/tls"
+	"crypto/x509"
+	"crypto/x509/pkix"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
+	"math/big"
+	"net"
 	"net/http"
+	"net/http/httptest"
+	"os"
+	"path"
 	"testing"
+	"time"
 
 	"github.com/jarcoal/httpmock"
-	"github.com/mia-platform/miactl/old/sdk"
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/stretchr/testify/require"
 )
 
 const testURL = "https://testurl.io/testget"
 
 var (
-	testToken string
-	client    = &http.Client{}
+	testToken   string
+	testDirPath string
+	client      = &http.Client{}
 )
 
 func TestWithBody(t *testing.T) {
@@ -69,7 +82,7 @@ func TestPost(t *testing.T) {
 }
 
 func TestRequestBuilder(t *testing.T) {
-	opts := &sdk.Options{
+	opts := &clioptions.CLIOptions{
 		APIBaseURL: testURL,
 	}
 	expectedReq := &Request{
@@ -77,7 +90,8 @@ func TestRequestBuilder(t *testing.T) {
 		client: client,
 		authFn: mockValidToken,
 	}
-	actualReq := RequestBuilder(*opts, mockValidToken)
+	actualReq, err := RequestBuilder(opts, mockValidToken)
+	require.NoError(t, err)
 	require.Equal(t, expectedReq.url, actualReq.url)
 	require.NotNil(t, actualReq.authFn)
 }
@@ -110,7 +124,7 @@ func TestExecute(t *testing.T) {
 		client: client,
 		authFn: mockValidToken,
 	}
-	resp, err := validReq.Execute()
+	resp, err := validReq.Get().Execute()
 	require.Nil(t, err)
 	require.Equal(t, "200", resp.Status)
 
@@ -121,7 +135,7 @@ func TestExecute(t *testing.T) {
 		client: client,
 		authFn: mockExpiredToken,
 	}
-	resp, err = expReq.Execute()
+	resp, err = expReq.Get().Execute()
 	require.Nil(t, err)
 	require.Equal(t, "200", resp.Status)
 
@@ -132,7 +146,7 @@ func TestExecute(t *testing.T) {
 		client: client,
 		authFn: mockFailAuth,
 	}
-	resp, err = failAuthReq.Execute()
+	resp, err = failAuthReq.Get().Execute()
 	require.Nil(t, resp)
 	require.Equal(t, "error retrieving token: authentication failed", err.Error())
 
@@ -143,9 +157,43 @@ func TestExecute(t *testing.T) {
 		client: client,
 		authFn: mockFailRefresh,
 	}
-	resp, err = failRefreshReq.Execute()
+	resp, err = failRefreshReq.Get().Execute()
 	require.Equal(t, "401", resp.Status)
 	require.Equal(t, "error refreshing token: authentication failed", err.Error())
+}
+
+func TestReqWithCustomTransport(t *testing.T) {
+	// create mock certificate
+	certPath, keyPath, err := generateMockCert(t)
+	if err != nil {
+		t.Fatalf("unexpected error")
+	}
+
+	// create mock server
+	server := createMockServer()
+
+	// load certificate and start TLS
+	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
+	if err != nil {
+		t.Fatalf("unexpected error")
+	}
+	server.TLS = &tls.Config{
+		Certificates: []tls.Certificate{cert},
+	}
+	server.StartTLS()
+	defer server.Close()
+
+	opts := &clioptions.CLIOptions{
+		APIBaseURL: server.URL,
+		CACert:     certPath,
+	}
+	req, err := RequestBuilder(opts, mockValidToken)
+	require.NoError(t, err)
+	require.NotNil(t, req)
+
+	resp, err := req.Get().Execute()
+	require.NoError(t, err)
+	require.Equal(t, "200 OK", resp.Status)
 }
 
 func mockValidToken(url string) (string, error) {
@@ -171,4 +219,64 @@ func mockFailRefresh(url string) (string, error) {
 		return testToken, nil
 	}
 	return "", fmt.Errorf("authentication failed")
+}
+
+func generateMockCert(t *testing.T) (string, string, error) {
+	priv, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return "", "", err
+	}
+
+	template := x509.Certificate{
+		SerialNumber:          big.NewInt(1),
+		Subject:               pkix.Name{CommonName: "localhost"},
+		NotBefore:             time.Now(),
+		NotAfter:              time.Now().Add(365 * 24 * time.Hour),
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+		IPAddresses:           []net.IP{net.ParseIP("127.0.0.1")}, // IP SAN for 127.0.0.1
+	}
+
+	certBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	if err != nil {
+		return "", "", err
+	}
+
+	testDirPath := t.TempDir()
+	testCertPath := path.Join(testDirPath, "testcert.pem")
+	certOut, err := os.Create(testCertPath)
+	if err != nil {
+		return "", "", err
+	}
+	defer certOut.Close()
+	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
+
+	testKeyPath := path.Join(testDirPath, "testkey.pem")
+	keyOut, err := os.Create(testKeyPath)
+	if err != nil {
+		panic(err)
+	}
+	defer keyOut.Close()
+	privBytes, err := x509.MarshalPKCS8PrivateKey(priv)
+	if err != nil {
+		panic(err)
+	}
+	pem.Encode(keyOut, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
+
+	return testCertPath, testKeyPath, nil
+}
+
+func createMockServer() *httptest.Server {
+	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "Hello, world!")
+		auth := r.Header.Get("Authorization")
+		switch auth {
+		case "Bearer valid_token":
+			w.WriteHeader(http.StatusOK)
+		default:
+			w.WriteHeader(http.StatusUnauthorized)
+		}
+	}))
+	return server
 }
