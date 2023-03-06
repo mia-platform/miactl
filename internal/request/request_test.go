@@ -13,7 +13,12 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var testToken string
+const testUrl = "https://testurl.io/testget"
+
+var (
+	testToken string
+	client    = &http.Client{}
+)
 
 func TestWithBody(t *testing.T) {
 	req := &Request{}
@@ -50,11 +55,11 @@ func TestPost(t *testing.T) {
 
 func TestRequestBuilder(t *testing.T) {
 	opts := &sdk.Options{
-		APIBaseURL: "url",
+		APIBaseURL: testUrl,
 	}
 	expectedReq := &Request{
-		url:    "url",
-		client: &http.Client{},
+		url:    testUrl,
+		client: client,
 		authFn: mockValidToken,
 	}
 	actualReq := RequestBuilder(*opts, mockValidToken)
@@ -66,7 +71,7 @@ func TestExecute(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", "https://testurl.io/testget",
+	httpmock.RegisterResponder("GET", testUrl,
 		func(req *http.Request) (*http.Response, error) {
 			var resp *http.Response
 			var err error
@@ -86,8 +91,8 @@ func TestExecute(t *testing.T) {
 	// Test request with valid token
 	testToken = ""
 	validReq := &Request{
-		url:    "https://testurl.io/testget",
-		client: &http.Client{},
+		url:    testUrl,
+		client: client,
 		authFn: mockValidToken,
 	}
 	resp, err := validReq.Execute()
@@ -97,8 +102,8 @@ func TestExecute(t *testing.T) {
 	// Test request with expired token
 	testToken = ""
 	expReq := &Request{
-		url:    "https://testurl.io/testget",
-		client: &http.Client{},
+		url:    testUrl,
+		client: client,
 		authFn: mockExpiredToken,
 	}
 	resp, err = expReq.Execute()
@@ -108,8 +113,8 @@ func TestExecute(t *testing.T) {
 	// Test auth error
 	testToken = ""
 	failAuthReq := &Request{
-		url:    "https://testurl.io/testget",
-		client: &http.Client{},
+		url:    testUrl,
+		client: client,
 		authFn: mockFailAuth,
 	}
 	resp, err = failAuthReq.Execute()
@@ -119,8 +124,8 @@ func TestExecute(t *testing.T) {
 	// Test token refresh error
 	testToken = ""
 	failRefreshReq := &Request{
-		url:    "https://testurl.io/testget",
-		client: &http.Client{},
+		url:    testUrl,
+		client: client,
 		authFn: mockFailRefresh,
 	}
 	resp, err = failRefreshReq.Execute()
