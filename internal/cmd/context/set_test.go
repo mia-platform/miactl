@@ -24,16 +24,16 @@ import (
 
 func TestUpdateContextMap(t *testing.T) {
 	// Test creating a new context
-	opts := &clioptions.CLIOptions{APIBaseURL: "https://url", ProjectID: "project1", CompanyID: "company1"}
-	newContext := map[string]string{"apibaseurl": "https://url", "projectid": "project1", "companyid": "company1"}
+	opts := &clioptions.CLIOptions{APIBaseURL: "https://url", ProjectID: "project1", CompanyID: "company1", CACert: "/path/to/cert"}
+	newContext := map[string]string{"apibaseurl": "https://url", "projectid": "project1", "companyid": "company1", "ca-cert": "/path/to/cert"}
 	expectedContexts := make(map[string]interface{})
 	expectedContexts["context1"] = newContext
 	actualContexts := updateContextMap(opts, "context1")
 	require.Equal(t, expectedContexts, actualContexts)
 
 	// Test updating the existing context
-	opts = &clioptions.CLIOptions{APIBaseURL: "https://url2", ProjectID: "project2", CompanyID: "company2"}
-	updatedContext := map[string]string{"apibaseurl": "https://url2", "projectid": "project2", "companyid": "company2"}
+	opts = &clioptions.CLIOptions{APIBaseURL: "https://url2", ProjectID: "project2", CompanyID: "company2", CACert: "/path/to/cert"}
+	updatedContext := map[string]string{"apibaseurl": "https://url2", "projectid": "project2", "companyid": "company2", "ca-cert": "/path/to/cert"}
 	expectedContexts["context1"] = updatedContext
 	actualContexts = updateContextMap(opts, "context1")
 	require.Equal(t, expectedContexts, actualContexts)
