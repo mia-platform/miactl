@@ -1,3 +1,18 @@
+// Copyright Mia srl
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package request
 
 import (
@@ -13,7 +28,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const testUrl = "https://testurl.io/testget"
+const testURL = "https://testurl.io/testget"
 
 var (
 	testToken string
@@ -55,10 +70,10 @@ func TestPost(t *testing.T) {
 
 func TestRequestBuilder(t *testing.T) {
 	opts := &sdk.Options{
-		APIBaseURL: testUrl,
+		APIBaseURL: testURL,
 	}
 	expectedReq := &Request{
-		url:    testUrl,
+		url:    testURL,
 		client: client,
 		authFn: mockValidToken,
 	}
@@ -71,7 +86,7 @@ func TestExecute(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-	httpmock.RegisterResponder("GET", testUrl,
+	httpmock.RegisterResponder("GET", testURL,
 		func(req *http.Request) (*http.Response, error) {
 			var resp *http.Response
 			var err error
@@ -91,7 +106,7 @@ func TestExecute(t *testing.T) {
 	// Test request with valid token
 	testToken = ""
 	validReq := &Request{
-		url:    testUrl,
+		url:    testURL,
 		client: client,
 		authFn: mockValidToken,
 	}
@@ -102,7 +117,7 @@ func TestExecute(t *testing.T) {
 	// Test request with expired token
 	testToken = ""
 	expReq := &Request{
-		url:    testUrl,
+		url:    testURL,
 		client: client,
 		authFn: mockExpiredToken,
 	}
@@ -113,7 +128,7 @@ func TestExecute(t *testing.T) {
 	// Test auth error
 	testToken = ""
 	failAuthReq := &Request{
-		url:    testUrl,
+		url:    testURL,
 		client: client,
 		authFn: mockFailAuth,
 	}
@@ -124,7 +139,7 @@ func TestExecute(t *testing.T) {
 	// Test token refresh error
 	testToken = ""
 	failRefreshReq := &Request{
-		url:    testUrl,
+		url:    testURL,
 		client: client,
 		authFn: mockFailRefresh,
 	}

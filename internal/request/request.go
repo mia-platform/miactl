@@ -60,27 +60,27 @@ func RequestBuilder(opts sdk.Options, authFn Authenticate) *Request {
 	return req
 }
 
-func (req *Request) Execute() (*http.Response, error) {
-	httpReq, err := http.NewRequest(req.method, req.url, req.body)
+func (r *Request) Execute() (*http.Response, error) {
+	httpReq, err := http.NewRequest(r.method, r.url, r.body)
 	if err != nil {
 		return nil, fmt.Errorf("error building the http request: %w", err)
 	}
-	token, err := req.authFn(req.url)
+	token, err := r.authFn(r.url)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving token: %w", err)
 	}
 	httpReq.Header.Set("Authorization", "Bearer "+token)
-	resp, err := req.client.Do(httpReq)
+	resp, err := r.client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending the http request: %w", err)
 	}
 	if resp.Status == unauthorized {
-		newToken, err := req.authFn(req.url)
+		newToken, err := r.authFn(r.url)
 		if err != nil {
 			return resp, fmt.Errorf("error refreshing token: %w", err)
 		}
 		httpReq.Header.Set("Authorization", "Bearer "+newToken)
-		resp, err = req.client.Do(httpReq)
+		resp, err = r.client.Do(httpReq)
 		if err != nil {
 			return nil, fmt.Errorf("error resending the http request: %w", err)
 		}
