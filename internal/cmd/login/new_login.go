@@ -2,12 +2,10 @@ package login
 
 import (
 	"fmt"
-	"net"
 	"net/http"
 	"net/url"
 
 	"github.com/davidebianchi/go-jsonclient"
-	"github.com/skratchdot/open-golang/open"
 )
 
 type tokens struct {
@@ -26,17 +24,32 @@ const (
 	callbackUrl = "127.0.0.1:53535"
 )
 
-func GetTokensWithOIDC(endpoint string, providerID string) (*tokens, error) {
+var (
+	state string
+	code  string
+)
 
+func GetTokensWithOIDC(endpoint string, providerID string, b browserI) (*tokens, error) {
 	jsonClient, err := jsonclient.New(jsonclient.Options{BaseURL: fmt.Sprintf("%s/api/", endpoint)})
 	if err != nil {
 		fmt.Printf("%v", "error generating JsonClient")
 	}
+	callbackPath := "/oauth/callback"
 
-	listener, err := net.Listen("tcp4", callbackUrl)
+	http.HandleFunc(callbackPath, handleCallback)
+
+	go func() {
+		err = http.ListenAndServe(":53535", nil)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}()
+
 	if err != nil {
 		return &tokens{}, err
 	}
+
+	fmt.Print(err)
 
 	q := url.Values{}
 	q.Set("appId", appID)
@@ -44,32 +57,7 @@ func GetTokensWithOIDC(endpoint string, providerID string) (*tokens, error) {
 
 	startURL := fmt.Sprintf("%s/api/authorize?%s", endpoint, q.Encode())
 
-	if err := open.Run(startURL); err != nil {
-		fmt.Println("Failed to open browser:", err)
-		fmt.Println("Please open the following URL in your browser and complete the authentication process:")
-		fmt.Println(startURL)
-	}
-
-	var code string
-	var state string
-
-	callbackPath := "/oauth/callback"
-	_ = http.Serve(listener, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		if req.URL.Path != callbackPath || req.Method != http.MethodGet {
-			w.WriteHeader(http.StatusNotFound)
-			return
-		}
-		defer listener.Close()
-
-		qs := req.URL.Query()
-		code = qs.Get("code")
-		state = qs.Get("state")
-
-		w.Header().Set("content-type", "text/html")
-		w.WriteHeader(http.StatusOK)
-
-		w.Write([]byte("You are successfully authenticated"))
-	}))
+	b.open(startURL)
 
 	req, err := jsonClient.NewRequest(http.MethodPost, "oauth/token", map[string]interface{}{
 		"code":  code,
@@ -86,4 +74,17 @@ func GetTokensWithOIDC(endpoint string, providerID string) (*tokens, error) {
 	}
 
 	return token, nil
+}
+
+func handleCallback(w http.ResponseWriter, req *http.Request) {
+	// if req.URL.Path != callbackPath || req.Method != http.MethodGet {
+	// 	w.WriteHeader(http.StatusNotFound)
+	// 	return
+	// }
+	qs := req.URL.Query()
+	code = qs.Get("code")
+	state = qs.Get("state")
+
+	w.Header().Set("content-type", "text/html")
+	w.WriteHeader(http.StatusBadGateway)
 }
