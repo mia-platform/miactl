@@ -20,7 +20,6 @@ func (b browser) open(apiUrl string) error {
 		fmt.Println("Failed to open browser:", err)
 		fmt.Println("Please open the following URL in your browser and complete the authentication process:")
 		fmt.Println(apiUrl)
-	} else {
 		return err
 	}
 	return nil

@@ -14,7 +14,7 @@ type fakeBrowser struct {
 }
 
 func (f fakeBrowser) open(apiUrl string) error {
-	r, err := http.DefaultClient.Get(fmt.Sprintf("%s/oauth/callback?code=%s&state=%s", f.callbackUrl, f.code, f.state))
+	r, err := http.DefaultClient.Get(fmt.Sprintf("http://%s/oauth/callback?code=%s&state=%s", f.callbackUrl, f.code, f.state))
 	if err != nil {
 		return err
 	}

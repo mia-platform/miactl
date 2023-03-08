@@ -2,6 +2,7 @@ package login
 
 import (
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 
@@ -36,20 +37,34 @@ func GetTokensWithOIDC(endpoint string, providerID string, b browserI) (*tokens,
 	}
 	callbackPath := "/oauth/callback"
 
-	http.HandleFunc(callbackPath, handleCallback)
+	// http.HandleFunc(callbackPath, handleCallback)
 
-	go func() {
-		err = http.ListenAndServe(":53535", nil)
-		if err != nil {
-			fmt.Println(err)
-		}
-	}()
+	// go func() {
+	// 	err = http.ListenAndServe(":53535", nil)
+	// 	if err != nil {
+	// 		fmt.Println(err)
+	// 	}
+	// }()
 
+	l, err := net.Listen("tcp", ":53535")
 	if err != nil {
-		return &tokens{}, err
+		panic(err)
 	}
-
-	fmt.Print(err)
+	// Server HTTP request
+	s := &http.Server{
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			switch {
+			case r.URL.Path == callbackPath && r.Method == http.MethodGet:
+				handleCallback(w, r)
+				return
+			default:
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		}),
+	}
+	defer s.Close()
+	go s.Serve(l) // actually start the server, it manges all buffered requests
 
 	q := url.Values{}
 	q.Set("appId", appID)
@@ -67,12 +82,18 @@ func GetTokensWithOIDC(endpoint string, providerID string, b browserI) (*tokens,
 		return &tokens{}, err
 	}
 
+	fmt.Println(jsonClient)
+
 	token := &tokens{}
 	_, err = jsonClient.Do(req, token)
 	if err != nil {
 		return &tokens{}, err
 	}
 
+	fmt.Println("token", token)
+	fmt.Println("error", err)
+
+	fmt.Println(err)
 	return token, nil
 }
 
