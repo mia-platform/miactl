@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/http"
 	"testing"
-	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -71,7 +70,6 @@ func TestLocalLoginOIDC(t *testing.T) {
 	})
 
 	t.Run("return error with incorrect callback", func(t *testing.T) {
-		time.Sleep(2 * time.Second)
 		l, err := net.Listen("tcp", ":53534")
 		if err != nil {
 			panic(err)
@@ -114,7 +112,6 @@ func TestLocalLoginOIDC(t *testing.T) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Println(err)
 		require.Error(t, err)
 	})
 
