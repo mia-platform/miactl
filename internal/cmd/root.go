@@ -24,7 +24,6 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/console"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
-	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/old/factory"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -56,7 +55,6 @@ func NewRootCmd() *cobra.Command {
 
 	// add sub command to root command
 	rootCmd.AddCommand(newGetCmd())
-	rootCmd.AddCommand(login.NewLoginCmd())
 	rootCmd.AddCommand(console.NewConsoleCmd())
 	rootCmd.AddCommand(miacontext.NewContextCmd(options))
 

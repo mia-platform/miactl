@@ -49,7 +49,7 @@ func updateContextMap(opts *clioptions.CLIOptions, contextName string) map[strin
 		contextMap = viper.Get("contexts").(map[string]interface{})
 	}
 	if contextMap[contextName] == nil {
-		newContext := map[string]string{"apibaseurl": opts.APIBaseURL, "projectid": opts.ProjectID, "companyid": opts.CompanyID}
+		newContext := map[string]string{"apibaseurl": opts.APIBaseURL, "projectid": opts.ProjectID, "companyid": opts.CompanyID, "ca-cert": opts.CACert}
 		contextMap[contextName] = newContext
 	} else {
 		oldContext := contextMap[contextName].(map[string]interface{})
@@ -61,6 +61,9 @@ func updateContextMap(opts *clioptions.CLIOptions, contextName string) map[strin
 		}
 		if opts.CompanyID != "" {
 			oldContext["companyid"] = opts.CompanyID
+		}
+		if opts.CACert != "" {
+			oldContext["ca-cert"] = opts.CACert
 		}
 	}
 	return contextMap
