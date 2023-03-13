@@ -1,10 +1,10 @@
 {
 	"name": "Go",
-	"image": "golang:1.19.5",
+	"image": "golang:1.19.6",
 	"containerUser": "root",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:1": {},
-		"ghcr.io/devcontainers/features/go:1": {"version": "none", "golangciLintVersion": "1.50.1"}
+		"ghcr.io/devcontainers/features/go:1": {"version": "none", "golangciLintVersion": "1.51.2"}
 	},
 	"runArgs": [
 		"--cap-add=SYS_PTRACE",
@@ -31,6 +31,12 @@
 				"redhat.vscode-yaml",
 				"davidanson.vscode-markdownlint",
 				"timonwong.shellcheck"
+			]
+		},
+		"codespaces": {
+			"openFiles": [
+				"README.md",
+				"CONTRIBUTING.md"
 			]
 		}
 	}
