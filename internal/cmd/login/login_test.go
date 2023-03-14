@@ -65,7 +65,7 @@ func TestLocalLoginOIDC(t *testing.T) {
 		defer s.Close()
 
 		go s.Serve(l)
-		expectedToken := tokens{
+		expectedToken := Tokens{
 			AccessToken:  "accesstoken",
 			RefreshToken: "refreshToken",
 			ExpiresAt:    23345,

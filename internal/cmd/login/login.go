@@ -24,15 +24,10 @@ import (
 	"github.com/davidebianchi/go-jsonclient"
 )
 
-type tokens struct {
+type Tokens struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 	ExpiresAt    int64  `json:"expiresAt"`
-}
-
-type Provider struct {
-	ID   string `json:"id"`
-	Type string `json:"type"`
 }
 
 const (
@@ -45,7 +40,7 @@ var (
 	code  string
 )
 
-func GetTokensWithOIDC(endpoint string, providerID string, b browserI) (*tokens, error) {
+func GetTokensWithOIDC(endpoint string, providerID string, b browserI) (*Tokens, error) {
 	jsonClient, err := jsonclient.New(jsonclient.Options{BaseURL: fmt.Sprintf("%s/api/", endpoint)})
 	if err != nil {
 		fmt.Printf("%v", "error generating JsonClient")
@@ -87,15 +82,15 @@ func GetTokensWithOIDC(endpoint string, providerID string, b browserI) (*tokens,
 		"state": state,
 	})
 	if err != nil {
-		return &tokens{}, err
+		return &Tokens{}, err
 	}
 
 	fmt.Println(jsonClient)
 
-	token := &tokens{}
+	token := &Tokens{}
 	_, err = jsonClient.Do(req, token)
 	if err != nil {
-		return &tokens{}, err
+		return &Tokens{}, err
 	}
 
 	fmt.Println("token", token)
