@@ -6,16 +6,16 @@ import (
 	"github.com/skratchdot/open-golang/open"
 )
 
-type browserI interface {
+type BrowserI interface {
 	open(string) error
 	getEndpoint() string
 }
 
-type browser struct {
+type Browser struct {
 	endpoint string
 }
 
-func (b browser) open(apiUrl string) error {
+func (b Browser) open(apiUrl string) error {
 	if err := open.Run(apiUrl); err != nil {
 		fmt.Println("Failed to open browser:", err)
 		fmt.Println("Please open the following URL in your browser and complete the authentication process:")
@@ -25,6 +25,6 @@ func (b browser) open(apiUrl string) error {
 	return nil
 }
 
-func (b browser) getEndpoint() string {
+func (b Browser) getEndpoint() string {
 	return b.endpoint
 }

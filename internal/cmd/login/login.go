@@ -40,7 +40,7 @@ var (
 	code  string
 )
 
-func GetTokensWithOIDC(endpoint string, providerID string, b browserI) (*Tokens, error) {
+func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens, error) {
 	jsonClient, err := jsonclient.New(jsonclient.Options{BaseURL: fmt.Sprintf("%s/api/", endpoint)})
 	if err != nil {
 		fmt.Printf("%v", "error generating JsonClient")

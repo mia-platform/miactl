@@ -134,7 +134,7 @@ func TestLocalLoginOIDC(t *testing.T) {
 func TestOpenBrowser(t *testing.T) {
 	t.Run("return error with incorrect provider url", func(t *testing.T) {
 		incorrectUrl := "incorrect"
-		browser := browser{}
+		browser := Browser{}
 		err := browser.open(incorrectUrl)
 		require.Error(t, err)
 
