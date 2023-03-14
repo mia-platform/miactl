@@ -54,7 +54,12 @@ func (r *Request) Post(body io.ReadCloser) *Request {
 	return r
 }
 
-func RequestBuilder(opts *clioptions.CLIOptions, authFn Authenticate) (*Request, error) {
+func (r *Request) WithClient(c *http.Client) *Request {
+	r.client = c
+	return r
+}
+
+func httpClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 	client := &http.Client{}
 	// TODO: extract CA certificate from viper config file
 	if opts.CACert != "" || opts.SkipCertificate {
@@ -64,35 +69,38 @@ func RequestBuilder(opts *clioptions.CLIOptions, authFn Authenticate) (*Request,
 		}
 		client.Transport = transport
 	}
+	return client, nil
+}
+
+func RequestBuilder(opts *clioptions.CLIOptions, authFn Authenticate) (*Request, error) {
 	req := &Request{
 		url:    opts.APIBaseURL,
-		client: client,
 		authFn: authFn,
 	}
 	return req, nil
 }
 
-func (r *Request) Execute() (*http.Response, error) {
-	httpReq, err := http.NewRequest(r.method, r.url, r.body)
+func (c *Request) Execute() (*http.Response, error) {
+	httpReq, err := http.NewRequest(c.method, c.url, c.body)
 	if err != nil {
 		return nil, fmt.Errorf("error building the http request: %w", err)
 	}
-	token, err := r.authFn(r.url)
+	token, err := c.authFn(c.url)
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving token: %w", err)
 	}
 	httpReq.Header.Set("Authorization", "Bearer "+token)
-	resp, err := r.client.Do(httpReq)
+	resp, err := c.client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending the http request: %w", err)
 	}
 	if resp.Status == unauthorized {
-		newToken, err := r.authFn(r.url)
+		newToken, err := c.authFn(c.url)
 		if err != nil {
 			return resp, fmt.Errorf("error refreshing token: %w", err)
 		}
 		httpReq.Header.Set("Authorization", "Bearer "+newToken)
-		resp, err = r.client.Do(httpReq)
+		resp, err = c.client.Do(httpReq)
 		if err != nil {
 			return nil, fmt.Errorf("error resending the http request: %w", err)
 		}

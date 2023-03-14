@@ -60,6 +60,13 @@ func TestWithBody(t *testing.T) {
 	require.Equal(t, wrappedBody, req.body)
 }
 
+func TestWithClient(t *testing.T) {
+	req := &Request{}
+	req.WithClient(client)
+	require.NotNil(t, req.client)
+	require.Equal(t, req.client, client)
+}
+
 func TestGet(t *testing.T) {
 	req := &Request{}
 	req.Get()
@@ -86,7 +93,6 @@ func TestRequestBuilder(t *testing.T) {
 	}
 	expectedReq := &Request{
 		url:    testURL,
-		client: client,
 		authFn: mockValidToken,
 	}
 	actualReq, err := RequestBuilder(opts, mockValidToken)
@@ -107,7 +113,10 @@ func TestExecute(t *testing.T) {
 		client: client,
 		authFn: mockValidToken,
 	}
-	resp, err := validReq.Get().Execute()
+
+	mc := NewMiaClientBuilder().withRequest(*validReq)
+
+	resp, err := mc.request.Get().Execute()
 	require.Nil(t, err)
 	require.Equal(t, "200 OK", resp.Status)
 
@@ -118,6 +127,7 @@ func TestExecute(t *testing.T) {
 		client: client,
 		authFn: mockExpiredToken,
 	}
+	expReq.WithClient(client)
 	resp, err = expReq.Get().Execute()
 	require.Nil(t, err)
 	require.Equal(t, "200 OK", resp.Status)
@@ -129,6 +139,7 @@ func TestExecute(t *testing.T) {
 		client: client,
 		authFn: mockFailAuth,
 	}
+	failAuthReq.WithClient(client)
 	resp, err = failAuthReq.Get().Execute()
 	require.Nil(t, resp)
 	require.Equal(t, "error retrieving token: authentication failed", err.Error())
@@ -140,6 +151,7 @@ func TestExecute(t *testing.T) {
 		client: client,
 		authFn: mockFailRefresh,
 	}
+	failRefreshReq.WithClient(client)
 	resp, err = failRefreshReq.Get().Execute()
 	require.Equal(t, unauthorized, resp.Status)
 	require.Equal(t, "error refreshing token: authentication failed", err.Error())
@@ -174,7 +186,11 @@ func TestReqWithCustomTransport(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, req)
 
-	resp, err := req.Get().Execute()
+	client, err := httpClientBuilder(opts)
+	require.NoError(t, err)
+	require.NotNil(t, client)
+
+	resp, err := req.WithClient(client).Get().Execute()
 	require.NoError(t, err)
 	require.Equal(t, "200 OK", resp.Status)
 
@@ -187,7 +203,11 @@ func TestReqWithCustomTransport(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, req)
 
-	resp, err = req.Get().Execute()
+	client, err = httpClientBuilder(opts2)
+	require.NoError(t, err)
+	require.NotNil(t, client)
+
+	resp, err = req.WithClient(client).Get().Execute()
 	require.NoError(t, err)
 	require.Equal(t, "200 OK", resp.Status)
 
@@ -199,7 +219,11 @@ func TestReqWithCustomTransport(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, req)
 
-	resp, err = req.Get().Execute()
+	client, err = httpClientBuilder(opts3)
+	require.NoError(t, err)
+	require.NotNil(t, client)
+
+	resp, err = req.WithClient(client).Get().Execute()
 	require.Nil(t, resp)
 	require.Error(t, err)
 }
