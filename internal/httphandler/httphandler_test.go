@@ -42,9 +42,9 @@ import (
 const testURL = "https://testurl.io/testget"
 
 var (
-	testToken   string
-	testDirPath string
-	client      = &http.Client{}
+	testToken     string
+	testDirPath   string
+	defaultClient = &http.Client{}
 )
 
 func TestWithBody(t *testing.T) {
@@ -62,9 +62,9 @@ func TestWithBody(t *testing.T) {
 
 func TestWithClient(t *testing.T) {
 	req := &Request{}
-	req.WithClient(client)
+	req.WithClient(defaultClient)
 	require.NotNil(t, req.client)
-	require.Equal(t, req.client, client)
+	require.Equal(t, req.client, defaultClient)
 }
 
 func TestGet(t *testing.T) {
@@ -101,6 +101,39 @@ func TestRequestBuilder(t *testing.T) {
 	require.NotNil(t, actualReq.authFn)
 }
 
+func TestHttpClientBuilder(t *testing.T) {
+	certPath, _, err := generateMockCert(t)
+	require.NoError(t, err)
+
+	// Test default client
+	opts := &clioptions.CLIOptions{}
+	client, err := httpClientBuilder(opts)
+	require.NoError(t, err)
+	require.NotNil(t, client)
+	require.Equal(t, defaultClient, client)
+
+	// Test client with cert
+	opts2 := &clioptions.CLIOptions{
+		CACert: certPath,
+	}
+	require.NoError(t, err)
+	client, err = httpClientBuilder(opts2)
+	require.NoError(t, err)
+	require.NotNil(t, client)
+	require.NotEqual(t, http.DefaultTransport, client.Transport)
+
+	// Test client with skip cert validation
+	opts3 := &clioptions.CLIOptions{
+		SkipCertificate: true,
+	}
+	require.NoError(t, err)
+	client, err = httpClientBuilder(opts3)
+	require.NoError(t, err)
+	require.NotNil(t, client)
+	require.NotEqual(t, http.DefaultTransport, client.Transport)
+
+}
+
 func TestExecute(t *testing.T) {
 	server := createMockServer()
 	server.Start()
@@ -110,7 +143,7 @@ func TestExecute(t *testing.T) {
 	testToken = ""
 	validReq := &Request{
 		url:    server.URL,
-		client: client,
+		client: defaultClient,
 		authFn: mockValidToken,
 	}
 
@@ -124,10 +157,10 @@ func TestExecute(t *testing.T) {
 	testToken = ""
 	expReq := &Request{
 		url:    server.URL,
-		client: client,
+		client: defaultClient,
 		authFn: mockExpiredToken,
 	}
-	expReq.WithClient(client)
+	expReq.WithClient(defaultClient)
 	resp, err = expReq.Get().Execute()
 	require.Nil(t, err)
 	require.Equal(t, "200 OK", resp.Status)
@@ -136,10 +169,10 @@ func TestExecute(t *testing.T) {
 	testToken = ""
 	failAuthReq := &Request{
 		url:    server.URL,
-		client: client,
+		client: defaultClient,
 		authFn: mockFailAuth,
 	}
-	failAuthReq.WithClient(client)
+	failAuthReq.WithClient(defaultClient)
 	resp, err = failAuthReq.Get().Execute()
 	require.Nil(t, resp)
 	require.Equal(t, "error retrieving token: authentication failed", err.Error())
@@ -148,10 +181,10 @@ func TestExecute(t *testing.T) {
 	testToken = ""
 	failRefreshReq := &Request{
 		url:    server.URL,
-		client: client,
+		client: defaultClient,
 		authFn: mockFailRefresh,
 	}
-	failRefreshReq.WithClient(client)
+	failRefreshReq.WithClient(defaultClient)
 	resp, err = failRefreshReq.Get().Execute()
 	require.Equal(t, unauthorized, resp.Status)
 	require.Equal(t, "error refreshing token: authentication failed", err.Error())
