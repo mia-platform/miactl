@@ -36,7 +36,7 @@ type Request struct {
 
 const unauthorized = "401 Unauthorized"
 
-type Authenticate func(url string) (string, error)
+type Authenticate func() (string, error)
 
 func (r *Request) WithBody(body io.ReadCloser) *Request {
 	r.body = body
@@ -80,27 +80,27 @@ func RequestBuilder(opts *clioptions.CLIOptions, authFn Authenticate) (*Request,
 	return req, nil
 }
 
-func (c *Request) Execute() (*http.Response, error) {
-	httpReq, err := http.NewRequest(c.method, c.url, c.body)
+func (r *Request) Execute() (*http.Response, error) {
+	httpReq, err := http.NewRequest(r.method, r.url, r.body)
 	if err != nil {
 		return nil, fmt.Errorf("error building the http request: %w", err)
 	}
-	token, err := c.authFn(c.url)
+	token, err := r.authFn()
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving token: %w", err)
 	}
 	httpReq.Header.Set("Authorization", "Bearer "+token)
-	resp, err := c.client.Do(httpReq)
+	resp, err := r.client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending the http request: %w", err)
 	}
 	if resp.Status == unauthorized {
-		newToken, err := c.authFn(c.url)
+		newToken, err := r.authFn()
 		if err != nil {
 			return resp, fmt.Errorf("error refreshing token: %w", err)
 		}
 		httpReq.Header.Set("Authorization", "Bearer "+newToken)
-		resp, err = c.client.Do(httpReq)
+		resp, err = r.client.Do(httpReq)
 		if err != nil {
 			return nil, fmt.Errorf("error resending the http request: %w", err)
 		}

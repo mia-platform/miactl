@@ -24,7 +24,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/json"
 	"encoding/pem"
-	"fmt"
 	"io"
 	"math/big"
 	"net"
@@ -91,11 +90,12 @@ func TestRequestBuilder(t *testing.T) {
 	opts := &clioptions.CLIOptions{
 		APIBaseURL: testURL,
 	}
+	a := mockValidToken{}
 	expectedReq := &Request{
 		url:    testURL,
-		authFn: mockValidToken,
+		authFn: a.authenticate,
 	}
-	actualReq, err := RequestBuilder(opts, mockValidToken)
+	actualReq, err := RequestBuilder(opts, a.authenticate)
 	require.NoError(t, err)
 	require.Equal(t, expectedReq.url, actualReq.url)
 	require.NotNil(t, actualReq.authFn)
@@ -141,13 +141,14 @@ func TestExecute(t *testing.T) {
 
 	// Test request with valid token
 	testToken = ""
+	validAuth := mockValidToken{}
 	validReq := &Request{
 		url:    server.URL,
 		client: defaultClient,
-		authFn: mockValidToken,
+		authFn: validAuth.authenticate,
 	}
 
-	mc := NewMiaClientBuilder().withRequest(*validReq)
+	mc := NewMiaClientBuilder().WithRequest(*validReq)
 
 	resp, err := mc.request.Get().Execute()
 	require.Nil(t, err)
@@ -155,10 +156,11 @@ func TestExecute(t *testing.T) {
 
 	// Test request with expired token
 	testToken = ""
+	expAuth := mockExpiredToken{}
 	expReq := &Request{
 		url:    server.URL,
 		client: defaultClient,
-		authFn: mockExpiredToken,
+		authFn: expAuth.authenticate,
 	}
 	expReq.WithClient(defaultClient)
 	resp, err = expReq.Get().Execute()
@@ -167,10 +169,11 @@ func TestExecute(t *testing.T) {
 
 	// Test auth error
 	testToken = ""
+	failAuth := mockFailAuth{}
 	failAuthReq := &Request{
 		url:    server.URL,
 		client: defaultClient,
-		authFn: mockFailAuth,
+		authFn: failAuth.authenticate,
 	}
 	failAuthReq.WithClient(defaultClient)
 	resp, err = failAuthReq.Get().Execute()
@@ -179,10 +182,11 @@ func TestExecute(t *testing.T) {
 
 	// Test token refresh error
 	testToken = ""
+	failRefresh := mockFailRefresh{}
 	failRefreshReq := &Request{
 		url:    server.URL,
 		client: defaultClient,
-		authFn: mockFailRefresh,
+		authFn: failRefresh.authenticate,
 	}
 	failRefreshReq.WithClient(defaultClient)
 	resp, err = failRefreshReq.Get().Execute()
@@ -211,11 +215,13 @@ func TestReqWithCustomTransport(t *testing.T) {
 	server.StartTLS()
 	defer server.Close()
 
+	a := mockValidToken{}
+
 	opts := &clioptions.CLIOptions{
 		APIBaseURL: server.URL,
 		CACert:     certPath,
 	}
-	req, err := RequestBuilder(opts, mockValidToken)
+	req, err := RequestBuilder(opts, a.authenticate)
 	require.NoError(t, err)
 	require.NotNil(t, req)
 
@@ -232,7 +238,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 		APIBaseURL:      server.URL,
 		SkipCertificate: true,
 	}
-	req, err = RequestBuilder(opts2, mockValidToken)
+	req, err = RequestBuilder(opts2, a.authenticate)
 	require.NoError(t, err)
 	require.NotNil(t, req)
 
@@ -248,7 +254,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 	opts3 := &clioptions.CLIOptions{
 		APIBaseURL: server.URL,
 	}
-	req, err = RequestBuilder(opts3, mockValidToken)
+	req, err = RequestBuilder(opts3, a.authenticate)
 	require.NoError(t, err)
 	require.NotNil(t, req)
 
@@ -259,31 +265,6 @@ func TestReqWithCustomTransport(t *testing.T) {
 	resp, err = req.WithClient(client).Get().Execute()
 	require.Nil(t, resp)
 	require.Error(t, err)
-}
-
-func mockValidToken(url string) (string, error) {
-	return "valid_token", nil
-}
-
-func mockExpiredToken(url string) (string, error) {
-	if testToken == "" {
-		testToken = "expired_token"
-	} else {
-		testToken = "valid_token"
-	}
-	return testToken, nil
-}
-
-func mockFailAuth(url string) (string, error) {
-	return "", fmt.Errorf("authentication failed")
-}
-
-func mockFailRefresh(url string) (string, error) {
-	if testToken == "" {
-		testToken = "expired_token"
-		return testToken, nil
-	}
-	return "", fmt.Errorf("authentication failed")
 }
 
 func generateMockCert(t *testing.T) (string, string, error) {
