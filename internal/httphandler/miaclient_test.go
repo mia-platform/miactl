@@ -18,44 +18,22 @@ package httphandler
 import (
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClientBuilding(t *testing.T) {
 	mExpected := MiaClient{
-		request: Request{
+		request: SessionHandler{
 			url: "url",
 		},
-		auth: &Auth{
-			browser:    login.Browser{},
-			providerID: "id",
-			url:        "url",
-		},
 	}
 
-	m2Expected := MiaClient{
-		request: Request{
-			url: "url2",
-		},
-	}
-
-	b := login.Browser{}
-	r := Request{
+	r := SessionHandler{
 		url: "url",
-	}
-	r2 := Request{
-		url: "url2",
 	}
 
 	m := NewMiaClientBuilder().
-		WithAuthentication("id", "url", b).
 		WithRequest(r)
 
-	m2 := NewMiaClientBuilder().
-		WithRequest(r2)
-
 	require.Equal(t, *m, mExpected)
-	require.Equal(t, *m2, m2Expected)
-
 }

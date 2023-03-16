@@ -35,6 +35,7 @@ import (
 	"time"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/stretchr/testify/require"
 )
 
@@ -47,7 +48,7 @@ var (
 )
 
 func TestWithBody(t *testing.T) {
-	req := &Request{}
+	req := &SessionHandler{}
 	values := map[string]string{"key": "value"}
 	jsonValues, err := json.Marshal(values)
 	if err != nil {
@@ -60,20 +61,20 @@ func TestWithBody(t *testing.T) {
 }
 
 func TestWithClient(t *testing.T) {
-	req := &Request{}
+	req := &SessionHandler{}
 	req.WithClient(defaultClient)
 	require.NotNil(t, req.client)
 	require.Equal(t, req.client, defaultClient)
 }
 
 func TestGet(t *testing.T) {
-	req := &Request{}
+	req := &SessionHandler{}
 	req.Get()
 	require.Equal(t, "GET", req.method)
 }
 
 func TestPost(t *testing.T) {
-	req := &Request{}
+	req := &SessionHandler{}
 	values := map[string]string{"key": "value"}
 	jsonValues, err := json.Marshal(values)
 	if err != nil {
@@ -86,19 +87,29 @@ func TestPost(t *testing.T) {
 	require.Equal(t, wrappedBody, req.body)
 }
 
-func TestRequestBuilder(t *testing.T) {
+func TestWithAuthentication(t *testing.T) {
+	session := &SessionHandler{}
+	browser := &login.Browser{}
+	session.WithAuthentication("okta", browser)
+	expectedSession := &SessionHandler{
+		auth: &Auth{
+			providerID: "okta",
+			browser:    browser,
+		},
+	}
+	require.Equal(t, expectedSession, session)
+}
+
+func TestNewSessionHandler(t *testing.T) {
 	opts := &clioptions.CLIOptions{
 		APIBaseURL: testURL,
 	}
-	a := mockValidToken{}
-	expectedReq := &Request{
-		url:    testURL,
-		authFn: a.authenticate,
+	expected := &SessionHandler{
+		url: testURL,
 	}
-	actualReq, err := RequestBuilder(opts, a.authenticate)
+	actualReq, err := NewSessionHandler(opts)
 	require.NoError(t, err)
-	require.Equal(t, expectedReq.url, actualReq.url)
-	require.NotNil(t, actualReq.authFn)
+	require.Equal(t, expected.url, actualReq.url)
 }
 
 func TestHttpClientBuilder(t *testing.T) {
@@ -134,7 +145,7 @@ func TestHttpClientBuilder(t *testing.T) {
 
 }
 
-func TestExecute(t *testing.T) {
+func TestExecuteRequest(t *testing.T) {
 	server := createMockServer()
 	server.Start()
 	defer server.Close()
@@ -142,54 +153,54 @@ func TestExecute(t *testing.T) {
 	// Test request with valid token
 	testToken = ""
 	validAuth := mockValidToken{}
-	validReq := &Request{
+	validSession := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
-		authFn: validAuth.authenticate,
+		auth:   &validAuth,
 	}
 
-	mc := NewMiaClientBuilder().WithRequest(*validReq)
+	mc := NewMiaClientBuilder().WithRequest(*validSession)
 
-	resp, err := mc.request.Get().Execute()
+	resp, err := mc.request.Get().ExecuteRequest()
 	require.Nil(t, err)
 	require.Equal(t, "200 OK", resp.Status)
 
 	// Test request with expired token
 	testToken = ""
 	expAuth := mockExpiredToken{}
-	expReq := &Request{
+	expiredSession := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
-		authFn: expAuth.authenticate,
+		auth:   &expAuth,
 	}
-	expReq.WithClient(defaultClient)
-	resp, err = expReq.Get().Execute()
+	expiredSession.WithClient(defaultClient)
+	resp, err = expiredSession.Get().ExecuteRequest()
 	require.Nil(t, err)
 	require.Equal(t, "200 OK", resp.Status)
 
 	// Test auth error
 	testToken = ""
 	failAuth := mockFailAuth{}
-	failAuthReq := &Request{
+	failedSession := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
-		authFn: failAuth.authenticate,
+		auth:   &failAuth,
 	}
-	failAuthReq.WithClient(defaultClient)
-	resp, err = failAuthReq.Get().Execute()
+	failedSession.WithClient(defaultClient)
+	resp, err = failedSession.Get().ExecuteRequest()
 	require.Nil(t, resp)
 	require.Equal(t, "error retrieving token: authentication failed", err.Error())
 
 	// Test token refresh error
 	testToken = ""
 	failRefresh := mockFailRefresh{}
-	failRefreshReq := &Request{
+	failRefreshSession := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
-		authFn: failRefresh.authenticate,
+		auth:   &failRefresh,
 	}
-	failRefreshReq.WithClient(defaultClient)
-	resp, err = failRefreshReq.Get().Execute()
+	failRefreshSession.WithClient(defaultClient)
+	resp, err = failRefreshSession.Get().ExecuteRequest()
 	require.Equal(t, unauthorized, resp.Status)
 	require.Equal(t, "error refreshing token: authentication failed", err.Error())
 }
@@ -216,37 +227,34 @@ func TestReqWithCustomTransport(t *testing.T) {
 	defer server.Close()
 
 	a := mockValidToken{}
+	session := &SessionHandler{
+		url:    server.URL,
+		client: defaultClient,
+		auth:   &a,
+	}
 
 	opts := &clioptions.CLIOptions{
-		APIBaseURL: server.URL,
-		CACert:     certPath,
+		CACert: certPath,
 	}
-	req, err := RequestBuilder(opts, a.authenticate)
-	require.NoError(t, err)
-	require.NotNil(t, req)
 
 	client, err := httpClientBuilder(opts)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 
-	resp, err := req.WithClient(client).Get().Execute()
+	resp, err := session.WithClient(client).Get().ExecuteRequest()
 	require.NoError(t, err)
 	require.Equal(t, "200 OK", resp.Status)
 
 	// test skip certificate validation
 	opts2 := &clioptions.CLIOptions{
-		APIBaseURL:      server.URL,
 		SkipCertificate: true,
 	}
-	req, err = RequestBuilder(opts2, a.authenticate)
-	require.NoError(t, err)
-	require.NotNil(t, req)
 
 	client, err = httpClientBuilder(opts2)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 
-	resp, err = req.WithClient(client).Get().Execute()
+	resp, err = session.WithClient(client).Get().ExecuteRequest()
 	require.NoError(t, err)
 	require.Equal(t, "200 OK", resp.Status)
 
@@ -254,15 +262,12 @@ func TestReqWithCustomTransport(t *testing.T) {
 	opts3 := &clioptions.CLIOptions{
 		APIBaseURL: server.URL,
 	}
-	req, err = RequestBuilder(opts3, a.authenticate)
-	require.NoError(t, err)
-	require.NotNil(t, req)
 
 	client, err = httpClientBuilder(opts3)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 
-	resp, err = req.WithClient(client).Get().Execute()
+	resp, err = session.WithClient(client).Get().ExecuteRequest()
 	require.Nil(t, resp)
 	require.Error(t, err)
 }

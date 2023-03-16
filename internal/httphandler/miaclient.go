@@ -15,30 +15,15 @@
 
 package httphandler
 
-import (
-	"github.com/mia-platform/miactl/internal/cmd/login"
-)
-
 type MiaClient struct {
-	request Request
-	auth    IAuth
+	request SessionHandler
 }
 
 func NewMiaClientBuilder() *MiaClient {
 	return &MiaClient{}
 }
 
-func (m *MiaClient) WithRequest(r Request) *MiaClient {
+func (m *MiaClient) WithRequest(r SessionHandler) *MiaClient {
 	m.request = r
-	return m
-}
-
-func (m *MiaClient) WithAuthentication(providerID, url string, b login.BrowserI) *MiaClient {
-	m.auth = &Auth{
-		url:        url,
-		browser:    b,
-		providerID: providerID,
-	}
-	m.request.authFn = m.auth.authenticate
 	return m
 }

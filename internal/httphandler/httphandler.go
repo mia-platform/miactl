@@ -24,39 +24,56 @@ import (
 	"os"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/login"
 )
 
-type Request struct {
+type SessionHandler struct {
 	url    string
 	method string
 	body   io.ReadCloser
 	client *http.Client
-	authFn Authenticate
+	auth   IAuth
 }
 
 const unauthorized = "401 Unauthorized"
 
 type Authenticate func() (string, error)
 
-func (r *Request) WithBody(body io.ReadCloser) *Request {
-	r.body = body
-	return r
+func NewSessionHandler(opts *clioptions.CLIOptions) (*SessionHandler, error) {
+	sh := &SessionHandler{
+		url: opts.APIBaseURL,
+	}
+	return sh, nil
 }
 
-func (r *Request) Get() *Request {
-	r.method = "GET"
-	return r
+func (s *SessionHandler) WithAuthentication(providerID string, b login.BrowserI) *SessionHandler {
+	s.auth = &Auth{
+		browser:    b,
+		providerID: providerID,
+		url:        s.url,
+	}
+	return s
 }
 
-func (r *Request) Post(body io.ReadCloser) *Request {
-	r.method = "POST"
-	r.WithBody(body)
-	return r
+func (s *SessionHandler) WithBody(body io.ReadCloser) *SessionHandler {
+	s.body = body
+	return s
 }
 
-func (r *Request) WithClient(c *http.Client) *Request {
-	r.client = c
-	return r
+func (s *SessionHandler) Get() *SessionHandler {
+	s.method = "GET"
+	return s
+}
+
+func (s *SessionHandler) Post(body io.ReadCloser) *SessionHandler {
+	s.method = "POST"
+	s.WithBody(body)
+	return s
+}
+
+func (s *SessionHandler) WithClient(c *http.Client) *SessionHandler {
+	s.client = c
+	return s
 }
 
 func httpClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
@@ -72,35 +89,27 @@ func httpClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 	return client, nil
 }
 
-func RequestBuilder(opts *clioptions.CLIOptions, authFn Authenticate) (*Request, error) {
-	req := &Request{
-		url:    opts.APIBaseURL,
-		authFn: authFn,
-	}
-	return req, nil
-}
-
-func (r *Request) Execute() (*http.Response, error) {
-	httpReq, err := http.NewRequest(r.method, r.url, r.body)
+func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
+	httpReq, err := http.NewRequest(s.method, s.url, s.body)
 	if err != nil {
 		return nil, fmt.Errorf("error building the http request: %w", err)
 	}
-	token, err := r.authFn()
+	token, err := s.auth.authenticate()
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving token: %w", err)
 	}
 	httpReq.Header.Set("Authorization", "Bearer "+token)
-	resp, err := r.client.Do(httpReq)
+	resp, err := s.client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending the http request: %w", err)
 	}
 	if resp.Status == unauthorized {
-		newToken, err := r.authFn()
+		newToken, err := s.auth.authenticate()
 		if err != nil {
 			return resp, fmt.Errorf("error refreshing token: %w", err)
 		}
 		httpReq.Header.Set("Authorization", "Bearer "+newToken)
-		resp, err = r.client.Do(httpReq)
+		resp, err = s.client.Do(httpReq)
 		if err != nil {
 			return nil, fmt.Errorf("error resending the http request: %w", err)
 		}
