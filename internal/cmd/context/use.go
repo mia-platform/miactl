@@ -29,7 +29,7 @@ func NewUseContextCmd(opts *clioptions.CLIOptions) *cobra.Command {
 		Short: "update available contexts for miactl",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := contextLookUp(args[0]); err != nil {
+			if _, err := contextLookUp(args[0]); err != nil {
 				return fmt.Errorf("error looking up the context in the config file: %w", err)
 			}
 			viper.Set("current-context", args[0])
@@ -44,13 +44,13 @@ func NewUseContextCmd(opts *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func contextLookUp(contextName string) error {
+func contextLookUp(contextName string) (map[string]interface{}, error) {
 	if viper.Get("contexts") == nil {
-		return fmt.Errorf("no context specified in config file")
+		return nil, fmt.Errorf("no context specified in config file")
 	}
 	contextMap := viper.Get("contexts").(map[string]interface{})
 	if contextMap[contextName] == nil {
-		return fmt.Errorf("context %s does not exist", contextName)
+		return nil, fmt.Errorf("context %s does not exist", contextName)
 	}
-	return nil
+	return contextMap[contextName].(map[string]interface{}), nil
 }

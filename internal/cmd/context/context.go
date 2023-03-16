@@ -16,6 +16,8 @@
 package context
 
 import (
+	"fmt"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
 )
@@ -30,4 +32,12 @@ func NewContextCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd.AddCommand(NewUseContextCmd(options))
 
 	return cmd
+}
+
+func GetContextBaseURL(contextName string) (string, error) {
+	context, err := contextLookUp(contextName)
+	if err != nil {
+		return "", fmt.Errorf("error while searching context in config file: %w", err)
+	}
+	return fmt.Sprint(context["apibaseurl"]), nil
 }

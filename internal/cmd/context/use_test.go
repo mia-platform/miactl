@@ -33,7 +33,8 @@ func TestContextLookUpEmptyContextMap(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error reading config: %v", err)
 	}
-	err = contextLookUp(missingContextName)
+	context, err := contextLookUp(missingContextName)
+	require.Nil(t, context)
 	require.EqualError(t, err, "no context specified in config file")
 }
 
@@ -48,9 +49,14 @@ func TestContextLookUp(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error reading config: %v", err)
 	}
-	err = contextLookUp(missingContextName)
+	context, err := contextLookUp(missingContextName)
+	require.Nil(t, context)
 	require.EqualError(t, err, "context missing does not exist")
 
-	err = contextLookUp(contextName1)
+	context, err = contextLookUp(contextName1)
 	require.Nil(t, err)
+	require.NotNil(t, context)
+	require.Equal(t, "http://url", context["apibaseurl"])
+	require.Equal(t, "123", context["companyid"])
+	require.Equal(t, "123", context["projectid"])
 }

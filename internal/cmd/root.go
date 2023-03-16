@@ -24,6 +24,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/console"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
+	"github.com/mia-platform/miactl/internal/cmd/get"
 	"github.com/mia-platform/miactl/old/factory"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -54,7 +55,7 @@ func NewRootCmd() *cobra.Command {
 	options.AddRootFlags(rootCmd)
 
 	// add sub command to root command
-	rootCmd.AddCommand(newGetCmd())
+	rootCmd.AddCommand(get.NewGetCmd(options))
 	rootCmd.AddCommand(console.NewConsoleCmd())
 	rootCmd.AddCommand(miacontext.NewContextCmd(options))
 
@@ -96,7 +97,6 @@ func initConfig() {
 		viper.SetConfigName(cfgFileName)
 		viper.SetConfigType("yaml")
 		viper.AddConfigPath(cfgPath)
-		viper.Set("current-context", "")
 
 		// create a default config file if it does not exist
 		if err := os.MkdirAll(cfgPath, os.ModePerm); err != nil {
