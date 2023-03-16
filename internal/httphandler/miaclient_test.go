@@ -23,7 +23,7 @@ import (
 
 func TestClientBuilding(t *testing.T) {
 	mExpected := MiaClient{
-		request: SessionHandler{
+		sessionHandler: SessionHandler{
 			url: "url",
 		},
 	}
@@ -33,7 +33,7 @@ func TestClientBuilding(t *testing.T) {
 	}
 
 	m := NewMiaClientBuilder().
-		WithRequest(r)
+		WithSessionHandler(r)
 
 	require.Equal(t, *m, mExpected)
 }

@@ -16,14 +16,14 @@
 package httphandler
 
 type MiaClient struct {
-	request SessionHandler
+	sessionHandler SessionHandler
 }
 
 func NewMiaClientBuilder() *MiaClient {
 	return &MiaClient{}
 }
 
-func (m *MiaClient) WithRequest(r SessionHandler) *MiaClient {
-	m.request = r
+func (m *MiaClient) WithSessionHandler(s SessionHandler) *MiaClient {
+	m.sessionHandler = s
 	return m
 }

@@ -159,9 +159,9 @@ func TestExecuteRequest(t *testing.T) {
 		auth:   &validAuth,
 	}
 
-	mc := NewMiaClientBuilder().WithRequest(*validSession)
+	mc := NewMiaClientBuilder().WithSessionHandler(*validSession)
 
-	resp, err := mc.request.Get().ExecuteRequest()
+	resp, err := mc.sessionHandler.Get().ExecuteRequest()
 	require.Nil(t, err)
 	require.Equal(t, "200 OK", resp.Status)
 
