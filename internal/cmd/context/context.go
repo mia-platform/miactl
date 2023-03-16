@@ -17,6 +17,7 @@ package context
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
@@ -59,4 +60,27 @@ func GetCurrentContext() (string, error) {
 		return "", fmt.Errorf("current context is unset")
 	}
 	return fmt.Sprint(viper.Get("current-context")), nil
+}
+
+func GetContextProjectID(contextName string) (string, error) {
+	context, err := contextLookUp(contextName)
+	if err != nil {
+		return "", fmt.Errorf("error while searching context in config file: %w", err)
+	}
+	return fmt.Sprint(context["projectid"]), nil
+}
+
+func SetContextValues(cmd *cobra.Command, currentContext string) {
+	var cValues = []string{"project-id", "company-id", "apibaseurl"}
+
+	for _, val := range cValues {
+		flag := cmd.Flag(val)
+		viperKey := strings.ReplaceAll(val, "-", "")
+		viperPath := fmt.Sprintf("contexts.%s.%s", currentContext, viperKey)
+		if flag.Value.String() == flag.DefValue && viper.IsSet(viperPath) {
+			viperValue := viper.GetString(viperPath)
+			fmt.Println(viperValue)
+			flag.Value.Set(viperValue)
+		}
+	}
 }

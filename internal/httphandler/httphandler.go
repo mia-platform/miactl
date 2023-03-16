@@ -111,6 +111,7 @@ func HTTPClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 		}
 		client.Transport = transport
 	}
+
 	return client, nil
 }
 
@@ -124,7 +125,11 @@ func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving token: %w", err)
 	}
+	q := httpReq.URL.Query()
+	q.Add("environment", "test")
 	httpReq.Header.Set("Authorization", "Bearer "+token)
+	httpReq.Header.Set("client-key", "miactl")
+	httpReq.Header.Set("Content-Type", "application/json")
 	resp, err := s.client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending the http request: %w", err)

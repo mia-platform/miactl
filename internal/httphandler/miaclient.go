@@ -24,7 +24,7 @@ import (
 
 // MiaClient is the type spec for miactl custom client
 type MiaClient struct {
-	sessionHandler SessionHandler
+	SessionHandler
 }
 
 // NewMiaClientBuilder returns an empty MiaClient
@@ -34,7 +34,7 @@ func NewMiaClientBuilder() *MiaClient {
 
 // WithSessionHandler sets the MiaClient SessionHandler
 func (m *MiaClient) WithSessionHandler(s SessionHandler) *MiaClient {
-	m.sessionHandler = s
+	m.SessionHandler = s
 	return m
 }
 

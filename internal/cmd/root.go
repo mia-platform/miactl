@@ -22,8 +22,9 @@ import (
 	"path"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/console"
+	"github.com/mia-platform/miactl/internal/cmd/console/deploy"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
+	"github.com/mia-platform/miactl/internal/cmd/get"
 	"github.com/mia-platform/miactl/internal/cmd/project"
 	"github.com/mia-platform/miactl/old/factory"
 	homedir "github.com/mitchellh/go-homedir"
@@ -56,7 +57,9 @@ func NewRootCmd() *cobra.Command {
 
 	// add sub command to root command
 	rootCmd.AddCommand(project.NewProjectCmd(options))
-	rootCmd.AddCommand(console.NewConsoleCmd())
+	// rootCmd.AddCommand(console.NewConsoleCmd())
+	rootCmd.AddCommand(get.NewGetCmd(options))
+	rootCmd.AddCommand(deploy.NewDeployCmd(options))
 	rootCmd.AddCommand(miacontext.NewContextCmd(options))
 
 	rootCmd.AddCommand(newCompletionCmd(rootCmd))
