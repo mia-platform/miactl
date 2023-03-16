@@ -28,7 +28,7 @@ import (
 )
 
 type SessionHandler struct {
-	url    string
+	uri    string
 	method string
 	body   io.ReadCloser
 	client *http.Client
@@ -39,18 +39,18 @@ const unauthorized = "401 Unauthorized"
 
 type Authenticate func() (string, error)
 
-func NewSessionHandler(opts *clioptions.CLIOptions) (*SessionHandler, error) {
+func NewSessionHandler(uri string) (*SessionHandler, error) {
 	sh := &SessionHandler{
-		url: opts.APIBaseURL,
+		uri: uri,
 	}
 	return sh, nil
 }
 
-func (s *SessionHandler) WithAuthentication(providerID string, b login.BrowserI) *SessionHandler {
+func (s *SessionHandler) WithAuthentication(url, providerID string, b login.BrowserI) *SessionHandler {
 	s.auth = &Auth{
 		browser:    b,
 		providerID: providerID,
-		url:        s.url,
+		url:        url,
 	}
 	return s
 }
@@ -90,7 +90,7 @@ func httpClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 }
 
 func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
-	httpReq, err := http.NewRequest(s.method, s.url, s.body)
+	httpReq, err := http.NewRequest(s.method, s.uri, s.body)
 	if err != nil {
 		return nil, fmt.Errorf("error building the http request: %w", err)
 	}

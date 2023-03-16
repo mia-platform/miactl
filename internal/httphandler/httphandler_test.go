@@ -39,7 +39,11 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-const testURL = "https://testurl.io/testget"
+const (
+	testBaseURL  = "test.url"
+	testProvider = "testProvider"
+	testURI      = "/test"
+)
 
 var (
 	testToken     string
@@ -90,10 +94,11 @@ func TestPost(t *testing.T) {
 func TestWithAuthentication(t *testing.T) {
 	session := &SessionHandler{}
 	browser := &login.Browser{}
-	session.WithAuthentication("okta", browser)
+	session.WithAuthentication(testBaseURL, testProvider, browser)
 	expectedSession := &SessionHandler{
 		auth: &Auth{
-			providerID: "okta",
+			url:        testBaseURL,
+			providerID: testProvider,
 			browser:    browser,
 		},
 	}
@@ -101,15 +106,12 @@ func TestWithAuthentication(t *testing.T) {
 }
 
 func TestNewSessionHandler(t *testing.T) {
-	opts := &clioptions.CLIOptions{
-		APIBaseURL: testURL,
-	}
 	expected := &SessionHandler{
-		url: testURL,
+		uri: testURI,
 	}
-	actualReq, err := NewSessionHandler(opts)
+	actualReq, err := NewSessionHandler(testURI)
 	require.NoError(t, err)
-	require.Equal(t, expected.url, actualReq.url)
+	require.Equal(t, expected.uri, actualReq.uri)
 }
 
 func TestHttpClientBuilder(t *testing.T) {
@@ -154,7 +156,7 @@ func TestExecuteRequest(t *testing.T) {
 	testToken = ""
 	validAuth := mockValidToken{}
 	validSession := &SessionHandler{
-		url:    server.URL,
+		uri:    server.URL,
 		client: defaultClient,
 		auth:   &validAuth,
 	}
@@ -169,7 +171,7 @@ func TestExecuteRequest(t *testing.T) {
 	testToken = ""
 	expAuth := mockExpiredToken{}
 	expiredSession := &SessionHandler{
-		url:    server.URL,
+		uri:    server.URL,
 		client: defaultClient,
 		auth:   &expAuth,
 	}
@@ -182,7 +184,7 @@ func TestExecuteRequest(t *testing.T) {
 	testToken = ""
 	failAuth := mockFailAuth{}
 	failedSession := &SessionHandler{
-		url:    server.URL,
+		uri:    server.URL,
 		client: defaultClient,
 		auth:   &failAuth,
 	}
@@ -195,7 +197,7 @@ func TestExecuteRequest(t *testing.T) {
 	testToken = ""
 	failRefresh := mockFailRefresh{}
 	failRefreshSession := &SessionHandler{
-		url:    server.URL,
+		uri:    server.URL,
 		client: defaultClient,
 		auth:   &failRefresh,
 	}
@@ -228,7 +230,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 
 	a := mockValidToken{}
 	session := &SessionHandler{
-		url:    server.URL,
+		uri:    server.URL,
 		client: defaultClient,
 		auth:   &a,
 	}
