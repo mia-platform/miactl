@@ -28,7 +28,7 @@ import (
 )
 
 type SessionHandler struct {
-	uri    string
+	url    string
 	method string
 	body   io.ReadCloser
 	client *http.Client
@@ -39,9 +39,9 @@ const unauthorized = "401 Unauthorized"
 
 type Authenticate func() (string, error)
 
-func NewSessionHandler(uri string) (*SessionHandler, error) {
+func NewSessionHandler(url string) (*SessionHandler, error) {
 	sh := &SessionHandler{
-		uri: uri,
+		url: url,
 	}
 	return sh, nil
 }
@@ -76,7 +76,7 @@ func (s *SessionHandler) WithClient(c *http.Client) *SessionHandler {
 	return s
 }
 
-func httpClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
+func HTTPClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 	client := &http.Client{}
 	// TODO: extract CA certificate from viper config file
 	if opts.CACert != "" || opts.SkipCertificate {
@@ -90,7 +90,7 @@ func httpClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 }
 
 func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
-	httpReq, err := http.NewRequest(s.method, s.uri, s.body)
+	httpReq, err := http.NewRequest(s.method, s.url, s.body)
 	if err != nil {
 		return nil, fmt.Errorf("error building the http request: %w", err)
 	}
@@ -99,6 +99,7 @@ func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
 		return nil, fmt.Errorf("error retrieving token: %w", err)
 	}
 	httpReq.Header.Set("Authorization", "Bearer "+token)
+	fmt.Println(token)
 	resp, err := s.client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending the http request: %w", err)

@@ -24,12 +24,12 @@ import (
 func TestClientBuilding(t *testing.T) {
 	mExpected := MiaClient{
 		sessionHandler: SessionHandler{
-			uri: "url",
+			url: "url",
 		},
 	}
 
 	r := SessionHandler{
-		uri: "url",
+		url: "url",
 	}
 
 	m := NewMiaClientBuilder().

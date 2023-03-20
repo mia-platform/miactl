@@ -107,11 +107,11 @@ func TestWithAuthentication(t *testing.T) {
 
 func TestNewSessionHandler(t *testing.T) {
 	expected := &SessionHandler{
-		uri: testURI,
+		url: testURI,
 	}
 	actualReq, err := NewSessionHandler(testURI)
 	require.NoError(t, err)
-	require.Equal(t, expected.uri, actualReq.uri)
+	require.Equal(t, expected.url, actualReq.url)
 }
 
 func TestHttpClientBuilder(t *testing.T) {
@@ -120,7 +120,7 @@ func TestHttpClientBuilder(t *testing.T) {
 
 	// Test default client
 	opts := &clioptions.CLIOptions{}
-	client, err := httpClientBuilder(opts)
+	client, err := HTTPClientBuilder(opts)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 	require.Equal(t, defaultClient, client)
@@ -130,7 +130,7 @@ func TestHttpClientBuilder(t *testing.T) {
 		CACert: certPath,
 	}
 	require.NoError(t, err)
-	client, err = httpClientBuilder(opts2)
+	client, err = HTTPClientBuilder(opts2)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 	require.NotEqual(t, http.DefaultTransport, client.Transport)
@@ -140,7 +140,7 @@ func TestHttpClientBuilder(t *testing.T) {
 		SkipCertificate: true,
 	}
 	require.NoError(t, err)
-	client, err = httpClientBuilder(opts3)
+	client, err = HTTPClientBuilder(opts3)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 	require.NotEqual(t, http.DefaultTransport, client.Transport)
@@ -156,7 +156,7 @@ func TestExecuteRequest(t *testing.T) {
 	testToken = ""
 	validAuth := mockValidToken{}
 	validSession := &SessionHandler{
-		uri:    server.URL,
+		url:    server.URL,
 		client: defaultClient,
 		auth:   &validAuth,
 	}
@@ -171,7 +171,7 @@ func TestExecuteRequest(t *testing.T) {
 	testToken = ""
 	expAuth := mockExpiredToken{}
 	expiredSession := &SessionHandler{
-		uri:    server.URL,
+		url:    server.URL,
 		client: defaultClient,
 		auth:   &expAuth,
 	}
@@ -184,7 +184,7 @@ func TestExecuteRequest(t *testing.T) {
 	testToken = ""
 	failAuth := mockFailAuth{}
 	failedSession := &SessionHandler{
-		uri:    server.URL,
+		url:    server.URL,
 		client: defaultClient,
 		auth:   &failAuth,
 	}
@@ -197,7 +197,7 @@ func TestExecuteRequest(t *testing.T) {
 	testToken = ""
 	failRefresh := mockFailRefresh{}
 	failRefreshSession := &SessionHandler{
-		uri:    server.URL,
+		url:    server.URL,
 		client: defaultClient,
 		auth:   &failRefresh,
 	}
@@ -230,7 +230,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 
 	a := mockValidToken{}
 	session := &SessionHandler{
-		uri:    server.URL,
+		url:    server.URL,
 		client: defaultClient,
 		auth:   &a,
 	}
@@ -239,7 +239,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 		CACert: certPath,
 	}
 
-	client, err := httpClientBuilder(opts)
+	client, err := HTTPClientBuilder(opts)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 
@@ -252,7 +252,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 		SkipCertificate: true,
 	}
 
-	client, err = httpClientBuilder(opts2)
+	client, err = HTTPClientBuilder(opts2)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 
@@ -265,7 +265,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 		APIBaseURL: server.URL,
 	}
 
-	client, err = httpClientBuilder(opts3)
+	client, err = HTTPClientBuilder(opts3)
 	require.NoError(t, err)
 	require.NotNil(t, client)
 
