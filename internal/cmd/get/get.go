@@ -2,6 +2,8 @@ package get
 
 import (
 	"fmt"
+	"io"
+	"net/http"
 	"net/url"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -90,12 +92,22 @@ func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 	mc.WithSessionHandler(*session)
 
 	// execute the request
-	projects, err := session.Get().ExecuteRequest()
+	response, err := session.Get().ExecuteRequest()
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
-	fmt.Printf("Projects: %+v\n", projects)
+	defer response.Body.Close()
+
+	if response.StatusCode == http.StatusOK {
+		bodyBytes, err := io.ReadAll(response.Body)
+		if err != nil {
+			fmt.Println("error reading response body: %w", err)
+		}
+		bodyString := string(bodyBytes)
+		fmt.Println(bodyString)
+	}
+
 	return nil
 
 	// headers := []string{"#", "Name", "Configuration Git Path", "Project id"}
