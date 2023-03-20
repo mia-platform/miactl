@@ -2,6 +2,7 @@ package get
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
@@ -13,7 +14,7 @@ import (
 
 const (
 	oktaProvider = "okta"
-	projectsURI  = "/api/backend/projects"
+	projectsURI  = "/api/backend/projects/"
 )
 
 var (
@@ -58,24 +59,37 @@ func NewGetCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 
-	session, err := httphandler.NewSessionHandler(projectsURI)
-	if err != nil {
-		return fmt.Errorf("error creating session handler: %w", err)
-	}
-
+	// collect base URL from current mia context
 	if viper.Get("current-context") == "" {
 		return fmt.Errorf("current context is unset")
 	}
-
 	currentContext := fmt.Sprint(viper.Get("current-context"))
 	baseURL, err := context.GetContextBaseURL(currentContext)
 	if err != nil {
 		return fmt.Errorf("error retrieving base URL for context %s: %w", currentContext, err)
 	}
-
+	// build full path URL
+	fullPathURL, err := url.JoinPath(baseURL, projectsURI)
+	if err != nil {
+		return fmt.Errorf("error building url: %w", err)
+	}
+	// create a session handler object with the full path URL
+	session, err := httphandler.NewSessionHandler(fullPathURL)
+	if err != nil {
+		return fmt.Errorf("error creating session handler: %w", err)
+	}
+	// create a new HTTP client and attach it to the session handler
+	httpClient, err := httphandler.HTTPClientBuilder(opts)
+	if err != nil {
+		return fmt.Errorf("error creating HTTP client: %w", err)
+	}
+	session.WithClient(httpClient)
+	// configure authentication
 	session.WithAuthentication(baseURL, oktaProvider, browser)
+	// attach session handler to mia client
 	mc.WithSessionHandler(*session)
 
+	// execute the request
 	projects, err := session.Get().ExecuteRequest()
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
