@@ -142,16 +142,16 @@ func TestOpenBrowser(t *testing.T) {
 
 }
 
-func TestMe(t *testing.T) {
-	endp := "https://test.console.gcp.mia-platform.eu"
-	prov := "okta"
-	b := Browser{}
+// func TestMe(t *testing.T) {
+// 	endp := "https://test.console.gcp.mia-platform.eu"
+// 	prov := "okta"
+// 	b := Browser{}
 
-	token, err := GetTokensWithOIDC(endp, prov, b)
-	if err != nil {
-		fmt.Println(token)
-	}
-}
+// 	token, err := GetTokensWithOIDC(endp, prov, b)
+// 	if err != nil {
+// 		fmt.Println(token)
+// 	}
+// }
 
 func handleCallbackSuccesfulToken(w http.ResponseWriter, req *http.Request) {
 
