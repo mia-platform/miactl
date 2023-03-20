@@ -16,6 +16,7 @@
 package login
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -45,6 +46,7 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 	jsonClient, err := jsonclient.New(jsonclient.Options{BaseURL: fmt.Sprintf("%s/api/", endpoint)})
 	if err != nil {
 		fmt.Printf("%v", "error generating JsonClient")
+		return nil, err
 	}
 	callbackPath := "/oauth/callback"
 	l, err := net.Listen("tcp", ":53535")
@@ -58,7 +60,7 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 			switch {
 			case r.URL.Path == callbackPath && r.Method == http.MethodGet:
 				handleCallback(w, r)
-				server.Close()
+				server.Shutdown(context.Background())
 				return
 			default:
 				w.WriteHeader(http.StatusNotFound)
@@ -72,9 +74,16 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 	q.Set("providerId", providerID)
 
 	startURL := fmt.Sprintf("%s/api/authorize?%s", endpoint, q.Encode())
-	b.open(startURL)
 
-	server.Serve(l)
+	b.open(startURL)
+	if err != nil {
+		return nil, err
+	}
+
+	err = server.Serve(l)
+	if err != nil && err != http.ErrServerClosed {
+		return nil, err
+	}
 
 	req, err := jsonClient.NewRequest(http.MethodPost, "oauth/token", map[string]interface{}{
 		"code":  code,
@@ -83,8 +92,6 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 	if err != nil {
 		return &Tokens{}, err
 	}
-
-	fmt.Println(jsonClient)
 
 	token := &Tokens{}
 
@@ -103,5 +110,6 @@ func handleCallback(w http.ResponseWriter, req *http.Request) {
 
 	w.Header().Set("content-type", "text/html")
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(""))
 
 }

@@ -31,6 +31,7 @@ func TestLocalLoginOIDC(t *testing.T) {
 	state := "my-state"
 	endpoint := "http://127.0.0.1:53534"
 	callbackPath := "/api/oauth/token"
+	callbackUrl := "localhost:53535"
 
 	t.Run("correctly returns token", func(t *testing.T) {
 		l, err := net.Listen("tcp", ":53534")
@@ -117,7 +118,6 @@ func TestLocalLoginOIDC(t *testing.T) {
 		defer s.Close()
 
 		go s.Serve(l)
-		callbackUrl := "http://127.0.0.1:45536"
 		browser := fakeBrowser{
 			code:        code,
 			state:       state,
@@ -151,6 +151,7 @@ func TestOpenBrowser(t *testing.T) {
 // 	if err != nil {
 // 		fmt.Println(token)
 // 	}
+// 		fmt.Println(token)
 // }
 
 func handleCallbackSuccesfulToken(w http.ResponseWriter, req *http.Request) {
