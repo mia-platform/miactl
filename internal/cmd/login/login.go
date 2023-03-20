@@ -55,11 +55,8 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 	// Server HTTP request
 	server = &http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			fmt.Println(r.URL.Path)
-			fmt.Println(r.Method)
 			switch {
 			case r.URL.Path == callbackPath && r.Method == http.MethodGet:
-				fmt.Println("sks")
 				handleCallback(w, r)
 				server.Close()
 				return
