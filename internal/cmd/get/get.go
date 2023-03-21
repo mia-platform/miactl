@@ -1,16 +1,12 @@
 package get
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
-	"net/url"
 	"os"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
-	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/internal/httphandler"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
@@ -51,7 +47,6 @@ var (
 		"project", "projects",
 		"deployment", "deployments",
 	}
-	browser = &login.Browser{}
 )
 
 // NewGetCmd func creates a new command
@@ -86,35 +81,18 @@ func NewGetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	}
 }
 
+// getProjects retrieves the projects with the company ID of the current context
 func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 
-	// collect base URL from current mia context
 	if viper.Get("current-context") == "" {
 		return fmt.Errorf("current context is unset")
 	}
 	currentContext := fmt.Sprint(viper.Get("current-context"))
-	baseURL, err := context.GetContextBaseURL(currentContext)
+
+	session, err := httphandler.ConfigureDefaultSessionHandler(opts, currentContext, projectsURI)
 	if err != nil {
-		return fmt.Errorf("error retrieving base URL for context %s: %w", currentContext, err)
+		return fmt.Errorf("error building default session handler: %w", err)
 	}
-	// build full path URL
-	fullPathURL, err := url.JoinPath(baseURL, projectsURI)
-	if err != nil {
-		return fmt.Errorf("error building url: %w", err)
-	}
-	// create a session handler object with the full path URL
-	session, err := httphandler.NewSessionHandler(fullPathURL)
-	if err != nil {
-		return fmt.Errorf("error creating session handler: %w", err)
-	}
-	// create a new HTTP client and attach it to the session handler
-	httpClient, err := httphandler.HTTPClientBuilder(opts)
-	if err != nil {
-		return fmt.Errorf("error creating HTTP client: %w", err)
-	}
-	session.WithClient(httpClient)
-	// configure authentication
-	session.WithAuthentication(baseURL, oktaProvider, browser)
 	// attach session handler to mia client
 	mc.WithSessionHandler(*session)
 
@@ -133,13 +111,8 @@ func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 		if err != nil {
 			return fmt.Errorf("error retrieving company ID for context %s: %w", currentContext, err)
 		}
-		bodyBytes, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("error reading response body: %w", err)
-		}
-		err = json.Unmarshal(bodyBytes, &projects)
-		if err != nil && err != io.EOF {
-			return fmt.Errorf("error unmarshaling json response: %w", err)
+		if err := httphandler.ParseResponseBody(currentContext, resp.Body, projects); err != nil {
+			return fmt.Errorf("error parsing response body: %w", err)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
 		table.SetHeader([]string{"Name", "Configuration Git Path", "Project ID"})
@@ -149,6 +122,8 @@ func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 			}
 		}
 		table.Render()
+	} else {
+		return fmt.Errorf("request failed: %s", resp.Status)
 	}
 
 	return nil

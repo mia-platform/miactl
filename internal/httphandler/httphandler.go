@@ -18,12 +18,15 @@ package httphandler
 import (
 	"crypto/tls"
 	"crypto/x509"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/login"
 )
 
@@ -35,7 +38,10 @@ type SessionHandler struct {
 	auth   IAuth
 }
 
-const unauthorized = "401 Unauthorized"
+const (
+	unauthorized = "401 Unauthorized"
+	oktaProvider = "okta"
+)
 
 type Authenticate func() (string, error)
 
@@ -146,4 +152,41 @@ func configureTransport(opts *clioptions.CLIOptions) (*http.Transport, error) {
 	transport.TLSClientConfig = tlsConfig
 
 	return transport, nil
+}
+
+func ParseResponseBody(contextName string, body io.Reader, out interface{}) error {
+	bodyBytes, err := io.ReadAll(body)
+	if err != nil {
+		return fmt.Errorf("error reading response body: %w", err)
+	}
+	err = json.Unmarshal(bodyBytes, &out)
+	if err != nil && err != io.EOF {
+		return fmt.Errorf("error unmarshaling json response: %w", err)
+	}
+	return nil
+}
+
+// ConfigureDefaultSessionHandler returns a session handler with default settings
+func ConfigureDefaultSessionHandler(opts *clioptions.CLIOptions, contextName, uri string) (*SessionHandler, error) {
+	baseURL, err := context.GetContextBaseURL(contextName)
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving base URL for context %s: %w", contextName, err)
+	}
+	// build full path URL
+	fullPathURL, err := url.JoinPath(baseURL, uri)
+	if err != nil {
+		return nil, fmt.Errorf("error building url: %w", err)
+	}
+	// create a session handler object with the full path URL
+	session, err := NewSessionHandler(fullPathURL)
+	if err != nil {
+		return nil, fmt.Errorf("error creating session handler: %w", err)
+	}
+	// create a new HTTP client and attach it to the session handler
+	httpClient, err := HTTPClientBuilder(opts)
+	if err != nil {
+		return nil, fmt.Errorf("error creating HTTP client: %w", err)
+	}
+	session.WithClient(httpClient).WithAuthentication(baseURL, oktaProvider, login.NewDefaultBrowser())
+	return session, nil
 }

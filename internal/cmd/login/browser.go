@@ -15,6 +15,10 @@ type Browser struct {
 	endpoint string
 }
 
+func NewDefaultBrowser() Browser {
+	return Browser{}
+}
+
 func (b Browser) open(apiUrl string) error {
 	if err := open.Run(apiUrl); err != nil {
 		fmt.Println("Failed to open browser:", err)
