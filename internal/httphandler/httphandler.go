@@ -99,7 +99,6 @@ func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
 		return nil, fmt.Errorf("error retrieving token: %w", err)
 	}
 	httpReq.Header.Set("Authorization", "Bearer "+token)
-	fmt.Println(token)
 	resp, err := s.client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending the http request: %w", err)

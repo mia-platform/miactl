@@ -1,18 +1,45 @@
 package get
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/internal/httphandler"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
+
+type Cluster struct {
+	Hostname  string `json:"hostname"`
+	Namespace string `json:"namespace"`
+}
+
+type Environment struct {
+	DisplayName string  `json:"label"` //nolint:tagliatelle
+	EnvID       string  `json:"value"` //nolint:tagliatelle
+	Cluster     Cluster `json:"cluster"`
+}
+type Pipelines struct {
+	Type string `json:"type"`
+}
+
+type Project struct {
+	ID                   string        `json:"_id"` //nolint:tagliatelle
+	Name                 string        `json:"name"`
+	ConfigurationGitPath string        `json:"configurationGitPath"`
+	Environments         []Environment `json:"environments"`
+	ProjectID            string        `json:"projectId"`
+	Pipelines            Pipelines     `json:"pipelines"`
+}
 
 const (
 	oktaProvider = "okta"
@@ -92,35 +119,34 @@ func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 	mc.WithSessionHandler(*session)
 
 	// execute the request
-	response, err := session.Get().ExecuteRequest()
+	resp, err := session.Get().ExecuteRequest()
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
-	defer response.Body.Close()
+	defer resp.Body.Close()
 
-	if response.StatusCode == http.StatusOK {
-		bodyBytes, err := io.ReadAll(response.Body)
+	var projects []Project
+
+	if resp.StatusCode == http.StatusOK {
+		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			fmt.Println("error reading response body: %w", err)
+			return fmt.Errorf("error reading response body: %w", err)
 		}
-		bodyString := string(bodyBytes)
-		fmt.Println(bodyString)
+		err = json.Unmarshal(bodyBytes, &projects)
+		if err != nil && err != io.EOF {
+			return fmt.Errorf("error unmarshaling json response: %w", err)
+		}
+		table := tablewriter.NewWriter(os.Stdout)
+		table.SetHeader([]string{"#", "Name", "Configuration Git Path", "Project ID"})
+		for i, project := range projects {
+			table.Append([]string{strconv.Itoa(i + 1), project.Name, project.ConfigurationGitPath, project.ProjectID})
+			table.Render()
+		}
 	}
 
 	return nil
 
-	// headers := []string{"#", "Name", "Configuration Git Path", "Project id"}
-	// table := f.Renderer.Table(headers)
-	// for i, project := range projects {
-	// 	table.Append([]string{
-	// 		strconv.Itoa(i + 1),
-	// 		project.Name,
-	// 		project.ConfigurationGitPath,
-	// 		project.ProjectID,
-	// 	})
-	// }
-	// table.Render()
 }
 
 func getDeploymentsForProject() {
