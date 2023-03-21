@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
@@ -39,6 +38,7 @@ type Project struct {
 	Environments         []Environment `json:"environments"`
 	ProjectID            string        `json:"projectId"`
 	Pipelines            Pipelines     `json:"pipelines"`
+	TenantID             string        `json:"tenantId"`
 }
 
 const (
@@ -129,6 +129,10 @@ func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 	var projects []Project
 
 	if resp.StatusCode == http.StatusOK {
+		companyID, err := context.GetContextCompanyID(currentContext)
+		if err != nil {
+			return fmt.Errorf("error retrieving company ID for context %s: %w", currentContext, err)
+		}
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
 			return fmt.Errorf("error reading response body: %w", err)
@@ -138,11 +142,13 @@ func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 			return fmt.Errorf("error unmarshaling json response: %w", err)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"#", "Name", "Configuration Git Path", "Project ID"})
-		for i, project := range projects {
-			table.Append([]string{strconv.Itoa(i + 1), project.Name, project.ConfigurationGitPath, project.ProjectID})
-			table.Render()
+		table.SetHeader([]string{"Name", "Configuration Git Path", "Project ID"})
+		for _, project := range projects {
+			if project.TenantID == companyID {
+				table.Append([]string{project.Name, project.ConfigurationGitPath, project.ProjectID})
+			}
 		}
+		table.Render()
 	}
 
 	return nil

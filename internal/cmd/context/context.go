@@ -41,3 +41,11 @@ func GetContextBaseURL(contextName string) (string, error) {
 	}
 	return fmt.Sprint(context["apibaseurl"]), nil
 }
+
+func GetContextCompanyID(contextName string) (string, error) {
+	context, err := contextLookUp(contextName)
+	if err != nil {
+		return "", fmt.Errorf("error while searching context in config file: %w", err)
+	}
+	return fmt.Sprint(context["companyid"]), nil
+}
