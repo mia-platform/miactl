@@ -31,11 +31,12 @@ import (
 )
 
 type SessionHandler struct {
-	url    string
-	method string
-	body   io.ReadCloser
-	client *http.Client
-	auth   IAuth
+	url     string
+	method  string
+	context string
+	body    io.ReadCloser
+	client  *http.Client
+	auth    IAuth
 }
 
 const (
@@ -80,6 +81,15 @@ func (s *SessionHandler) Post(body io.ReadCloser) *SessionHandler {
 func (s *SessionHandler) WithClient(c *http.Client) *SessionHandler {
 	s.client = c
 	return s
+}
+
+func (s *SessionHandler) WithContext(ctx string) *SessionHandler {
+	s.context = ctx
+	return s
+}
+
+func (s *SessionHandler) GetContext() string {
+	return s.context
 }
 
 func HTTPClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
@@ -187,6 +197,6 @@ func ConfigureDefaultSessionHandler(opts *clioptions.CLIOptions, contextName, ur
 	if err != nil {
 		return nil, fmt.Errorf("error creating HTTP client: %w", err)
 	}
-	session.WithClient(httpClient).WithAuthentication(baseURL, oktaProvider, login.NewDefaultBrowser())
+	session.WithContext(contextName).WithClient(httpClient).WithAuthentication(baseURL, oktaProvider, login.NewDefaultBrowser())
 	return session, nil
 }

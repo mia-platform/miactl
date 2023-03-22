@@ -1,3 +1,18 @@
+// Copyright Mia srl
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package get
 
 import (
@@ -7,35 +22,11 @@ import (
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
+	"github.com/mia-platform/miactl/internal/cmd/resources"
 	"github.com/mia-platform/miactl/internal/httphandler"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
-
-type Cluster struct {
-	Hostname  string `json:"hostname"`
-	Namespace string `json:"namespace"`
-}
-
-type Environment struct {
-	DisplayName string  `json:"label"` //nolint:tagliatelle
-	EnvID       string  `json:"value"` //nolint:tagliatelle
-	Cluster     Cluster `json:"cluster"`
-}
-type Pipelines struct {
-	Type string `json:"type"`
-}
-
-type Project struct {
-	ID                   string        `json:"_id"` //nolint:tagliatelle
-	Name                 string        `json:"name"`
-	ConfigurationGitPath string        `json:"configurationGitPath"`
-	Environments         []Environment `json:"environments"`
-	ProjectID            string        `json:"projectId"`
-	Pipelines            Pipelines     `json:"pipelines"`
-	TenantID             string        `json:"tenantId"`
-}
 
 const (
 	oktaProvider = "okta"
@@ -67,14 +58,17 @@ func NewGetCmd(options *clioptions.CLIOptions) *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resource := args[0]
-			mc := httphandler.NewMiaClientBuilder()
 			switch resource {
 			case "projects", "project":
+				mc, err := httphandler.ConfigureDefaultMiaClient(options, projectsURI)
+				if err != nil {
+					return err
+				}
 				if err := getProjects(mc, options); err != nil {
 					return err
 				}
-			case "deployment", "deployments":
-				getDeploymentsForProject()
+			default:
+				return fmt.Errorf("unexpected argument: %s", resource)
 			}
 			return nil
 		},
@@ -84,27 +78,16 @@ func NewGetCmd(options *clioptions.CLIOptions) *cobra.Command {
 // getProjects retrieves the projects with the company ID of the current context
 func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 
-	if viper.Get("current-context") == "" {
-		return fmt.Errorf("current context is unset")
-	}
-	currentContext := fmt.Sprint(viper.Get("current-context"))
-
-	session, err := httphandler.ConfigureDefaultSessionHandler(opts, currentContext, projectsURI)
-	if err != nil {
-		return fmt.Errorf("error building default session handler: %w", err)
-	}
-	// attach session handler to mia client
-	mc.WithSessionHandler(*session)
-
 	// execute the request
-	resp, err := session.Get().ExecuteRequest()
+	resp, err := mc.GetSession().Get().ExecuteRequest()
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
 	defer resp.Body.Close()
 
-	var projects []Project
+	var projects []resources.Project
+	currentContext := mc.GetSession().GetContext()
 
 	if resp.StatusCode == http.StatusOK {
 		companyID, err := context.GetContextCompanyID(currentContext)
@@ -123,13 +106,9 @@ func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 		}
 		table.Render()
 	} else {
-		return fmt.Errorf("request failed: %s", resp.Status)
+		return fmt.Errorf("request failed with status code: %s", resp.Status)
 	}
 
 	return nil
-
-}
-
-func getDeploymentsForProject() {
 
 }

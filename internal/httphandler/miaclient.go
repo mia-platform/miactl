@@ -15,6 +15,13 @@
 
 package httphandler
 
+import (
+	"fmt"
+
+	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/context"
+)
+
 type MiaClient struct {
 	sessionHandler SessionHandler
 }
@@ -26,4 +33,26 @@ func NewMiaClientBuilder() *MiaClient {
 func (m *MiaClient) WithSessionHandler(s SessionHandler) *MiaClient {
 	m.sessionHandler = s
 	return m
+}
+
+func (m *MiaClient) GetSession() *SessionHandler {
+	return &m.sessionHandler
+}
+
+func ConfigureDefaultMiaClient(opts *clioptions.CLIOptions, uri string) (*MiaClient, error) {
+
+	mc := NewMiaClientBuilder()
+
+	currentContext, err := context.GetCurrentContext()
+	if err != nil {
+		return nil, fmt.Errorf("error retrieving current context: %w", err)
+	}
+
+	session, err := ConfigureDefaultSessionHandler(opts, currentContext, uri)
+	if err != nil {
+		return nil, fmt.Errorf("error building default session handler: %w", err)
+	}
+	// attach session handler to mia client
+	return mc.WithSessionHandler(*session), nil
+
 }
