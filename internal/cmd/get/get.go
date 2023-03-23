@@ -94,7 +94,7 @@ func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 		if err != nil {
 			return fmt.Errorf("error retrieving company ID for context %s: %w", currentContext, err)
 		}
-		if err := httphandler.ParseResponseBody(currentContext, resp.Body, projects); err != nil {
+		if err := httphandler.ParseResponseBody(currentContext, resp.Body, &projects); err != nil {
 			return fmt.Errorf("error parsing response body: %w", err)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
