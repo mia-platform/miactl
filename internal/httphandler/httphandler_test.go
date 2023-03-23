@@ -31,11 +31,13 @@ import (
 	"net/http/httptest"
 	"os"
 	"path"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/login"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -43,6 +45,7 @@ const (
 	testBaseURL  = "test.url"
 	testProvider = "testProvider"
 	testURI      = "/test"
+	testContext  = "test-context"
 )
 
 var (
@@ -103,6 +106,14 @@ func TestWithAuthentication(t *testing.T) {
 		},
 	}
 	require.Equal(t, expectedSession, session)
+}
+
+func TestGetContext(t *testing.T) {
+	session := &SessionHandler{
+		context: testContext,
+	}
+	context := session.GetContext()
+	require.Equal(t, context, session.context)
 }
 
 func TestNewSessionHandler(t *testing.T) {
@@ -272,6 +283,67 @@ func TestReqWithCustomTransport(t *testing.T) {
 	resp, err = session.WithClient(client).Get().ExecuteRequest()
 	require.Nil(t, resp)
 	require.Error(t, err)
+}
+
+func TestParseResponseBody(t *testing.T) {
+
+	type Test struct {
+		Key string `json:"key"`
+	}
+	var out Test
+
+	// valid json body
+	body := bytes.NewReader([]byte(`invalid json`))
+	expectedOut := Test{}
+	err := ParseResponseBody(testContext, body, &out)
+	require.Equal(t, expectedOut, out)
+	require.Error(t, err)
+
+	// invalid json
+	body = bytes.NewReader([]byte(`{"key": "value"}`))
+	expectedOut = Test{
+		Key: "value",
+	}
+	err = ParseResponseBody(testContext, body, &out)
+	require.Equal(t, expectedOut, out)
+	require.NoError(t, err)
+
+}
+
+func TestConfigureDefaultSessionHandler(t *testing.T) {
+	opts := &clioptions.CLIOptions{}
+	viper.SetConfigType("yaml")
+	config := `contexts:
+  test-context:
+    apibaseurl: http://url
+    companyid: "123"
+    projectid: "123"`
+	err := viper.ReadConfig(strings.NewReader(config))
+	if err != nil {
+		t.Fatalf("unexpected error reading config: %v", err)
+	}
+
+	// valid session
+	expectedSession := &SessionHandler{
+		url:     "http://url/test",
+		context: testContext,
+		client:  defaultClient,
+		auth: &Auth{
+			url:        "http://url",
+			providerID: oktaProvider,
+			browser:    login.Browser{},
+		},
+	}
+	session, err := ConfigureDefaultSessionHandler(opts, testContext, testURI)
+	require.NoError(t, err)
+	require.NotNil(t, session)
+	require.EqualValues(t, expectedSession, session)
+
+	// invalid context
+	session, err = ConfigureDefaultSessionHandler(opts, "wrong-context", testURI)
+	require.Nil(t, session)
+	require.Error(t, err)
+
 }
 
 func generateMockCert(t *testing.T) (string, string, error) {

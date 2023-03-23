@@ -14,3 +14,9 @@
 // limitations under the License.
 
 package get
+
+import "testing"
+
+func TestGetProjects(t *testing.T) {
+
+}
