@@ -17,26 +17,16 @@ package httphandler
 
 import (
 	"bytes"
-	"crypto/rand"
-	"crypto/rsa"
 	"crypto/tls"
-	"crypto/x509"
-	"crypto/x509/pkix"
 	"encoding/json"
-	"encoding/pem"
 	"io"
-	"math/big"
-	"net"
 	"net/http"
-	"net/http/httptest"
-	"os"
-	"path"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/login"
+	"github.com/mia-platform/miactl/internal/testutils"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
@@ -50,7 +40,6 @@ const (
 
 var (
 	testToken     string
-	testDirPath   string
 	defaultClient = &http.Client{}
 )
 
@@ -126,7 +115,7 @@ func TestNewSessionHandler(t *testing.T) {
 }
 
 func TestHttpClientBuilder(t *testing.T) {
-	certPath, _, err := generateMockCert(t)
+	certPath, _, err := testutils.GenerateMockCert(t)
 	require.NoError(t, err)
 
 	// Test default client
@@ -159,13 +148,13 @@ func TestHttpClientBuilder(t *testing.T) {
 }
 
 func TestExecuteRequest(t *testing.T) {
-	server := createMockServer()
+	server := testutils.CreateMockServer()
 	server.Start()
 	defer server.Close()
 
 	// Test request with valid token
 	testToken = ""
-	validAuth := mockValidToken{}
+	validAuth := testutils.MockValidToken{}
 	validSession := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
@@ -180,7 +169,7 @@ func TestExecuteRequest(t *testing.T) {
 
 	// Test request with expired token
 	testToken = ""
-	expAuth := mockExpiredToken{}
+	expAuth := testutils.MockExpiredToken{}
 	expiredSession := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
@@ -193,7 +182,7 @@ func TestExecuteRequest(t *testing.T) {
 
 	// Test auth error
 	testToken = ""
-	failAuth := mockFailAuth{}
+	failAuth := testutils.MockFailAuth{}
 	failedSession := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
@@ -206,7 +195,7 @@ func TestExecuteRequest(t *testing.T) {
 
 	// Test token refresh error
 	testToken = ""
-	failRefresh := mockFailRefresh{}
+	failRefresh := testutils.MockFailRefresh{}
 	failRefreshSession := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
@@ -220,13 +209,13 @@ func TestExecuteRequest(t *testing.T) {
 
 func TestReqWithCustomTransport(t *testing.T) {
 	// create mock certificate
-	certPath, keyPath, err := generateMockCert(t)
+	certPath, keyPath, err := testutils.GenerateMockCert(t)
 	if err != nil {
 		t.Fatalf("unexpected error")
 	}
 
 	// create mock server
-	server := createMockServer()
+	server := testutils.CreateMockServer()
 
 	// load certificate and start TLS
 	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
@@ -239,7 +228,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 	server.StartTLS()
 	defer server.Close()
 
-	a := mockValidToken{}
+	a := testutils.MockValidToken{}
 	session := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
@@ -286,22 +275,18 @@ func TestReqWithCustomTransport(t *testing.T) {
 }
 
 func TestParseResponseBody(t *testing.T) {
-
-	type Test struct {
-		Key string `json:"key"`
-	}
-	var out Test
+	var out testutils.Test
 
 	// valid json body
 	body := bytes.NewReader([]byte(`invalid json`))
-	expectedOut := Test{}
+	expectedOut := testutils.Test{}
 	err := ParseResponseBody(testContext, body, &out)
 	require.Equal(t, expectedOut, out)
 	require.Error(t, err)
 
 	// invalid json
 	body = bytes.NewReader([]byte(`{"key": "value"}`))
-	expectedOut = Test{
+	expectedOut = testutils.Test{
 		Key: "value",
 	}
 	err = ParseResponseBody(testContext, body, &out)
@@ -344,64 +329,4 @@ func TestConfigureDefaultSessionHandler(t *testing.T) {
 	require.Nil(t, session)
 	require.Error(t, err)
 
-}
-
-func generateMockCert(t *testing.T) (string, string, error) {
-	priv, err := rsa.GenerateKey(rand.Reader, 2048)
-	if err != nil {
-		return "", "", err
-	}
-
-	template := x509.Certificate{
-		SerialNumber:          big.NewInt(1),
-		Subject:               pkix.Name{CommonName: "localhost"},
-		NotBefore:             time.Now(),
-		NotAfter:              time.Now().Add(365 * 24 * time.Hour),
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		BasicConstraintsValid: true,
-		IPAddresses:           []net.IP{net.ParseIP("127.0.0.1")}, // IP SAN for 127.0.0.1
-	}
-
-	certBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
-	if err != nil {
-		return "", "", err
-	}
-
-	testDirPath = t.TempDir()
-	testCertPath := path.Join(testDirPath, "testcert.pem")
-	certOut, err := os.Create(testCertPath)
-	if err != nil {
-		return "", "", err
-	}
-	defer certOut.Close()
-	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
-
-	testKeyPath := path.Join(testDirPath, "testkey.pem")
-	keyOut, err := os.Create(testKeyPath)
-	if err != nil {
-		panic(err)
-	}
-	defer keyOut.Close()
-	privBytes, err := x509.MarshalPKCS8PrivateKey(priv)
-	if err != nil {
-		panic(err)
-	}
-	pem.Encode(keyOut, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
-
-	return testCertPath, testKeyPath, nil
-}
-
-func createMockServer() *httptest.Server {
-	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		auth := r.Header.Get("Authorization")
-		switch auth {
-		case "Bearer valid_token":
-			w.WriteHeader(http.StatusOK)
-		default:
-			w.WriteHeader(http.StatusUnauthorized)
-		}
-		w.Write([]byte{})
-	}))
-	return server
 }

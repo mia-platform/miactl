@@ -28,6 +28,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/login"
+	"github.com/mia-platform/miactl/internal/testutils"
 )
 
 type SessionHandler struct {
@@ -110,7 +111,7 @@ func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building the http request: %w", err)
 	}
-	token, err := s.auth.authenticate()
+	token, err := s.auth.Authenticate()
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving token: %w", err)
 	}
@@ -120,7 +121,7 @@ func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
 		return nil, fmt.Errorf("error sending the http request: %w", err)
 	}
 	if resp.Status == unauthorized {
-		newToken, err := s.auth.authenticate()
+		newToken, err := s.auth.Authenticate()
 		if err != nil {
 			return resp, fmt.Errorf("error refreshing token: %w", err)
 		}
@@ -199,4 +200,13 @@ func ConfigureDefaultSessionHandler(opts *clioptions.CLIOptions, contextName, ur
 	}
 	session.WithContext(contextName).WithClient(httpClient).WithAuthentication(baseURL, oktaProvider, login.NewDefaultBrowser())
 	return session, nil
+}
+
+func FakeSessionHandler(url string) *SessionHandler {
+	return &SessionHandler{
+		url:     url,
+		context: "fake-ctx",
+		client:  &http.Client{},
+		auth:    &testutils.MockValidToken{},
+	}
 }

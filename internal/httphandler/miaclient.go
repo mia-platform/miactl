@@ -56,3 +56,9 @@ func ConfigureDefaultMiaClient(opts *clioptions.CLIOptions, uri string) (*MiaCli
 	return mc.WithSessionHandler(*session), nil
 
 }
+
+func FakeMiaClient(url string) *MiaClient {
+	return &MiaClient{
+		sessionHandler: *FakeSessionHandler(url),
+	}
+}

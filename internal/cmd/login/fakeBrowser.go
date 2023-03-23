@@ -5,20 +5,20 @@ import (
 	"net/http"
 )
 
-type fakeBrowser struct {
+type FakeBrowser struct {
 	code        string
 	state       string
 	callbackUrl string
 	endpoint    string
 }
 
-func (f fakeBrowser) open(apiUrl string) error {
+func (f FakeBrowser) open(apiUrl string) error {
 	go func() {
 		http.DefaultClient.Get(fmt.Sprintf("http://%s/oauth/callback?code=%s&state=%s", f.callbackUrl, f.code, f.state))
 	}()
 	return nil
 }
 
-func (b fakeBrowser) getEndpoint() string {
+func (b FakeBrowser) getEndpoint() string {
 	return b.endpoint
 }

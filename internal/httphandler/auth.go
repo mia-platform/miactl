@@ -22,7 +22,7 @@ import (
 )
 
 type IAuth interface {
-	authenticate() (string, error)
+	Authenticate() (string, error)
 }
 
 type Auth struct {
@@ -31,7 +31,7 @@ type Auth struct {
 	browser    login.BrowserI
 }
 
-func (a *Auth) authenticate() (string, error) {
+func (a *Auth) Authenticate() (string, error) {
 	tokens, err := login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
 	if err != nil {
 		return "", fmt.Errorf("login error: %w", err)
