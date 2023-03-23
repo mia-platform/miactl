@@ -48,11 +48,14 @@ func GetContextCompanyID(contextName string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error while searching context in config file: %w", err)
 	}
+	if context["companyid"] == nil {
+		return "", fmt.Errorf("please set a company ID for context %s", contextName)
+	}
 	return fmt.Sprint(context["companyid"]), nil
 }
 
 func GetCurrentContext() (string, error) {
-	if viper.Get("current-context") == "" {
+	if viper.Get("current-context") == nil {
 		return "", fmt.Errorf("current context is unset")
 	}
 	return fmt.Sprint(viper.Get("current-context")), nil
