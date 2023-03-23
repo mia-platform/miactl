@@ -15,8 +15,41 @@
 
 package get
 
-import "testing"
+import (
+	"net/http"
+	"strings"
+	"testing"
+
+	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/httphandler"
+	"github.com/mia-platform/miactl/internal/testutils"
+	"github.com/spf13/viper"
+	"github.com/stretchr/testify/require"
+)
+
+var (
+	defaultClient = &http.Client{}
+)
 
 func TestGetProjects(t *testing.T) {
+	opts := &clioptions.CLIOptions{}
+	viper.SetConfigType("yaml")
+	config := `contexts:
+  fake-ctx:
+    apibaseurl: http://url
+    companyid: "123"
+    projectid: "123"`
+	err := viper.ReadConfig(strings.NewReader(config))
+	if err != nil {
+		t.Fatalf("unexpected error reading config: %v", err)
+	}
 
+	server := testutils.CreateMockServer()
+	server.Start()
+	defer server.Close()
+
+	mc := httphandler.FakeMiaClient(server.URL)
+
+	err = getProjects(mc, opts)
+	require.NoError(t, err)
 }
