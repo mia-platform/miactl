@@ -101,14 +101,22 @@ func GenerateMockCert(t *testing.T) (string, string, error) {
 
 func CreateMockServer() *httptest.Server {
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		auth := r.Header.Get("Authorization")
-		switch auth {
-		case "Bearer valid_token":
-			w.WriteHeader(http.StatusOK)
-		default:
-			w.WriteHeader(http.StatusUnauthorized)
+		if r.RequestURI == "/notfound" {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			auth := r.Header.Get("Authorization")
+			switch auth {
+			case "Bearer valid_token":
+				w.WriteHeader(http.StatusOK)
+			default:
+				w.WriteHeader(http.StatusUnauthorized)
+			}
 		}
-		w.Write([]byte(`{"key": "value"}`))
+		if r.RequestURI == "/invalidbody" {
+			w.Write([]byte(`invalid json`))
+		} else {
+			w.Write([]byte(`{"key": "value"}`))
+		}
 	}))
 	return server
 }
