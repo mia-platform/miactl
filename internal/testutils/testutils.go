@@ -17,7 +17,7 @@ import (
 	"time"
 )
 
-var testToken = ""
+var TestToken = ""
 
 type Test struct {
 	Key string `json:"key"`
@@ -33,12 +33,12 @@ func (a *MockValidToken) Authenticate() (string, error) {
 }
 
 func (a *MockExpiredToken) Authenticate() (string, error) {
-	if testToken == "" {
-		testToken = "expired_token"
+	if TestToken == "" {
+		TestToken = "expired_token"
 	} else {
-		testToken = "valid_token"
+		TestToken = "valid_token"
 	}
-	return testToken, nil
+	return TestToken, nil
 }
 
 func (a *MockFailAuth) Authenticate() (string, error) {
@@ -46,9 +46,9 @@ func (a *MockFailAuth) Authenticate() (string, error) {
 }
 
 func (a *MockFailRefresh) Authenticate() (string, error) {
-	if testToken == "" {
-		testToken = "expired_token"
-		return testToken, nil
+	if TestToken == "" {
+		TestToken = "expired_token"
+		return TestToken, nil
 	}
 	return "", fmt.Errorf("authentication failed")
 }
