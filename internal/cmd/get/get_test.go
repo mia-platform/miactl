@@ -39,6 +39,14 @@ const (
     projectid: "123"`
 )
 
+func TestNewGetCmd(t *testing.T) {
+	t.Run("test command creation", func(t *testing.T) {
+		opts := clioptions.NewCLIOptions()
+		cmd := NewGetCmd(opts)
+		require.NotNil(t, cmd)
+	})
+}
+
 func TestGetProjects(t *testing.T) {
 	opts := &clioptions.CLIOptions{}
 	viper.SetConfigType("yaml")
