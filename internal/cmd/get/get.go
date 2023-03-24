@@ -36,7 +36,6 @@ const (
 var (
 	validArgs = []string{
 		"project", "projects",
-		"deployment", "deployments",
 	}
 )
 
@@ -47,14 +46,6 @@ func NewGetCmd(options *clioptions.CLIOptions) *cobra.Command {
 		ValidArgs: validArgs,
 		Args: func(cmd *cobra.Command, args []string) error {
 			return cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs)(cmd, args)
-		},
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			switch args[0] {
-			case "projects", "project":
-			case "deployment", "deployments":
-				return cmd.MarkFlagRequired("project")
-			}
-			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resource := args[0]
