@@ -98,19 +98,25 @@ func GenerateMockCert(t *testing.T) (string, string, error) {
 		return "", "", err
 	}
 	defer certOut.Close()
-	pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
+	err = pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
+	if err != nil {
+		return "", "", err
+	}
 
 	testKeyPath := path.Join(testDirPath, "testkey.pem")
 	keyOut, err := os.Create(testKeyPath)
 	if err != nil {
-		panic(err)
+		return "", "", err
 	}
 	defer keyOut.Close()
 	privBytes, err := x509.MarshalPKCS8PrivateKey(priv)
 	if err != nil {
-		panic(err)
+		return "", "", err
 	}
-	pem.Encode(keyOut, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
+	err = pem.Encode(keyOut, &pem.Block{Type: "PRIVATE KEY", Bytes: privBytes})
+	if err != nil {
+		return "", "", err
+	}
 
 	return testCertPath, testKeyPath, nil
 }
@@ -130,9 +136,15 @@ func CreateMockServer() *httptest.Server {
 			}
 		}
 		if r.RequestURI == "/invalidbody" {
-			w.Write([]byte(`invalid json`))
+			_, err := w.Write([]byte(`invalid json`))
+			if err != nil {
+				panic(err)
+			}
 		} else if r.RequestURI == "/getprojects" {
-			w.Write([]byte(`[{"_id": "123"}]`))
+			_, err := w.Write([]byte(`[{"_id": "123"}]`))
+			if err != nil {
+				panic(err)
+			}
 		}
 	}))
 	return server

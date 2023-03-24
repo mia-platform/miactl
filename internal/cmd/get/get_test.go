@@ -48,7 +48,6 @@ func TestNewGetCmd(t *testing.T) {
 }
 
 func TestGetProjects(t *testing.T) {
-	opts := &clioptions.CLIOptions{}
 	viper.SetConfigType("yaml")
 
 	server := testutils.CreateMockServer()
@@ -93,7 +92,7 @@ func TestGetProjects(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error reading config: %v", err)
 		}
-		err = getProjects(tc.miaClient, opts)
+		err = getProjects(tc.miaClient)
 		if tc.expectedErr == "" {
 			require.NoError(t, err)
 		} else {

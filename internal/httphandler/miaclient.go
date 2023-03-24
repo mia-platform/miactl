@@ -45,7 +45,6 @@ func (m *MiaClient) GetSession() *SessionHandler {
 
 // ConfigureDefaultMiaClient creates a MiaClient object with default options
 func ConfigureDefaultMiaClient(opts *clioptions.CLIOptions, uri string) (*MiaClient, error) {
-
 	mc := NewMiaClientBuilder()
 
 	currentContext, err := context.GetCurrentContext()

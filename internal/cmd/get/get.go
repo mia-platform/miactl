@@ -55,7 +55,7 @@ func NewGetCmd(options *clioptions.CLIOptions) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				if err := getProjects(mc, options); err != nil {
+				if err := getProjects(mc); err != nil {
 					return err
 				}
 			default:
@@ -67,8 +67,7 @@ func NewGetCmd(options *clioptions.CLIOptions) *cobra.Command {
 }
 
 // getProjects retrieves the projects with the company ID of the current context
-func getProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
-
+func getProjects(mc *httphandler.MiaClient) error {
 	// execute the request
 	resp, err := mc.GetSession().Get().ExecuteRequest()
 	if err != nil {
