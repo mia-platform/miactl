@@ -39,7 +39,6 @@ const (
 )
 
 var (
-	testToken     string
 	defaultClient = &http.Client{}
 )
 
@@ -152,59 +151,86 @@ func TestExecuteRequest(t *testing.T) {
 	server.Start()
 	defer server.Close()
 
-	// Test request with valid token
-	testToken = ""
-	validAuth := testutils.MockValidToken{}
-	validSession := &SessionHandler{
-		url:    server.URL,
-		client: defaultClient,
-		auth:   &validAuth,
+	validAuth := &testutils.MockValidToken{}
+	expAuth := &testutils.MockExpiredToken{}
+	failAuth := &testutils.MockFailAuth{}
+	failRefresh := &testutils.MockFailRefresh{}
+
+	type TestCase struct {
+		name        string
+		session     *SessionHandler
+		expectedOut string
+		expectedErr string
+	}
+	testCases := []TestCase{
+		{
+			name: "request with valid token",
+			session: &SessionHandler{
+				url:    server.URL,
+				client: defaultClient,
+				auth:   validAuth,
+			},
+			expectedOut: "200 OK",
+			expectedErr: "",
+		},
+		{
+			name: "request with expired token",
+			session: &SessionHandler{
+				url:    server.URL,
+				client: defaultClient,
+				auth:   expAuth,
+			},
+			expectedOut: "200 OK",
+			expectedErr: "",
+		},
+		{
+			name: "request with expired token",
+			session: &SessionHandler{
+				url:    server.URL,
+				client: defaultClient,
+				auth:   expAuth,
+			},
+			expectedOut: "200 OK",
+			expectedErr: "",
+		},
+		{
+			name: "request with auth error",
+			session: &SessionHandler{
+				url:    server.URL,
+				client: defaultClient,
+				auth:   failAuth,
+			},
+			expectedOut: "",
+			expectedErr: "error retrieving token",
+		},
+		{
+			name: "request with failed token refresh",
+			session: &SessionHandler{
+				url:    server.URL,
+				client: defaultClient,
+				auth:   failRefresh,
+			},
+			expectedOut: unauthorized,
+			expectedErr: "error refreshing token",
+		},
 	}
 
-	mc := NewMiaClientBuilder().WithSessionHandler(*validSession)
-
-	resp, err := mc.sessionHandler.Get().ExecuteRequest()
-	require.Nil(t, err)
-	require.Equal(t, "200 OK", resp.Status)
-
-	// Test request with expired token
-	testToken = ""
-	expAuth := testutils.MockExpiredToken{}
-	expiredSession := &SessionHandler{
-		url:    server.URL,
-		client: defaultClient,
-		auth:   &expAuth,
+	for _, tc := range testCases {
+		t.Log(tc.name)
+		mc := NewMiaClientBuilder().WithSessionHandler(*tc.session)
+		testutils.TestToken = ""
+		resp, err := mc.sessionHandler.Get().ExecuteRequest()
+		if tc.expectedErr == "" {
+			require.NoError(t, err)
+		} else {
+			require.ErrorContains(t, err, tc.expectedErr)
+		}
+		if tc.expectedOut == "" {
+			require.Nil(t, resp)
+		} else {
+			require.Equal(t, tc.expectedOut, resp.Status)
+		}
 	}
-	expiredSession.WithClient(defaultClient)
-	resp, err = expiredSession.Get().ExecuteRequest()
-	require.Nil(t, err)
-	require.Equal(t, "200 OK", resp.Status)
-
-	// Test auth error
-	testToken = ""
-	failAuth := testutils.MockFailAuth{}
-	failedSession := &SessionHandler{
-		url:    server.URL,
-		client: defaultClient,
-		auth:   &failAuth,
-	}
-	failedSession.WithClient(defaultClient)
-	resp, err = failedSession.Get().ExecuteRequest()
-	require.Nil(t, resp)
-	require.Equal(t, "error retrieving token: authentication failed", err.Error())
-
-	// Test token refresh error
-	testToken = ""
-	failRefresh := testutils.MockFailRefresh{}
-	failRefreshSession := &SessionHandler{
-		url:    server.URL,
-		client: defaultClient,
-		auth:   &failRefresh,
-	}
-	failRefreshSession.WithClient(defaultClient)
-	resp, err = failRefreshSession.Get().ExecuteRequest()
-	require.Equal(t, unauthorized, resp.Status)
-	require.Equal(t, "error refreshing token: authentication failed", err.Error())
 }
 
 func TestReqWithCustomTransport(t *testing.T) {
@@ -228,50 +254,62 @@ func TestReqWithCustomTransport(t *testing.T) {
 	server.StartTLS()
 	defer server.Close()
 
-	a := testutils.MockValidToken{}
 	session := &SessionHandler{
 		url:    server.URL,
 		client: defaultClient,
-		auth:   &a,
+		auth:   &testutils.MockValidToken{},
 	}
 
-	opts := &clioptions.CLIOptions{
-		CACert: certPath,
+	type TestCase struct {
+		name        string
+		opts        *clioptions.CLIOptions
+		expectedOut string
+		expectedErr string
+	}
+	testCases := []TestCase{
+		{
+			name: "client with ca certificate",
+			opts: &clioptions.CLIOptions{
+				CACert: certPath,
+			},
+			expectedOut: "200 OK",
+			expectedErr: "",
+		},
+		{
+			name: "skip certificate validation",
+			opts: &clioptions.CLIOptions{
+				SkipCertificate: true,
+			},
+			expectedOut: "200 OK",
+			expectedErr: "",
+		},
+		{
+			name:        "fail certificate validation",
+			opts:        &clioptions.CLIOptions{},
+			expectedOut: "",
+			expectedErr: "certificate signed by unknown authority",
+		},
 	}
 
-	client, err := HTTPClientBuilder(opts)
-	require.NoError(t, err)
-	require.NotNil(t, client)
-
-	resp, err := session.WithClient(client).Get().ExecuteRequest()
-	require.NoError(t, err)
-	require.Equal(t, "200 OK", resp.Status)
-
-	// test skip certificate validation
-	opts2 := &clioptions.CLIOptions{
-		SkipCertificate: true,
+	for _, tc := range testCases {
+		t.Log(tc.name)
+		client, err := HTTPClientBuilder(tc.opts)
+		if err != nil {
+			t.Fatal("unexpected error while creating client")
+		}
+		resp, err := session.WithClient(client).Get().ExecuteRequest()
+		if tc.expectedErr == "" {
+			require.NoError(t, err)
+		} else {
+			require.ErrorContains(t, err, tc.expectedErr)
+		}
+		if tc.expectedOut == "" {
+			require.Nil(t, resp)
+		} else {
+			require.Equal(t, tc.expectedOut, resp.Status)
+		}
 	}
 
-	client, err = HTTPClientBuilder(opts2)
-	require.NoError(t, err)
-	require.NotNil(t, client)
-
-	resp, err = session.WithClient(client).Get().ExecuteRequest()
-	require.NoError(t, err)
-	require.Equal(t, "200 OK", resp.Status)
-
-	// test fail certificate validation
-	opts3 := &clioptions.CLIOptions{
-		APIBaseURL: server.URL,
-	}
-
-	client, err = HTTPClientBuilder(opts3)
-	require.NoError(t, err)
-	require.NotNil(t, client)
-
-	resp, err = session.WithClient(client).Get().ExecuteRequest()
-	require.Nil(t, resp)
-	require.Error(t, err)
 }
 
 func TestParseResponseBody(t *testing.T) {
