@@ -103,7 +103,7 @@ func initConfig() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		if err := viper.SafeWriteConfigAs(path.Join(cfgPath, cfgFileName)); err != nil {
+		if err := viper.SafeWriteConfigAs(path.Join(cfgPath, cfgFileName)); err != nil && verbose {
 			fmt.Println(err)
 		}
 	}

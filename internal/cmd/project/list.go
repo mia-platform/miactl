@@ -73,10 +73,15 @@ func listProjects(mc *httphandler.MiaClient) error {
 			return fmt.Errorf("error parsing response body: %w", err)
 		}
 		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeader([]string{"Name", "Configuration Git Path", "Project ID"})
+		table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+		table.SetCenterSeparator("")
+		table.SetColumnSeparator("")
+		table.SetRowSeparator("")
+		table.SetHeader([]string{"Name", "Project ID", "Configuration Git Path"})
 		for _, project := range projects {
 			if project.TenantID == companyID {
-				table.Append([]string{project.Name, project.ConfigurationGitPath, project.ProjectID})
+				table.Append([]string{project.Name, project.ProjectID, project.ConfigurationGitPath})
 			}
 		}
 		table.Render()
