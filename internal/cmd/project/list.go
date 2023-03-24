@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package get
+package project
 
 import (
 	"fmt"
@@ -33,41 +33,26 @@ const (
 	projectsURI  = "/api/backend/projects/"
 )
 
-var (
-	validArgs = []string{
-		"project", "projects",
-	}
-)
-
-// NewGetCmd func creates a new command
-func NewGetCmd(options *clioptions.CLIOptions) *cobra.Command {
+// NewListProjectsCmd func creates a new command
+func NewListProjectsCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return &cobra.Command{
-		Use:       "get",
-		ValidArgs: validArgs,
-		Args: func(cmd *cobra.Command, args []string) error {
-			return cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs)(cmd, args)
-		},
+		Use:   "list",
+		Short: "list mia projects in the current context",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			resource := args[0]
-			switch resource {
-			case "projects", "project":
-				mc, err := httphandler.ConfigureDefaultMiaClient(options, projectsURI)
-				if err != nil {
-					return err
-				}
-				if err := getProjects(mc); err != nil {
-					return err
-				}
-			default:
-				return fmt.Errorf("unexpected argument: %s", resource)
+			mc, err := httphandler.ConfigureDefaultMiaClient(options, projectsURI)
+			if err != nil {
+				return err
+			}
+			if err := listProjects(mc); err != nil {
+				return err
 			}
 			return nil
 		},
 	}
 }
 
-// getProjects retrieves the projects with the company ID of the current context
-func getProjects(mc *httphandler.MiaClient) error {
+// listProjects retrieves the projects with the company ID of the current context
+func listProjects(mc *httphandler.MiaClient) error {
 	// execute the request
 	resp, err := mc.GetSession().Get().ExecuteRequest()
 	if err != nil {

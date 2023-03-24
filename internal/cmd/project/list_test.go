@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package get
+package project
 
 import (
 	"fmt"
@@ -42,7 +42,7 @@ const (
 func TestNewGetCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
-		cmd := NewGetCmd(opts)
+		cmd := NewListProjectsCmd(opts)
 		require.NotNil(t, cmd)
 	})
 }
@@ -92,7 +92,7 @@ func TestGetProjects(t *testing.T) {
 		if err != nil {
 			t.Fatalf("unexpected error reading config: %v", err)
 		}
-		err = getProjects(tc.miaClient)
+		err = listProjects(tc.miaClient)
 		if tc.expectedErr == "" {
 			require.NoError(t, err)
 		} else {
