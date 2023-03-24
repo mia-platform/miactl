@@ -27,54 +27,69 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestGetProjects(t *testing.T) {
-	opts := &clioptions.CLIOptions{}
-	viper.SetConfigType("yaml")
-
-	// valid config1 and get
-	config1 := `contexts:
+const (
+	config1 = `contexts:
   fake-ctx:
     apibaseurl: http://url
     companyid: "123"
     projectid: "123"`
-	err := viper.ReadConfig(strings.NewReader(config1))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
-	}
+	config2 = `contexts:
+  fake-ctx:
+    apibaseurl: http://url
+    projectid: "123"`
+)
+
+func TestGetProjects(t *testing.T) {
+	opts := &clioptions.CLIOptions{}
+	viper.SetConfigType("yaml")
 
 	server := testutils.CreateMockServer()
 	server.Start()
 	defer server.Close()
 
-	mc1 := httphandler.FakeMiaClient(server.URL)
-
-	err = getProjects(mc1, opts)
-	require.NoError(t, err)
-
-	// invalid response body
-	mc2 := httphandler.FakeMiaClient(fmt.Sprintf("%s/invalidbody", server.URL))
-
-	err = getProjects(mc2, opts)
-	require.Error(t, err)
-
-	// status code != 200
-	mc3 := httphandler.FakeMiaClient(fmt.Sprintf("%s/notfound", server.URL))
-
-	err = getProjects(mc3, opts)
-	require.Error(t, err)
-
-	// company ID unset
-	config2 := `contexts:
-  fake-ctx:
-    apibaseurl: http://url
-    projectid: "123"`
-	err = viper.ReadConfig(strings.NewReader(config2))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
+	type TestCase struct {
+		name        string
+		config      string
+		miaClient   *httphandler.MiaClient
+		expectedErr string
+	}
+	testCases := []TestCase{
+		{
+			name:      "valid config, successful get",
+			config:    config1,
+			miaClient: httphandler.FakeMiaClient(fmt.Sprintf("%s/getprojects", server.URL)),
+		},
+		{
+			name:        "invalid response body",
+			config:      config1,
+			miaClient:   httphandler.FakeMiaClient(fmt.Sprintf("%s/invalidbody", server.URL)),
+			expectedErr: "invalid character",
+		},
+		{
+			name:        "status code != 200",
+			config:      config1,
+			miaClient:   httphandler.FakeMiaClient(fmt.Sprintf("%s/notfound", server.URL)),
+			expectedErr: "404 Not Found",
+		},
+		{
+			name:        "company ID unset",
+			config:      config2,
+			miaClient:   httphandler.FakeMiaClient(fmt.Sprintf("%s/getprojects", server.URL)),
+			expectedErr: "please set a company ID",
+		},
 	}
 
-	mc4 := httphandler.FakeMiaClient(server.URL)
-
-	err = getProjects(mc4, opts)
-	require.Error(t, err)
+	for _, tc := range testCases {
+		t.Log(tc.name)
+		err := viper.ReadConfig(strings.NewReader(tc.config))
+		if err != nil {
+			t.Fatalf("unexpected error reading config: %v", err)
+		}
+		err = getProjects(tc.miaClient, opts)
+		if tc.expectedErr == "" {
+			require.NoError(t, err)
+		} else {
+			require.ErrorContains(t, err, tc.expectedErr)
+		}
+	}
 }

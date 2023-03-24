@@ -114,8 +114,8 @@ func CreateMockServer() *httptest.Server {
 		}
 		if r.RequestURI == "/invalidbody" {
 			w.Write([]byte(`invalid json`))
-		} else {
-			w.Write([]byte(`{"key": "value"}`))
+		} else if r.RequestURI == "/getprojects" {
+			w.Write([]byte(`[{"_id": "123"}]`))
 		}
 	}))
 	return server

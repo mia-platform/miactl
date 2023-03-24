@@ -24,6 +24,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const (
+	valid = `contexts:
+  fake-ctx:
+    apibaseurl: http://url
+    companyid: "123"
+    projectid: "123"
+current-context: fake-ctx`
+	noCompanyID = `contexts:
+  fake-ctx:
+    apibaseurl: http://url
+    projectid: "123"`
+	noCurrCtx = `contexts:
+  fake-ctx:
+    apibaseurl: http://url
+    companyid: "123"
+    projectid: "123"`
+)
+
+type TestCase struct {
+	name        string
+	config      string
+	arg         string
+	expectedOut string
+	expectedErr string
+}
+
 func TestNewContextCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
@@ -35,98 +61,114 @@ func TestNewContextCmd(t *testing.T) {
 func TestGetContextBaseURL(t *testing.T) {
 	viper.SetConfigType("yaml")
 
-	// valid config1 and get
-	config1 := `contexts:
-  fake-ctx:
-    apibaseurl: http://url
-    companyid: "123"
-    projectid: "123"`
-	err := viper.ReadConfig(strings.NewReader(config1))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
+	testCases := []TestCase{
+		{
+			name:        "valid config and context",
+			config:      valid,
+			arg:         "fake-ctx",
+			expectedOut: "http://url",
+			expectedErr: "",
+		},
+		{
+			name:        "wrong context",
+			config:      valid,
+			arg:         "wrong-ctx",
+			expectedOut: "",
+			expectedErr: "context wrong-ctx does not exist",
+		},
 	}
 
-	// valid context
-	url, err := GetContextBaseURL("fake-ctx")
-	require.NoError(t, err)
-	require.Equal(t, "http://url", url)
+	for _, tc := range testCases {
+		err := viper.ReadConfig(strings.NewReader(tc.config))
+		if err != nil {
+			t.Fatalf("unexpected error reading config: %v", err)
+		}
+		url, err := GetContextBaseURL(tc.arg)
+		if tc.expectedErr == "" {
+			require.NoError(t, err)
+		} else {
+			require.ErrorContains(t, err, tc.expectedErr)
+		}
+		require.Equal(t, tc.expectedOut, url)
+	}
 
-	// wrong context name
-	url, err = GetContextBaseURL("wrong-ctx")
-	require.Error(t, err)
-	require.Equal(t, "", url)
 }
 
 func TestGetContextCompanyID(t *testing.T) {
 	viper.SetConfigType("yaml")
 
-	config1 := `contexts:
-  fake-ctx:
-    apibaseurl: http://url
-    companyid: "123"
-    projectid: "123"`
-	err := viper.ReadConfig(strings.NewReader(config1))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
+	testCases := []TestCase{
+		{
+			name:        "valid context, existing company ID",
+			config:      valid,
+			arg:         "fake-ctx",
+			expectedOut: "123",
+			expectedErr: "",
+		},
+		{
+			name:        "wrong context name",
+			config:      valid,
+			arg:         "wrong-ctx",
+			expectedOut: "",
+			expectedErr: "context wrong-ctx does not exist",
+		},
+		{
+			name:        "company id unset",
+			config:      noCompanyID,
+			arg:         "fake-ctx",
+			expectedOut: "",
+			expectedErr: "please set a company ID",
+		},
 	}
 
-	// valid context
-	companyID, err := GetContextCompanyID("fake-ctx")
-	require.NoError(t, err)
-	require.Equal(t, "123", companyID)
-
-	// wrong context name
-	companyID, err = GetContextCompanyID("wrong-ctx")
-	require.Error(t, err)
-	require.Equal(t, "", companyID)
-
-	// company id unset
-	config2 := `contexts:
-  fake-ctx:
-    apibaseurl: http://url
-    companyid: "123"
-    projectid: "123"`
-	err = viper.ReadConfig(strings.NewReader(config2))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
+	for _, tc := range testCases {
+		t.Log(tc.name)
+		err := viper.ReadConfig(strings.NewReader(tc.config))
+		if err != nil {
+			t.Fatalf("unexpected error reading config: %v", err)
+		}
+		companyID, err := GetContextCompanyID(tc.arg)
+		if tc.expectedErr == "" {
+			require.NoError(t, err)
+		} else {
+			require.ErrorContains(t, err, tc.expectedErr)
+		}
+		require.Equal(t, tc.expectedOut, companyID)
 	}
 
-	companyID, err = GetContextCompanyID("wrong-ctx")
-	require.Error(t, err)
-	require.Equal(t, "", companyID)
 }
 
 func TestGetCurrentContext(t *testing.T) {
 	viper.SetConfigType("yaml")
 
-	// current context set
-	config1 := `contexts:
-  fake-ctx:
-    apibaseurl: http://url
-    companyid: "123"
-    projectid: "123"
-current-context: fake-ctx`
-	err := viper.ReadConfig(strings.NewReader(config1))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
+	testCases := []TestCase{
+		{
+			name:        "current context set",
+			config:      valid,
+			expectedOut: "fake-ctx",
+			expectedErr: "",
+		},
+		{
+			name:        "current context unset",
+			config:      noCurrCtx,
+			expectedOut: "",
+			expectedErr: "current context is unset",
+		},
 	}
 
-	currentContext, err := GetCurrentContext()
-	require.NoError(t, err)
-	require.Equal(t, "fake-ctx", currentContext)
-
-	// current context unset
-	config2 := `contexts:
-  fake-ctx:
-    apibaseurl: http://url
-    companyid: "123"
-    projectid: "123"`
-	err = viper.ReadConfig(strings.NewReader(config2))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
+	for _, tc := range testCases {
+		t.Log(tc.name)
+		err := viper.ReadConfig(strings.NewReader(tc.config))
+		if err != nil {
+			t.Fatalf("unexpected error reading config: %v", err)
+		}
+		currentCtx, err := GetCurrentContext()
+		if tc.expectedErr == "" {
+			require.NoError(t, err)
+		} else {
+			require.ErrorContains(t, err, tc.expectedErr)
+		}
+		require.Equal(t, tc.expectedOut, currentCtx)
 	}
 
-	currentContext, err = GetCurrentContext()
-	require.Error(t, err)
-	require.Equal(t, "", currentContext)
 }
