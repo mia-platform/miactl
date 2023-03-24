@@ -31,6 +31,7 @@ import (
 	"github.com/mia-platform/miactl/internal/testutils"
 )
 
+// SessionHandler is the type spec for miactl HTTP sessions
 type SessionHandler struct {
 	url     string
 	method  string
@@ -45,8 +46,7 @@ const (
 	oktaProvider = "okta"
 )
 
-type Authenticate func() (string, error)
-
+// NewSessionHandler returns a SessionHandler with the specified URL
 func NewSessionHandler(url string) (*SessionHandler, error) {
 	sh := &SessionHandler{
 		url: url,
@@ -54,6 +54,7 @@ func NewSessionHandler(url string) (*SessionHandler, error) {
 	return sh, nil
 }
 
+// WithAuthentication initializes the SessionHandler auth field
 func (s *SessionHandler) WithAuthentication(url, providerID string, b login.BrowserI) *SessionHandler {
 	s.auth = &Auth{
 		browser:    b,
@@ -63,36 +64,43 @@ func (s *SessionHandler) WithAuthentication(url, providerID string, b login.Brow
 	return s
 }
 
+// WithBody sets the SessionHandler request body
 func (s *SessionHandler) WithBody(body io.ReadCloser) *SessionHandler {
 	s.body = body
 	return s
 }
 
+// Get sets the SessionHandler method to HTTP GET
 func (s *SessionHandler) Get() *SessionHandler {
 	s.method = "GET"
 	return s
 }
 
+// Post sets the SessionHandler method to HTTP POST
 func (s *SessionHandler) Post(body io.ReadCloser) *SessionHandler {
 	s.method = "POST"
 	s.WithBody(body)
 	return s
 }
 
+// WithClient sets the SessionHandler HTTP client
 func (s *SessionHandler) WithClient(c *http.Client) *SessionHandler {
 	s.client = c
 	return s
 }
 
+// WithContext sets the SessionHandler miactl context
 func (s *SessionHandler) WithContext(ctx string) *SessionHandler {
 	s.context = ctx
 	return s
 }
 
+// GetContext returns the SessionHandler miactl context
 func (s *SessionHandler) GetContext() string {
 	return s.context
 }
 
+// HTTPClientBuilder creates an HTTP client from the given CLI options
 func HTTPClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 	client := &http.Client{}
 	// TODO: extract CA certificate from viper config file
@@ -106,6 +114,7 @@ func HTTPClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 	return client, nil
 }
 
+// ExecuteRequest executes the HTTP request with the info in the SessionHandler object.
 func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
 	httpReq, err := http.NewRequest(s.method, s.url, s.body)
 	if err != nil {
@@ -134,6 +143,7 @@ func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
 	return resp, nil
 }
 
+// configureTransport configures an HTTP Transport from the CLI options
 func configureTransport(opts *clioptions.CLIOptions) (*http.Transport, error) {
 	transport := &http.Transport{}
 	tlsConfig := &tls.Config{
@@ -165,6 +175,7 @@ func configureTransport(opts *clioptions.CLIOptions) (*http.Transport, error) {
 	return transport, nil
 }
 
+// ParseResponseBody reads and unmarshals the response body in the given interface
 func ParseResponseBody(contextName string, body io.Reader, out interface{}) error {
 	bodyBytes, err := io.ReadAll(body)
 	if err != nil {
