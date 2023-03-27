@@ -24,7 +24,7 @@ import (
 
 // MiaClient is the type spec for miactl custom client
 type MiaClient struct {
-	SessionHandler
+	SessionHandler SessionHandler
 }
 
 // NewMiaClientBuilder returns an empty MiaClient
@@ -40,7 +40,7 @@ func (m *MiaClient) WithSessionHandler(s SessionHandler) *MiaClient {
 
 // GetSession returns the MiaClient SessionHandler
 func (m *MiaClient) GetSession() *SessionHandler {
-	return &m.sessionHandler
+	return &m.SessionHandler
 }
 
 // ConfigureDefaultMiaClient creates a MiaClient object with default options
@@ -64,6 +64,6 @@ func ConfigureDefaultMiaClient(opts *clioptions.CLIOptions, uri string) (*MiaCli
 // FakeMiaClient creates a fake MiaClient with a fake SessionHandler for testing purposes
 func FakeMiaClient(url string) *MiaClient {
 	return &MiaClient{
-		sessionHandler: *FakeSessionHandler(url),
+		SessionHandler: *FakeSessionHandler(url),
 	}
 }

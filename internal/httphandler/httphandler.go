@@ -36,7 +36,7 @@ type SessionHandler struct {
 	url     string
 	method  string
 	context string
-	body    io.ReadCloser
+	body    io.Reader
 	client  *http.Client
 	auth    IAuth
 }
@@ -65,7 +65,7 @@ func (s *SessionHandler) WithAuthentication(url, providerID string, b login.Brow
 }
 
 // WithBody sets the SessionHandler request body
-func (s *SessionHandler) WithBody(body io.ReadCloser) *SessionHandler {
+func (s *SessionHandler) WithBody(body io.Reader) *SessionHandler {
 	s.body = body
 	return s
 }
@@ -77,7 +77,7 @@ func (s *SessionHandler) Get() *SessionHandler {
 }
 
 // Post sets the SessionHandler method to HTTP POST
-func (s *SessionHandler) Post(body io.ReadCloser) *SessionHandler {
+func (s *SessionHandler) Post(body io.Reader) *SessionHandler {
 	s.method = "POST"
 	s.WithBody(body)
 	return s

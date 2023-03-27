@@ -54,7 +54,7 @@ func (f *CLIOptions) AddConnectionFlags(cmd *cobra.Command) {
 }
 
 func (f *CLIOptions) AddContextFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVar(&f.ProjectID, "project-id", "", "The ID of the project")
+	cmd.Flags().StringVar(&f.ProjectID, "project-id", "", "The ID of the project")
 	cmd.Flags().StringVar(&f.APIBaseURL, "endpoint", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
 	cmd.Flags().StringVar(&f.CompanyID, "company-id", "", "The ID of the company")
 	cmd.Flags().StringVar(

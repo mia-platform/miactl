@@ -129,7 +129,7 @@ func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.
 		return nil, fmt.Errorf("error mashalling body: %w", err)
 	}
 
-	resp, err := mc.Post(bytes.NewBuffer(dataJSON)).ExecuteRequest()
+	resp, err := mc.SessionHandler.Post(bytes.NewBuffer(dataJSON)).ExecuteRequest()
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
 	}
@@ -149,7 +149,7 @@ func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.
 func waitStatus(client *httphandler.MiaClient) (string, error) {
 	status := statusResponse{}
 	for {
-		resp, err := client.Get().ExecuteRequest()
+		resp, err := client.SessionHandler.Get().ExecuteRequest()
 		if err != nil {
 			return "", err
 		}
