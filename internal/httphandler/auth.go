@@ -17,9 +17,12 @@ package httphandler
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/mia-platform/miactl/internal/cmd/login"
 )
+
+const credentialsPath = ".config/miactl/credentials"
 
 type IAuth interface {
 	Authenticate() (string, error)
@@ -32,9 +35,21 @@ type Auth struct {
 }
 
 func (a *Auth) Authenticate() (string, error) {
-	tokens, err := login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
+	tokens, err := getTokensFromFile(a.url)
 	if err != nil {
-		return "", fmt.Errorf("login error: %w", err)
+		if !os.IsNotExist(err) {
+			return "", err
+		} else {
+			tokens, err = login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
+			if err != nil {
+				return "", fmt.Errorf("login error: %w", err)
+			}
+
+			err = writeTokensToFile(a.url, tokens)
+			if err != nil {
+				return "", err
+			}
+		}
 	}
 	return tokens.AccessToken, nil
 }
