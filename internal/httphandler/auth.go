@@ -18,8 +18,10 @@ package httphandler
 import (
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/mia-platform/miactl/internal/cmd/login"
+	"github.com/mitchellh/go-homedir"
 )
 
 const credentialsPath = ".config/miactl/credentials"
@@ -35,7 +37,12 @@ type Auth struct {
 }
 
 func (a *Auth) Authenticate() (string, error) {
-	tokens, err := getTokensFromFile(a.url)
+	home, err := homedir.Dir()
+	if err != nil {
+		return "", err
+	}
+	credentialsAbsPath := path.Join(home, credentialsPath)
+	tokens, err := getTokensFromFile(a.url, credentialsAbsPath)
 	if err != nil {
 		if !os.IsNotExist(err) {
 			return "", err
@@ -45,7 +52,7 @@ func (a *Auth) Authenticate() (string, error) {
 				return "", fmt.Errorf("login error: %w", err)
 			}
 
-			err = writeTokensToFile(a.url, tokens)
+			err = writeTokensToFile(a.url, credentialsAbsPath, tokens)
 			if err != nil {
 				return "", err
 			}

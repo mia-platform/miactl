@@ -23,20 +23,14 @@ import (
 	"path"
 
 	"github.com/mia-platform/miactl/internal/cmd/login"
-	"github.com/mitchellh/go-homedir"
 )
 
-func getTokensFromFile(url string) (*login.Tokens, error) {
+func getTokensFromFile(url, credentialsPath string) (*login.Tokens, error) {
 	sha := getURLSha(url)
 
-	home, err := homedir.Dir()
-	if err != nil {
-		return nil, err
-	}
+	filePath := path.Join(credentialsPath, sha)
 
-	credentialsAbsPath := path.Join(home, credentialsPath, sha)
-
-	tokenBytes, err := os.ReadFile(credentialsAbsPath)
+	tokenBytes, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err
 	}
@@ -50,30 +44,25 @@ func getTokensFromFile(url string) (*login.Tokens, error) {
 	return &tokens, nil
 }
 
-func writeTokensToFile(url string, tokens *login.Tokens) error {
+func writeTokensToFile(url, credentialsPath string, tokens *login.Tokens) error {
 	sha := getURLSha(url)
 
-	home, err := homedir.Dir()
-	if err != nil {
-		return err
-	}
-
-	credentialsAbsPath := path.Join(home, credentialsPath, sha)
+	filePath := path.Join(credentialsPath, sha)
 	tokenJSON, err := json.Marshal(tokens)
 	if err != nil {
 		return err
 	}
 	credentials := []byte(tokenJSON)
 
-	_, err = os.Stat(credentialsAbsPath)
+	_, err = os.Stat(filePath)
 	if os.IsNotExist(err) {
-		_, err := os.Create(credentialsAbsPath)
+		_, err := os.Create(filePath)
 		if err != nil {
 			return err
 		}
 	}
 
-	err = os.WriteFile(credentialsAbsPath, credentials, os.ModePerm)
+	err = os.WriteFile(filePath, credentials, os.ModePerm)
 	return err
 }
 
