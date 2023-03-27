@@ -230,7 +230,9 @@ func TestExecuteRequest(t *testing.T) {
 		} else {
 			require.Equal(t, tc.expectedOut, resp.Status)
 		}
-		resp.Body.Close()
+		if resp != nil {
+			resp.Body.Close()
+		}
 	}
 }
 
@@ -309,7 +311,9 @@ func TestReqWithCustomTransport(t *testing.T) {
 		} else {
 			require.Equal(t, tc.expectedOut, resp.Status)
 		}
-		resp.Body.Close()
+		if resp != nil {
+			resp.Body.Close()
+		}
 	}
 
 }
