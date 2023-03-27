@@ -16,8 +16,11 @@
 package context
 
 import (
+	"fmt"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func NewContextCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -30,4 +33,30 @@ func NewContextCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd.AddCommand(NewUseContextCmd(options))
 
 	return cmd
+}
+
+func GetContextBaseURL(contextName string) (string, error) {
+	context, err := contextLookUp(contextName)
+	if err != nil {
+		return "", fmt.Errorf("error while searching context in config file: %w", err)
+	}
+	return fmt.Sprint(context["apibaseurl"]), nil
+}
+
+func GetContextCompanyID(contextName string) (string, error) {
+	context, err := contextLookUp(contextName)
+	if err != nil {
+		return "", fmt.Errorf("error while searching context in config file: %w", err)
+	}
+	if context["companyid"] == nil {
+		return "", fmt.Errorf("please set a company ID for context %s", contextName)
+	}
+	return fmt.Sprint(context["companyid"]), nil
+}
+
+func GetCurrentContext() (string, error) {
+	if viper.Get("current-context") == nil {
+		return "", fmt.Errorf("current context is unset")
+	}
+	return fmt.Sprint(viper.Get("current-context")), nil
 }

@@ -72,7 +72,7 @@ func TestLocalLoginOIDC(t *testing.T) {
 			ExpiresAt:    23345,
 		}
 
-		browser := fakeBrowser{
+		browser := FakeBrowser{
 			code:        code,
 			state:       state,
 			callbackUrl: callbackUrl,
@@ -118,7 +118,7 @@ func TestLocalLoginOIDC(t *testing.T) {
 		defer s.Close()
 
 		go s.Serve(l)
-		browser := fakeBrowser{
+		browser := FakeBrowser{
 			code:        code,
 			state:       state,
 			callbackUrl: callbackUrl,

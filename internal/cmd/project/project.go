@@ -13,28 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package httphandler
+package project
 
 import (
-	"fmt"
-
-	"github.com/mia-platform/miactl/internal/cmd/login"
+	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/spf13/cobra"
 )
 
-type IAuth interface {
-	Authenticate() (string, error)
-}
-
-type Auth struct {
-	url        string
-	providerID string
-	browser    login.BrowserI
-}
-
-func (a *Auth) Authenticate() (string, error) {
-	tokens, err := login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
-	if err != nil {
-		return "", fmt.Errorf("login error: %w", err)
+func NewProjectCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "project",
+		Short: "view and manage mia projects",
 	}
-	return tokens.AccessToken, nil
+
+	cmd.AddCommand(NewListProjectsCmd(options))
+
+	return cmd
 }
