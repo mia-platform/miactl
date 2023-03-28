@@ -27,7 +27,7 @@ import (
 
 const (
 	testURLSha  = "b64868a6476817bde1123f534334c2ce78891fcad65c06667acbfdb9007b5dff"
-	testTokens  = `{"accessToken":"test_token"}`
+	testTokens  = `{"accessToken":"test_token","refreshToken":"","expiresAt":0}`
 	invalidJSON = `invalid_json`
 )
 
@@ -68,5 +68,19 @@ func TestGetTokensFromFile(t *testing.T) {
 }
 
 func TestWriteTokensToFile(t *testing.T) {
+	testDirPath = t.TempDir()
+	testFilePath := path.Join(testDirPath, testURLSha)
 
+	var tokens = &login.Tokens{
+		AccessToken: "test_token",
+	}
+
+	err := writeTokensToFile(testBaseURL, testDirPath, tokens)
+	require.NoError(t, err)
+	require.FileExists(t, testFilePath)
+	fileContent, err := os.ReadFile(testFilePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	require.Equal(t, testTokens, string(fileContent))
 }
