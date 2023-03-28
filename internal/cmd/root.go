@@ -31,8 +31,11 @@ import (
 	"github.com/spf13/viper"
 )
 
-const cfgDir = ".config/miactl"
-const cfgFileName = "config"
+const (
+	cfgDir         = ".config/miactl"
+	cfgFileName    = "config"
+	credentialsDir = "credentials"
+)
 
 var (
 	cfgFile   string
@@ -105,6 +108,14 @@ func initConfig() {
 		}
 		if err := viper.SafeWriteConfigAs(path.Join(cfgPath, cfgFileName)); err != nil && verbose {
 			fmt.Println(err)
+		}
+
+		credPath := path.Join(cfgPath, credentialsDir)
+
+		// create a default config file if it does not exist
+		if err := os.MkdirAll(credPath, os.ModePerm); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
 		}
 	}
 
