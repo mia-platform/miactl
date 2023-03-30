@@ -83,7 +83,7 @@ func TestWaitStatus(t *testing.T) {
 		if err != nil {
 			fmt.Println(err)
 		}
-		fmt.Println(result)
+		require.Equal(t, result, "succeed")
 
 	})
 }
@@ -97,6 +97,8 @@ func TestRun(t *testing.T) {
 		if err != nil {
 			panic(err)
 		}
+
+		require.NoError(t, err)
 	})
 }
 
