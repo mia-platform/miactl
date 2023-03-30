@@ -95,6 +95,11 @@ func (s *SessionHandler) WithContext(ctx string) *SessionHandler {
 	return s
 }
 
+func (s *SessionHandler) WithUrl(url string) *SessionHandler {
+	s.url = url
+	return s
+}
+
 // GetContext returns the SessionHandler miactl context
 func (s *SessionHandler) GetContext() string {
 	return s.context

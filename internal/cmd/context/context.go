@@ -79,7 +79,6 @@ func SetContextValues(cmd *cobra.Command, currentContext string) {
 		viperPath := fmt.Sprintf("contexts.%s.%s", currentContext, viperKey)
 		if flag.Value.String() == flag.DefValue && viper.IsSet(viperPath) {
 			viperValue := viper.GetString(viperPath)
-			fmt.Println(viperValue)
 			flag.Value.Set(viperValue)
 		}
 	}

@@ -44,6 +44,7 @@ type statusResponse struct {
 	ID     int    `json:"id"`
 	Status string `json:"status"`
 }
+type initClient func(*clioptions.CLIOptions, string, string) (*httphandler.MiaClient, error)
 
 var currentContext string
 
@@ -62,35 +63,14 @@ func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-
 			env := args[0]
 
-			mc := httphandler.NewMiaClientBuilder()
-			endpoind := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", options.ProjectID)
-			err := initializeClient(mc, options, endpoind, currentContext)
+			err := run(env, options, initializeClient)
 			if err != nil {
-				return fmt.Errorf("error generating the session: %w", err)
+				return err
 			}
-
-			resp, err := triggerPipeline(mc, env, options)
-			if err != nil {
-				return fmt.Errorf("error executing the deploy request: %w", err)
-			}
-			fmt.Printf("Deploying project %s in the environment '%s'\n", options.ProjectID, env)
-
-			mc = httphandler.NewMiaClientBuilder()
-			statusEndpoint := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", options.ProjectID, resp.Id)
-			err = initializeClient(mc, options, statusEndpoint, currentContext)
-			if err != nil {
-				return fmt.Errorf("error generating the session: %w", err)
-			}
-
-			status, err := waitStatus(mc)
-			if err != nil {
-				return fmt.Errorf("error retriving the pipeline status: %w", err)
-			}
-			fmt.Printf("Pipeline result: %s", status)
 			return nil
+
 		},
 	}
 	options.AddContextFlags(cmd)
@@ -100,15 +80,43 @@ func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 }
 
-func initializeClient(client *httphandler.MiaClient, opts *clioptions.CLIOptions, endpoint string, currentContext string) error {
+func run(env string, options *clioptions.CLIOptions, initializeClient initClient) error {
+	epDeploy := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", options.ProjectID)
+	mcDeploy, err := initializeClient(options, epDeploy, currentContext)
+	if err != nil {
+		return fmt.Errorf("error generating the session: %w", err)
+	}
+
+	resp, err := triggerPipeline(mcDeploy, env, options)
+	if err != nil {
+		return fmt.Errorf("error executing the deploy request: %w", err)
+	}
+	fmt.Printf("Deploying project %s in the environment '%s'\n", options.ProjectID, env)
+
+	epWait := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status", options.ProjectID, resp.Id)
+	mcWait, err := initializeClient(options, epWait, currentContext)
+	if err != nil {
+		return fmt.Errorf("error generating the session: %w", err)
+	}
+
+	status, err := waitStatus(mcWait)
+	if err != nil {
+		return fmt.Errorf("error retriving the pipeline status: %w", err)
+	}
+	fmt.Printf("Pipeline result: %s", status)
+	return nil
+}
+
+func initializeClient(opts *clioptions.CLIOptions, endpoint string, currentContext string) (*httphandler.MiaClient, error) {
+	client := httphandler.NewMiaClientBuilder()
 	session, err := httphandler.ConfigureDefaultSessionHandler(opts, currentContext, endpoint)
 	if err != nil {
-		return fmt.Errorf("error building default session handler: %w", err)
+		return nil, fmt.Errorf("error building default session handler: %w", err)
 	}
 
 	client.WithSessionHandler(*session)
 
-	return nil
+	return client, nil
 }
 
 func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.CLIOptions) (*deployRespnse, error) {

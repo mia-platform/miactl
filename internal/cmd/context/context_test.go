@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
@@ -171,4 +172,55 @@ func TestGetCurrentContext(t *testing.T) {
 		require.Equal(t, tc.expectedOut, currentCtx)
 	}
 
+}
+
+func TestSetContextValues(t *testing.T) {
+	viper.New()
+	viper.Set("contexts.current.projectid", "projectid")
+	viper.Set("contexts.current.companyid", "companyid")
+	viper.Set("contexts.current.apibaseurl", "apibaseurl")
+	viper.Set("contexts.current.cacert", "cacert")
+
+	type fakeOptsValues struct {
+		ProjectID  string
+		CompanyID  string
+		APIBaseURL string
+		CACert     string
+	}
+
+	f := fakeOptsValues{}
+
+	fakeCommand := &cobra.Command{
+		Use: "fake",
+	}
+
+	fakeCommand.Flags().StringVar(&f.ProjectID, "project-id", "", "The ID of the project")
+	fakeCommand.Flags().StringVar(&f.APIBaseURL, "apibaseurl", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
+	fakeCommand.Flags().StringVar(&f.CompanyID, "company-id", "", "The ID of the company")
+	fakeCommand.Flags().StringVar(
+		&f.CACert,
+		"ca-cert",
+		"",
+		"file path to a CA certificate, which can be employed to verify server certificate",
+	)
+
+	t.Run("test keep values from config file", func(t *testing.T) {
+		SetContextValues(fakeCommand, "current")
+
+		require.Equal(t, fakeCommand.Flag("project-id").Value.String(), "projectid")
+		require.Equal(t, fakeCommand.Flag("company-id").Value.String(), "companyid")
+		require.Equal(t, fakeCommand.Flag("apibaseurl").Value.String(), "apibaseurl")
+	})
+
+	t.Run("test set values from clioptions", func(t *testing.T) {
+		f.APIBaseURL = "newapibaseurl"
+		f.CompanyID = "newcompanyid"
+		f.ProjectID = "newprojectid"
+
+		SetContextValues(fakeCommand, "current")
+
+		require.Equal(t, fakeCommand.Flag("project-id").Value.String(), "newprojectid")
+		require.Equal(t, fakeCommand.Flag("company-id").Value.String(), "newcompanyid")
+		require.Equal(t, fakeCommand.Flag("apibaseurl").Value.String(), "newapibaseurl")
+	})
 }

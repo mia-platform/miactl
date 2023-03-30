@@ -23,6 +23,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"math/big"
+	random "math/rand"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -135,15 +136,42 @@ func CreateMockServer() *httptest.Server {
 				w.WriteHeader(http.StatusUnauthorized)
 			}
 		}
-		if r.RequestURI == "/invalidbody" {
-			_, err := w.Write([]byte(`invalid json`))
-			if err != nil {
-				panic(err)
-			}
-		} else if r.RequestURI == "/getprojects" {
+		// if r.RequestURI == "/invalidbody" {
+		// 	_, err := w.Write([]byte(`invalid json`))
+		// 	if err != nil {
+		// 		panic(err)
+		// 	}
+		// } else if r.RequestURI == "/getprojects" {
+		// 	_, err := w.Write([]byte(`[{"_id": "123"}]`))
+		// 	if err != nil {
+		// 		panic(err)
+		// 	}
+		// }
+		switch {
+		case r.RequestURI == "/invalidbody":
+			w.WriteHeader(http.StatusNotFound)
+		case r.RequestURI == "/getprojects":
 			_, err := w.Write([]byte(`[{"_id": "123"}]`))
 			if err != nil {
 				panic(err)
+			}
+		case r.RequestURI == "/api/deploy/projects/projectid/trigger/pipeline/":
+			_, err := w.Write([]byte(`{"id": 123, "url":"pipeline.eu"}`))
+			if err != nil {
+				panic(err)
+			}
+		case r.RequestURI == "/api/deploy/projects/projectid/pipelines/123/status":
+			prob := random.Float32()
+			if prob < 0.3 {
+				_, err := w.Write([]byte(`{"id": 123, "status":"succeed"}`))
+				if err != nil {
+					panic(err)
+				}
+			} else {
+				_, err := w.Write([]byte(`{"id": 123, "status":"running"}`))
+				if err != nil {
+					panic(err)
+				}
 			}
 		}
 	}))
