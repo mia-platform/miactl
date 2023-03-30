@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
@@ -93,7 +94,7 @@ func run(env string, options *clioptions.CLIOptions, initializeClient initClient
 	}
 	fmt.Printf("Deploying project %s in the environment '%s'\n", options.ProjectID, env)
 
-	epWait := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status", options.ProjectID, resp.Id)
+	epWait := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", options.ProjectID, resp.Id)
 	mcWait, err := initializeClient(options, epWait, currentContext)
 	if err != nil {
 		return fmt.Errorf("error generating the session: %w", err)
@@ -157,6 +158,7 @@ func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.
 func waitStatus(client *httphandler.MiaClient) (string, error) {
 	status := statusResponse{}
 	for {
+		time.Sleep(2 * time.Second)
 		resp, err := client.SessionHandler.Get().ExecuteRequest()
 		if err != nil {
 			return "", err

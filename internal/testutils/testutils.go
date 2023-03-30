@@ -160,7 +160,7 @@ func CreateMockServer() *httptest.Server {
 			if err != nil {
 				panic(err)
 			}
-		case r.RequestURI == "/api/deploy/projects/projectid/pipelines/123/status":
+		case r.RequestURI == "/api/deploy/projects/projectid/pipelines/123/status/":
 			prob := random.Float32()
 			if prob < 0.3 {
 				_, err := w.Write([]byte(`{"id": 123, "status":"succeed"}`))
