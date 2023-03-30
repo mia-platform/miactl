@@ -37,9 +37,8 @@ const (
 )
 
 var (
-	state  string
-	code   string
-	server *http.Server
+	state string
+	code  string
 )
 
 func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens, error) {
@@ -54,13 +53,14 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 		panic(err)
 	}
 
-	// Server HTTP request
-	server = &http.Server{
+	// Start the HTTP server in a separate goroutine
+	ctx, cancel := context.WithCancel(context.Background())
+	server := &http.Server{
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch {
 			case r.URL.Path == callbackPath && r.Method == http.MethodGet:
 				handleCallback(w, r)
-				server.Shutdown(context.Background())
+				cancel() // Stop the server after the callback is handled
 				return
 			default:
 				w.WriteHeader(http.StatusNotFound)
@@ -68,6 +68,12 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 			}
 		}),
 	}
+	go func() {
+		if err := server.Serve(l); err != nil && err != http.ErrServerClosed {
+			fmt.Printf("%v", "error starting server")
+			cancel()
+		}
+	}()
 
 	q := url.Values{}
 	q.Set("appId", appID)
@@ -75,13 +81,15 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 
 	startURL := fmt.Sprintf("%s/api/authorize?%s", endpoint, q.Encode())
 
-	b.open(startURL)
+	err = b.open(startURL)
 	if err != nil {
 		return nil, err
 	}
 
-	err = server.Serve(l)
-	if err != nil && err != http.ErrServerClosed {
+	<-ctx.Done()
+
+	err = server.Shutdown(context.Background())
+	if err != nil {
 		return nil, err
 	}
 
@@ -104,12 +112,20 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 }
 
 func handleCallback(w http.ResponseWriter, req *http.Request) {
+	response := `<html>
+<script>setTimeout(function() { window.close(); }, 1000);</script>
+<body><center><h1>Login succeeded!</h1></center></body>
+</html>
+`
 	qs := req.URL.Query()
 	code = qs.Get("code")
 	state = qs.Get("state")
 
 	w.Header().Set("content-type", "text/html")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(""))
+	_, err := w.Write([]byte(response))
+	if err != nil {
+		panic(err)
+	}
 
 }
