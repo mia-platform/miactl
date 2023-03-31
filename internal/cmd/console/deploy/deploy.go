@@ -19,6 +19,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -59,8 +60,8 @@ func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			if viper.Get("current-context") != "" {
 				currentContext = fmt.Sprint(viper.Get("current-context"))
+				context.SetContextValues(cmd, currentContext)
 			}
-			context.SetContextValues(cmd, currentContext)
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -142,6 +143,9 @@ func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
 	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("pipeline exited with status: %d", resp.StatusCode)
+	}
 	defer resp.Body.Close()
 
 	var body deployRespnse
@@ -162,6 +166,9 @@ func waitStatus(client *httphandler.MiaClient) (string, error) {
 		resp, err := client.SessionHandler.Get().ExecuteRequest()
 		if err != nil {
 			return "", err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("pipeline status not 200: %d", resp.StatusCode)
 		}
 		defer resp.Body.Close()
 

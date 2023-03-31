@@ -7,6 +7,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/httphandler"
 	"github.com/mia-platform/miactl/internal/testutils"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -19,13 +20,20 @@ func TestNewDeployCmd(t *testing.T) {
 }
 
 func TestInitializeClient(t *testing.T) {
+	viper.New()
+	viper.Set("contexts.ctx.apibaseurl", "apibaseurl")
+	viper.Set("contexts.ctx.projectid", "projectid")
+	viper.Set("contexts.ctx.companyid", "companyid")
+
 	t.Run("Inizialize a client succesfully", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		ep := "endpoint"
 		ctx := "ctx"
 
-		mc, _ := initializeClient(opts, ep, ctx)
-		fmt.Println(mc)
+		mc, err := initializeClient(opts, ep, ctx)
+
+		require.NoError(t, err)
+		require.NotNil(t, mc)
 
 	})
 
@@ -69,6 +77,15 @@ func TestTriggerPipeline(t *testing.T) {
 		}
 		require.Equal(t, *body, exectedBody)
 	})
+	mc = httphandler.FakeMiaClient(fmt.Sprintf("%s/notfound", server.URL))
+	t.Run("Trigger a pipeline with response status 404", func(t *testing.T) {
+		_, err := triggerPipeline(mc, "fake-env", &opts)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(err)
+		require.ErrorContains(t, err, "pipeline exited with status: 404")
+	})
 }
 
 func TestWaitStatus(t *testing.T) {
@@ -77,13 +94,13 @@ func TestWaitStatus(t *testing.T) {
 
 	defer server.Close()
 	t.Run("wait succesfully for pipeline completion", func(t *testing.T) {
-		mc := httphandler.FakeMiaClient(fmt.Sprintf("%s/api/deploy/projects/projectid/pipelines/123/status", server.URL))
+		mc := httphandler.FakeMiaClient(fmt.Sprintf("%s/api/deploy/projects/projectid/pipelines/123/status/", server.URL))
 
 		result, err := waitStatus(mc)
 		if err != nil {
 			fmt.Println(err)
 		}
-		require.Equal(t, result, "succeed")
+		require.Equal(t, "succeed", result)
 
 	})
 }

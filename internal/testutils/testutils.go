@@ -162,7 +162,7 @@ func CreateMockServer() *httptest.Server {
 			}
 		case r.RequestURI == "/api/deploy/projects/projectid/pipelines/123/status/":
 			prob := random.Float32()
-			if prob < 0.3 {
+			if prob < 0.6 {
 				_, err := w.Write([]byte(`{"id": 123, "status":"succeed"}`))
 				if err != nil {
 					panic(err)
@@ -173,6 +173,9 @@ func CreateMockServer() *httptest.Server {
 					panic(err)
 				}
 			}
+		case r.RequestURI == "/api/deploy/projects/notfoundproject/trigger/pipeline/":
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("HTTP status code returned!"))
 		}
 	}))
 	return server
