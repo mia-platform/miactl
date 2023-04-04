@@ -16,95 +16,171 @@
 package deploy
 
 import (
-	"errors"
-	"strconv"
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"time"
 
-	"github.com/mia-platform/miactl/old/factory"
-	"github.com/mia-platform/miactl/old/sdk"
-	"github.com/mia-platform/miactl/old/sdk/deploy"
-
+	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/context"
+	"github.com/mia-platform/miactl/internal/httphandler"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-func NewDeployCmd() *cobra.Command {
-	var (
-		baseURL         string
-		apiToken        string
-		projectID       string
-		skipCertificate bool
-		certificatePath string
-	)
+type deployRespnse struct {
+	Url string
+	Id  int
+}
 
-	cfg := deploy.Config{}
+// Request is the body parameters needed to trigger a pipeline deploy.
+type Request struct {
+	Environment             string `json:"environment"`
+	Revision                string `json:"revision"`
+	DeployType              string `json:"deployType"`
+	ForceDeployWhenNoSemver bool   `json:"forceDeployWhenNoSemver"`
+}
+
+type statusResponse struct {
+	ID     int    `json:"id"`
+	Status string `json:"status"`
+}
+type initClient func(*clioptions.CLIOptions, string, string) (*httphandler.MiaClient, error)
+
+var currentContext string
+
+func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "deploy",
 		Short: "deploy project",
 		Long:  "trigger the deploy pipeline for selected project",
+		Args:  cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			baseURL = viper.GetString("apibaseurl")
-			apiToken = viper.GetString("apitoken")
-			projectID = viper.GetString("project")
-
-			if baseURL == "" {
-				return errors.New("API base URL not specified nor configured")
+			if viper.Get("current-context") != "" {
+				currentContext = fmt.Sprint(viper.Get("current-context"))
+				context.SetContextValues(cmd, currentContext)
 			}
-			if apiToken == "" {
-				return errors.New("missing API token - please login")
-			}
-			if projectID == "" {
-				return cmd.MarkFlagRequired("project")
-			}
-
-			// set these flag only in case they are defined
-			skipCertificate, _ = cmd.Flags().GetBool("insecure")
-			certificatePath = viper.GetString("ca-cert")
-
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			f, err := factory.FromContext(cmd.Context(), sdk.Options{
-				APIBaseURL:            baseURL,
-				APIToken:              apiToken,
-				SkipCertificate:       skipCertificate,
-				AdditionalCertificate: certificatePath,
-			})
+			env := args[0]
+
+			err := run(env, options, initializeClient)
 			if err != nil {
 				return err
 			}
-
-			deployData, err := f.MiaClient.Deploy.Trigger(projectID, cfg)
-			if err != nil {
-				return err
-			}
-
-			visualizeResponse(f, projectID, deployData)
-
 			return nil
+
 		},
 	}
-
-	cmd.Flags().StringVar(&cfg.Environment, "environment", "", "the environment where to deploy the project")
-	cmd.Flags().StringVar(&cfg.Revision, "revision", "", "which version of your project should be released")
-	cmd.Flags().BoolVar(&cfg.DeployAll, "deploy-all", false, "deploy all the project services, regardless of whether they have been updated or not")
-	cmd.Flags().BoolVar(&cfg.ForceDeployNoSemVer, "force-no-semver", false, "whether to always deploy pods that do not follow semver")
-	// Note: although this flag is defined as a persistent flag in the root command,
-	// in order to be set during tests it must be defined also at command level
-	cmd.Flags().BoolVar(&skipCertificate, "insecure", false, "whether to not check server certificate")
-
-	cmd.MarkFlagRequired("environment")
-	cmd.MarkFlagRequired("revision")
-
-	// subcommands
-	cmd.AddCommand(NewStatusCmd())
-
+	options.AddContextFlags(cmd)
+	options.AddConnectionFlags(cmd)
+	options.AddDeployFlags(cmd)
 	return cmd
+
 }
 
-func visualizeResponse(f *factory.Factory, projectID string, rs deploy.Response) {
-	headers := []string{"Project Id", "Deploy Id", "View Pipeline"}
-	table := f.Renderer.Table(headers)
-	table.Append([]string{projectID, strconv.FormatInt(int64(rs.ID), 10), rs.URL})
-	table.Render()
+func run(env string, options *clioptions.CLIOptions, initializeClient initClient) error {
+	epDeploy := fmt.Sprintf("/api/deploy/projects/%s/trigger/pipeline/", options.ProjectID)
+	mcDeploy, err := initializeClient(options, epDeploy, currentContext)
+	if err != nil {
+		return fmt.Errorf("error generating the session: %w", err)
+	}
+
+	resp, err := triggerPipeline(mcDeploy, env, options)
+	if err != nil {
+		return fmt.Errorf("error executing the deploy request: %w", err)
+	}
+	fmt.Printf("Deploying project %s in the environment '%s'\n", options.ProjectID, env)
+
+	epWait := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", options.ProjectID, resp.Id)
+	mcWait, err := initializeClient(options, epWait, currentContext)
+	if err != nil {
+		return fmt.Errorf("error generating the session: %w", err)
+	}
+
+	status, err := waitStatus(mcWait)
+	if err != nil {
+		return fmt.Errorf("error retriving the pipeline status: %w", err)
+	}
+	fmt.Printf("Pipeline result: %s", status)
+	return nil
+}
+
+func initializeClient(opts *clioptions.CLIOptions, endpoint string, currentContext string) (*httphandler.MiaClient, error) {
+	client := httphandler.NewMiaClientBuilder()
+	session, err := httphandler.ConfigureDefaultSessionHandler(opts, currentContext, endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("error building default session handler: %w", err)
+	}
+
+	client.WithSessionHandler(*session)
+
+	return client, nil
+}
+
+func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.CLIOptions) (*deployRespnse, error) {
+	data := Request{
+		Environment:             env,
+		Revision:                options.Revision,
+		DeployType:              options.DeployType,
+		ForceDeployWhenNoSemver: options.ForceDeployNoSemVer,
+	}
+
+	if options.DeployType == "deploy_all" {
+		data.DeployType = options.DeployType
+		data.ForceDeployWhenNoSemver = true
+	}
+
+	dataJSON, err := json.Marshal(data)
+	if err != nil {
+		return nil, fmt.Errorf("error mashalling body: %w", err)
+	}
+
+	resp, err := mc.SessionHandler.Post(bytes.NewBuffer(dataJSON)).ExecuteRequest()
+	if err != nil {
+		return nil, fmt.Errorf("error executing request: %w", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("pipeline exited with status: %d", resp.StatusCode)
+	}
+	defer resp.Body.Close()
+
+	var body deployRespnse
+
+	err = json.NewDecoder(resp.Body).Decode(&body)
+	if err != nil {
+		return nil, err
+	}
+
+	return &body, nil
+
+}
+
+func waitStatus(client *httphandler.MiaClient) (string, error) {
+	status := statusResponse{}
+	for {
+		time.Sleep(2 * time.Second)
+		resp, err := client.SessionHandler.Get().ExecuteRequest()
+		if err != nil {
+			return "", err
+		}
+		if resp.StatusCode != http.StatusOK {
+			return "", fmt.Errorf("pipeline status not 200: %d", resp.StatusCode)
+		}
+		defer resp.Body.Close()
+
+		err = json.NewDecoder(resp.Body).Decode(&status)
+		if err != nil {
+			return "", err
+		}
+		if status.Status != "running" && status.Status != "pending" {
+			break
+		}
+
+		fmt.Printf("The pipeline is %s..\n", status.Status)
+	}
+	return status.Status, nil
 }

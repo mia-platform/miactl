@@ -20,17 +20,20 @@ import (
 )
 
 type CLIOptions struct {
-	CfgFile         string
-	Verbose         bool
-	APIKey          string
-	APICookie       string
-	APIToken        string
-	SkipCertificate bool
-	CACert          string
-	Context         string
-	ProjectID       string
-	CompanyID       string
-	APIBaseURL      string
+	CfgFile             string
+	Verbose             bool
+	APIKey              string
+	APICookie           string
+	APIToken            string
+	SkipCertificate     bool
+	CACert              string
+	Context             string
+	ProjectID           string
+	CompanyID           string
+	APIBaseURL          string
+	Revision            string
+	DeployType          string
+	ForceDeployNoSemVer bool
 }
 
 func NewCLIOptions() *CLIOptions {
@@ -52,7 +55,7 @@ func (f *CLIOptions) AddConnectionFlags(cmd *cobra.Command) {
 
 func (f *CLIOptions) AddContextFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ProjectID, "project-id", "", "The ID of the project")
-	cmd.Flags().StringVar(&f.APIBaseURL, "endpoint", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
+	cmd.Flags().StringVar(&f.APIBaseURL, "apibaseurl", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
 	cmd.Flags().StringVar(&f.CompanyID, "company-id", "", "The ID of the company")
 	cmd.Flags().StringVar(
 		&f.CACert,
@@ -60,4 +63,10 @@ func (f *CLIOptions) AddContextFlags(cmd *cobra.Command) {
 		"",
 		"file path to a CA certificate, which can be employed to verify server certificate",
 	)
+}
+
+func (f *CLIOptions) AddDeployFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVar(&f.Revision, "revision", "master", "Revision of the commit to deploy")
+	cmd.PersistentFlags().StringVar(&f.DeployType, "deploy-type", "smart_deploy", "Deploy type")
+	cmd.PersistentFlags().BoolVar(&f.ForceDeployNoSemVer, "forcedeploynosemver", false, "Force the deploy wihout semver")
 }

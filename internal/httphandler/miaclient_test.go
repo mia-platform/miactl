@@ -27,7 +27,7 @@ import (
 
 func TestClientBuilding(t *testing.T) {
 	mExpected := MiaClient{
-		sessionHandler: SessionHandler{
+		SessionHandler: SessionHandler{
 			url: "url",
 		},
 	}
@@ -47,10 +47,10 @@ func TestGetSession(t *testing.T) {
 		url: "url",
 	}
 	mc := MiaClient{
-		sessionHandler: sh,
+		SessionHandler: sh,
 	}
 	actualSH := mc.GetSession()
-	require.Equal(t, mc.sessionHandler, *actualSH)
+	require.Equal(t, mc.SessionHandler, *actualSH)
 }
 
 func TestConfigureDefaultMiaClient(t *testing.T) {
@@ -79,7 +79,7 @@ current-context: test-context`
 		},
 	}
 	expectedMiaClient := &MiaClient{
-		sessionHandler: session,
+		SessionHandler: session,
 	}
 	mc, err := ConfigureDefaultMiaClient(opts, testURI)
 	require.NoError(t, err)

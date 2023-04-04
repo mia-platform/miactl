@@ -36,7 +36,7 @@ type SessionHandler struct {
 	url     string
 	method  string
 	context string
-	body    io.ReadCloser
+	body    io.Reader
 	client  *http.Client
 	auth    IAuth
 }
@@ -65,7 +65,7 @@ func (s *SessionHandler) WithAuthentication(url, providerID string, b login.Brow
 }
 
 // WithBody sets the SessionHandler request body
-func (s *SessionHandler) WithBody(body io.ReadCloser) *SessionHandler {
+func (s *SessionHandler) WithBody(body io.Reader) *SessionHandler {
 	s.body = body
 	return s
 }
@@ -77,7 +77,7 @@ func (s *SessionHandler) Get() *SessionHandler {
 }
 
 // Post sets the SessionHandler method to HTTP POST
-func (s *SessionHandler) Post(body io.ReadCloser) *SessionHandler {
+func (s *SessionHandler) Post(body io.Reader) *SessionHandler {
 	s.method = "POST"
 	s.WithBody(body)
 	return s
@@ -92,6 +92,11 @@ func (s *SessionHandler) WithClient(c *http.Client) *SessionHandler {
 // WithContext sets the SessionHandler miactl context
 func (s *SessionHandler) WithContext(ctx string) *SessionHandler {
 	s.context = ctx
+	return s
+}
+
+func (s *SessionHandler) WithUrl(url string) *SessionHandler {
+	s.url = url
 	return s
 }
 
@@ -111,6 +116,7 @@ func HTTPClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 		}
 		client.Transport = transport
 	}
+
 	return client, nil
 }
 
@@ -124,7 +130,11 @@ func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error retrieving token: %w", err)
 	}
+	q := httpReq.URL.Query()
+	q.Add("environment", "test")
 	httpReq.Header.Set("Authorization", "Bearer "+token)
+	httpReq.Header.Set("client-key", "miactl")
+	httpReq.Header.Set("Content-Type", "application/json")
 	resp, err := s.client.Do(httpReq)
 	if err != nil {
 		return nil, fmt.Errorf("error sending the http request: %w", err)

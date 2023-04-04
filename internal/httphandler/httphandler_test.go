@@ -219,7 +219,7 @@ func TestExecuteRequest(t *testing.T) {
 		t.Log(tc.name)
 		mc := NewMiaClientBuilder().WithSessionHandler(*tc.session)
 		testutils.TestToken = ""
-		resp, err := mc.sessionHandler.Get().ExecuteRequest()
+		resp, err := mc.SessionHandler.Get().ExecuteRequest()
 		if tc.expectedErr == "" {
 			require.NoError(t, err)
 		} else {
