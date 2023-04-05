@@ -136,7 +136,7 @@ func TestHttpClientBuilder(t *testing.T) {
 
 	// Test client with skip cert validation
 	opts3 := &clioptions.CLIOptions{
-		SkipCertificate: true,
+		Insecure: true,
 	}
 	require.NoError(t, err)
 	client, err = HTTPClientBuilder(opts3)
@@ -281,7 +281,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 		{
 			name: "skip certificate validation",
 			opts: &clioptions.CLIOptions{
-				SkipCertificate: true,
+				Insecure: true,
 			},
 			expectedOut: "200 OK",
 			expectedErr: "",

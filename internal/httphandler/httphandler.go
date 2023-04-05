@@ -109,7 +109,7 @@ func (s *SessionHandler) GetContext() string {
 func HTTPClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 	client := &http.Client{}
 	// TODO: extract CA certificate from viper config file
-	if opts.CACert != "" || opts.SkipCertificate {
+	if opts.CACert != "" || opts.Insecure {
 		transport, err := configureTransport(opts)
 		if err != nil {
 			return nil, fmt.Errorf("error creating custom transport: %w", err)
@@ -175,7 +175,7 @@ func configureTransport(opts *clioptions.CLIOptions) (*http.Transport, error) {
 		// create a new TLS configuration object and set the root CAs
 		tlsConfig.RootCAs = rootCAs
 	}
-	if opts.SkipCertificate {
+	if opts.Insecure {
 		tlsConfig.InsecureSkipVerify = true
 	}
 

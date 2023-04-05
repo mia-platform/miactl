@@ -50,23 +50,22 @@ func updateContextMap(opts *clioptions.CLIOptions, contextName string) map[strin
 	if viper.Get("contexts") != nil {
 		contextMap = viper.Get("contexts").(map[string]interface{})
 	}
-	if contextMap[contextName] == nil {
-		newContext := map[string]string{"endpoint": opts.Endpoint, "projectid": opts.ProjectID, "companyid": opts.CompanyID, "ca-cert": opts.CACert}
-		contextMap[contextName] = newContext
-	} else {
-		oldContext := contextMap[contextName].(map[string]string)
-		if opts.Endpoint != "https://console.cloud.mia-platform.eu" {
-			oldContext["apibaseurl"] = opts.Endpoint
-		}
-		if opts.ProjectID != "" {
-			oldContext["projectid"] = opts.ProjectID
-		}
-		if opts.CompanyID != "" {
-			oldContext["companyid"] = opts.CompanyID
-		}
-		if opts.CACert != "" {
-			oldContext["ca-cert"] = opts.CACert
-		}
+	newContext := make(map[string]interface{})
+	newContext["endpoint"] = opts.Endpoint
+	if opts.ProjectID != "" {
+		newContext["projectid"] = opts.ProjectID
 	}
+	if opts.CompanyID != "" {
+		newContext["companyid"] = opts.CompanyID
+	}
+	if opts.CACert != "" {
+		newContext["ca-cert"] = opts.CACert
+	}
+	if opts.Insecure {
+		newContext["insecure"] = opts.Insecure
+	}
+
+	contextMap[contextName] = newContext
+
 	return contextMap
 }

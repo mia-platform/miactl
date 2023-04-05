@@ -22,7 +22,7 @@ import (
 type CLIOptions struct {
 	CfgFile             string
 	Verbose             bool
-	SkipCertificate     bool
+	Insecure            bool
 	CACert              string
 	Context             string
 	ProjectID           string
@@ -50,7 +50,7 @@ func (f *CLIOptions) AddConnectionFlags(cmd *cobra.Command) {
 		"file path to a CA certificate, which can be employed to verify server certificate",
 	)
 	cmd.PersistentFlags().StringVar(&f.Endpoint, "endpoint", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
-	cmd.PersistentFlags().BoolVar(&f.SkipCertificate, "insecure", false, "whether to not check server certificate")
+	cmd.PersistentFlags().BoolVar(&f.Insecure, "insecure", false, "whether to not check server certificate")
 }
 
 func (f *CLIOptions) AddContextFlags(cmd *cobra.Command) {
