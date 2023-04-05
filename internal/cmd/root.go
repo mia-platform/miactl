@@ -38,9 +38,8 @@ const (
 )
 
 var (
-	cfgFile   string
-	projectID string
-	verbose   bool
+	cfgFile string
+	verbose bool
 )
 
 // NewRootCmd creates a new root command
