@@ -41,7 +41,7 @@ func GetContextBaseURL(contextName string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error while searching context in config file: %w", err)
 	}
-	return fmt.Sprint(context["apibaseurl"]), nil
+	return fmt.Sprint(context["endpoint"]), nil
 }
 
 func GetContextCompanyID(contextName string) (string, error) {
@@ -71,7 +71,7 @@ func GetContextProjectID(contextName string) (string, error) {
 }
 
 func SetContextValues(cmd *cobra.Command, currentContext string) {
-	var cValues = []string{"project-id", "company-id", "apibaseurl"}
+	var cValues = []string{"project-id", "company-id", "endpoint"}
 
 	for _, val := range cValues {
 		flag := cmd.Flag(val)

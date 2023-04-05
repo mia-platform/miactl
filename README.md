@@ -27,7 +27,7 @@ brew install mia-platform/tap/miactl
 
 You can download the `miactl` binaries directly from the release section on GitHub like this:
 
-```brew
+```sh
 curl -fsSLo miactl.tar.gz https://github.com/mia-platform/miactl/releases/download/v0.3.1/miactl_Linux_arm64.tar.gz
 tar -xzf miactl.tar.gz
 sudo mv miactl /usr/local/bin/miactl
@@ -35,7 +35,7 @@ sudo mv miactl /usr/local/bin/miactl
 
 or alternatively via wget:
 
-```bash
+```sh
 wget -O miactl.tar.gz https://github.com/mia-platform/miactl/releases/download/v0.3.1/miactl_Linux_arm64.tar.gz
 tar -xzf miactl.tar.gz
 sudo mv miactl /usr/local/bin/miactl
@@ -54,7 +54,7 @@ go install github.com/mia-platform/miactl@v0.3.1
 ### Get projects
 
 ```sh
-miactl get projects --apiKey "your-api-key" --apiCookie "sid=your-sid" --apiBaseUrl "https://console.url/"
+miactl get projects --apiKey "your-api-key" --apiCookie "sid=your-sid" --endpoint "https://console.url/"
 ```
 
 ### Projects help

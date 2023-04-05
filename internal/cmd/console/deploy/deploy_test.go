@@ -26,7 +26,7 @@ func TestInitializeClient(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error reading config: %v", err)
 	}
-	viper.Set("contexts.ctx.apibaseurl", "apibaseurl")
+	viper.Set("contexts.ctx.endpoint", "endpoint")
 	viper.Set("contexts.ctx.projectid", "projectid")
 	viper.Set("contexts.ctx.companyid", "companyid")
 

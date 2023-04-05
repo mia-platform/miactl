@@ -41,9 +41,9 @@ func TestNew(t *testing.T) {
 
 	t.Run("throws with wrong base url", func(t *testing.T) {
 		client, err := New(Options{
-			APIBaseURL: "wrong	",
-			APIKey:     "apiKey",
-			APICookie:  "sid=asd",
+			Endpoint:  "wrong	",
+			APIKey:    "apiKey",
+			APICookie: "sid=asd",
 		})
 		require.Error(t, err)
 		require.Nil(t, client)
@@ -51,7 +51,7 @@ func TestNew(t *testing.T) {
 
 	t.Run("throws due to wrong certificate path", func(t *testing.T) {
 		client, err := New(Options{
-			APIBaseURL:            "http://my-url/path/",
+			Endpoint:              "http://my-url/path/",
 			APIToken:              "api-token",
 			SkipCertificate:       false,
 			AdditionalCertificate: "./testdata/missing-ca-cert.pem",
@@ -66,27 +66,27 @@ func TestNew(t *testing.T) {
 		}{
 			{
 				option: Options{
-					APIBaseURL: "http://my-url/path/",
-					APIKey:     "my apiKey",
-					APICookie:  "sid=asd",
+					Endpoint:  "http://my-url/path/",
+					APIKey:    "my apiKey",
+					APICookie: "sid=asd",
 				},
 			},
 			{
 				option: Options{
-					APIBaseURL: "http://my-url/path/",
-					APIToken:   "api-token",
+					Endpoint: "http://my-url/path/",
+					APIToken: "api-token",
 				},
 			},
 			{
 				option: Options{
-					APIBaseURL:      "http://my-url/path/",
+					Endpoint:        "http://my-url/path/",
 					APIToken:        "api-token",
 					SkipCertificate: true,
 				},
 			},
 			{
 				option: Options{
-					APIBaseURL:            "http://my-url/path/",
+					Endpoint:              "http://my-url/path/",
 					APIToken:              "api-token",
 					SkipCertificate:       false,
 					AdditionalCertificate: "../../testdata/ca-cert.pem",

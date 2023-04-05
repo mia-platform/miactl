@@ -30,12 +30,12 @@ import (
 const (
 	config1 = `contexts:
   fake-ctx:
-    apibaseurl: http://url
+    endpoint: http://url
     companyid: "123"
     projectid: "123"`
 	config2 = `contexts:
   fake-ctx:
-    apibaseurl: http://url
+    endpoint: http://url
     projectid: "123"`
 )
 

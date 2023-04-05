@@ -21,7 +21,7 @@ The configuration file, along with its directory, will be created automatically 
 
 The `context set` subcommand allows you to either add a new context, or edit an existing context.
 
-```bash
+```sh
 miactl context set CONTEXT [flags]
 ```
 
@@ -29,7 +29,7 @@ miactl context set CONTEXT [flags]
 
 Available flags for the command:
 
-- `--apibaseurl`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
 - `--ca-cert`, to provide the path to a custom CA certificate
 - `--company-id`, to set the ID of the desired company
 - `--project-id`, to set the ID of the desired project
@@ -38,7 +38,7 @@ Available flags for the command:
 
 The `context use` subcommand allows you to select an existing context as the current one.
 
-```bash
+```sh
 miactl context use CONTEXT [flags]
 ```
 
@@ -59,7 +59,7 @@ context. The output will show the **names**, **IDs**, and **Configuration Git pa
 
 Usage:
 
-```bash
+```sh
 miactl project list [flags]
 ```
 
@@ -71,13 +71,13 @@ This command allows you to trigger the deploy pipeline for the selected project.
 
 Usage:
 
-```bash
+```sh
 miactl deploy [flags]
 ```
 
 Available flags for the command:
 
-- `--apibaseurl`, to override the Console endpoint
+- `--endpoint`, to override the Console endpoint
 - `--ca-cert`, to override the path to the custom CA certificate
 - `--company-id`, to set the company ID from command line
 - `--context`, to specify a different context from the current one

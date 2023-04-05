@@ -30,7 +30,7 @@ import (
 
 func NewStatusCmd() *cobra.Command {
 	var (
-		baseURL         string
+		endpoint        string
 		apiToken        string
 		projectID       string
 		environment     string
@@ -45,11 +45,11 @@ func NewStatusCmd() *cobra.Command {
 			return cobra.ExactArgs(1)(cmd, args)
 		},
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			baseURL = viper.GetString("apibaseurl")
+			endpoint = viper.GetString("endpoint")
 			apiToken = viper.GetString("apitoken")
 			projectID = viper.GetString("project")
 
-			if baseURL == "" {
+			if endpoint == "" {
 				return errors.New("API base URL not specified nor configured")
 			}
 			if apiToken == "" {
@@ -67,7 +67,7 @@ func NewStatusCmd() *cobra.Command {
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			f, err := factory.FromContext(cmd.Context(), sdk.Options{
-				APIBaseURL:            baseURL,
+				Endpoint:              endpoint,
 				APIToken:              apiToken,
 				SkipCertificate:       skipCertificate,
 				AdditionalCertificate: certificatePath,

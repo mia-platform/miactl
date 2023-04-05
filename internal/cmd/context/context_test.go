@@ -28,22 +28,22 @@ import (
 const (
 	valid = `contexts:
   fake-ctx:
-    apibaseurl: http://url
+    endpoint: http://url
     companyid: "123"
     projectid: "123"
 current-context: fake-ctx`
 	noCompanyID = `contexts:
   fake-ctx:
-    apibaseurl: http://url
+    endpoint: http://url
     projectid: "123"`
 	noCurrCtx = `contexts:
   fake-ctx:
-    apibaseurl: http://url
+    endpoint: http://url
     companyid: "123"
     projectid: "123"`
 	config = `contexts:
   current:
-    apibaseurl: "apibaseurl"
+    endpoint: "endpoint"
     companyid: "companyid"
     projectid: "projectid"
     cacert: "cacert"`
@@ -187,10 +187,10 @@ func TestSetContextValues(t *testing.T) {
 	}
 
 	type fakeOptsValues struct {
-		ProjectID  string
-		CompanyID  string
-		APIBaseURL string
-		CACert     string
+		ProjectID string
+		CompanyID string
+		Endpoint  string
+		CACert    string
 	}
 
 	f := fakeOptsValues{}
@@ -200,7 +200,7 @@ func TestSetContextValues(t *testing.T) {
 	}
 
 	fakeCommand.Flags().StringVar(&f.ProjectID, "project-id", "", "The ID of the project")
-	fakeCommand.Flags().StringVar(&f.APIBaseURL, "apibaseurl", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
+	fakeCommand.Flags().StringVar(&f.Endpoint, "endpoint", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
 	fakeCommand.Flags().StringVar(&f.CompanyID, "company-id", "", "The ID of the company")
 	fakeCommand.Flags().StringVar(
 		&f.CACert,
@@ -214,11 +214,11 @@ func TestSetContextValues(t *testing.T) {
 
 		require.Equal(t, fakeCommand.Flag("project-id").Value.String(), "projectid")
 		require.Equal(t, fakeCommand.Flag("company-id").Value.String(), "companyid")
-		require.Equal(t, fakeCommand.Flag("apibaseurl").Value.String(), "apibaseurl")
+		require.Equal(t, fakeCommand.Flag("endpoint").Value.String(), "endpoint")
 	})
 
 	t.Run("test set values from clioptions", func(t *testing.T) {
-		f.APIBaseURL = "newapibaseurl"
+		f.Endpoint = "newendpoint"
 		f.CompanyID = "newcompanyid"
 		f.ProjectID = "newprojectid"
 
@@ -226,6 +226,6 @@ func TestSetContextValues(t *testing.T) {
 
 		require.Equal(t, fakeCommand.Flag("project-id").Value.String(), "newprojectid")
 		require.Equal(t, fakeCommand.Flag("company-id").Value.String(), "newcompanyid")
-		require.Equal(t, fakeCommand.Flag("apibaseurl").Value.String(), "newapibaseurl")
+		require.Equal(t, fakeCommand.Flag("endpoint").Value.String(), "newendpoint")
 	})
 }

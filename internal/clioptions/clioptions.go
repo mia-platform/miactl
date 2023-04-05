@@ -22,15 +22,12 @@ import (
 type CLIOptions struct {
 	CfgFile             string
 	Verbose             bool
-	APIKey              string
-	APICookie           string
-	APIToken            string
 	SkipCertificate     bool
 	CACert              string
 	Context             string
 	ProjectID           string
 	CompanyID           string
-	APIBaseURL          string
+	Endpoint            string
 	Revision            string
 	DeployType          string
 	ForceDeployNoSemVer bool
@@ -46,16 +43,13 @@ func (f *CLIOptions) AddRootFlags(cmd *cobra.Command) {
 }
 
 func (f *CLIOptions) AddConnectionFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVar(&f.APIKey, "apiKey", "", "API Key")
-	cmd.PersistentFlags().StringVar(&f.APICookie, "apiCookie", "", "api cookie sid")
-	cmd.PersistentFlags().StringVar(&f.APIToken, "apiToken", "", "api access token")
 	cmd.PersistentFlags().StringVar(&f.Context, "context", "", "The name of the context to use")
 	cmd.PersistentFlags().BoolVar(&f.SkipCertificate, "insecure", false, "whether to not check server certificate")
 }
 
 func (f *CLIOptions) AddContextFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&f.ProjectID, "project-id", "", "The ID of the project")
-	cmd.Flags().StringVar(&f.APIBaseURL, "apibaseurl", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
+	cmd.Flags().StringVar(&f.Endpoint, "endpoint", "https://console.cloud.mia-platform.eu", "The URL of the console endpoint")
 	cmd.Flags().StringVar(&f.CompanyID, "company-id", "", "The ID of the company")
 	cmd.Flags().StringVar(
 		&f.CACert,

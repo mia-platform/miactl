@@ -33,7 +33,7 @@ import (
 type Options struct {
 	APIKey                string
 	APICookie             string
-	APIBaseURL            string
+	Endpoint              string
 	APIToken              string
 	SkipCertificate       bool
 	AdditionalCertificate string
@@ -55,7 +55,7 @@ type MiaClient struct {
 func New(opts Options) (*MiaClient, error) {
 	headers := jsonclient.Headers{}
 
-	if opts.APIBaseURL == "" {
+	if opts.Endpoint == "" {
 		return nil, fmt.Errorf("%w: client options are not correct", sdkErrors.ErrCreateClient)
 	}
 
@@ -68,7 +68,7 @@ func New(opts Options) (*MiaClient, error) {
 	}
 
 	clientOptions := jsonclient.Options{
-		BaseURL: opts.APIBaseURL,
+		BaseURL: opts.Endpoint,
 		Headers: headers,
 	}
 

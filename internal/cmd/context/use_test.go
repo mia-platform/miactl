@@ -42,7 +42,7 @@ func TestContextLookUp(t *testing.T) {
 	viper.SetConfigType("yaml")
 	config := `contexts:
   context1:
-    apibaseurl: http://url
+    endpoint: http://url
     companyid: "123"
     projectid: "123"`
 	err := viper.ReadConfig(strings.NewReader(config))
@@ -56,7 +56,7 @@ func TestContextLookUp(t *testing.T) {
 	context, err = contextLookUp(contextName1)
 	require.Nil(t, err)
 	require.NotNil(t, context)
-	require.Equal(t, "http://url", context["apibaseurl"])
+	require.Equal(t, "http://url", context["endpoint"])
 	require.Equal(t, "123", context["companyid"])
 	require.Equal(t, "123", context["projectid"])
 }

@@ -344,7 +344,7 @@ func TestConfigureDefaultSessionHandler(t *testing.T) {
 	viper.SetConfigType("yaml")
 	config := `contexts:
   test-context:
-    apibaseurl: http://url
+    endpoint: http://url
     companyid: "123"
     projectid: "123"`
 	err := viper.ReadConfig(strings.NewReader(config))
