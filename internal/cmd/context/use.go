@@ -26,7 +26,7 @@ import (
 func NewUseContextCmd(opts *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "use CONTEXT [flags]",
-		Short: "update available contexts for miactl",
+		Short: "select a context for miactl",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if _, err := contextLookUp(args[0]); err != nil {

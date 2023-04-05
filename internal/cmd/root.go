@@ -61,8 +61,6 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(project.NewProjectCmd(options))
 	rootCmd.AddCommand(deploy.NewDeployCmd(options))
 	rootCmd.AddCommand(miacontext.NewContextCmd(options))
-
-	rootCmd.AddCommand(miacontext.NewContextCmd(options))
 	return rootCmd
 }
 
