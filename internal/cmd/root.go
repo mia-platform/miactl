@@ -54,7 +54,7 @@ func NewRootCmd() *cobra.Command {
 	}
 
 	options := clioptions.NewCLIOptions()
-	options.AddRootFlags(rootCmd)
+	options.AddGlobalFlags(rootCmd)
 
 	// add sub command to root command
 	rootCmd.AddCommand(project.NewProjectCmd(options))

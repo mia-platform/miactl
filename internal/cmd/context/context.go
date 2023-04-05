@@ -71,10 +71,13 @@ func GetContextProjectID(contextName string) (string, error) {
 }
 
 func SetContextValues(cmd *cobra.Command, currentContext string) {
-	var cValues = []string{"project-id", "company-id", "endpoint"}
+	var cValues = []string{"project-id", "company-id", "endpoint", "ca-cert", "insecure"}
 
 	for _, val := range cValues {
 		flag := cmd.Flag(val)
+		if flag == nil {
+			continue
+		}
 		viperKey := strings.ReplaceAll(val, "-", "")
 		viperPath := fmt.Sprintf("contexts.%s.%s", currentContext, viperKey)
 		if flag.Value.String() == flag.DefValue && viper.IsSet(viperPath) {

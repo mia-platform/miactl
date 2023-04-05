@@ -26,6 +26,10 @@ func NewProjectCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Short: "view and manage mia projects",
 	}
 
+	options.AddConnectionFlags(cmd)
+	options.AddContextFlags(cmd)
+	options.AddCompanyFlags(cmd)
+
 	cmd.AddCommand(NewListProjectsCmd(options))
 
 	return cmd

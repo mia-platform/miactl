@@ -75,8 +75,10 @@ func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 		},
 	}
-	options.AddContextFlags(cmd)
 	options.AddConnectionFlags(cmd)
+	options.AddContextFlags(cmd)
+	options.AddCompanyFlags(cmd)
+	options.AddProjectFlags(cmd)
 	options.AddDeployFlags(cmd)
 	return cmd
 

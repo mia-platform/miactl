@@ -39,7 +39,9 @@ func NewSetContextCmd(options *clioptions.CLIOptions) *cobra.Command {
 			return nil
 		},
 	}
-	options.AddContextFlags(cmd)
+	options.AddConnectionFlags(cmd)
+	options.AddCompanyFlags(cmd)
+	options.AddProjectFlags(cmd)
 	return cmd
 }
 
