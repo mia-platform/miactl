@@ -2,6 +2,7 @@ package deploy
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -20,7 +21,11 @@ func TestNewDeployCmd(t *testing.T) {
 }
 
 func TestInitializeClient(t *testing.T) {
-	viper.New()
+	viper.SetConfigType("yaml")
+	err := viper.ReadConfig(strings.NewReader(""))
+	if err != nil {
+		t.Fatalf("unexpected error reading config: %v", err)
+	}
 	viper.Set("contexts.ctx.apibaseurl", "apibaseurl")
 	viper.Set("contexts.ctx.projectid", "projectid")
 	viper.Set("contexts.ctx.companyid", "companyid")

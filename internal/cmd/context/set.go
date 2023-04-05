@@ -52,7 +52,7 @@ func updateContextMap(opts *clioptions.CLIOptions, contextName string) map[strin
 		newContext := map[string]string{"apibaseurl": opts.APIBaseURL, "projectid": opts.ProjectID, "companyid": opts.CompanyID, "ca-cert": opts.CACert}
 		contextMap[contextName] = newContext
 	} else {
-		oldContext := contextMap[contextName].(map[string]interface{})
+		oldContext := contextMap[contextName].(map[string]string)
 		if opts.APIBaseURL != "https://console.cloud.mia-platform.eu" {
 			oldContext["apibaseurl"] = opts.APIBaseURL
 		}

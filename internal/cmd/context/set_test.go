@@ -16,13 +16,19 @@
 package context
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
 
 func TestUpdateContextMap(t *testing.T) {
+	err := viper.ReadConfig(strings.NewReader(""))
+	if err != nil {
+		t.Fatalf("unexpected error reading config: %v", err)
+	}
 	// Test creating a new context
 	opts := &clioptions.CLIOptions{APIBaseURL: "https://url", ProjectID: "project1", CompanyID: "company1", CACert: "/path/to/cert"}
 	newContext := map[string]string{"apibaseurl": "https://url", "projectid": "project1", "companyid": "company1", "ca-cert": "/path/to/cert"}

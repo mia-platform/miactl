@@ -41,6 +41,12 @@ current-context: fake-ctx`
     apibaseurl: http://url
     companyid: "123"
     projectid: "123"`
+	config = `contexts:
+  current:
+    apibaseurl: "apibaseurl"
+    companyid: "companyid"
+    projectid: "projectid"
+    cacert: "cacert"`
 )
 
 type TestCase struct {
@@ -175,11 +181,10 @@ func TestGetCurrentContext(t *testing.T) {
 }
 
 func TestSetContextValues(t *testing.T) {
-	viper.New()
-	viper.Set("contexts.current.projectid", "projectid")
-	viper.Set("contexts.current.companyid", "companyid")
-	viper.Set("contexts.current.apibaseurl", "apibaseurl")
-	viper.Set("contexts.current.cacert", "cacert")
+	err := viper.ReadConfig(strings.NewReader(config))
+	if err != nil {
+		t.Fatalf("unexpected error reading config: %v", err)
+	}
 
 	type fakeOptsValues struct {
 		ProjectID  string
