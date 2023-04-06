@@ -26,9 +26,10 @@ import (
 )
 
 const (
-	testURLSha  = "b64868a6476817bde1123f534334c2ce78891fcad65c06667acbfdb9007b5dff"
-	testTokens  = `{"accessToken":"test_token","refreshToken":"","expiresAt":0}`
-	invalidJSON = `invalid_json`
+	testURLSha        = "b64868a6476817bde1123f534334c2ce78891fcad65c06667acbfdb9007b5dff"
+	testTokens        = `{"accessToken":"test_token","refreshToken":"","expiresAt":9999999999}`
+	testExpiredTokens = `{"accessToken":"test_token","refreshToken":"","expiresAt":0}`
+	invalidJSON       = `invalid_json`
 )
 
 var (
@@ -65,6 +66,14 @@ func TestGetTokensFromFile(t *testing.T) {
 	}
 	_, err = getTokensFromFile(testBaseURL, testDirPath)
 	require.ErrorContains(t, err, "invalid character")
+
+	// expired token
+	err = os.WriteFile(testFilePath, []byte(testExpiredTokens), os.ModePerm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = getTokensFromFile(testBaseURL, testDirPath)
+	require.ErrorIs(t, err, errExpiredToken)
 }
 
 func TestWriteTokensToFile(t *testing.T) {
@@ -72,7 +81,9 @@ func TestWriteTokensToFile(t *testing.T) {
 	testFilePath := path.Join(testDirPath, testURLSha)
 
 	var tokens = &login.Tokens{
-		AccessToken: "test_token",
+		AccessToken:  "test_token",
+		RefreshToken: "",
+		ExpiresAt:    9999999999,
 	}
 
 	err := writeTokensToFile(testBaseURL, testDirPath, tokens)

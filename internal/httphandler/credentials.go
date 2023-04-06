@@ -18,12 +18,16 @@ package httphandler
 import (
 	"crypto/sha256"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path"
+	"time"
 
 	"github.com/mia-platform/miactl/internal/cmd/login"
 )
+
+var errExpiredToken = errors.New("the token has expired")
 
 func getTokensFromFile(url, credentialsPath string) (*login.Tokens, error) {
 	sha := getURLSha(url)
@@ -39,6 +43,10 @@ func getTokensFromFile(url, credentialsPath string) (*login.Tokens, error) {
 	err = json.Unmarshal(tokenBytes, &tokens)
 	if err != nil {
 		return nil, err
+	}
+	now := time.Now()
+	if now.After(time.Unix(tokens.ExpiresAt, 0)) {
+		return nil, errExpiredToken
 	}
 
 	return &tokens, nil

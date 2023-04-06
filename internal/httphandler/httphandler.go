@@ -149,6 +149,9 @@ func (s *SessionHandler) ExecuteRequest() (*http.Response, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error resending the http request: %w", err)
 		}
+		if resp.Status == unauthorized {
+			return nil, fmt.Errorf("unable to login: %s", resp.Status)
+		}
 	}
 	return resp, nil
 }

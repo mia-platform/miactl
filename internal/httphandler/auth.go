@@ -16,6 +16,7 @@
 package httphandler
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path"
@@ -44,7 +45,7 @@ func (a *Auth) Authenticate() (string, error) {
 	credentialsAbsPath := path.Join(home, credentialsPath)
 	tokens, err := getTokensFromFile(a.url, credentialsAbsPath)
 	if err != nil {
-		if !os.IsNotExist(err) {
+		if !os.IsNotExist(err) && !errors.Is(err, errExpiredToken) {
 			return "", err
 		} else {
 			tokens, err = login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
