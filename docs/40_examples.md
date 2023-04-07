@@ -37,6 +37,18 @@ miactl context use paas-project
 
 ## List Projects
 
+The list project command will list all poject that the current user can access in the selected company:
+
+```sh
+miactl project list
+```
+
+Or you can set a different company via flag:
+
+```sh
+miactl project list --company-id <your-company-id>
+```
+
 ## Deploy Project
 
 The deploy command allow you to trigger a new deploy pipeline for the current project in the project. The only
@@ -55,5 +67,5 @@ miactl deploy development --project-id <your-project-id>
 You can customize the way your project is deployed:
 
 ```sh
-miactl deploy development --no-semver --revision=tags/v1.0.0
+miactl deploy development --no-semver --revision tags/v1.0.0
 ```

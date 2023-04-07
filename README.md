@@ -81,7 +81,7 @@ and v2 is for Bash 4.1+. The miactl completion script requires `bash-completion`
 You could install `bash-completion` running `apt-get install bash-completion`.
 
 The above command create `/usr/share/bash-completion/bash_completion`, which is the main script of bash completion.
-Try to run the command `type _init_completion`. If the command succeeds, you're already set. Otherwise, add to the
+Try to run the command `type _init_completion`. If the command succeeds, you’re already set. Otherwise, add to the
 `~/.bashrc` file:
 
 ```sh
