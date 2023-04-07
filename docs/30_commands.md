@@ -63,7 +63,13 @@ Usage:
 miactl project list [flags]
 ```
 
-This command does not include any additional flags besides the default ones.
+Available flags for the command:
+
+- `--ca-cert`, to override the path to the custom CA certificate
+- `--company-id`, to set the company ID from command line
+- `--context`, to specify a different context from the current one
+- `--endpoint`, to override the Console endpoint
+- `--insecure`, to skip certificate check
 
 ## deploy
 
@@ -77,11 +83,11 @@ miactl deploy [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to override the Console endpoint
 - `--ca-cert`, to override the path to the custom CA certificate
 - `--company-id`, to set the company ID from command line
 - `--context`, to specify a different context from the current one
 - `--deploy-type`, to select a deploy type (default is `smart_deploy`)
+- `--endpoint`, to override the Console endpoint
 - `--no-semver`, to force the deploy without `semver`
 - `--insecure`, to skip certificate check
 - `--project-id`, to set the project ID from command line
