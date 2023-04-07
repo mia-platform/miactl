@@ -51,7 +51,7 @@ var currentContext string
 
 func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "deploy [ENVIRONMENT]",
+		Use:   "deploy ENVIRONMENT",
 		Short: "deploy project",
 		Long:  "trigger the deploy pipeline for selected project",
 		Args:  cobra.ExactArgs(1),
