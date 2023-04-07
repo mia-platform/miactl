@@ -106,10 +106,13 @@ func GetTokensWithOIDC(endpoint string, providerID string, b browser.URLOpener) 
 
 	token := &Tokens{}
 
-	_, err = jsonClient.Do(req, token)
+	resp, err := jsonClient.Do(req, token)
+
 	if err != nil {
 		return &Tokens{}, err
 	}
+
+	defer resp.Body.Close()
 
 	return token, nil
 }
