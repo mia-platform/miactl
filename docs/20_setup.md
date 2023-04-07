@@ -23,41 +23,40 @@ If you have [Golang] installed with a version >= 1.13 in your system and you hav
 install `miactl` like this:
 
 ```sh
-go install github.com/mia-platform/miactl@0.3.1
+go install github.com/mia-platform/miactl@0.4.0
 ```
 
 Or like this if the `install` command is not available
 
 ```sh
-go get -u github.com/mia-platform/miactl@0.3.1
+go get -u github.com/mia-platform/miactl@0.4.0
 ```
 
 ### Binary Download
 
-You can install `miactl` with the use of `curl` or `wget` and downloading the latest packages available on GitHub:
+You can install `miactl` with the use of `curl` or `wget` and downloading the latest packages available on GitHub
+choosing the correct platform and operating system:
 
 ```sh
-curl -fsSL https://github.com/mia-platform/miactl/releases/download/v0.3.1/miactl_$(uname)_$(uname -m).tar.gz -o /tmp/miactl.tar.gz
+curl -fsSL https://github.com/mia-platform/miactl/releases/download/v0.4.0/miactl-linux-amd64 -o /tmp/miactl
 ```
 
 ```sh
-wget -q https://github.com/mia-platform/miactl/releases/download/v0.3.1/miactl_$(uname)_$(uname -m).tar.gz -O /tmp/miactl.tar.gz
+wget -q https://github.com/mia-platform/miactl/releases/download/v0.4.0/miactl-linux-amd64 -O /tmp/miactl
 ```
 
 After you have downloaded the file you can validate it against the checksum you can find at this [url] running the
 command:
 
 ```sh
-sha256sum /tmp/miactl.tar.gz
+sha256sum /tmp/miactl
 ```
 
 After you have validated that the downloaded file is correct, move the binary in your `/usr/local/bin` folder
 
 ```sh
-mkdir /tmp/miactl
-tar -xvf /tmp/miactl.tar.gz --directory /tmp/miactl
-mv /tmp/miactl/miactl /usr/local/bin
-rm -fr /tmp/miactl /tmp/miactl.tar.gz
+chmod +x /tmp/miactl
+mv /tmp/miactl /usr/local/bin
 ```
 
 ### Docker
@@ -65,7 +64,7 @@ rm -fr /tmp/miactl /tmp/miactl.tar.gz
 If you want to run the cli in its environment or you want to test the cli you can use the Docker image:
 
 ```sh
-docker run ghr.io/mia-platform/miactl@0.3.1 miactl
+docker run ghr.io/mia-platform/miactl@0.4.0 miactl
 ```
 
 ## Shell Autocompletion
@@ -124,7 +123,7 @@ enable the autocompletion.
 
 [Homebrew]: https://brew.sh "The Missing Package Manager for macOS (or Linux)"
 [Golang]: https://go.dev "Build simple, secure, scalable systems with Go"
-[url]: https://github.com/mia-platform/miactl/releases/download/v0.3.1/checksums.txt "miactl checksums"
+[url]: https://github.com/mia-platform/miactl/releases/download/v0.4.0/checksums.txt "miactl checksums"
 [`bash-completion`]: https://github.com/scop/bash-completion "Programmable completion functions for bash"
 [`oh-my-zsh`]: https://ohmyz.sh "Oh My Zsh is a delightful, open source, community-driven
 	framework for managing your Zsh configuration"

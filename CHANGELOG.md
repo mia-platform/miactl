@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 0.4.0 2022-03-07
+
+### Changed
+
+- complete rework of cli
+- new login that uses the OIDC flow via the user browser
+- new deploy command, now it will wait for the pipeline to finish
+- new project list command
+- the user now can create contexts for multiple scenarios and consoles
+
 ## 0.3.1 2022-01-21
 
 ### Fixed
