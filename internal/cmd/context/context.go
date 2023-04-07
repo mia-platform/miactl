@@ -70,6 +70,8 @@ func GetContextProjectID(contextName string) (string, error) {
 	return fmt.Sprint(context["projectid"]), nil
 }
 
+// SetContextValues checks if a flag was explicitly set by the user, and loads the value
+// from the config file otherwise
 func SetContextValues(cmd *cobra.Command, currentContext string) {
 	var cValues = []string{"project-id", "company-id", "endpoint", "ca-cert", "insecure"}
 
@@ -80,7 +82,7 @@ func SetContextValues(cmd *cobra.Command, currentContext string) {
 		}
 		viperKey := strings.ReplaceAll(val, "-", "")
 		viperPath := fmt.Sprintf("contexts.%s.%s", currentContext, viperKey)
-		if flag.Value.String() == flag.DefValue && viper.IsSet(viperPath) {
+		if !flag.Changed && viper.IsSet(viperPath) {
 			viperValue := viper.GetString(viperPath)
 			flag.Value.Set(viperValue)
 		}

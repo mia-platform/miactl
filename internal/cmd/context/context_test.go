@@ -181,6 +181,7 @@ func TestGetCurrentContext(t *testing.T) {
 }
 
 func TestSetContextValues(t *testing.T) {
+	viper.SetConfigType("yaml")
 	err := viper.ReadConfig(strings.NewReader(config))
 	if err != nil {
 		t.Fatalf("unexpected error reading config: %v", err)
@@ -212,20 +213,20 @@ func TestSetContextValues(t *testing.T) {
 	t.Run("test keep values from config file", func(t *testing.T) {
 		SetContextValues(fakeCommand, "current")
 
-		require.Equal(t, fakeCommand.Flag("project-id").Value.String(), "projectid")
-		require.Equal(t, fakeCommand.Flag("company-id").Value.String(), "companyid")
-		require.Equal(t, fakeCommand.Flag("endpoint").Value.String(), "endpoint")
+		require.Equal(t, "projectid", fakeCommand.Flag("project-id").Value.String())
+		require.Equal(t, "companyid", fakeCommand.Flag("company-id").Value.String())
+		require.Equal(t, "endpoint", fakeCommand.Flag("endpoint").Value.String())
 	})
 
 	t.Run("test set values from clioptions", func(t *testing.T) {
-		f.Endpoint = "newendpoint"
-		f.CompanyID = "newcompanyid"
-		f.ProjectID = "newprojectid"
+		fakeCommand.Flags().Set("endpoint", "newendpoint")
+		fakeCommand.Flags().Set("project-id", "newprojectid")
+		fakeCommand.Flags().Set("company-id", "newcompanyid")
 
 		SetContextValues(fakeCommand, "current")
 
-		require.Equal(t, fakeCommand.Flag("project-id").Value.String(), "newprojectid")
-		require.Equal(t, fakeCommand.Flag("company-id").Value.String(), "newcompanyid")
-		require.Equal(t, fakeCommand.Flag("endpoint").Value.String(), "newendpoint")
+		require.Equal(t, "newprojectid", fakeCommand.Flag("project-id").Value.String())
+		require.Equal(t, "newcompanyid", fakeCommand.Flag("company-id").Value.String())
+		require.Equal(t, "newendpoint", fakeCommand.Flag("endpoint").Value.String())
 	})
 }
