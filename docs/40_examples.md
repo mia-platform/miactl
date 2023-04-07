@@ -38,3 +38,22 @@ miactl context use paas-project
 ## List Projects
 
 ## Deploy Project
+
+The deploy command allow you to trigger a new deploy pipeline for the current project in the project. The only
+argument needed is the environment id that you want to deploy:
+
+```sh
+miactl deploy development
+```
+
+Additionally if your context don’t contain the project id you can select it via a flag:
+
+```sh
+miactl deploy development --project-id <your-project-id>
+```
+
+You can customize the way your project is deployed:
+
+```sh
+miactl deploy development --no-semver --revision=tags/v1.0.0
+```
