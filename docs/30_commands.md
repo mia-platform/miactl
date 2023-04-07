@@ -82,7 +82,7 @@ Available flags for the command:
 - `--company-id`, to set the company ID from command line
 - `--context`, to specify a different context from the current one
 - `--deploy-type`, to select a deploy type (default is `smart_deploy`)
-- `--forcedeploynosemver`, to force the deploy without `semver`
+- `--no-semver`, to force the deploy without `semver`
 - `--insecure`, to skip certificate check
 - `--project-id`, to set the project ID from command line
-- `--revision`, to specify the revision of the commit to deploy (default `master`)
+- `--revision`, to specify the revision of the commit to deploy (default `HEAD`)

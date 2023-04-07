@@ -20,17 +20,17 @@ import (
 )
 
 type CLIOptions struct {
-	CfgFile             string
-	Verbose             bool
-	Insecure            bool
-	CACert              string
-	Context             string
-	ProjectID           string
-	CompanyID           string
-	Endpoint            string
-	Revision            string
-	DeployType          string
-	ForceDeployNoSemVer bool
+	CfgFile    string
+	Verbose    bool
+	Insecure   bool
+	CACert     string
+	Context    string
+	ProjectID  string
+	CompanyID  string
+	Endpoint   string
+	Revision   string
+	DeployType string
+	NoSemVer   bool
 }
 
 func NewCLIOptions() *CLIOptions {
@@ -66,7 +66,7 @@ func (f *CLIOptions) AddCompanyFlags(cmd *cobra.Command) {
 }
 
 func (f *CLIOptions) AddDeployFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVar(&f.Revision, "revision", "master", "Revision of the commit to deploy")
+	cmd.PersistentFlags().StringVar(&f.Revision, "revision", "HEAD", "Revision of the commit to deploy")
 	cmd.PersistentFlags().StringVar(&f.DeployType, "deploy-type", "smart_deploy", "Deploy type")
-	cmd.PersistentFlags().BoolVar(&f.ForceDeployNoSemVer, "forcedeploynosemver", false, "Force the deploy wihout semver")
+	cmd.PersistentFlags().BoolVar(&f.NoSemVer, "no-semver", false, "Force the deploy wihout semver")
 }

@@ -64,9 +64,9 @@ func TestTriggerPipeline(t *testing.T) {
 	defer server.Close()
 
 	opts := clioptions.CLIOptions{
-		Revision:            "test",
-		DeployType:          "smart-deploy",
-		ForceDeployNoSemVer: true,
+		Revision:   "test",
+		DeployType: "smart-deploy",
+		NoSemVer:   true,
 	}
 	mc := httphandler.FakeMiaClient(fmt.Sprintf("%s/api/deploy/projects/projectid/trigger/pipeline/", server.URL))
 	t.Run("Trigger successfully a pipeline", func(t *testing.T) {

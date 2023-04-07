@@ -51,7 +51,7 @@ var currentContext string
 
 func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "deploy",
+		Use:   "deploy [ENVIRONMENT]",
 		Short: "deploy project",
 		Long:  "trigger the deploy pipeline for selected project",
 		Args:  cobra.ExactArgs(1),
@@ -127,7 +127,7 @@ func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.
 		Environment:             env,
 		Revision:                options.Revision,
 		DeployType:              options.DeployType,
-		ForceDeployWhenNoSemver: options.ForceDeployNoSemVer,
+		ForceDeployWhenNoSemver: options.NoSemVer,
 	}
 
 	if options.DeployType == "deploy_all" {
