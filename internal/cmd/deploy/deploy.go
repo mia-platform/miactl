@@ -26,7 +26,6 @@ import (
 	"github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/httphandler"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 type deployResponse struct {
@@ -57,9 +56,12 @@ func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Long:  "trigger the deploy pipeline for selected project",
 		Args:  cobra.ExactArgs(1),
 		PreRunE: func(cmd *cobra.Command, args []string) error {
-			if viper.Get("current-context") != "" {
-				currentContext = fmt.Sprint(viper.Get("current-context"))
-				context.SetContextValues(cmd, currentContext)
+			currentContext, err := context.GetCurrentContext()
+			if err != nil {
+				return err
+			}
+			if err := context.SetContextValues(cmd, currentContext); err != nil {
+				return err
 			}
 			return nil
 		},

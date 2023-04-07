@@ -43,7 +43,9 @@ func NewListProjectsCmd(options *clioptions.CLIOptions) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			context.SetContextValues(cmd, currentContext)
+			if err := context.SetContextValues(cmd, currentContext); err != nil {
+				return err
+			}
 			return nil
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {

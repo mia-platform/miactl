@@ -208,8 +208,9 @@ func TestSetContextValues(t *testing.T) {
 	)
 
 	t.Run("test keep values from config file", func(t *testing.T) {
-		SetContextValues(fakeCommand, "current")
+		err := SetContextValues(fakeCommand, "current")
 
+		require.NoError(t, err)
 		require.Equal(t, "projectid", fakeCommand.Flag("project-id").Value.String())
 		require.Equal(t, "companyid", fakeCommand.Flag("company-id").Value.String())
 		require.Equal(t, "endpoint", fakeCommand.Flag("endpoint").Value.String())
@@ -220,7 +221,9 @@ func TestSetContextValues(t *testing.T) {
 		fakeCommand.Flags().Set("project-id", "newprojectid")
 		fakeCommand.Flags().Set("company-id", "newcompanyid")
 
-		SetContextValues(fakeCommand, "current")
+		err := SetContextValues(fakeCommand, "current")
+
+		require.NoError(t, err)
 
 		require.Equal(t, "newprojectid", fakeCommand.Flag("project-id").Value.String())
 		require.Equal(t, "newcompanyid", fakeCommand.Flag("company-id").Value.String())
