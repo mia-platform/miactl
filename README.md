@@ -142,7 +142,7 @@ Completion could be generated running the `miactl completion zsh` command
 The generated completion script should be put somewhere in your $fpath named _miactl.
 
 [github-actions]: https://github.com/mia-platform/miactl/actions
-[github-actions-svg]: https://github.com/mia-platform/miactl/workflows/Test%20and%20build/badge.svg
+[github-actions-svg]: https://github.com/mia-platform/miactl/workflows/Continuous%20Integration%20Pipeline/badge.svg
 [godoc-svg]: https://godoc.org/github.com/mia-platform/miactl?status.svg
 [godoc-link]: https://godoc.org/github.com/mia-platform/miactl
 [go-report-card]: https://goreportcard.com/badge/github.com/mia-platform/miactl
