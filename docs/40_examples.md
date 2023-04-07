@@ -37,7 +37,7 @@ miactl context use paas-project
 
 ## List Projects
 
-The list project command will list all poject that the current user can access in the selected company:
+The list project command will list all project that the current user can access in the selected company:
 
 ```sh
 miactl project list

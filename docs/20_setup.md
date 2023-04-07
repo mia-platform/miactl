@@ -75,15 +75,15 @@ Once you have installed the cli in your system you can setup the commands comple
 - [`zsh`](#zsh)
 - [`fish`](#fish)
 
-When you update the command remembre to relaunch the command for your shell to update the completion definition
+When you update the command remember to relaunch the command for your shell to update the completion definition
 and get the latest command and/or flags that has been added.
 
 ### `bash`
 
 The `bash` autocompletion needs the [`bash-completion`] package installed on your system.
 
-**Warning:** for working correctly you need the `bash-completion` V2 that is compatibile only with Bash 4.1+,
-please be sure to have the correct versions isntalled on your system before running the command.
+**Warning:** for working correctly you need the `bash-completion` V2 that is compatible only with Bash 4.1+,
+please be sure to have the correct versions installed on your system before running the command.
 
 ```sh
 miactl completion bash >/usr/local/etc/bash_completion.d/miactl
