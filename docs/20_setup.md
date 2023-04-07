@@ -65,7 +65,7 @@ rm -fr /tmp/miactl /tmp/miactl.tar.gz
 If you want to run the cli in its environment or you want to test the cli you can use the Docker image:
 
 ```sh
-docker run ghr.io/mia-platform/miactl@0.3.1 --help
+docker run ghr.io/mia-platform/miactl@0.3.1 miactl
 ```
 
 ## Shell Autocompletion
