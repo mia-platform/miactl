@@ -78,7 +78,7 @@ This command allows you to trigger the deploy pipeline for the selected project.
 Usage:
 
 ```sh
-miactl deploy [flags]
+miactl deploy ENVIRONMENT [flags]
 ```
 
 Available flags for the command:
