@@ -168,7 +168,10 @@ func CreateMockServer() *httptest.Server {
 			}
 		case r.RequestURI == "/api/deploy/projects/notfoundproject/trigger/pipeline/":
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("HTTP status code returned!"))
+			_, err := w.Write([]byte("HTTP status code returned!"))
+			if err != nil {
+				panic(err)
+			}
 		}
 	}))
 	return server
