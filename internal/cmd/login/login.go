@@ -118,11 +118,15 @@ func GetTokensWithOIDC(endpoint string, providerID string, b browser.URLOpener) 
 }
 
 func handleCallback(w http.ResponseWriter, req *http.Request) {
-	response := `<html>
-<script>setTimeout(function() { window.close(); }, 1000);</script>
-<body><center><h1>Login succeeded!</h1></center></body>
+	response := `<!DOCTYPE html>
+<html>
+  <script>setTimeout(function() { window.close(); }, 1000);</script>
+  <body>
+    <center><h1>Login succeeded!</h1></center>
+  </body>
 </html>
 `
+
 	qs := req.URL.Query()
 	code = qs.Get("code")
 	state = qs.Get("state")
