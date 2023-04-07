@@ -25,8 +25,8 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/mia-platform/miactl/internal/browser"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/internal/testutils"
 )
 
@@ -54,7 +54,7 @@ func NewSessionHandler(url string) (*SessionHandler, error) {
 }
 
 // WithAuthentication initializes the SessionHandler auth field
-func (s *SessionHandler) WithAuthentication(url, providerID string, b login.BrowserI) *SessionHandler {
+func (s *SessionHandler) WithAuthentication(url, providerID string, b browser.URLOpener) *SessionHandler {
 	s.auth = &Auth{
 		browser:    b,
 		providerID: providerID,
@@ -94,7 +94,7 @@ func (s *SessionHandler) WithContext(ctx string) *SessionHandler {
 	return s
 }
 
-func (s *SessionHandler) WithUrl(url string) *SessionHandler {
+func (s *SessionHandler) WithURL(url string) *SessionHandler {
 	s.url = url
 	return s
 }
@@ -218,7 +218,7 @@ func ConfigureDefaultSessionHandler(opts *clioptions.CLIOptions, contextName, ur
 	if err != nil {
 		return nil, fmt.Errorf("error creating HTTP client: %w", err)
 	}
-	session.WithContext(contextName).WithClient(httpClient).WithAuthentication(baseURL, oktaProvider, login.NewDefaultBrowser())
+	session.WithContext(contextName).WithClient(httpClient).WithAuthentication(baseURL, oktaProvider, browser.NewURLOpener())
 	return session, nil
 }
 

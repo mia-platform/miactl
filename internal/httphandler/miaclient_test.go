@@ -19,8 +19,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/mia-platform/miactl/internal/browser"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
@@ -79,7 +79,7 @@ current-context: test-context`
 		auth: &Auth{
 			url:        "http://url",
 			providerID: oktaProvider,
-			browser:    login.Browser{},
+			browser:    browser.NewURLOpener(),
 		},
 	}
 	expectedMiaClient := &MiaClient{

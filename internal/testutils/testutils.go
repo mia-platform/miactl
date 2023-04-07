@@ -23,7 +23,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"math/big"
-	random "math/rand"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -124,7 +123,10 @@ func GenerateMockCert(t *testing.T) (string, string, error) {
 
 // CreateMockServer creates a mock server for testing purposes
 func CreateMockServer() *httptest.Server {
+	numberOfRequest := 0
+	unlockPipelineSuccess := 1
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		numberOfRequest++
 		if r.RequestURI == "/notfound" {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
@@ -153,8 +155,7 @@ func CreateMockServer() *httptest.Server {
 				panic(err)
 			}
 		case r.RequestURI == "/api/deploy/projects/projectid/pipelines/123/status/":
-			prob := random.Float32()
-			if prob < 0.6 {
+			if numberOfRequest > unlockPipelineSuccess {
 				_, err := w.Write([]byte(`{"id": 123, "status":"succeed"}`))
 				if err != nil {
 					panic(err)

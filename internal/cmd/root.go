@@ -22,10 +22,9 @@ import (
 	"path"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/console/deploy"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
+	"github.com/mia-platform/miactl/internal/cmd/deploy"
 	"github.com/mia-platform/miactl/internal/cmd/project"
-	"github.com/mia-platform/miactl/old/factory"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -67,8 +66,7 @@ func NewRootCmd() *cobra.Command {
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	rootCmd := NewRootCmd()
-	ctx := factory.WithValue(context.Background(), rootCmd.OutOrStdout())
-	if err := rootCmd.ExecuteContext(ctx); err != nil {
+	if err := rootCmd.ExecuteContext(context.Background()); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}

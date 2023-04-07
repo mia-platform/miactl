@@ -21,8 +21,10 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
+	"github.com/mia-platform/miactl/internal/browser"
 )
 
 type Tokens struct {
@@ -33,7 +35,7 @@ type Tokens struct {
 
 const (
 	appID       = "miactl"
-	callbackUrl = "127.0.0.1:53535"
+	callbackURL = "127.0.0.1:53535"
 )
 
 var (
@@ -41,14 +43,14 @@ var (
 	code  string
 )
 
-func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens, error) {
+func GetTokensWithOIDC(endpoint string, providerID string, b browser.URLOpener) (*Tokens, error) {
 	jsonClient, err := jsonclient.New(jsonclient.Options{BaseURL: fmt.Sprintf("%s/api/", endpoint)})
 	if err != nil {
 		fmt.Printf("%v", "error generating JsonClient")
 		return nil, err
 	}
 	callbackPath := "/oauth/callback"
-	l, err := net.Listen("tcp", ":53535")
+	l, err := net.Listen("tcp", "127.0.0.1:53535")
 	if err != nil {
 		panic(err)
 	}
@@ -56,6 +58,7 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 	// Start the HTTP server in a separate goroutine
 	ctx, cancel := context.WithCancel(context.Background())
 	server := &http.Server{
+		ReadHeaderTimeout: 10 * time.Second,
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			switch {
 			case r.URL.Path == callbackPath && r.Method == http.MethodGet:
@@ -81,7 +84,7 @@ func GetTokensWithOIDC(endpoint string, providerID string, b BrowserI) (*Tokens,
 
 	startURL := fmt.Sprintf("%s/api/authorize?%s", endpoint, q.Encode())
 
-	err = b.open(startURL)
+	err = b.Open(startURL)
 	if err != nil {
 		return nil, err
 	}
@@ -127,5 +130,4 @@ func handleCallback(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-
 }

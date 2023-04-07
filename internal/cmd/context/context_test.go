@@ -98,7 +98,6 @@ func TestGetContextBaseURL(t *testing.T) {
 		}
 		require.Equal(t, tc.expectedOut, url)
 	}
-
 }
 
 func TestGetContextCompanyID(t *testing.T) {
@@ -142,7 +141,6 @@ func TestGetContextCompanyID(t *testing.T) {
 		}
 		require.Equal(t, tc.expectedOut, companyID)
 	}
-
 }
 
 func TestGetCurrentContext(t *testing.T) {
@@ -177,7 +175,6 @@ func TestGetCurrentContext(t *testing.T) {
 		}
 		require.Equal(t, tc.expectedOut, currentCtx)
 	}
-
 }
 
 func TestSetContextValues(t *testing.T) {

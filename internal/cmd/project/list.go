@@ -98,5 +98,4 @@ func listProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error 
 	}
 
 	return nil
-
 }

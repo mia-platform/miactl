@@ -38,7 +38,7 @@ func NewCLIOptions() *CLIOptions {
 }
 
 func (f *CLIOptions) AddGlobalFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVar(&f.CfgFile, "config", "", "config file (default is $HOME/.config/miactl/config.yaml)")
+	cmd.PersistentFlags().StringVar(&f.CfgFile, "config", "", "config file (default is $HOME/.config/miactl/config)")
 	cmd.PersistentFlags().BoolVarP(&f.Verbose, "verbose", "v", false, "whether to output details in verbose mode")
 }
 

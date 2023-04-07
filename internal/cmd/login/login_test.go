@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/mia-platform/miactl/internal/browser"
 	"github.com/stretchr/testify/require"
 )
 
@@ -31,7 +32,7 @@ func TestLocalLoginOIDC(t *testing.T) {
 	state := "my-state"
 	endpoint := "http://127.0.0.1:53534"
 	callbackPath := "/api/oauth/token"
-	callbackUrl := "localhost:53535"
+	callbackURL := "localhost:53535"
 
 	t.Run("correctly returns token", func(t *testing.T) {
 		l, err := net.Listen("tcp", ":53534")
@@ -72,17 +73,12 @@ func TestLocalLoginOIDC(t *testing.T) {
 			ExpiresAt:    23345,
 		}
 
-		browser := FakeBrowser{
-			code:        code,
-			state:       state,
-			callbackUrl: callbackUrl,
-		}
+		browser := browser.NewFakeURLOpener(t, code, state, callbackURL)
 		tokens, err := GetTokensWithOIDC(endpoint, providerID, browser)
 		if err != nil {
 			fmt.Println(err)
 		}
 		require.Equal(t, *tokens, expectedToken)
-
 	})
 
 	t.Run("return error with incorrect callback", func(t *testing.T) {
@@ -118,51 +114,29 @@ func TestLocalLoginOIDC(t *testing.T) {
 		defer s.Close()
 
 		go s.Serve(l)
-		browser := FakeBrowser{
-			code:        code,
-			state:       state,
-			callbackUrl: callbackUrl,
-		}
-		_, err = GetTokensWithOIDC(callbackUrl, providerID, browser)
+		browser := browser.NewFakeURLOpener(t, code, state, callbackURL)
+		_, err = GetTokensWithOIDC(callbackURL, providerID, browser)
 		if err != nil {
 			fmt.Println(err)
 		}
 		require.Error(t, err)
 	})
-
 }
 func TestOpenBrowser(t *testing.T) {
 	t.Run("return error with incorrect provider url", func(t *testing.T) {
-		incorrectUrl := "incorrect"
-		browser := Browser{}
-		err := browser.open(incorrectUrl)
+		incorrectURL := "incorrect"
+		browser := browser.NewURLOpener()
+		err := browser.Open(incorrectURL)
 		require.Error(t, err)
-
 	})
-
 }
 
-// func TestMe(t *testing.T) {
-// 	endp := "https://test.console.gcp.mia-platform.eu"
-// 	prov := "okta"
-// 	b := Browser{}
-
-// 	token, err := GetTokensWithOIDC(endp, prov, b)
-// 	if err != nil {
-// 		fmt.Println(token)
-// 	}
-// 		fmt.Println(token)
-// }
-
-func handleCallbackSuccesfulToken(w http.ResponseWriter, req *http.Request) {
-
+func handleCallbackSuccesfulToken(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
-
 	w.Write([]byte("{\"AccessToken\":\"accesstoken\", \"RefreshToken\":\"refreshToken\", \"ExpiresAt\":23345}"))
 }
 
-func handleCallbackUnsuccesfulToken(w http.ResponseWriter, req *http.Request) {
+func handleCallbackUnsuccesfulToken(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusForbidden)
-
 }

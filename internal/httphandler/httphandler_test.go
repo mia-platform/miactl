@@ -23,8 +23,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/mia-platform/miactl/internal/browser"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/internal/testutils"
 	"github.com/stretchr/testify/require"
 )
@@ -82,7 +82,7 @@ func TestPost(t *testing.T) {
 
 func TestWithAuthentication(t *testing.T) {
 	session := &SessionHandler{}
-	browser := &login.Browser{}
+	browser := browser.NewURLOpener()
 	session.WithAuthentication(testBaseURL, testProvider, browser)
 	expectedSession := &SessionHandler{
 		auth: &Auth{
@@ -141,7 +141,6 @@ func TestHttpClientBuilder(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, client)
 	require.NotEqual(t, http.DefaultTransport, client.Transport)
-
 }
 
 func TestExecuteRequest(t *testing.T) {
@@ -313,7 +312,6 @@ func TestReqWithCustomTransport(t *testing.T) {
 			resp.Body.Close()
 		}
 	}
-
 }
 
 func TestParseResponseBody(t *testing.T) {
@@ -334,7 +332,6 @@ func TestParseResponseBody(t *testing.T) {
 	err = ParseResponseBody(testContext, body, &out)
 	require.Equal(t, expectedOut, out)
 	require.NoError(t, err)
-
 }
 
 func TestConfigureDefaultSessionHandler(t *testing.T) {
@@ -352,7 +349,7 @@ func TestConfigureDefaultSessionHandler(t *testing.T) {
 		auth: &Auth{
 			url:        "http://url",
 			providerID: oktaProvider,
-			browser:    login.Browser{},
+			browser:    browser.NewURLOpener(),
 		},
 	}
 	session, err := ConfigureDefaultSessionHandler(opts, testContext, testURI)

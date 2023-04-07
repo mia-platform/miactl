@@ -13,21 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package console
+package browser
 
-// import (
-// 	"github.com/mia-platform/miactl/internal/cmd/console/deploy"
-// 	"github.com/spf13/cobra"
-// )
+import (
+	"github.com/skratchdot/open-golang/open"
+)
 
-// func NewConsoleCmd() *cobra.Command {
-// 	// Note: console should act as a resource that receives commands to be executed
-// 	cmd := &cobra.Command{
-// 		Use:   "console",
-// 		Short: "select console resource",
-// 	}
+type URLOpener interface {
+	Open(string) error
+}
 
-// 	cmd.AddCommand(deploy.NewDeployCmd())
+type urlOpener struct{}
 
-// 	return cmd
-// }
+func NewURLOpener() URLOpener {
+	return &urlOpener{}
+}
+
+func (b urlOpener) Open(url string) error {
+	return open.Run(url)
+}

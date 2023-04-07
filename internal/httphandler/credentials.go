@@ -60,7 +60,7 @@ func writeTokensToFile(url, credentialsPath string, tokens *login.Tokens) error 
 	if err != nil {
 		return err
 	}
-	credentials := []byte(tokenJSON)
+	credentials := tokenJSON
 
 	err = os.WriteFile(filePath, credentials, os.ModePerm)
 	return err

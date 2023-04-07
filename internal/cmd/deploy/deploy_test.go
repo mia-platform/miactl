@@ -1,3 +1,18 @@
+// Copyright Mia srl
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package deploy
 
 import (
@@ -30,7 +45,7 @@ func TestInitializeClient(t *testing.T) {
 	viper.Set("contexts.ctx.projectid", "projectid")
 	viper.Set("contexts.ctx.companyid", "companyid")
 
-	t.Run("Inizialize a client succesfully", func(t *testing.T) {
+	t.Run("Inizialize a client successfully", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		ep := "endpoint"
 		ctx := "ctx"
@@ -39,9 +54,7 @@ func TestInitializeClient(t *testing.T) {
 
 		require.NoError(t, err)
 		require.NotNil(t, mc)
-
 	})
-
 }
 
 func TestTriggerPipeline(t *testing.T) {
@@ -56,10 +69,10 @@ func TestTriggerPipeline(t *testing.T) {
 		ForceDeployNoSemVer: true,
 	}
 	mc := httphandler.FakeMiaClient(fmt.Sprintf("%s/api/deploy/projects/projectid/trigger/pipeline/", server.URL))
-	t.Run("Trigger succesfully a pipeline", func(t *testing.T) {
-		exectedBody := deployRespnse{
-			Id:  123,
-			Url: "pipeline.eu",
+	t.Run("Trigger successfully a pipeline", func(t *testing.T) {
+		exectedBody := deployResponse{
+			ID:  123,
+			URL: "pipeline.eu",
 		}
 
 		body, err := triggerPipeline(mc, "fake-env", &opts)
@@ -69,11 +82,11 @@ func TestTriggerPipeline(t *testing.T) {
 		require.Equal(t, *body, exectedBody)
 	})
 
-	t.Run("Trigger succesfully a pipeline with deploy_all", func(t *testing.T) {
+	t.Run("Trigger successfully a pipeline with deploy_all", func(t *testing.T) {
 		opts.DeployType = "deploy_all"
-		exectedBody := deployRespnse{
-			Id:  123,
-			Url: "pipeline.eu",
+		exectedBody := deployResponse{
+			ID:  123,
+			URL: "pipeline.eu",
 		}
 
 		body, err := triggerPipeline(mc, "fake-env", &opts)
@@ -98,7 +111,7 @@ func TestWaitStatus(t *testing.T) {
 	server.Start()
 
 	defer server.Close()
-	t.Run("wait succesfully for pipeline completion", func(t *testing.T) {
+	t.Run("wait successfully for pipeline completion", func(t *testing.T) {
 		mc := httphandler.FakeMiaClient(fmt.Sprintf("%s/api/deploy/projects/projectid/pipelines/123/status/", server.URL))
 
 		result, err := waitStatus(mc)
@@ -106,15 +119,13 @@ func TestWaitStatus(t *testing.T) {
 			fmt.Println(err)
 		}
 		require.Equal(t, "succeed", result)
-
 	})
 }
 
 func TestRun(t *testing.T) {
-
 	opts := clioptions.NewCLIOptions()
 	opts.ProjectID = "projectid"
-	t.Run("run succesfully", func(t *testing.T) {
+	t.Run("run successfully", func(t *testing.T) {
 		err := run("fake-env", opts, initMiaClientWithURL)
 		if err != nil {
 			panic(err)

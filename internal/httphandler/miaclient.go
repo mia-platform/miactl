@@ -58,7 +58,6 @@ func ConfigureDefaultMiaClient(opts *clioptions.CLIOptions, uri string) (*MiaCli
 	}
 	// attach session handler to mia client
 	return mc.WithSessionHandler(*session), nil
-
 }
 
 // FakeMiaClient creates a fake MiaClient with a fake SessionHandler for testing purposes

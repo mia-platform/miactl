@@ -21,10 +21,12 @@ import (
 	"os"
 	"path"
 
+	"github.com/mia-platform/miactl/internal/browser"
 	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mitchellh/go-homedir"
 )
 
+// nolint gosec
 const credentialsPath = ".config/miactl/credentials"
 
 type IAuth interface {
@@ -34,7 +36,7 @@ type IAuth interface {
 type Auth struct {
 	url        string
 	providerID string
-	browser    login.BrowserI
+	browser    browser.URLOpener
 }
 
 func (a *Auth) Authenticate() (string, error) {
@@ -47,16 +49,16 @@ func (a *Auth) Authenticate() (string, error) {
 	if err != nil {
 		if !os.IsNotExist(err) && !errors.Is(err, errExpiredToken) {
 			return "", err
-		} else {
-			tokens, err = login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
-			if err != nil {
-				return "", fmt.Errorf("login error: %w", err)
-			}
+		}
 
-			err = writeTokensToFile(a.url, credentialsAbsPath, tokens)
-			if err != nil {
-				return "", err
-			}
+		tokens, err = login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
+		if err != nil {
+			return "", fmt.Errorf("login error: %w", err)
+		}
+
+		err = writeTokensToFile(a.url, credentialsAbsPath, tokens)
+		if err != nil {
+			return "", err
 		}
 	}
 	return tokens.AccessToken, nil

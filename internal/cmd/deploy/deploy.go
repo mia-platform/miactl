@@ -29,9 +29,9 @@ import (
 	"github.com/spf13/viper"
 )
 
-type deployRespnse struct {
-	Url string
-	Id  int
+type deployResponse struct {
+	URL string
+	ID  int
 }
 
 // Request is the body parameters needed to trigger a pipeline deploy.
@@ -51,7 +51,6 @@ type initClient func(*clioptions.CLIOptions, string, string) (*httphandler.MiaCl
 var currentContext string
 
 func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
-
 	cmd := &cobra.Command{
 		Use:   "deploy",
 		Short: "deploy project",
@@ -72,7 +71,6 @@ func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 				return err
 			}
 			return nil
-
 		},
 	}
 	options.AddConnectionFlags(cmd)
@@ -81,7 +79,6 @@ func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 	options.AddProjectFlags(cmd)
 	options.AddDeployFlags(cmd)
 	return cmd
-
 }
 
 func run(env string, options *clioptions.CLIOptions, initializeClient initClient) error {
@@ -97,7 +94,7 @@ func run(env string, options *clioptions.CLIOptions, initializeClient initClient
 	}
 	fmt.Printf("Deploying project %s in the environment '%s'\n", options.ProjectID, env)
 
-	epWait := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", options.ProjectID, resp.Id)
+	epWait := fmt.Sprintf("/api/deploy/projects/%s/pipelines/%d/status/", options.ProjectID, resp.ID)
 	mcWait, err := initializeClient(options, epWait, currentContext)
 	if err != nil {
 		return fmt.Errorf("error generating the session: %w", err)
@@ -105,7 +102,7 @@ func run(env string, options *clioptions.CLIOptions, initializeClient initClient
 
 	status, err := waitStatus(mcWait)
 	if err != nil {
-		return fmt.Errorf("error retriving the pipeline status: %w", err)
+		return fmt.Errorf("error retrieving the pipeline status: %w", err)
 	}
 	fmt.Printf("Pipeline result: %s", status)
 	return nil
@@ -123,7 +120,7 @@ func initializeClient(opts *clioptions.CLIOptions, endpoint string, currentConte
 	return client, nil
 }
 
-func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.CLIOptions) (*deployRespnse, error) {
+func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.CLIOptions) (*deployResponse, error) {
 	data := Request{
 		Environment:             env,
 		Revision:                options.Revision,
@@ -150,7 +147,7 @@ func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.
 	}
 	defer resp.Body.Close()
 
-	var body deployRespnse
+	var body deployResponse
 
 	err = json.NewDecoder(resp.Body).Decode(&body)
 	if err != nil {
@@ -158,7 +155,6 @@ func triggerPipeline(mc *httphandler.MiaClient, env string, options *clioptions.
 	}
 
 	return &body, nil
-
 }
 
 func waitStatus(client *httphandler.MiaClient) (string, error) {
