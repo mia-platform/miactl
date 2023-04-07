@@ -7,6 +7,7 @@ linters:
   - bodyclose
   - goconst
   - gocritic
+  - gocyclo
   - gofmt
   - goheader
   - goimports
@@ -20,6 +21,8 @@ linters:
   - unused
   - whitespace
 linters-settings:
+  gocyclo:
+    min-complexity: 15
   gofmt:
     simplify: true
   goconst:

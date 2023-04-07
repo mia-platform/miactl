@@ -17,7 +17,6 @@ package login
 
 import (
 	"encoding/json"
-	"fmt"
 	"net"
 	"net/http"
 	"testing"
@@ -34,94 +33,62 @@ func TestLocalLoginOIDC(t *testing.T) {
 	callbackPath := "/api/oauth/token"
 	callbackURL := "localhost:53535"
 
+	l, err := net.Listen("tcp", ":53534")
+	if err != nil {
+		panic(err)
+	}
+
+	browser := browser.NewFakeURLOpener(t, code, state, callbackURL)
+	s := &http.Server{
+		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if r.URL.Path != callbackPath || r.Method != http.MethodPost {
+				http.Error(w, "wrong callback or method", http.StatusBadRequest)
+			}
+
+			var data map[string]interface{}
+			err := json.NewDecoder(r.Body).Decode(&data)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			switch {
+			case data["code"] == code && data["state"] == state:
+				w.Header().Set("content-type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				w.Write([]byte("{\"AccessToken\":\"accesstoken\", \"RefreshToken\":\"refreshToken\", \"ExpiresAt\":23345}"))
+				return
+			case data["code"] != code || data["state"] != state:
+				w.WriteHeader(http.StatusForbidden)
+				return
+			default:
+				w.WriteHeader(http.StatusNotFound)
+				return
+			}
+		}),
+	}
+
+	go s.Serve(l)
+	defer s.Close()
+
 	t.Run("correctly returns token", func(t *testing.T) {
-		l, err := net.Listen("tcp", ":53534")
-		if err != nil {
-			panic(err)
-		}
-
-		s := &http.Server{
-			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if err != nil {
-					fmt.Println(err)
-				}
-				var data map[string]interface{}
-				err = json.NewDecoder(r.Body).Decode(&data)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-				switch {
-				case r.URL.Path == callbackPath && r.Method == http.MethodPost && data["code"] == code && data["state"] == state:
-					handleCallbackSuccesfulToken(w, r)
-					return
-				case r.URL.Path == callbackPath && r.Method == http.MethodPost && (data["code"] != code || data["state"] != state):
-					handleCallbackUnsuccesfulToken(w, r)
-					return
-				default:
-					w.WriteHeader(http.StatusNotFound)
-					return
-				}
-			}),
-		}
-		defer s.Close()
-
-		go s.Serve(l)
 		expectedToken := Tokens{
 			AccessToken:  "accesstoken",
 			RefreshToken: "refreshToken",
 			ExpiresAt:    23345,
 		}
 
-		browser := browser.NewFakeURLOpener(t, code, state, callbackURL)
 		tokens, err := GetTokensWithOIDC(endpoint, providerID, browser)
-		if err != nil {
-			fmt.Println(err)
-		}
+		require.NoError(t, err)
 		require.Equal(t, *tokens, expectedToken)
 	})
 
 	t.Run("return error with incorrect callback", func(t *testing.T) {
-		l, err := net.Listen("tcp", ":53534")
-		if err != nil {
-			panic(err)
-		}
-
-		s := &http.Server{
-			Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if err != nil {
-					fmt.Println(err)
-				}
-				var data map[string]interface{}
-				err = json.NewDecoder(r.Body).Decode(&data)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusBadRequest)
-					return
-				}
-				switch {
-				case r.URL.Path == callbackPath && r.Method == http.MethodPost && data["code"] == code && data["state"] == state:
-					handleCallbackSuccesfulToken(w, r)
-					return
-				case r.URL.Path == callbackPath && r.Method == http.MethodPost && (data["code"] != code || data["state"] != state):
-					handleCallbackUnsuccesfulToken(w, r)
-					return
-				default:
-					w.WriteHeader(http.StatusNotFound)
-					return
-				}
-			}),
-		}
-		defer s.Close()
-
-		go s.Serve(l)
-		browser := browser.NewFakeURLOpener(t, code, state, callbackURL)
-		_, err = GetTokensWithOIDC(callbackURL, providerID, browser)
-		if err != nil {
-			fmt.Println(err)
-		}
+		tokens, err := GetTokensWithOIDC(callbackURL, providerID, browser)
 		require.Error(t, err)
+		require.Nil(t, tokens)
 	})
 }
+
 func TestOpenBrowser(t *testing.T) {
 	t.Run("return error with incorrect provider url", func(t *testing.T) {
 		incorrectURL := "incorrect"
@@ -129,14 +96,4 @@ func TestOpenBrowser(t *testing.T) {
 		err := browser.Open(incorrectURL)
 		require.Error(t, err)
 	})
-}
-
-func handleCallbackSuccesfulToken(w http.ResponseWriter, _ *http.Request) {
-	w.Header().Set("content-type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("{\"AccessToken\":\"accesstoken\", \"RefreshToken\":\"refreshToken\", \"ExpiresAt\":23345}"))
-}
-
-func handleCallbackUnsuccesfulToken(w http.ResponseWriter, _ *http.Request) {
-	w.WriteHeader(http.StatusForbidden)
 }
