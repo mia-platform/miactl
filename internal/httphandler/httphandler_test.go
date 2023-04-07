@@ -21,13 +21,11 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/internal/testutils"
-	"github.com/spf13/viper"
 	"github.com/stretchr/testify/require"
 )
 
@@ -340,16 +338,10 @@ func TestParseResponseBody(t *testing.T) {
 }
 
 func TestConfigureDefaultSessionHandler(t *testing.T) {
-	opts := &clioptions.CLIOptions{}
-	viper.SetConfigType("yaml")
-	config := `contexts:
-  test-context:
-    endpoint: http://url
-    companyid: "123"
-    projectid: "123"`
-	err := viper.ReadConfig(strings.NewReader(config))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
+	opts := &clioptions.CLIOptions{
+		Endpoint:  "http://url",
+		CompanyID: "123",
+		ProjectID: "123",
 	}
 
 	// valid session
@@ -367,10 +359,4 @@ func TestConfigureDefaultSessionHandler(t *testing.T) {
 	require.NoError(t, err)
 	require.NotNil(t, session)
 	require.EqualValues(t, expectedSession, session)
-
-	// invalid context
-	session, err = ConfigureDefaultSessionHandler(opts, "wrong-context", testURI)
-	require.Nil(t, session)
-	require.Error(t, err)
-
 }

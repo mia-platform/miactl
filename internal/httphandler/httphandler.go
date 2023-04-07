@@ -26,7 +26,6 @@ import (
 	"os"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/internal/testutils"
 )
@@ -203,10 +202,7 @@ func ParseResponseBody(contextName string, body io.Reader, out interface{}) erro
 
 // ConfigureDefaultSessionHandler returns a session handler with default settings
 func ConfigureDefaultSessionHandler(opts *clioptions.CLIOptions, contextName, uri string) (*SessionHandler, error) {
-	baseURL, err := context.GetContextBaseURL(contextName)
-	if err != nil {
-		return nil, fmt.Errorf("error retrieving base URL for context %s: %w", contextName, err)
-	}
+	baseURL := opts.Endpoint
 	// build full path URL
 	fullPathURL, err := url.JoinPath(baseURL, uri)
 	if err != nil {

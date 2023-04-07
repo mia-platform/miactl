@@ -54,7 +54,11 @@ func TestGetSession(t *testing.T) {
 }
 
 func TestConfigureDefaultMiaClient(t *testing.T) {
-	opts := &clioptions.CLIOptions{}
+	opts := &clioptions.CLIOptions{
+		Endpoint:  "http://url",
+		CompanyID: "123",
+		ProjectID: "123",
+	}
 	viper.SetConfigType("yaml")
 	config := `contexts:
   test-context:

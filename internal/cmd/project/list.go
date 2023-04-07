@@ -38,12 +38,20 @@ func NewListProjectsCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "list mia projects in the current context",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			currentContext, err := context.GetCurrentContext()
+			if err != nil {
+				return err
+			}
+			context.SetContextValues(cmd, currentContext)
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			mc, err := httphandler.ConfigureDefaultMiaClient(options, projectsURI)
 			if err != nil {
 				return err
 			}
-			if err := listProjects(mc); err != nil {
+			if err := listProjects(mc, options); err != nil {
 				return err
 			}
 			return nil
@@ -52,7 +60,7 @@ func NewListProjectsCmd(options *clioptions.CLIOptions) *cobra.Command {
 }
 
 // listProjects retrieves the projects with the company ID of the current context
-func listProjects(mc *httphandler.MiaClient) error {
+func listProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
 	// execute the request
 	resp, err := mc.GetSession().Get().ExecuteRequest()
 	if err != nil {
@@ -65,9 +73,9 @@ func listProjects(mc *httphandler.MiaClient) error {
 	currentContext := mc.GetSession().GetContext()
 
 	if resp.StatusCode == http.StatusOK {
-		companyID, err := context.GetContextCompanyID(currentContext)
-		if err != nil {
-			return fmt.Errorf("error retrieving company ID for context %s: %w", currentContext, err)
+		companyID := opts.CompanyID
+		if companyID == "" {
+			return fmt.Errorf("please set a company ID for context %s", currentContext)
 		}
 		if err := httphandler.ParseResponseBody(currentContext, resp.Body, &projects); err != nil {
 			return fmt.Errorf("error parsing response body: %w", err)
