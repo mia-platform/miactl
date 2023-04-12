@@ -34,7 +34,7 @@ import (
 const (
 	cfgDir         = ".config/miactl"
 	cfgFileName    = "config"
-	credentialsDir = "credentials"
+	credentialsDir = "cache/credentials"
 )
 
 var (

@@ -27,7 +27,7 @@ import (
 )
 
 // nolint gosec
-const credentialsPath = ".config/miactl/credentials"
+const credentialsPath = ".config/miactl/cache/credentials"
 
 type IAuth interface {
 	Authenticate() (string, error)
