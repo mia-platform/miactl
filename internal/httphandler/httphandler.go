@@ -55,7 +55,7 @@ func NewSessionHandler(url string) (*SessionHandler, error) {
 
 // WithAuthentication initializes the SessionHandler auth field
 func (s *SessionHandler) WithAuthentication(url, providerID string, b browser.URLOpener) *SessionHandler {
-	s.auth = &Auth{
+	s.auth = &AuthOIDC{
 		browser:    b,
 		providerID: providerID,
 		url:        url,

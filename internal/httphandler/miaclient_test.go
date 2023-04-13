@@ -76,7 +76,7 @@ current-context: test-context`
 		url:     "http://url/test",
 		context: testContext,
 		client:  defaultClient,
-		auth: &Auth{
+		auth: &AuthOIDC{
 			url:        "http://url",
 			providerID: oktaProvider,
 			browser:    browser.NewURLOpener(),

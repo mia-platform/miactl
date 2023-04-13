@@ -85,7 +85,7 @@ func TestWithAuthentication(t *testing.T) {
 	browser := browser.NewURLOpener()
 	session.WithAuthentication(testBaseURL, testProvider, browser)
 	expectedSession := &SessionHandler{
-		auth: &Auth{
+		auth: &AuthOIDC{
 			url:        testBaseURL,
 			providerID: testProvider,
 			browser:    browser,
@@ -346,7 +346,7 @@ func TestConfigureDefaultSessionHandler(t *testing.T) {
 		url:     "http://url/test",
 		context: testContext,
 		client:  defaultClient,
-		auth: &Auth{
+		auth: &AuthOIDC{
 			url:        "http://url",
 			providerID: oktaProvider,
 			browser:    browser.NewURLOpener(),

@@ -27,24 +27,24 @@ import (
 )
 
 // nolint gosec
-const credentialsPath = ".config/miactl/cache/credentials"
+const tokenCachePath = ".config/miactl/cache/credentials"
 
 type IAuth interface {
 	Authenticate() (string, error)
 }
 
-type Auth struct {
+type AuthOIDC struct {
 	url        string
 	providerID string
 	browser    browser.URLOpener
 }
 
-func (a *Auth) Authenticate() (string, error) {
+func (a *AuthOIDC) Authenticate() (string, error) {
 	home, err := homedir.Dir()
 	if err != nil {
 		return "", err
 	}
-	credentialsAbsPath := path.Join(home, credentialsPath)
+	credentialsAbsPath := path.Join(home, tokenCachePath)
 	tokens, err := getTokensFromFile(a.url, credentialsAbsPath)
 	if err != nil {
 		if !os.IsNotExist(err) && !errors.Is(err, errExpiredToken) {
