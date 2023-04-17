@@ -28,35 +28,54 @@ import (
 
 // nolint gosec
 const tokenCachePath = ".config/miactl/cache/credentials"
+const m2mCredentialsPath = ".config/miactl/credentials"
 
 type IAuth interface {
 	Authenticate() (string, error)
 }
 
-type AuthOIDC struct {
+type Auth struct {
 	url        string
 	providerID string
 	browser    browser.URLOpener
+	context    string
 }
 
-func (a *AuthOIDC) Authenticate() (string, error) {
+func (a *Auth) Authenticate() (string, error) {
 	home, err := homedir.Dir()
 	if err != nil {
 		return "", err
 	}
-	credentialsAbsPath := path.Join(home, tokenCachePath)
-	tokens, err := getTokensFromFile(a.url, credentialsAbsPath)
+	tokenCacheAbsPath := path.Join(home, tokenCachePath)
+	tokens, err := getTokensFromFile(a.url, tokenCacheAbsPath)
 	if err != nil {
 		if !os.IsNotExist(err) && !errors.Is(err, errExpiredToken) {
 			return "", err
 		}
-
-		tokens, err = login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
+		// check for M2M login credentials
+		m2mCredentialsAbsPath := path.Join(home, m2mCredentialsPath)
+		authInfo, err := getCredentialsFromFile(m2mCredentialsAbsPath, a.context)
 		if err != nil {
-			return "", fmt.Errorf("login error: %w", err)
+			if !os.IsNotExist(err) && !errors.Is(err, errMissingCredentials) {
+				return "", err
+			}
+			// if the `credentials` file does not exist, or the user did not specify m2m
+			// credentials for the current context, proceed with OIDC login
+			tokens, err = login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
+			if err != nil {
+				return "", fmt.Errorf("login error: %w", err)
+			}
+
+		} else {
+			// if the user specified M2M credentials for the current context,
+			// proceed with M2M login
+			tokens, err = login.GetTokensWithM2MLogin(a.url, authInfo)
+			if err != nil {
+				return "", fmt.Errorf("login error: %w", err)
+			}
 		}
 
-		err = writeTokensToFile(a.url, credentialsAbsPath, tokens)
+		err = writeTokensToFile(a.url, tokenCacheAbsPath, tokens)
 		if err != nil {
 			return "", err
 		}

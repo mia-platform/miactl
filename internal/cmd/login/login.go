@@ -27,10 +27,26 @@ import (
 	"github.com/mia-platform/miactl/internal/browser"
 )
 
+type BasicAuthCredentials struct {
+	ClientID     string `yaml:"clientId"`
+	ClientSecret string `yaml:"clientSecret"`
+}
+
+type JWTCredentials struct {
+	Key  string `yaml:"key"`
+	Algo string `yaml:"algo"`
+}
+
 type Tokens struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 	ExpiresAt    int64  `json:"expiresAt"`
+}
+
+type M2MAuthInfo struct {
+	AuthType  string               `yaml:"type"`
+	BasicAuth BasicAuthCredentials `yaml:"basic,omitempty"`
+	JWTAuth   JWTCredentials       `yaml:"jwt,omitempty"`
 }
 
 const (
@@ -42,6 +58,11 @@ var (
 	state string
 	code  string
 )
+
+func GetTokensWithM2MLogin(endpoint string, authInfo M2MAuthInfo) (*Tokens, error) {
+	// implement M2M login
+	return nil, nil
+}
 
 func GetTokensWithOIDC(endpoint string, providerID string, b browser.URLOpener) (*Tokens, error) {
 	jsonClient, err := jsonclient.New(jsonclient.Options{BaseURL: fmt.Sprintf("%s/api/", endpoint)})

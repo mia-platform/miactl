@@ -30,11 +30,114 @@ const (
 	testTokens        = `{"accessToken":"test_token","refreshToken":"","expiresAt":9999999999}`
 	testExpiredTokens = `{"accessToken":"test_token","refreshToken":"","expiresAt":0}`
 	invalidJSON       = `invalid_json`
+	validCredentials  = `context1:
+  type: basic
+  basic:
+    clientId: id
+    clientSecret: secret
+context2:
+  type: jwt
+  jwt:
+    key: 123abc
+    algo: 123
+default:
+  type: basic
+  basic:
+    clientId: default
+    clientSecret: default`
 )
 
 var (
 	testDirPath string
 )
+
+func TestReadCredentials(t *testing.T) {
+	testDirPath = t.TempDir()
+	filePath := path.Join(testDirPath, "credentials")
+	err := os.WriteFile(filePath, []byte(validCredentials), os.ModePerm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedCredentials := map[string]login.M2MAuthInfo{
+		"context1": {
+			AuthType: "basic",
+			BasicAuth: login.BasicAuthCredentials{
+				ClientID:     "id",
+				ClientSecret: "secret",
+			},
+		},
+		"context2": {
+			AuthType: "jwt",
+			JWTAuth: login.JWTCredentials{
+				Key:  "123abc",
+				Algo: "123",
+			},
+		},
+	}
+
+	credentials, err := readCredentials(filePath)
+	require.NoError(t, err)
+	require.EqualValues(t, expectedCredentials, credentials)
+}
+
+func TestGetCredentialsFromFile(t *testing.T) {
+	testDirPath = t.TempDir()
+	filePath := path.Join(testDirPath, "credentials")
+
+	testCases := []struct {
+		name                string
+		fileContent         string
+		context             string
+		expectedCredentials login.M2MAuthInfo
+		expectedError       error
+	}{
+		{
+			name:        "existing context",
+			fileContent: validCredentials,
+			context:     "context1",
+			expectedCredentials: login.M2MAuthInfo{
+				AuthType: "basic",
+				BasicAuth: login.BasicAuthCredentials{
+					ClientID:     "id",
+					ClientSecret: "secret",
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name:        "default context",
+			fileContent: validCredentials,
+			context:     "missing",
+			expectedCredentials: login.M2MAuthInfo{
+				AuthType: "basic",
+				BasicAuth: login.BasicAuthCredentials{
+					ClientID:     "default",
+					ClientSecret: "default",
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name:                "missing credentials",
+			fileContent:         "",
+			context:             "any",
+			expectedCredentials: login.M2MAuthInfo{},
+			expectedError:       errMissingCredentials,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Log(tc.name)
+		err := os.WriteFile(filePath, []byte(validCredentials), os.ModePerm)
+		if err != nil {
+			t.Fatal(err)
+		}
+		credentials, err := getCredentialsFromFile(filePath, tc.context)
+		require.Equal(t, tc.expectedError, err)
+		require.EqualValues(t, tc.expectedCredentials, credentials)
+	}
+
+}
 
 func TestGetURLSha(t *testing.T) {
 	sha := getURLSha(testBaseURL)

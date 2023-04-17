@@ -25,14 +25,40 @@ import (
 	"time"
 
 	"github.com/mia-platform/miactl/internal/cmd/login"
+	"gopkg.in/yaml.v3"
 )
 
 var errExpiredToken = errors.New("the token has expired")
+var errMissingCredentials = errors.New("missing credentials for current and default context")
 
-func getTokensFromFile(url, credentialsPath string) (*login.Tokens, error) {
+func readCredentials(credentialsPath string) (map[string]login.M2MAuthInfo, error) {
+	yamlCredentials, err := os.ReadFile(credentialsPath)
+	if err != nil {
+		return nil, err
+	}
+	var credentialsMap map[string]login.M2MAuthInfo
+	err = yaml.Unmarshal(yamlCredentials, &credentialsMap)
+	return credentialsMap, err
+}
+
+func getCredentialsFromFile(credentialsPath, context string) (login.M2MAuthInfo, error) {
+	credentialsMap, err := readCredentials(credentialsPath)
+	if err != nil {
+		return login.M2MAuthInfo{}, err
+	}
+	if credential, found := credentialsMap[context]; found {
+		return credential, nil
+	}
+	if credential, found := credentialsMap["default"]; found {
+		return credential, nil
+	}
+	return login.M2MAuthInfo{}, errMissingCredentials
+}
+
+func getTokensFromFile(url, tokenCachePath string) (*login.Tokens, error) {
 	sha := getURLSha(url)
 
-	filePath := path.Join(credentialsPath, sha)
+	filePath := path.Join(tokenCachePath, sha)
 
 	tokenBytes, err := os.ReadFile(filePath)
 	if err != nil {
