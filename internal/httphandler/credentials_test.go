@@ -73,6 +73,13 @@ func TestReadCredentials(t *testing.T) {
 				Algo: "123",
 			},
 		},
+		"default": {
+			AuthType: "basic",
+			BasicAuth: login.BasicAuthCredentials{
+				ClientID:     "default",
+				ClientSecret: "default",
+			},
+		},
 	}
 
 	credentials, err := readCredentials(filePath)
@@ -128,7 +135,7 @@ func TestGetCredentialsFromFile(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Log(tc.name)
-		err := os.WriteFile(filePath, []byte(validCredentials), os.ModePerm)
+		err := os.WriteFile(filePath, []byte(tc.fileContent), os.ModePerm)
 		if err != nil {
 			t.Fatal(err)
 		}
