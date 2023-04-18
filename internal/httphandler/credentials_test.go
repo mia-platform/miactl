@@ -143,7 +143,6 @@ func TestGetCredentialsFromFile(t *testing.T) {
 		require.Equal(t, tc.expectedError, err)
 		require.EqualValues(t, tc.expectedCredentials, credentials)
 	}
-
 }
 
 func TestGetURLSha(t *testing.T) {

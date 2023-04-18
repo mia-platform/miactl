@@ -43,6 +43,7 @@ type Tokens struct {
 	ExpiresAt    int64  `json:"expiresAt"`
 }
 
+// nolint tagliatelle
 type M2MAuthInfo struct {
 	AuthType  string               `yaml:"type"`
 	BasicAuth BasicAuthCredentials `yaml:"basic,omitempty"`

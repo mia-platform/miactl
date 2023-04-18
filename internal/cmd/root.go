@@ -32,8 +32,9 @@ import (
 )
 
 const (
-	cfgDir         = ".config/miactl"
-	cfgFileName    = "config"
+	cfgDir      = ".config/miactl"
+	cfgFileName = "config"
+	// nolint gosec
 	credentialsDir = "cache/credentials"
 )
 

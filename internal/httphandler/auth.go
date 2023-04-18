@@ -28,6 +28,8 @@ import (
 
 // nolint gosec
 const tokenCachePath = ".config/miactl/cache/credentials"
+
+// nolint gosec
 const m2mCredentialsPath = ".config/miactl/credentials"
 
 type IAuth interface {
@@ -65,7 +67,6 @@ func (a *Auth) Authenticate() (string, error) {
 			if err != nil {
 				return "", fmt.Errorf("login error: %w", err)
 			}
-
 		} else {
 			// if the user specified M2M credentials for the current context,
 			// proceed with M2M login
