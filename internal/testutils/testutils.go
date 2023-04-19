@@ -144,7 +144,7 @@ func CreateMockServer() *httptest.Server {
 				return
 			}
 			if data.Get("grant_type") == "client_credentials" {
-				if data.Get("audience") == "aud1" {
+				if r.Header.Get("Authorization") != "" {
 					mockBasicAuth(w, r)
 				} else {
 					w.WriteHeader(http.StatusBadRequest)
@@ -204,16 +204,12 @@ func CreateMockServer() *httptest.Server {
 
 func mockBasicAuth(w http.ResponseWriter, r *http.Request) {
 	encodedAuthString := r.Header.Get("Authorization")
-	encodedCredentials := strings.Split(encodedAuthString[6:], ":")
-	clientID, err := base64.StdEncoding.DecodeString(encodedCredentials[0])
+	plainAuthString, err := base64.StdEncoding.DecodeString(encodedAuthString[6:])
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 	}
-	clientSecret, err := base64.StdEncoding.DecodeString(encodedCredentials[1])
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-	if string(clientID) == "id" && string(clientSecret) == "secret" {
+	credentials := strings.Split(string(plainAuthString), ":")
+	if credentials[0] == "id" && credentials[1] == "secret" {
 		w.Header().Set("content-type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		_, err := w.Write([]byte("{\"access_token\":\"token\", \"token_type\":\"Bearer\", \"expires_in\":3600}"))

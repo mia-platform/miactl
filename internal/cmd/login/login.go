@@ -77,7 +77,6 @@ func GetTokensWithM2MLogin(endpoint string, authInfo M2MAuthInfo) (*Tokens, erro
 	if authInfo.AuthType == "basic" {
 		data := url.Values{}
 		data.Set("grant_type", "client_credentials")
-		data.Set("audience", "aud1")
 
 		httpReq, err = http.NewRequest("POST", loginEndpoint, strings.NewReader(data.Encode()))
 		if err != nil {
@@ -85,9 +84,9 @@ func GetTokensWithM2MLogin(endpoint string, authInfo M2MAuthInfo) (*Tokens, erro
 		}
 		httpReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 
-		encodedClientID := base64.StdEncoding.EncodeToString([]byte(authInfo.BasicAuth.ClientID))
-		encodedClientSecret := base64.StdEncoding.EncodeToString([]byte(authInfo.BasicAuth.ClientSecret))
-		authHeaderValue := fmt.Sprintf("Basic %s:%s", encodedClientID, encodedClientSecret)
+		plainBasicAuth := fmt.Sprintf("%s:%s", authInfo.BasicAuth.ClientID, authInfo.BasicAuth.ClientSecret)
+		encodedBasicAuth := base64.StdEncoding.EncodeToString([]byte(plainBasicAuth))
+		authHeaderValue := fmt.Sprintf("Basic %s", encodedBasicAuth)
 		httpReq.Header.Add("Authorization", authHeaderValue)
 	} else {
 		return nil, fmt.Errorf("JWT authentication for M2M login is still work in progress")
