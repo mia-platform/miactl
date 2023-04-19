@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/browser"
+	"github.com/mia-platform/miactl/internal/testutils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -87,6 +88,36 @@ func TestLocalLoginOIDC(t *testing.T) {
 		require.Error(t, err)
 		require.Nil(t, tokens)
 	})
+}
+
+func TestGetTokensWithM2MLogin(t *testing.T) {
+	server := testutils.CreateMockServer()
+	server.Start()
+	defer server.Close()
+
+	authInfo := M2MAuthInfo{
+		AuthType: "basic",
+		BasicAuth: BasicAuthCredentials{
+			ClientID:     "id",
+			ClientSecret: "secret",
+		},
+	}
+
+	tokens, err := GetTokensWithM2MLogin(server.URL, authInfo)
+	require.NoError(t, err)
+	require.Equal(t, "token", tokens.AccessToken)
+
+	authInfo = M2MAuthInfo{
+		AuthType: "basic",
+		BasicAuth: BasicAuthCredentials{
+			ClientID:     "wrong",
+			ClientSecret: "wrong",
+		},
+	}
+
+	tokens, err = GetTokensWithM2MLogin(server.URL, authInfo)
+	require.Nil(t, tokens)
+	require.ErrorContains(t, err, "401 Unauthorized")
 }
 
 func TestOpenBrowser(t *testing.T) {

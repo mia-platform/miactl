@@ -16,18 +16,22 @@
 package testutils
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"math/big"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path"
+	"strings"
 	"testing"
 	"time"
 )
@@ -127,6 +131,41 @@ func CreateMockServer() *httptest.Server {
 	unlockPipelineSuccess := 1
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		numberOfRequest++
+		if r.RequestURI == "/api/m2m/oauth/token" {
+			buf := new(bytes.Buffer)
+			buf.ReadFrom(r.Body)
+			data, err := url.ParseQuery(buf.String())
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			if data.Get("grant_type") == "client_credentials" {
+				if data.Get("audience") == "aud1" {
+					encodedAuthString := r.Header.Get("Authorization")
+					encodedCredentials := strings.Split(string(encodedAuthString)[6:], ":")
+					clientId, err := base64.StdEncoding.DecodeString(encodedCredentials[0])
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusBadRequest)
+					}
+					clientSecret, err := base64.StdEncoding.DecodeString(encodedCredentials[1])
+					if err != nil {
+						http.Error(w, err.Error(), http.StatusBadRequest)
+					}
+					if string(clientId) == "id" && string(clientSecret) == "secret" {
+						w.Header().Set("content-type", "application/json")
+						w.WriteHeader(http.StatusOK)
+						w.Write([]byte("{\"access_token\":\"token\", \"token_type\":\"Bearer\", \"expires_in\":3600}"))
+						return
+					} else {
+						w.WriteHeader(http.StatusUnauthorized)
+						return
+					}
+				} else {
+					w.WriteHeader(http.StatusBadRequest)
+					return
+				}
+			}
+		}
 		if r.RequestURI == "/notfound" {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
@@ -135,7 +174,7 @@ func CreateMockServer() *httptest.Server {
 			case "Bearer valid_token":
 				w.WriteHeader(http.StatusOK)
 			default:
-				w.WriteHeader(http.StatusUnauthorized)
+
 			}
 		}
 		switch {

@@ -17,10 +17,14 @@ package login
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/davidebianchi/go-jsonclient"
@@ -51,8 +55,9 @@ type M2MAuthInfo struct {
 }
 
 const (
-	appID       = "miactl"
-	callbackURL = "127.0.0.1:53535"
+	appID         = "miactl"
+	callbackURL   = "127.0.0.1:53535"
+	m2mOauthRoute = "/api/m2m/oauth/token"
 )
 
 var (
@@ -61,8 +66,49 @@ var (
 )
 
 func GetTokensWithM2MLogin(endpoint string, authInfo M2MAuthInfo) (*Tokens, error) {
-	// implement M2M login
-	return nil, nil
+	client := &http.Client{}
+	var httpReq *http.Request
+
+	loginEndpoint, err := url.JoinPath(endpoint, m2mOauthRoute)
+	if err != nil {
+		return nil, fmt.Errorf("error building login endpoint: %w", err)
+	}
+
+	if authInfo.AuthType == "basic" {
+		data := url.Values{}
+		data.Set("grant_type", "client_credentials")
+		data.Set("audience", "aud1")
+
+		httpReq, err = http.NewRequest("POST", loginEndpoint, strings.NewReader(data.Encode()))
+		if err != nil {
+			return nil, fmt.Errorf("error creating login request: %w", err)
+		}
+		httpReq.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+
+		encodedClientID := base64.StdEncoding.EncodeToString([]byte(authInfo.BasicAuth.ClientID))
+		encodedClientSecret := base64.StdEncoding.EncodeToString([]byte(authInfo.BasicAuth.ClientSecret))
+		authHeaderValue := fmt.Sprintf("Basic %s:%s", encodedClientID, encodedClientSecret)
+		httpReq.Header.Add("Authorization", authHeaderValue)
+	} else {
+		return nil, fmt.Errorf("JWT authentication for M2M login is still work in progress")
+	}
+
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("error sending login request: %w", err)
+	}
+	if resp.Status != "200 OK" {
+		return nil, fmt.Errorf("M2M login failed with status code: %s", resp.Status)
+	}
+
+	rawTokens, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("error reading login response body: %w", err)
+	}
+
+	resp.Body.Close()
+
+	return convertTokens(rawTokens)
 }
 
 func GetTokensWithOIDC(endpoint string, providerID string, b browser.URLOpener) (*Tokens, error) {
@@ -159,4 +205,22 @@ func handleCallback(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func convertTokens(rawM2MTokens []byte) (*Tokens, error) {
+	var rawM2MTokensJSON struct {
+		AccessToken string `json:"access_token"`
+		TokenType   string `json:"token_type"`
+		ExpiresIn   int    `json:"expires_in"`
+	}
+	err := json.Unmarshal(rawM2MTokens, &rawM2MTokensJSON)
+	if err != nil {
+		return nil, fmt.Errorf("error unmarshaling m2m tokens: %w", err)
+	}
+
+	var tokens Tokens
+	tokens.AccessToken = rawM2MTokensJSON.AccessToken
+	tokens.ExpiresAt = time.Now().Add(time.Second * time.Duration(rawM2MTokensJSON.ExpiresIn)).Unix()
+
+	return &tokens, nil
 }
