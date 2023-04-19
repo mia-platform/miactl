@@ -83,12 +83,13 @@ func TestPost(t *testing.T) {
 func TestWithAuthentication(t *testing.T) {
 	session := &SessionHandler{}
 	browser := browser.NewURLOpener()
-	session.WithAuthentication(testBaseURL, testProvider, browser)
+	session.WithAuthentication(testBaseURL, testProvider, testContext, browser)
 	expectedSession := &SessionHandler{
 		auth: &Auth{
 			url:        testBaseURL,
 			providerID: testProvider,
 			browser:    browser,
+			context:    testContext,
 		},
 	}
 	require.Equal(t, expectedSession, session)
@@ -350,6 +351,7 @@ func TestConfigureDefaultSessionHandler(t *testing.T) {
 			url:        "http://url",
 			providerID: oktaProvider,
 			browser:    browser.NewURLOpener(),
+			context:    testContext,
 		},
 	}
 	session, err := ConfigureDefaultSessionHandler(opts, testContext, testURI)
