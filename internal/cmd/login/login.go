@@ -209,9 +209,9 @@ func handleCallback(w http.ResponseWriter, req *http.Request) {
 
 func convertTokens(rawM2MTokens []byte) (*Tokens, error) {
 	var rawM2MTokensJSON struct {
-		AccessToken string `json:"access_token"`
-		TokenType   string `json:"token_type"`
-		ExpiresIn   int    `json:"expires_in"`
+		AccessToken string `json:"access_token"` // nolint tagliatelle
+		TokenType   string `json:"token_type"`   // nolint tagliatelle
+		ExpiresIn   int    `json:"expires_in"`   // nolint tagliatelle
 	}
 	err := json.Unmarshal(rawM2MTokens, &rawM2MTokensJSON)
 	if err != nil {

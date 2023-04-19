@@ -133,7 +133,11 @@ func CreateMockServer() *httptest.Server {
 		numberOfRequest++
 		if r.RequestURI == "/api/m2m/oauth/token" {
 			buf := new(bytes.Buffer)
-			buf.ReadFrom(r.Body)
+			_, err := buf.ReadFrom(r.Body)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
 			data, err := url.ParseQuery(buf.String())
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
@@ -141,29 +145,11 @@ func CreateMockServer() *httptest.Server {
 			}
 			if data.Get("grant_type") == "client_credentials" {
 				if data.Get("audience") == "aud1" {
-					encodedAuthString := r.Header.Get("Authorization")
-					encodedCredentials := strings.Split(string(encodedAuthString)[6:], ":")
-					clientId, err := base64.StdEncoding.DecodeString(encodedCredentials[0])
-					if err != nil {
-						http.Error(w, err.Error(), http.StatusBadRequest)
-					}
-					clientSecret, err := base64.StdEncoding.DecodeString(encodedCredentials[1])
-					if err != nil {
-						http.Error(w, err.Error(), http.StatusBadRequest)
-					}
-					if string(clientId) == "id" && string(clientSecret) == "secret" {
-						w.Header().Set("content-type", "application/json")
-						w.WriteHeader(http.StatusOK)
-						w.Write([]byte("{\"access_token\":\"token\", \"token_type\":\"Bearer\", \"expires_in\":3600}"))
-						return
-					} else {
-						w.WriteHeader(http.StatusUnauthorized)
-						return
-					}
+					mockBasicAuth(w, r)
 				} else {
 					w.WriteHeader(http.StatusBadRequest)
-					return
 				}
+				return
 			}
 		}
 		if r.RequestURI == "/notfound" {
@@ -174,7 +160,7 @@ func CreateMockServer() *httptest.Server {
 			case "Bearer valid_token":
 				w.WriteHeader(http.StatusOK)
 			default:
-
+				w.WriteHeader(http.StatusUnauthorized)
 			}
 		}
 		switch {
@@ -214,4 +200,27 @@ func CreateMockServer() *httptest.Server {
 		}
 	}))
 	return server
+}
+
+func mockBasicAuth(w http.ResponseWriter, r *http.Request) {
+	encodedAuthString := r.Header.Get("Authorization")
+	encodedCredentials := strings.Split(encodedAuthString[6:], ":")
+	clientID, err := base64.StdEncoding.DecodeString(encodedCredentials[0])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+	clientSecret, err := base64.StdEncoding.DecodeString(encodedCredentials[1])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+	if string(clientID) == "id" && string(clientSecret) == "secret" {
+		w.Header().Set("content-type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte("{\"access_token\":\"token\", \"token_type\":\"Bearer\", \"expires_in\":3600}"))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+	w.WriteHeader(http.StatusUnauthorized)
 }
