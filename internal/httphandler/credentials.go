@@ -78,10 +78,10 @@ func getTokensFromFile(url, tokenCachePath string) (*login.Tokens, error) {
 	return &tokens, nil
 }
 
-func writeTokensToFile(url, credentialsPath string, tokens *login.Tokens) error {
+func writeTokensToFile(url, tokenCachePath string, tokens *login.Tokens) error {
 	sha := getURLSha(url)
 
-	filePath := path.Join(credentialsPath, sha)
+	filePath := path.Join(tokenCachePath, sha)
 	tokenJSON, err := json.Marshal(tokens)
 	if err != nil {
 		return err
