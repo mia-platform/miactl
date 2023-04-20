@@ -49,7 +49,7 @@ func TestUpdateBasicCredentials(t *testing.T) {
 		{
 			name: "update existing credentials",
 			options: clioptions.CLIOptions{
-				BasicClientId:     "newId",
+				BasicClientID:     "newId",
 				BasicClientSecret: "newSecret",
 				Context:           "context1",
 			},
@@ -65,7 +65,7 @@ func TestUpdateBasicCredentials(t *testing.T) {
 		{
 			name: "create new credentials",
 			options: clioptions.CLIOptions{
-				BasicClientId:     "id",
+				BasicClientID:     "id",
 				BasicClientSecret: "secret",
 				Context:           "context3",
 			},

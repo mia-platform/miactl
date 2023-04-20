@@ -53,8 +53,16 @@ func NewBasicLoginCmd(options *clioptions.CLIOptions) *cobra.Command {
 		},
 	}
 	options.AddBasicAuthFlags(cmd)
-	cobra.MarkFlagRequired(cmd.PersistentFlags(), "client-id")
-	cobra.MarkFlagRequired(cmd.PersistentFlags(), "client-secret")
+	err := cobra.MarkFlagRequired(cmd.PersistentFlags(), "client-id")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
+	err = cobra.MarkFlagRequired(cmd.PersistentFlags(), "client-secret")
+	if err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	return cmd
 }
 
@@ -66,7 +74,7 @@ func updateBasicCredentials(credentialsPath string, opts clioptions.CLIOptions) 
 	newBasicAuth := M2MAuthInfo{
 		AuthType: "basic",
 		BasicAuth: BasicAuthCredentials{
-			ClientID:     opts.BasicClientId,
+			ClientID:     opts.BasicClientID,
 			ClientSecret: opts.BasicClientSecret,
 		},
 	}
