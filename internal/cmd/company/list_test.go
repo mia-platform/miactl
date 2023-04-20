@@ -25,12 +25,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	opts1 = clioptions.CLIOptions{
-		Endpoint: "http://url",
-	}
-)
-
 func TestNewGetCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
@@ -46,25 +40,21 @@ func TestListCompanies(t *testing.T) {
 
 	type TestCase struct {
 		name        string
-		opts        clioptions.CLIOptions
 		miaClient   *httphandler.MiaClient
 		expectedErr string
 	}
 	testCases := []TestCase{
 		{
 			name:      "valid config, successful get",
-			opts:      opts1,
 			miaClient: httphandler.FakeMiaClient(fmt.Sprintf("%s/getcompanies", server.URL)),
 		},
 		{
 			name:        "invalid response body",
-			opts:        opts1,
 			miaClient:   httphandler.FakeMiaClient(fmt.Sprintf("%s/invalidbody", server.URL)),
 			expectedErr: "invalid character",
 		},
 		{
 			name:        "status code != 200",
-			opts:        opts1,
 			miaClient:   httphandler.FakeMiaClient(fmt.Sprintf("%s/notfound", server.URL)),
 			expectedErr: "404 Not Found",
 		},
@@ -72,7 +62,7 @@ func TestListCompanies(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Log(tc.name)
-		err := listCompanies(tc.miaClient, &tc.opts)
+		err := listCompanies(tc.miaClient)
 		if tc.expectedErr == "" {
 			require.NoError(t, err)
 		} else {

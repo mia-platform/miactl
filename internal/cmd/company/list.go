@@ -21,7 +21,6 @@ import (
 	"os"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/resources"
 	"github.com/mia-platform/miactl/internal/httphandler"
 	"github.com/olekukonko/tablewriter"
@@ -38,22 +37,12 @@ func NewListCompaniesCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "list mia companies in the current context",
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			currentContext, err := context.GetCurrentContext()
-			if err != nil {
-				return err
-			}
-			if err := context.SetContextValues(cmd, currentContext); err != nil {
-				return err
-			}
-			return nil
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			mc, err := httphandler.ConfigureDefaultMiaClient(options, companiesURI)
 			if err != nil {
 				return err
 			}
-			if err := listCompanies(mc, options); err != nil {
+			if err := listCompanies(mc); err != nil {
 				return err
 			}
 			return nil
@@ -62,7 +51,7 @@ func NewListCompaniesCmd(options *clioptions.CLIOptions) *cobra.Command {
 }
 
 // listCompanies retrieves the companies belonging to the current context
-func listCompanies(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
+func listCompanies(mc *httphandler.MiaClient) error {
 	// execute the request
 	resp, err := mc.GetSession().Get().ExecuteRequest()
 	if err != nil {
@@ -95,7 +84,7 @@ func listCompanies(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error
 			default:
 				isProduction = "n/a"
 			}
-			table.Append([]string{company.Name, company.TenantID, string(isProduction)})
+			table.Append([]string{company.Name, company.TenantID, isProduction})
 		}
 		table.Render()
 	} else {
