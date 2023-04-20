@@ -38,3 +38,19 @@ type Project struct {
 	Pipelines            Pipelines     `json:"pipelines"`
 	TenantID             string        `json:"tenantId"`
 }
+
+type Company struct {
+	ID           string        `json:"_id"` //nolint:tagliatelle
+	Name         string        `json:"name"`
+	TenantID     string        `json:"tenantId"`
+	Environments []Environment `json:"environments"`
+	IsProduction bool          `json:"isProduction"`
+	Pipelines    Pipelines     `json:"pipelines"`
+	Repository   Repository    `json:"repository"`
+}
+
+type Repository struct {
+	ProviderID string `json:"providerId"`
+	BasePath   string `json:"basePath"`
+	Visibility string `json:"visibility"`
+}

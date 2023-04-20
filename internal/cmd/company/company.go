@@ -28,7 +28,8 @@ func NewCompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 	options.AddConnectionFlags(cmd)
 	options.AddContextFlags(cmd)
-	options.AddCompanyFlags(cmd)
+
+	cmd.AddCommand(NewListCompaniesCmd(options))
 
 	return cmd
 }
