@@ -22,6 +22,7 @@ import (
 	"path"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/company"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/deploy"
 	"github.com/mia-platform/miactl/internal/cmd/project"
@@ -59,6 +60,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(project.NewProjectCmd(options))
 	rootCmd.AddCommand(deploy.NewDeployCmd(options))
 	rootCmd.AddCommand(miacontext.NewContextCmd(options))
+	rootCmd.AddCommand(company.NewCompanyCmd(options))
 	return rootCmd
 }
 

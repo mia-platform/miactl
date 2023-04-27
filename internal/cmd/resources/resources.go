@@ -38,3 +38,15 @@ type Project struct {
 	Pipelines            Pipelines     `json:"pipelines"`
 	TenantID             string        `json:"tenantId"`
 }
+
+type Company struct {
+	ID         string     `json:"_id"` //nolint:tagliatelle
+	Name       string     `json:"name"`
+	TenantID   string     `json:"tenantId"`
+	Pipelines  Pipelines  `json:"pipelines"`
+	Repository Repository `json:"repository"`
+}
+
+type Repository struct {
+	Type string `json:"type"`
+}

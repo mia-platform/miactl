@@ -193,6 +193,7 @@ func ParseResponseBody(contextName string, body io.Reader, out interface{}) erro
 	if err != nil {
 		return fmt.Errorf("error reading response body: %w", err)
 	}
+
 	err = json.Unmarshal(bodyBytes, &out)
 	if err != nil && err != io.EOF {
 		return fmt.Errorf("error unmarshaling json response: %w", err)
