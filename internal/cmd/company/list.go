@@ -28,7 +28,6 @@ import (
 )
 
 const (
-	oktaProvider = "okta"
 	companiesURI = "/api/backend/tenants/"
 )
 
@@ -73,18 +72,13 @@ func listCompanies(mc *httphandler.MiaClient) error {
 		table.SetCenterSeparator("")
 		table.SetColumnSeparator("")
 		table.SetRowSeparator("")
-		table.SetHeader([]string{"Name", "Company ID", "Production"})
-		var isProduction string
+		table.SetHeader([]string{"Name", "Company ID", "Git Provider", "Pipelines"})
 		for _, company := range companies {
-			switch company.IsProduction {
-			case true:
-				isProduction = "yes"
-			case false:
-				isProduction = "no"
-			default:
-				isProduction = "n/a"
+			repositoryType := company.Repository.Type
+			if repositoryType == "" {
+				repositoryType = "gitlab"
 			}
-			table.Append([]string{company.Name, company.TenantID, isProduction})
+			table.Append([]string{company.Name, company.TenantID, repositoryType, company.Pipelines.Type})
 		}
 		table.Render()
 	} else {
