@@ -39,7 +39,7 @@ $(TOOLS_BIN)/golangci-lint: $(TOOLS_DIR)/GOLANGCI_LINT_VERSION
 .PHONY: gomod-lint
 lint: gomod-lint
 gomod-lint:
-	$(info Runining go mod tidy)
+	$(info Running go mod tidy)
 # Always keep this version to latest -1 version of Go
 	go mod tidy -compat=1.18
 
