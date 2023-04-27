@@ -16,22 +16,18 @@
 package testutils
 
 import (
-	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"encoding/base64"
 	"encoding/pem"
 	"fmt"
 	"math/big"
 	"net"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"os"
 	"path"
-	"strings"
 	"testing"
 	"time"
 )
@@ -131,27 +127,6 @@ func CreateMockServer() *httptest.Server {
 	unlockPipelineSuccess := 1
 	server := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		numberOfRequest++
-		if r.RequestURI == "/api/m2m/oauth/token" {
-			buf := new(bytes.Buffer)
-			_, err := buf.ReadFrom(r.Body)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			data, err := url.ParseQuery(buf.String())
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			if data.Get("grant_type") == "client_credentials" {
-				if r.Header.Get("Authorization") != "" {
-					mockBasicAuth(w, r)
-				} else {
-					w.WriteHeader(http.StatusBadRequest)
-				}
-				return
-			}
-		}
 		if r.RequestURI == "/notfound" {
 			w.WriteHeader(http.StatusNotFound)
 		} else {
@@ -200,23 +175,4 @@ func CreateMockServer() *httptest.Server {
 		}
 	}))
 	return server
-}
-
-func mockBasicAuth(w http.ResponseWriter, r *http.Request) {
-	encodedAuthString := r.Header.Get("Authorization")
-	plainAuthString, err := base64.StdEncoding.DecodeString(encodedAuthString[6:])
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-	}
-	credentials := strings.Split(string(plainAuthString), ":")
-	if credentials[0] == "id" && credentials[1] == "secret" {
-		w.Header().Set("content-type", "application/json")
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte("{\"access_token\":\"token\", \"token_type\":\"Bearer\", \"expires_in\":3600}"))
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		return
-	}
-	w.WriteHeader(http.StatusUnauthorized)
 }

@@ -40,14 +40,12 @@ func TestUpdateBasicCredentials(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	testCases := []struct {
-		name             string
+	testCases := map[string]struct {
 		options          clioptions.CLIOptions
 		expectedAuthInfo M2MAuthInfo
 		expectedError    error
 	}{
-		{
-			name: "update existing credentials",
+		"update existing credentials": {
 			options: clioptions.CLIOptions{
 				BasicClientID:     "newId",
 				BasicClientSecret: "newSecret",
@@ -62,8 +60,7 @@ func TestUpdateBasicCredentials(t *testing.T) {
 			},
 			expectedError: nil,
 		},
-		{
-			name: "create new credentials",
+		"create new credentials": {
 			options: clioptions.CLIOptions{
 				BasicClientID:     "id",
 				BasicClientSecret: "secret",
@@ -80,15 +77,16 @@ func TestUpdateBasicCredentials(t *testing.T) {
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Log(tc.name)
-		authInfo, err := updateBasicCredentials(filePath, tc.options)
-		require.ErrorIs(t, err, tc.expectedError)
-		require.EqualValues(t, tc.expectedAuthInfo, *authInfo)
-		credentialsMap, err := ReadCredentials(filePath)
-		if err != nil {
-			t.Fatal(err)
-		}
-		require.EqualValues(t, tc.expectedAuthInfo, credentialsMap[tc.options.Context])
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			authInfo, err := updateBasicCredentials(filePath, testCase.options)
+			require.ErrorIs(t, err, testCase.expectedError)
+			require.EqualValues(t, testCase.expectedAuthInfo, *authInfo)
+			credentialsMap, err := ReadCredentials(filePath)
+			if err != nil {
+				t.Fatal(err)
+			}
+			require.EqualValues(t, testCase.expectedAuthInfo, credentialsMap[testCase.options.Context])
+		})
 	}
 }
