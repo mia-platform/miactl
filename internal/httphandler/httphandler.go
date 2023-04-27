@@ -54,11 +54,12 @@ func NewSessionHandler(url string) (*SessionHandler, error) {
 }
 
 // WithAuthentication initializes the SessionHandler auth field
-func (s *SessionHandler) WithAuthentication(url, providerID string, b browser.URLOpener) *SessionHandler {
+func (s *SessionHandler) WithAuthentication(url, providerID, context string, b browser.URLOpener) *SessionHandler {
 	s.auth = &Auth{
 		browser:    b,
 		providerID: providerID,
 		url:        url,
+		context:    context,
 	}
 	return s
 }
@@ -219,7 +220,7 @@ func ConfigureDefaultSessionHandler(opts *clioptions.CLIOptions, contextName, ur
 	if err != nil {
 		return nil, fmt.Errorf("error creating HTTP client: %w", err)
 	}
-	session.WithContext(contextName).WithClient(httpClient).WithAuthentication(baseURL, oktaProvider, browser.NewURLOpener())
+	session.WithContext(contextName).WithClient(httpClient).WithAuthentication(baseURL, oktaProvider, contextName, browser.NewURLOpener())
 	return session, nil
 }
 

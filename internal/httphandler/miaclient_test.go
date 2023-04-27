@@ -80,6 +80,7 @@ current-context: test-context`
 			url:        "http://url",
 			providerID: oktaProvider,
 			browser:    browser.NewURLOpener(),
+			context:    testContext,
 		},
 	}
 	expectedMiaClient := &MiaClient{

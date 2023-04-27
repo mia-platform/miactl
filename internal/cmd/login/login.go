@@ -16,125 +16,51 @@
 package login
 
 import (
-	"context"
-	"fmt"
-	"net"
-	"net/http"
-	"net/url"
-	"time"
+	"errors"
+	"os"
 
-	"github.com/davidebianchi/go-jsonclient"
-	"github.com/mia-platform/miactl/internal/browser"
+	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/spf13/cobra"
+	"gopkg.in/yaml.v3"
 )
 
-type Tokens struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-	ExpiresAt    int64  `json:"expiresAt"`
+// nolint gosec
+const M2MCredentialsPath = ".config/miactl/credentials"
+
+var ErrMissingCredentials = errors.New("missing credentials for current and default context")
+
+func NewLoginCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "login",
+		Short: "set up authentication with M2M credentials (basic or jwt)",
+	}
+
+	options.AddContextFlags(cmd)
+	cmd.AddCommand(NewBasicLoginCmd(options))
+
+	return cmd
 }
 
-const (
-	appID       = "miactl"
-	callbackURL = "127.0.0.1:53535"
-)
-
-var (
-	state string
-	code  string
-)
-
-func GetTokensWithOIDC(endpoint string, providerID string, b browser.URLOpener) (*Tokens, error) {
-	jsonClient, err := jsonclient.New(jsonclient.Options{BaseURL: fmt.Sprintf("%s/api/", endpoint)})
-	if err != nil {
-		fmt.Printf("%v", "error generating JsonClient")
-		return nil, err
-	}
-	callbackPath := "/oauth/callback"
-	l, err := net.Listen("tcp", "127.0.0.1:53535")
-	if err != nil {
-		panic(err)
-	}
-
-	// Start the HTTP server in a separate goroutine
-	ctx, cancel := context.WithCancel(context.Background())
-	server := &http.Server{
-		ReadHeaderTimeout: 10 * time.Second,
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			switch {
-			case r.URL.Path == callbackPath && r.Method == http.MethodGet:
-				handleCallback(w, r)
-				cancel() // Stop the server after the callback is handled
-				return
-			default:
-				w.WriteHeader(http.StatusNotFound)
-				return
-			}
-		}),
-	}
-	go func() {
-		if err := server.Serve(l); err != nil && err != http.ErrServerClosed {
-			fmt.Printf("%v", "error starting server")
-			cancel()
-		}
-	}()
-
-	q := url.Values{}
-	q.Set("appId", appID)
-	q.Set("providerId", providerID)
-
-	startURL := fmt.Sprintf("%s/api/authorize?%s", endpoint, q.Encode())
-
-	err = b.Open(startURL)
+func ReadCredentials(credentialsPath string) (map[string]M2MAuthInfo, error) {
+	yamlCredentials, err := os.ReadFile(credentialsPath)
 	if err != nil {
 		return nil, err
 	}
-
-	<-ctx.Done()
-
-	err = server.Shutdown(context.Background())
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := jsonClient.NewRequest(http.MethodPost, "oauth/token", map[string]interface{}{
-		"code":  code,
-		"state": state,
-	})
-	if err != nil {
-		return &Tokens{}, err
-	}
-
-	token := &Tokens{}
-
-	resp, err := jsonClient.Do(req, token)
-
-	if err != nil {
-		return &Tokens{}, err
-	}
-
-	defer resp.Body.Close()
-
-	return token, nil
+	var credentialsMap map[string]M2MAuthInfo
+	err = yaml.Unmarshal(yamlCredentials, &credentialsMap)
+	return credentialsMap, err
 }
 
-func handleCallback(w http.ResponseWriter, req *http.Request) {
-	response := `<!DOCTYPE html>
-<html>
-  <body>
-    <script>setTimeout(function() { window.close(); }, 1000);</script>
-    <center><h1>Login succeeded!</h1></center>
-  </body>
-</html>
-`
-
-	qs := req.URL.Query()
-	code = qs.Get("code")
-	state = qs.Get("state")
-
-	w.Header().Set("content-type", "text/html")
-	w.WriteHeader(http.StatusOK)
-	_, err := w.Write([]byte(response))
+func GetCredentialsFromFile(credentialsPath, context string) (M2MAuthInfo, error) {
+	credentialsMap, err := ReadCredentials(credentialsPath)
 	if err != nil {
-		panic(err)
+		return M2MAuthInfo{}, err
 	}
+	if credential, found := credentialsMap[context]; found {
+		return credential, nil
+	}
+	if credential, found := credentialsMap["default"]; found {
+		return credential, nil
+	}
+	return M2MAuthInfo{}, ErrMissingCredentials
 }

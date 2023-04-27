@@ -27,7 +27,7 @@ import (
 )
 
 // nolint gosec
-const credentialsPath = ".config/miactl/credentials"
+const tokenCachePath = ".config/miactl/cache/credentials"
 
 type IAuth interface {
 	Authenticate() (string, error)
@@ -37,6 +37,7 @@ type Auth struct {
 	url        string
 	providerID string
 	browser    browser.URLOpener
+	context    string
 }
 
 func (a *Auth) Authenticate() (string, error) {
@@ -44,19 +45,35 @@ func (a *Auth) Authenticate() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	credentialsAbsPath := path.Join(home, credentialsPath)
-	tokens, err := getTokensFromFile(a.url, credentialsAbsPath)
+	tokenCacheAbsPath := path.Join(home, tokenCachePath)
+	tokens, err := login.GetTokensFromFile(a.url, tokenCacheAbsPath)
 	if err != nil {
-		if !os.IsNotExist(err) && !errors.Is(err, errExpiredToken) {
+		if !os.IsNotExist(err) && !errors.Is(err, login.ErrExpiredToken) {
 			return "", err
 		}
-
-		tokens, err = login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
+		// check for M2M login credentials
+		m2mCredentialsAbsPath := path.Join(home, login.M2MCredentialsPath)
+		authInfo, err := login.GetCredentialsFromFile(m2mCredentialsAbsPath, a.context)
 		if err != nil {
-			return "", fmt.Errorf("login error: %w", err)
+			if !os.IsNotExist(err) && !errors.Is(err, login.ErrMissingCredentials) {
+				return "", err
+			}
+			// if the `credentials` file does not exist, or the user did not specify m2m
+			// credentials for the current context, proceed with OIDC login
+			tokens, err = login.GetTokensWithOIDC(a.url, a.providerID, a.browser)
+			if err != nil {
+				return "", fmt.Errorf("login error: %w", err)
+			}
+		} else {
+			// if the user specified M2M credentials for the current context,
+			// proceed with M2M login
+			tokens, err = login.GetTokensWithM2MLogin(a.url, authInfo)
+			if err != nil {
+				return "", fmt.Errorf("login error: %w", err)
+			}
 		}
 
-		err = writeTokensToFile(a.url, credentialsAbsPath, tokens)
+		err = login.WriteTokensToFile(a.url, tokenCacheAbsPath, tokens)
 		if err != nil {
 			return "", err
 		}

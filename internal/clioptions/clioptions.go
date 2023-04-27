@@ -20,17 +20,19 @@ import (
 )
 
 type CLIOptions struct {
-	CfgFile    string
-	Verbose    bool
-	Insecure   bool
-	CACert     string
-	Context    string
-	ProjectID  string
-	CompanyID  string
-	Endpoint   string
-	Revision   string
-	DeployType string
-	NoSemVer   bool
+	CfgFile           string
+	Verbose           bool
+	Insecure          bool
+	CACert            string
+	Context           string
+	ProjectID         string
+	CompanyID         string
+	Endpoint          string
+	Revision          string
+	DeployType        string
+	NoSemVer          bool
+	BasicClientID     string
+	BasicClientSecret string
 }
 
 func NewCLIOptions() *CLIOptions {
@@ -69,4 +71,9 @@ func (f *CLIOptions) AddDeployFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&f.Revision, "revision", "HEAD", "Revision of the commit to deploy")
 	cmd.PersistentFlags().StringVar(&f.DeployType, "deploy-type", "smart_deploy", "Deploy type")
 	cmd.PersistentFlags().BoolVar(&f.NoSemVer, "no-semver", false, "Force the deploy wihout semver")
+}
+
+func (f *CLIOptions) AddBasicAuthFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVar(&f.BasicClientID, "client-id", "", "The client ID of the service account")
+	cmd.PersistentFlags().StringVar(&f.BasicClientSecret, "client-secret", "", "The client secret of the service account")
 }

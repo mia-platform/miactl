@@ -16,84 +16,112 @@
 package login
 
 import (
-	"encoding/json"
-	"net"
-	"net/http"
+	"os"
+	"path"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/browser"
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/stretchr/testify/require"
 )
 
-func TestLocalLoginOIDC(t *testing.T) {
-	providerID := "the-provider"
-	code := "my-code"
-	state := "my-state"
-	endpoint := "http://127.0.0.1:53534"
-	callbackPath := "/api/oauth/token"
-	callbackURL := "localhost:53535"
-
-	l, err := net.Listen("tcp", ":53534")
-	if err != nil {
-		panic(err)
-	}
-
-	browser := browser.NewFakeURLOpener(t, code, state, callbackURL)
-	s := &http.Server{
-		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			if r.URL.Path != callbackPath || r.Method != http.MethodPost {
-				http.Error(w, "wrong callback or method", http.StatusBadRequest)
-			}
-
-			var data map[string]interface{}
-			err := json.NewDecoder(r.Body).Decode(&data)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			switch {
-			case data["code"] == code && data["state"] == state:
-				w.Header().Set("content-type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				w.Write([]byte("{\"AccessToken\":\"accesstoken\", \"RefreshToken\":\"refreshToken\", \"ExpiresAt\":23345}"))
-				return
-			case data["code"] != code || data["state"] != state:
-				w.WriteHeader(http.StatusForbidden)
-				return
-			default:
-				w.WriteHeader(http.StatusNotFound)
-				return
-			}
-		}),
-	}
-
-	go s.Serve(l)
-	defer s.Close()
-
-	t.Run("correctly returns token", func(t *testing.T) {
-		expectedToken := Tokens{
-			AccessToken:  "accesstoken",
-			RefreshToken: "refreshToken",
-			ExpiresAt:    23345,
-		}
-
-		tokens, err := GetTokensWithOIDC(endpoint, providerID, browser)
-		require.NoError(t, err)
-		require.Equal(t, *tokens, expectedToken)
-	})
-
-	t.Run("return error with incorrect callback", func(t *testing.T) {
-		tokens, err := GetTokensWithOIDC(callbackURL, providerID, browser)
-		require.Error(t, err)
-		require.Nil(t, tokens)
+func TestNewLoginCmd(t *testing.T) {
+	t.Run("test command creation", func(t *testing.T) {
+		opts := clioptions.NewCLIOptions()
+		cmd := NewLoginCmd(opts)
+		require.NotNil(t, cmd)
 	})
 }
 
-func TestOpenBrowser(t *testing.T) {
-	t.Run("return error with incorrect provider url", func(t *testing.T) {
-		incorrectURL := "incorrect"
-		browser := browser.NewURLOpener()
-		err := browser.Open(incorrectURL)
-		require.Error(t, err)
-	})
+func TestReadCredentials(t *testing.T) {
+	testDirPath = t.TempDir()
+	filePath := path.Join(testDirPath, "credentials")
+	err := os.WriteFile(filePath, []byte(validCredentials), os.ModePerm)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectedCredentials := map[string]M2MAuthInfo{
+		"context1": {
+			AuthType: "basic",
+			BasicAuth: BasicAuthCredentials{
+				ClientID:     "id",
+				ClientSecret: "secret",
+			},
+		},
+		"context2": {
+			AuthType: "jwt",
+			JWTAuth: JWTCredentials{
+				Key:  "123abc",
+				Algo: "123",
+			},
+		},
+		"default": {
+			AuthType: "basic",
+			BasicAuth: BasicAuthCredentials{
+				ClientID:     "default",
+				ClientSecret: "default",
+			},
+		},
+	}
+
+	credentials, err := ReadCredentials(filePath)
+	require.NoError(t, err)
+	require.EqualValues(t, expectedCredentials, credentials)
+}
+
+func TestGetCredentialsFromFile(t *testing.T) {
+	testDirPath = t.TempDir()
+	filePath := path.Join(testDirPath, "credentials")
+
+	testCases := []struct {
+		name                string
+		fileContent         string
+		context             string
+		expectedCredentials M2MAuthInfo
+		expectedError       error
+	}{
+		{
+			name:        "existing context",
+			fileContent: validCredentials,
+			context:     "context1",
+			expectedCredentials: M2MAuthInfo{
+				AuthType: "basic",
+				BasicAuth: BasicAuthCredentials{
+					ClientID:     "id",
+					ClientSecret: "secret",
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name:        "default context",
+			fileContent: validCredentials,
+			context:     "missing",
+			expectedCredentials: M2MAuthInfo{
+				AuthType: "basic",
+				BasicAuth: BasicAuthCredentials{
+					ClientID:     "default",
+					ClientSecret: "default",
+				},
+			},
+			expectedError: nil,
+		},
+		{
+			name:                "missing credentials",
+			fileContent:         "",
+			context:             "any",
+			expectedCredentials: M2MAuthInfo{},
+			expectedError:       ErrMissingCredentials,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Log(tc.name)
+		err := os.WriteFile(filePath, []byte(tc.fileContent), os.ModePerm)
+		if err != nil {
+			t.Fatal(err)
+		}
+		credentials, err := GetCredentialsFromFile(filePath, tc.context)
+		require.Equal(t, tc.expectedError, err)
+		require.EqualValues(t, tc.expectedCredentials, credentials)
+	}
 }

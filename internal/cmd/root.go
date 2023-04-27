@@ -25,6 +25,7 @@ import (
 	"github.com/mia-platform/miactl/internal/cmd/company"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/deploy"
+	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/internal/cmd/project"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
@@ -32,9 +33,10 @@ import (
 )
 
 const (
-	cfgDir         = ".config/miactl"
-	cfgFileName    = "config"
-	credentialsDir = "credentials"
+	cfgDir      = ".config/miactl"
+	cfgFileName = "config"
+	// nolint gosec
+	credentialsDir = "cache/credentials"
 )
 
 var (
@@ -61,6 +63,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(deploy.NewDeployCmd(options))
 	rootCmd.AddCommand(miacontext.NewContextCmd(options))
 	rootCmd.AddCommand(company.NewCompanyCmd(options))
+	rootCmd.AddCommand(login.NewLoginCmd(options))
 	return rootCmd
 }
 
