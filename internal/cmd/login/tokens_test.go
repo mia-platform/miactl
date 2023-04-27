@@ -16,15 +16,19 @@
 package login
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"net"
 	"net/http"
+	"net/http/httptest"
+	"net/url"
 	"os"
 	"path"
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/browser"
-	"github.com/mia-platform/miactl/internal/testutils"
 	"github.com/stretchr/testify/require"
 )
 
@@ -120,8 +124,7 @@ func TestLocalLoginOIDC(t *testing.T) {
 }
 
 func TestGetTokensWithM2MLogin(t *testing.T) {
-	server := testutils.CreateMockServer()
-	server.Start()
+	server := mockServer(t)
 	defer server.Close()
 
 	authInfo := M2MAuthInfo{
@@ -216,4 +219,55 @@ func TestWriteTokensToFile(t *testing.T) {
 		t.Fatal(err)
 	}
 	require.Equal(t, testTokens, string(fileContent))
+}
+
+func mockServer(t *testing.T) *httptest.Server {
+	t.Helper()
+
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.RequestURI != "/api/m2m/oauth/token" || r.Method != http.MethodPost {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+
+		buf := new(bytes.Buffer)
+		_, err := buf.ReadFrom(r.Body)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		data, err := url.ParseQuery(buf.String())
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		if data.Get("grant_type") == "client_credentials" {
+			if r.Header.Get("Authorization") != "" {
+				mockBasicAuth(t, w, r)
+			} else {
+				w.WriteHeader(http.StatusBadRequest)
+			}
+			return
+		}
+	}))
+}
+
+func mockBasicAuth(t *testing.T, w http.ResponseWriter, r *http.Request) {
+	t.Helper()
+	encodedAuthString := r.Header.Get("Authorization")
+	plainAuthString, err := base64.StdEncoding.DecodeString(encodedAuthString[6:])
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
+	credentials := strings.Split(string(plainAuthString), ":")
+	if credentials[0] == "id" && credentials[1] == "secret" {
+		w.Header().Set("content-type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte(`{"access_token":"token", "token_type":"Bearer", "expires_in":3600}`))
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+		return
+	}
+	w.WriteHeader(http.StatusUnauthorized)
 }
