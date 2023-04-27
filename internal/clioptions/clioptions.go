@@ -75,5 +75,5 @@ func (f *CLIOptions) AddDeployFlags(cmd *cobra.Command) {
 
 func (f *CLIOptions) AddBasicAuthFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&f.BasicClientID, "client-id", "", "The client ID of the service account")
-	cmd.PersistentFlags().StringVar(&f.BasicClientSecret, "secret", "", "The client secret of the service account")
+	cmd.PersistentFlags().StringVar(&f.BasicClientSecret, "client-secret", "", "The client secret of the service account")
 }
