@@ -135,7 +135,7 @@ func TestRun(t *testing.T) {
 	})
 }
 
-func initMiaClientWithURL(opts *clioptions.CLIOptions, endpoint string, currentContext string) (*httphandler.MiaClient, error) {
+func initMiaClientWithURL(_ *clioptions.CLIOptions, endpoint string, _ string) (*httphandler.MiaClient, error) {
 	server := testutils.CreateMockServer()
 	server.Start()
 

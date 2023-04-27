@@ -189,7 +189,7 @@ func configureTransport(opts *clioptions.CLIOptions) (*http.Transport, error) {
 }
 
 // ParseResponseBody reads and unmarshals the response body in the given interface
-func ParseResponseBody(contextName string, body io.Reader, out interface{}) error {
+func ParseResponseBody(_ string, body io.Reader, out interface{}) error {
 	bodyBytes, err := io.ReadAll(body)
 	if err != nil {
 		return fmt.Errorf("error reading response body: %w", err)

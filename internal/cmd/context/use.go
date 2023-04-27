@@ -23,7 +23,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-func NewUseContextCmd(opts *clioptions.CLIOptions) *cobra.Command {
+func NewUseContextCmd(_ *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "use CONTEXT [flags]",
 		Short: "select a context for miactl",

@@ -41,10 +41,7 @@ func NewListCompaniesCmd(options *clioptions.CLIOptions) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := listCompanies(mc); err != nil {
-				return err
-			}
-			return nil
+			return listCompanies(mc)
 		},
 	}
 }

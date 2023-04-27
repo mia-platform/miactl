@@ -60,10 +60,7 @@ func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			if err := context.SetContextValues(cmd, currentContext); err != nil {
-				return err
-			}
-			return nil
+			return context.SetContextValues(cmd, currentContext)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			env := args[0]
