@@ -149,11 +149,6 @@ func CreateMockServer() *httptest.Server {
 			if err != nil {
 				panic(err)
 			}
-		case r.RequestURI == "/getcompanies":
-			_, err := w.Write([]byte(`[{"tenantId": "test", "isProduction": true}]`))
-			if err != nil {
-				panic(err)
-			}
 		case r.RequestURI == "/api/deploy/projects/projectid/trigger/pipeline/":
 			_, err := w.Write([]byte(`{"id": 123, "url":"pipeline.eu"}`))
 			if err != nil {
