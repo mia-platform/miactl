@@ -45,10 +45,10 @@ func NewUseContextCmd(_ *clioptions.CLIOptions) *cobra.Command {
 }
 
 func contextLookUp(contextName string) (map[string]interface{}, error) {
-	if viper.Get("contexts") == nil {
-		return nil, fmt.Errorf("no context specified in config file")
+	contextMap, err := getContextMap()
+	if err != nil {
+		return nil, err
 	}
-	contextMap := viper.Get("contexts").(map[string]interface{})
 	if contextMap[contextName] == nil {
 		return nil, fmt.Errorf("context %s does not exist", contextName)
 	}

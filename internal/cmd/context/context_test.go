@@ -31,11 +31,19 @@ const (
     endpoint: http://url
     companyid: "123"
     projectid: "123"
+  other-ctx:
+    endpoint: http://url2
+    companyid: "456"
+    projectid: "456"
 current-context: fake-ctx`
 	noCompanyID = `contexts:
   fake-ctx:
     endpoint: http://url
     projectid: "123"`
+	noProjectID = `contexts:
+    fake-ctx:
+      endpoint: http://url
+      companyid: "123"`
 	noCurrCtx = `contexts:
   fake-ctx:
     endpoint: http://url
@@ -143,6 +151,49 @@ func TestGetContextCompanyID(t *testing.T) {
 	}
 }
 
+func TestGetContextProjectID(t *testing.T) {
+	viper.SetConfigType("yaml")
+
+	testCases := []TestCase{
+		{
+			name:        "valid context, existing company ID",
+			config:      valid,
+			arg:         "fake-ctx",
+			expectedOut: "123",
+			expectedErr: "",
+		},
+		{
+			name:        "wrong context name",
+			config:      valid,
+			arg:         "wrong-ctx",
+			expectedOut: "",
+			expectedErr: "context wrong-ctx does not exist",
+		},
+		{
+			name:        "project id unset",
+			config:      noProjectID,
+			arg:         "fake-ctx",
+			expectedOut: "",
+			expectedErr: "please set a project ID",
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Log(tc.name)
+		err := viper.ReadConfig(strings.NewReader(tc.config))
+		if err != nil {
+			t.Fatalf("unexpected error reading config: %v", err)
+		}
+		companyID, err := GetContextProjectID(tc.arg)
+		if tc.expectedErr == "" {
+			require.NoError(t, err)
+		} else {
+			require.ErrorContains(t, err, tc.expectedErr)
+		}
+		require.Equal(t, tc.expectedOut, companyID)
+	}
+}
+
 func TestGetCurrentContext(t *testing.T) {
 	viper.SetConfigType("yaml")
 
@@ -229,4 +280,52 @@ func TestSetContextValues(t *testing.T) {
 		require.Equal(t, "newcompanyid", fakeCommand.Flag("company-id").Value.String())
 		require.Equal(t, "newendpoint", fakeCommand.Flag("endpoint").Value.String())
 	})
+}
+
+func TestGetContextMap(t *testing.T) {
+	viper.SetConfigType("yaml")
+
+	testCases := []struct {
+		name        string
+		config      string
+		expectedOut map[string]interface{}
+		expectedErr string
+	}{
+		{
+			name:   "valid contexts",
+			config: valid,
+			expectedOut: map[string]interface{}{
+				"fake-ctx": map[string]interface{}{
+					"endpoint":  "http://url",
+					"companyid": "123",
+					"projectid": "123",
+				},
+				"other-ctx": map[string]interface{}{
+					"endpoint":  "http://url2",
+					"companyid": "456",
+					"projectid": "456",
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name:        "empty config",
+			config:      "",
+			expectedOut: nil,
+			expectedErr: "no context specified",
+		},
+	}
+	for _, tc := range testCases {
+		err := viper.ReadConfig(strings.NewReader(tc.config))
+		if err != nil {
+			t.Fatalf("unexpected error reading config: %v", err)
+		}
+		names, err := getContextMap()
+		if tc.expectedErr == "" {
+			require.NoError(t, err)
+		} else {
+			require.ErrorContains(t, err, tc.expectedErr)
+		}
+		require.Equal(t, tc.expectedOut, names)
+	}
 }
