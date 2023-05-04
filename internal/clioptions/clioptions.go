@@ -33,6 +33,8 @@ type CLIOptions struct {
 	NoSemVer          bool
 	BasicClientID     string
 	BasicClientSecret string
+	AuthMethod        string
+	CompanyRole       string
 }
 
 func NewCLIOptions() *CLIOptions {
@@ -80,4 +82,9 @@ func (f *CLIOptions) AddDeployFlags(cmd *cobra.Command) {
 func (f *CLIOptions) AddBasicAuthFlags(cmd *cobra.Command) {
 	cmd.PersistentFlags().StringVar(&f.BasicClientID, "client-id", "", "The client ID of the service account")
 	cmd.PersistentFlags().StringVar(&f.BasicClientSecret, "client-secret", "", "The client secret of the service account")
+}
+
+func (f *CLIOptions) AddServiceAccountFlags(cmd *cobra.Command) {
+	cmd.PersistentFlags().StringVar(&f.AuthMethod, "method", "", "The authentication method of the service account")
+	cmd.PersistentFlags().StringVar(&f.CompanyRole, "role", "", "The company role of the service account")
 }

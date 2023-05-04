@@ -27,6 +27,7 @@ import (
 	"github.com/mia-platform/miactl/internal/cmd/deploy"
 	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/mia-platform/miactl/internal/cmd/project"
+	"github.com/mia-platform/miactl/internal/cmd/serviceaccount"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -64,6 +65,7 @@ func NewRootCmd() *cobra.Command {
 	rootCmd.AddCommand(miacontext.NewContextCmd(options))
 	rootCmd.AddCommand(company.NewCompanyCmd(options))
 	rootCmd.AddCommand(login.NewLoginCmd(options))
+	rootCmd.AddCommand(serviceaccount.NewServiceAccountCmd(options))
 	return rootCmd
 }
 
