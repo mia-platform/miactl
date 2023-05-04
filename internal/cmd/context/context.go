@@ -32,6 +32,7 @@ func NewContextCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 	cmd.AddCommand(NewSetContextCmd(options))
 	cmd.AddCommand(NewUseContextCmd(options))
+	cmd.AddCommand(NewListContextsCmd(options))
 
 	return cmd
 }
@@ -67,7 +68,17 @@ func GetContextProjectID(contextName string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error while searching context in config file: %w", err)
 	}
+	if context["projectid"] == nil {
+		return "", fmt.Errorf("please set a project ID for context %s", contextName)
+	}
 	return fmt.Sprint(context["projectid"]), nil
+}
+
+func getContextMap() (map[string]interface{}, error) {
+	if viper.Get("contexts") == nil {
+		return nil, fmt.Errorf("no context specified in config file")
+	}
+	return viper.Get("contexts").(map[string]interface{}), nil
 }
 
 // SetContextValues checks if a flag was explicitly set by the user, and loads the value

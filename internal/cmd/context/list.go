@@ -17,26 +17,33 @@ package context
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-func NewUseContextCmd(_ *clioptions.CLIOptions) *cobra.Command {
+func NewListContextsCmd(_ *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "use CONTEXT [flags]",
-		Short: "select a context for miactl",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if _, err := contextLookUp(args[0]); err != nil {
-				return fmt.Errorf("error looking up the context in the config file: %w", err)
+		Use:   "list [flags]",
+		Short: "list configured contexts",
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			contextNames, err := getContextNames()
+			if err != nil {
+				return err
 			}
-			viper.Set("current-context", args[0])
-			if err := viper.WriteConfig(); err != nil {
-				return fmt.Errorf("error updating the configuration: %w", err)
+			current, err := GetCurrentContext()
+			if err != nil {
+				return err
 			}
-			fmt.Println("OK")
+			for _, name := range contextNames {
+				if name == current {
+					fmt.Printf("* %s\n", name)
+				} else {
+					fmt.Printf("  %s\n", name)
+				}
+			}
+
 			return nil
 		},
 	}
@@ -44,13 +51,17 @@ func NewUseContextCmd(_ *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func contextLookUp(contextName string) (map[string]interface{}, error) {
+// getContextNames prints the list of context names, with the current context
+// marked with a star (*)
+func getContextNames() ([]string, error) {
 	contextMap, err := getContextMap()
 	if err != nil {
 		return nil, err
 	}
-	if contextMap[contextName] == nil {
-		return nil, fmt.Errorf("context %s does not exist", contextName)
+	var contextList []string
+	for contextName := range contextMap {
+		contextList = append(contextList, contextName)
 	}
-	return contextMap[contextName].(map[string]interface{}), nil
+	sort.Strings(contextList)
+	return contextList, nil
 }
