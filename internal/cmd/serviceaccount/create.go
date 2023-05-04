@@ -50,10 +50,6 @@ func NewCreateServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			err = checkAuthMethod(options.AuthMethod)
-			if err != nil {
-				return err
-			}
 			currentContext, err := context.GetCurrentContext()
 			if err != nil {
 				return err
@@ -80,7 +76,7 @@ func NewCreateServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 				// TODO: implement jwt service account creation
 				fmt.Println("jwt service accounts are work in progress")
 			default:
-				return fmt.Errorf("")
+				return fmt.Errorf("invalid authentication method: it must be one of [basic, jwt]")
 			}
 			return nil
 		},
@@ -138,14 +134,4 @@ func checkCompanyRole(role string) error {
 		return nil
 	}
 	return fmt.Errorf("invalid company role: it must be one of [company-owner, project-admin, maintainer, developer, reporter, guest]")
-}
-
-func checkAuthMethod(method string) error {
-	switch method {
-	case
-		"basic",
-		"jwt":
-		return nil
-	}
-	return fmt.Errorf("invalid authentication method: it must be one of [basic, jwt]")
 }
