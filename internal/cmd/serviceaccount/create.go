@@ -90,9 +90,9 @@ func NewCreateServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 func createBasicServiceAccount(name string, mc *httphandler.MiaClient, opts *clioptions.CLIOptions) ([]string, error) {
 
 	payload := struct {
-		Name                    string
-		TokenEndpointAuthMethod string
-		Role                    string
+		Name                    string `json:"name"`
+		TokenEndpointAuthMethod string `json:"tokenEndpointAuthMethod"`
+		Role                    string `json:"role"`
 	}{
 		Name:                    name,
 		TokenEndpointAuthMethod: "client_secret_basic",
@@ -108,6 +108,9 @@ func createBasicServiceAccount(name string, mc *httphandler.MiaClient, opts *cli
 		return nil, fmt.Errorf("error executing request for service account creation: %w", err)
 	}
 	if resp.StatusCode != http.StatusOK {
+		// TODO: review console error when creating a service account with a name that is already taken
+		// map[message:POST http://client-credentials/clients: 400 - {"error":"invalid_client_metadata",
+		// "error_description":"fails to create the client"} statusCode:400]
 		return nil, fmt.Errorf("service account creation failed with status: %d", resp.StatusCode)
 	}
 	defer resp.Body.Close()
