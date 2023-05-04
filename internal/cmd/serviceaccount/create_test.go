@@ -22,18 +22,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-var (
-	opts1 = clioptions.CLIOptions{
-		Endpoint:  "http://url",
-		CompanyID: "123",
-		ProjectID: "123",
-	}
-	opts2 = clioptions.CLIOptions{
-		Endpoint:  "http://url",
-		ProjectID: "123",
-	}
-)
-
 func TestNewCreateServiceAccountCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()

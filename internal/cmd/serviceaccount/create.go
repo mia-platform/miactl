@@ -29,10 +29,10 @@ import (
 )
 
 type basicServiceAccount struct {
-	ClientID     string `json:"clientId"`
-	ClientSecret string `json:"clientSecret"`
-	IssuedAt     int64  `json:"clientIdIssuedAt"`
-	Company      string `json:"company"`
+	ClientID         string `json:"clientId"`
+	ClientSecret     string `json:"clientSecret"`
+	ClientIDIssuedAt int64  `json:"clientIdIssuedAt"`
+	Company          string `json:"company"`
 }
 
 const (
@@ -88,7 +88,6 @@ func NewCreateServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 }
 
 func createBasicServiceAccount(name string, mc *httphandler.MiaClient, opts *clioptions.CLIOptions) ([]string, error) {
-
 	payload := struct {
 		Name                    string `json:"name"`
 		TokenEndpointAuthMethod string `json:"tokenEndpointAuthMethod"`
