@@ -23,6 +23,7 @@ import (
 	"net/url"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/httphandler"
 	"github.com/spf13/cobra"
 )
@@ -30,7 +31,7 @@ import (
 type basicServiceAccount struct {
 	ClientID     string `json:"clientId"`
 	ClientSecret string `json:"clientSecret"`
-	IssuedAt     string `json:"clientIdIssuedAt"`
+	IssuedAt     int64  `json:"clientIdIssuedAt"`
 	Company      string `json:"company"`
 }
 
@@ -53,7 +54,11 @@ func NewCreateServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			return nil
+			currentContext, err := context.GetCurrentContext()
+			if err != nil {
+				return err
+			}
+			return context.SetContextValues(cmd, currentContext)
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fullURI, err := url.JoinPath(companiesURI, options.CompanyID, serviceaccountsURI)
