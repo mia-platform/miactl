@@ -71,12 +71,12 @@ func NewCreateServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 				if err != nil {
 					return err
 				}
-				fmt.Println(credentials)
+				fmt.Printf("Client ID: %s\nClient Secret: %s\n", credentials[0], credentials[1])
 			case "jwt":
 				// TODO: implement jwt service account creation
 				fmt.Println("jwt service accounts are work in progress")
 			default:
-				return fmt.Errorf("invalid authentication method: it must be one of [basic, jwt]")
+				return fmt.Errorf("invalid authentication method: it must be one of basic, jwt")
 			}
 			return nil
 		},
@@ -136,5 +136,5 @@ func checkCompanyRole(role string) error {
 		"guest":
 		return nil
 	}
-	return fmt.Errorf("invalid company role: it must be one of [company-owner, project-admin, maintainer, developer, reporter, guest]")
+	return fmt.Errorf("invalid company role: it must be one of company-owner, project-admin, maintainer, developer, reporter, guest")
 }
