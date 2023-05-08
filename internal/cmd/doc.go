@@ -13,18 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
-
-import (
-	"os"
-
-	"github.com/mia-platform/miactl/internal/cmd"
-)
-
-func main() {
-	rootCmd := cmd.NewRootCommand()
-	if err := rootCmd.Execute(); err != nil {
-		os.Exit(1)
-	}
-	os.Exit(0)
-}
+// cmd package create the main miactl root command for cobra and initialize all the subcommands and flags
+package cmd

@@ -13,19 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// serviceaccount package contains subcommands and functions for managing service accounts
 package serviceaccount
-
-import (
-	"testing"
-
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/stretchr/testify/require"
-)
-
-func TestNewServiceAccountCmd(t *testing.T) {
-	t.Run("test command creation", func(t *testing.T) {
-		opts := clioptions.NewCLIOptions()
-		cmd := NewServiceAccountCmd(opts)
-		require.NotNil(t, cmd)
-	})
-}

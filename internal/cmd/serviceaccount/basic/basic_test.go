@@ -13,36 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package serviceaccount
+package basic
 
 import (
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewCreateServiceAccountCmd(t *testing.T) {
-	t.Run("test command creation", func(t *testing.T) {
-		opts := clioptions.NewCLIOptions()
-		cmd := NewCreateServiceAccountCmd(opts)
-		require.NotNil(t, cmd)
-	})
-}
-
-func TestCheckCompanyRole(t *testing.T) {
-	validRoles := []string{
-		"company-owner",
-		"project-admin",
-		"maintainer",
-		"developer",
-		"reporter",
-		"guest",
+func TestIsValidRole(t *testing.T) {
+	for _, role := range validServiceAccountRoles {
+		require.True(t, isValidServiceAccountRole(role))
 	}
-	for _, role := range validRoles {
-		err := checkCompanyRole(role)
-		require.NoError(t, err)
-	}
-	err := checkCompanyRole("wrong")
-	require.ErrorContains(t, err, "invalid company role")
+	require.False(t, isValidServiceAccountRole("wrong-role"))
 }

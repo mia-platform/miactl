@@ -35,7 +35,7 @@ func NewLoginCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Short: "set up authentication with M2M credentials (basic or jwt)",
 	}
 
-	options.AddContextFlags(cmd)
+	options.AddContextFlags(cmd.PersistentFlags())
 	cmd.AddCommand(NewBasicLoginCmd(options))
 
 	return cmd

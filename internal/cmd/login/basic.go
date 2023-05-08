@@ -22,7 +22,6 @@ import (
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
-	"github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
 	"gopkg.in/yaml.v3"
 )
@@ -39,7 +38,7 @@ func NewBasicLoginCmd(options *clioptions.CLIOptions) *cobra.Command {
 				}
 				options.Context = currentContext
 			}
-			home, err := homedir.Dir()
+			home, err := os.UserHomeDir()
 			if err != nil {
 				return err
 			}
@@ -52,7 +51,7 @@ func NewBasicLoginCmd(options *clioptions.CLIOptions) *cobra.Command {
 			return nil
 		},
 	}
-	options.AddBasicAuthFlags(cmd)
+	options.AddBasicAuthFlags(cmd.PersistentFlags())
 	err := cobra.MarkFlagRequired(cmd.PersistentFlags(), "client-id")
 	if err != nil {
 		fmt.Println(err)

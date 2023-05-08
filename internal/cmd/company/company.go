@@ -26,8 +26,8 @@ func NewCompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Short: "view and manage mia companies",
 	}
 
-	options.AddConnectionFlags(cmd)
-	options.AddContextFlags(cmd)
+	options.AddConnectionFlags(cmd.PersistentFlags())
+	options.AddContextFlags(cmd.PersistentFlags())
 
 	cmd.AddCommand(NewListCompaniesCmd(options))
 

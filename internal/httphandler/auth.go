@@ -23,7 +23,6 @@ import (
 
 	"github.com/mia-platform/miactl/internal/browser"
 	"github.com/mia-platform/miactl/internal/cmd/login"
-	"github.com/mitchellh/go-homedir"
 )
 
 // nolint gosec
@@ -41,7 +40,7 @@ type Auth struct {
 }
 
 func (a *Auth) Authenticate() (string, error) {
-	home, err := homedir.Dir()
+	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}

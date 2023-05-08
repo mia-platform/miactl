@@ -39,9 +39,9 @@ func NewSetContextCmd(options *clioptions.CLIOptions) *cobra.Command {
 			return nil
 		},
 	}
-	options.AddConnectionFlags(cmd)
-	options.AddCompanyFlags(cmd)
-	options.AddProjectFlags(cmd)
+	options.AddConnectionFlags(cmd.PersistentFlags())
+	options.AddCompanyFlags(cmd.PersistentFlags())
+	options.AddProjectFlags(cmd.PersistentFlags())
 	return cmd
 }
 
@@ -58,8 +58,8 @@ func updateContextMap(opts *clioptions.CLIOptions, contextName string) map[strin
 	if opts.CompanyID != "" {
 		newContext["companyid"] = opts.CompanyID
 	}
-	if opts.CACert != "" {
-		newContext["ca-cert"] = opts.CACert
+	if opts.CAFile != "" {
+		newContext["ca-cert"] = opts.CAFile
 	}
 	if opts.Insecure {
 		newContext["insecure"] = opts.Insecure

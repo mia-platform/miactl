@@ -109,7 +109,7 @@ func (s *SessionHandler) GetContext() string {
 func HTTPClientBuilder(opts *clioptions.CLIOptions) (*http.Client, error) {
 	client := &http.Client{}
 	// TODO: extract CA certificate from viper config file
-	if opts.CACert != "" || opts.Insecure {
+	if opts.CAFile != "" || opts.Insecure {
 		transport, err := configureTransport(opts)
 		if err != nil {
 			return nil, fmt.Errorf("error creating custom transport: %w", err)
@@ -162,11 +162,11 @@ func configureTransport(opts *clioptions.CLIOptions) (*http.Transport, error) {
 	tlsConfig := &tls.Config{
 		MinVersion: 0x0303,
 	}
-	if opts.CACert != "" {
+	if opts.CAFile != "" {
 		// load the contents of the CA certificate file
-		caCert, err := os.ReadFile(opts.CACert)
+		caCert, err := os.ReadFile(opts.CAFile)
 		if err != nil {
-			return nil, fmt.Errorf("error reading CA certificate from path %s: %w", opts.CACert, err)
+			return nil, fmt.Errorf("error reading CA certificate from path %s: %w", opts.CAFile, err)
 		}
 
 		// create a new CertPool object and parse the CA certificate
@@ -204,14 +204,14 @@ func ParseResponseBody(_ string, body io.Reader, out interface{}) error {
 
 // ConfigureDefaultSessionHandler returns a session handler with default settings
 func ConfigureDefaultSessionHandler(opts *clioptions.CLIOptions, contextName, uri string) (*SessionHandler, error) {
-	baseURL := opts.Endpoint
-	// build full path URL
-	fullPathURL, err := url.JoinPath(baseURL, uri)
+	requestURL, err := url.Parse(opts.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("error building url: %w", err)
 	}
+	// build full path URL
+	fullPathURL := requestURL.JoinPath(uri)
 	// create a session handler object with the full path URL
-	session, err := NewSessionHandler(fullPathURL)
+	session, err := NewSessionHandler(fullPathURL.String())
 	if err != nil {
 		return nil, fmt.Errorf("error creating session handler: %w", err)
 	}
@@ -220,7 +220,7 @@ func ConfigureDefaultSessionHandler(opts *clioptions.CLIOptions, contextName, ur
 	if err != nil {
 		return nil, fmt.Errorf("error creating HTTP client: %w", err)
 	}
-	session.WithContext(contextName).WithClient(httpClient).WithAuthentication(baseURL, oktaProvider, contextName, browser.NewURLOpener())
+	session.WithContext(contextName).WithClient(httpClient).WithAuthentication(requestURL.String(), oktaProvider, contextName, browser.NewURLOpener())
 	return session, nil
 }
 

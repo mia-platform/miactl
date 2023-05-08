@@ -125,7 +125,7 @@ func TestHttpClientBuilder(t *testing.T) {
 
 	// Test client with cert
 	opts2 := &clioptions.CLIOptions{
-		CACert: certPath,
+		CAFile: certPath,
 	}
 	require.NoError(t, err)
 	client, err = HTTPClientBuilder(opts2)
@@ -271,7 +271,7 @@ func TestReqWithCustomTransport(t *testing.T) {
 		{
 			name: "client with ca certificate",
 			opts: &clioptions.CLIOptions{
-				CACert: certPath,
+				CAFile: certPath,
 			},
 			expectedOut: "200 OK",
 			expectedErr: "",

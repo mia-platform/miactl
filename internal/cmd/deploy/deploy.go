@@ -72,11 +72,15 @@ func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 			return nil
 		},
 	}
-	options.AddConnectionFlags(cmd)
-	options.AddContextFlags(cmd)
-	options.AddCompanyFlags(cmd)
-	options.AddProjectFlags(cmd)
-	options.AddDeployFlags(cmd)
+	options.AddConnectionFlags(cmd.PersistentFlags())
+	options.AddContextFlags(cmd.PersistentFlags())
+	options.AddCompanyFlags(cmd.PersistentFlags())
+	options.AddProjectFlags(cmd.PersistentFlags())
+	options.AddDeployFlags(cmd.PersistentFlags())
+	if err := cmd.MarkPersistentFlagRequired("revision"); err != nil {
+		// if there is an error something very wrong is happening, panic
+		panic(err)
+	}
 	return cmd
 }
 

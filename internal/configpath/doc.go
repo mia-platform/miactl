@@ -13,25 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package serviceaccount
-
-import (
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/spf13/cobra"
-)
-
-func NewServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "serviceaccount",
-		Short: "view and manage mia service accounts",
-	}
-
-	options.AddConnectionFlags(cmd)
-	options.AddContextFlags(cmd)
-	options.AddCompanyFlags(cmd)
-	options.AddProjectFlags(cmd)
-
-	cmd.AddCommand(NewCreateServiceAccountCmd(options))
-
-	return cmd
-}
+// configpath package select the correct path of the configuration files based on XDG
+// environments or sensible defaults
+package configpath

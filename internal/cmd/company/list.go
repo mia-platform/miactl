@@ -22,8 +22,8 @@ import (
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
-	"github.com/mia-platform/miactl/internal/cmd/resources"
 	"github.com/mia-platform/miactl/internal/httphandler"
+	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
