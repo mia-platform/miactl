@@ -115,4 +115,4 @@ Available flags for the command:
 - `--no-semver`, to force the deploy without `semver`
 - `--insecure`, to skip certificate check
 - `--project-id`, to set the project ID from command line
-- `--revision`, to specify the revision of the commit to deploy (default `HEAD`)
+- `--revision`, to specify the revision of the commit to deploy
