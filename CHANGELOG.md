@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## 0.5.0 2022-05-10
+
 ### Changed
 
 - remove default value for revision flag in the deploy command
