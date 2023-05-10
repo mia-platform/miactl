@@ -21,6 +21,7 @@ import (
 	"os"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/resources"
 	"github.com/mia-platform/miactl/internal/httphandler"
 	"github.com/olekukonko/tablewriter"
@@ -36,6 +37,16 @@ func NewListCompaniesCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "list mia companies in the current context",
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			currentContext, err := context.GetCurrentContext()
+			if err != nil {
+				return err
+			}
+			if err := context.SetContextValues(cmd, currentContext); err != nil {
+				return err
+			}
+			return nil
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			mc, err := httphandler.ConfigureDefaultMiaClient(options, companiesURI)
 			if err != nil {

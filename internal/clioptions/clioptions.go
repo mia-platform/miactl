@@ -68,7 +68,11 @@ func (f *CLIOptions) AddCompanyFlags(cmd *cobra.Command) {
 }
 
 func (f *CLIOptions) AddDeployFlags(cmd *cobra.Command) {
-	cmd.PersistentFlags().StringVar(&f.Revision, "revision", "HEAD", "Revision of the commit to deploy")
+	cmd.PersistentFlags().StringVar(&f.Revision, "revision", "", "Revision of the commit to deploy")
+	if err := cmd.MarkPersistentFlagRequired("revision"); err != nil {
+		// if there is an error something very wrong is happening, panic
+		panic(err)
+	}
 	cmd.PersistentFlags().StringVar(&f.DeployType, "deploy-type", "smart_deploy", "Deploy type")
 	cmd.PersistentFlags().BoolVar(&f.NoSemVer, "no-semver", false, "Force the deploy wihout semver")
 }
