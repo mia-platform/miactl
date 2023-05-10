@@ -18,7 +18,10 @@ package clioptions
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/configpath"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -117,4 +120,27 @@ func (o *CLIOptions) AddBasicAuthFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddServiceAccountFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.ServiceAccountRole, "service-account-role", "r", "", "the company role of the service account")
+}
+
+func (o *CLIOptions) ToRESTConfig() *client.Config {
+	return &client.Config{
+		Host:      o.Endpoint,
+		UserAgent: defaultUserAgent(),
+		TLSClientConfig: client.TLSClientConfig{
+			Insecure: o.Insecure,
+			CAFile:   o.CAFile,
+		},
+	}
+}
+
+func defaultUserAgent() string {
+	osCommand := os.Args[0]
+	command := "unknown"
+	if len(osCommand) > 0 {
+		command = filepath.Base(osCommand)
+	}
+
+	os := runtime.GOOS
+	arch := runtime.GOARCH
+	return fmt.Sprintf("%s (%s/%s)", command, os, arch)
 }
