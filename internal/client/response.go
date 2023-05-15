@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+
+	"github.com/mia-platform/miactl/internal/resources"
 )
 
 // ResponseError represent an error from an api call
@@ -29,8 +31,13 @@ type ResponseError struct {
 
 // Error return the message of the api call error
 func (r *ResponseError) Error() string {
-	// TODO
-	return ""
+	var out *resources.APIError
+	err := parseBody(r.body, &out)
+	if err != nil {
+		return fmt.Sprintf("error parsing error response from server: %s", err)
+	}
+
+	return out.Message
 }
 
 // Response wrap an http.Response and provide functions to operate safely on it
@@ -55,7 +62,7 @@ func (r *Response) StatusCode() int {
 
 // Error return the error found in the response
 func (r *Response) Error() error {
-	return r.err
+	return &ResponseError{body: r.body}
 }
 
 // ParseResponse will parse the underlying body inside the obj passed
@@ -65,6 +72,15 @@ func (r *Response) ParseResponse(obj interface{}) error {
 	}
 
 	err := json.Unmarshal(r.body, obj)
+	if err != nil && err != io.EOF {
+		return fmt.Errorf("error during response parsing: %w", err)
+	}
+
+	return parseBody(r.body, obj)
+}
+
+func parseBody(body []byte, obj interface{}) error {
+	err := json.Unmarshal(body, obj)
 	if err != nil && err != io.EOF {
 		return fmt.Errorf("error during response parsing: %w", err)
 	}

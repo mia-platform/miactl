@@ -15,6 +15,11 @@
 
 package resources
 
+type APIError struct {
+	StatusCode int    `json:"statusCode"`
+	Message    string `json:"message"`
+}
+
 type Cluster struct {
 	Hostname  string `json:"hostname"`
 	Namespace string `json:"namespace"`

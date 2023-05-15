@@ -16,7 +16,9 @@
 package client
 
 import (
+	"context"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"testing"
@@ -62,4 +64,78 @@ func TestNewRESTClient(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestRequestSuccess(t *testing.T) {
+	testServer := testServerEnv(t, 200)
+	defer testServer.Close()
+
+	restClient, err := RESTClientForConfig(&Config{Host: testServer.URL})
+	require.NoError(t, err)
+
+	req := restClient.Get().APIPath("test")
+	response, err := req.Do(context.Background())
+
+	require.NoError(t, err)
+	require.NotNil(t, response)
+	assert.Equal(t, 200, response.StatusCode())
+	assert.Equal(t, []byte("{}"), response.body)
+}
+
+func TestRequestError(t *testing.T) {
+	testServer := testServerEnv(t, 200)
+	// close immediately for returning a network error
+	testServer.Close()
+
+	restClient, err := RESTClientForConfig(&Config{Host: testServer.URL})
+	require.NoError(t, err)
+
+	req := restClient.Get().APIPath("test")
+	response, err := req.Do(context.Background())
+
+	require.Error(t, err)
+	require.Nil(t, response)
+}
+
+func TestRequestServerError(t *testing.T) {
+	testServer := testServerEnv(t, 400)
+	defer testServer.Close()
+
+	restClient, err := RESTClientForConfig(&Config{Host: testServer.URL})
+	require.NoError(t, err)
+
+	req := restClient.Get().APIPath("test")
+	response, err := req.Do(context.Background())
+
+	require.NoError(t, err)
+	require.NotNil(t, response)
+	assert.Equal(t, 400, response.StatusCode())
+	assert.Error(t, response.Error())
+}
+
+func TestRequestServer5xx(t *testing.T) {
+	testServer := testServerEnv(t, 500)
+	defer testServer.Close()
+
+	restClient, err := RESTClientForConfig(&Config{Host: testServer.URL})
+	require.NoError(t, err)
+
+	req := restClient.Get().APIPath("test")
+	response, err := req.Do(context.Background())
+
+	require.NoError(t, err)
+	require.NotNil(t, response)
+	assert.Equal(t, 500, response.StatusCode())
+	assert.Error(t, response.Error())
+}
+
+func testServerEnv(t *testing.T, statusCode int) *httptest.Server {
+	t.Helper()
+	fakeHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(statusCode)
+		w.Write([]byte("{}"))
+	})
+
+	testServer := httptest.NewServer(fakeHandler)
+	return testServer
 }

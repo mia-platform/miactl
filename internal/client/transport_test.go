@@ -104,17 +104,18 @@ func TestTransportForConfig(t *testing.T) {
 
 			switch {
 			case testCase.Default:
-				assert.Equal(t, http.DefaultTransport, roundTripper)
+				assert.Same(t, http.DefaultTransport, roundTripper)
 			case !testCase.Default:
-				assert.NotEqual(t, http.DefaultTransport, roundTripper)
+				assert.NotSame(t, http.DefaultTransport, roundTripper)
 			}
 
 			// cast roundTripper to Transport for checking properties
 			transport := roundTripper.(*http.Transport)
+			defaultTLSClientConfig := http.DefaultTransport.(*http.Transport).TLSClientConfig
 			if testCase.TLS {
-				assert.NotNil(t, transport.TLSClientConfig)
+				assert.NotSame(t, transport.TLSClientConfig, defaultTLSClientConfig)
 			} else {
-				assert.Nil(t, transport.TLSClientConfig)
+				assert.Same(t, transport.TLSClientConfig, defaultTLSClientConfig)
 				return
 			}
 

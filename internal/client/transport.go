@@ -45,7 +45,7 @@ func httpClientForConfig(config *Config) (*http.Client, error) {
 
 // transportForConfig create an http.RoundTripper configured with config
 func transportForConfig(config *Config) (http.RoundTripper, error) {
-	transport := http.DefaultTransport
+	transport := http.DefaultTransport.(*http.Transport)
 
 	// if transport needs special configuration for TLS config create a custom one
 	if len(config.CAFile) > 0 || config.Insecure {
@@ -69,15 +69,14 @@ func transportForConfig(config *Config) (http.RoundTripper, error) {
 		}
 
 		// read the default transport and use its default, and then set the TLSClientConfig
-		deafaultTransport := http.DefaultTransport.(*http.Transport)
 		transport = &http.Transport{
-			Proxy:                 deafaultTransport.Proxy,
-			DialContext:           deafaultTransport.DialContext,
-			ForceAttemptHTTP2:     deafaultTransport.ForceAttemptHTTP2,
-			MaxIdleConns:          deafaultTransport.MaxIdleConns,
-			IdleConnTimeout:       deafaultTransport.IdleConnTimeout,
-			TLSHandshakeTimeout:   deafaultTransport.TLSHandshakeTimeout,
-			ExpectContinueTimeout: deafaultTransport.ExpectContinueTimeout,
+			Proxy:                 transport.Proxy,
+			DialContext:           transport.DialContext,
+			ForceAttemptHTTP2:     transport.ForceAttemptHTTP2,
+			MaxIdleConns:          transport.MaxIdleConns,
+			IdleConnTimeout:       transport.IdleConnTimeout,
+			TLSHandshakeTimeout:   transport.TLSHandshakeTimeout,
+			ExpectContinueTimeout: transport.ExpectContinueTimeout,
 			TLSClientConfig:       tlsConfig,
 		}
 	}
