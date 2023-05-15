@@ -76,3 +76,45 @@ func TestSetAPIPath(t *testing.T) {
 	r.APIPath(validPath)
 	assert.Error(t, r.Error())
 }
+
+func TestPreflightCheck(t *testing.T) {
+	testCases := map[string]struct {
+		request *Request
+		err     bool
+	}{
+		"correct GET": {
+			request: (&Request{}).SetVerb("GET"),
+		},
+		"correct POST": {
+			request: (&Request{}).SetVerb("POST").Body([]byte("hello")),
+		},
+		"empty verb": {
+			request: &Request{},
+			err:     true,
+		},
+		"get with body": {
+			request: (&Request{}).SetVerb("GET").Body([]byte("hello")),
+			err:     true,
+		},
+		"empty body": {
+			request: (&Request{}).SetVerb("POST").Body([]byte{}),
+			err:     true,
+		},
+		"valid verb and body but preexisting error": {
+			request: (&Request{err: fmt.Errorf("")}).SetVerb("GET"),
+			err:     true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			err := testCase.request.preflightCheck()
+			switch testCase.err {
+			case true:
+				assert.Error(t, err)
+			case false:
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
