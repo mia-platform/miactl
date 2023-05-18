@@ -59,8 +59,8 @@ type contentConfig struct {
 	ContentType string
 }
 
-// RESTClientForConfig create a RESTClient with config
-func RESTClientForConfig(config *Config) (*RESTClient, error) {
+// APIClientForConfig create a APIClient with config
+func APIClientForConfig(config *Config) (*APIClient, error) {
 	// Validate Host before constructing the transport/client so we can fail fast.
 	if _, err := defaultServerURL(config); err != nil {
 		return nil, err
@@ -71,11 +71,11 @@ func RESTClientForConfig(config *Config) (*RESTClient, error) {
 		return nil, err
 	}
 
-	return restClientForConfigAndClient(config, httpClient)
+	return apiClientForConfigAndClient(config, httpClient)
 }
 
-// restClientForConfigAndClient create a RESTClient with config and httpClient
-func restClientForConfigAndClient(config *Config, httpClient *http.Client) (*RESTClient, error) {
+// apiClientForConfigAndClient create a APIClient with config and httpClient
+func apiClientForConfigAndClient(config *Config, httpClient *http.Client) (*APIClient, error) {
 	baseURL, err := defaultServerURL(config)
 	if err != nil {
 		return nil, err
@@ -85,5 +85,5 @@ func restClientForConfigAndClient(config *Config, httpClient *http.Client) (*RES
 		AcceptContentTypes: "application/json",
 		ContentType:        "application/json",
 	}
-	return newRESTClient(baseURL, contentConfig, httpClient), nil
+	return newAPIClient(baseURL, contentConfig, httpClient), nil
 }

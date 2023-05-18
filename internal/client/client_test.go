@@ -27,7 +27,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewRESTClient(t *testing.T) {
+func TestNewAPIClient(t *testing.T) {
 	testCases := map[string]struct {
 		URLString           string
 		ContentConfig       contentConfig
@@ -54,7 +54,7 @@ func TestNewRESTClient(t *testing.T) {
 			url, err := url.Parse(testCase.URLString)
 			require.NoError(t, err)
 
-			client := newRESTClient(url, testCase.ContentConfig, testCase.HTTPCLient)
+			client := newAPIClient(url, testCase.ContentConfig, testCase.HTTPCLient)
 			assert.Equal(t, testCase.HTTPCLient, client.client)
 			assert.True(t, strings.HasSuffix(client.baseURL.Path, "/"))
 			if testCase.OverrideContentType {
@@ -70,7 +70,7 @@ func TestRequestSuccess(t *testing.T) {
 	testServer := testServerEnv(t, 200)
 	defer testServer.Close()
 
-	restClient, err := RESTClientForConfig(&Config{Host: testServer.URL})
+	restClient, err := APIClientForConfig(&Config{Host: testServer.URL})
 	require.NoError(t, err)
 
 	req := restClient.Get().APIPath("test")
@@ -87,7 +87,7 @@ func TestRequestError(t *testing.T) {
 	// close immediately for returning a network error
 	testServer.Close()
 
-	restClient, err := RESTClientForConfig(&Config{Host: testServer.URL})
+	restClient, err := APIClientForConfig(&Config{Host: testServer.URL})
 	require.NoError(t, err)
 
 	req := restClient.Get().APIPath("test")
@@ -101,7 +101,7 @@ func TestRequestServerError(t *testing.T) {
 	testServer := testServerEnv(t, 400)
 	defer testServer.Close()
 
-	restClient, err := RESTClientForConfig(&Config{Host: testServer.URL})
+	restClient, err := APIClientForConfig(&Config{Host: testServer.URL})
 	require.NoError(t, err)
 
 	req := restClient.Get().APIPath("test")
@@ -117,7 +117,7 @@ func TestRequestServer5xx(t *testing.T) {
 	testServer := testServerEnv(t, 500)
 	defer testServer.Close()
 
-	restClient, err := RESTClientForConfig(&Config{Host: testServer.URL})
+	restClient, err := APIClientForConfig(&Config{Host: testServer.URL})
 	require.NoError(t, err)
 
 	req := restClient.Get().APIPath("test")

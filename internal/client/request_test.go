@@ -32,23 +32,23 @@ func TestNewRequest(t *testing.T) {
 	}
 	testContentType := "text/html"
 	testCases := map[string]struct {
-		client               *RESTClient
+		client               *APIClient
 		expectedAcceptHeader string
 	}{
 		"with accept content type": {
-			client:               newRESTClient(testURL, contentConfig{AcceptContentTypes: testContentType}, http.DefaultClient),
+			client:               newAPIClient(testURL, contentConfig{AcceptContentTypes: testContentType}, http.DefaultClient),
 			expectedAcceptHeader: testContentType,
 		},
 		"without contetn type": {
-			client:               newRESTClient(testURL, contentConfig{ContentType: testContentType}, http.DefaultClient),
+			client:               newAPIClient(testURL, contentConfig{ContentType: testContentType}, http.DefaultClient),
 			expectedAcceptHeader: fmt.Sprintf("%s, */*", testContentType),
 		},
 	}
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
-			restClient := NewRequest(testCase.client)
-			actualAcceptHeader := restClient.headers.Get("accept")
+			APIClient := NewRequest(testCase.client)
+			actualAcceptHeader := APIClient.headers.Get("accept")
 			assert.Equal(t, testCase.expectedAcceptHeader, actualAcceptHeader)
 		})
 	}

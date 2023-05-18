@@ -30,16 +30,16 @@ type Interface interface {
 	Post() *Request
 }
 
-// RESTClient wrap an http.Client that can connect to Mia-Platform Console
-type RESTClient struct {
+// APIClient wrap an http.Client that can connect to Mia-Platform Console
+type APIClient struct {
 	baseURL       *url.URL
 	contentConfig contentConfig
 
 	client *http.Client
 }
 
-// newRESTClient create a new RESTClient for url using config and httpClient for configure it
-func newRESTClient(url *url.URL, config contentConfig, httpClient *http.Client) *RESTClient {
+// newAPIClient create a new APIClient for url using config and httpClient for configure it
+func newAPIClient(url *url.URL, config contentConfig, httpClient *http.Client) *APIClient {
 	// be sure to have a valid ContetType
 	if len(config.ContentType) == 0 {
 		config.ContentType = defaultContentType
@@ -53,7 +53,7 @@ func newRESTClient(url *url.URL, config contentConfig, httpClient *http.Client) 
 	baseURL.RawQuery = ""
 	baseURL.Fragment = ""
 
-	return &RESTClient{
+	return &APIClient{
 		baseURL:       &baseURL,
 		contentConfig: config,
 
@@ -62,11 +62,11 @@ func newRESTClient(url *url.URL, config contentConfig, httpClient *http.Client) 
 }
 
 // Get return a new Request object for a GET http request
-func (c *RESTClient) Get() *Request {
+func (c *APIClient) Get() *Request {
 	return NewRequest(c).SetVerb(http.MethodGet)
 }
 
 // Get return a new Request object for a POST http request
-func (c *RESTClient) Post() *Request {
+func (c *APIClient) Post() *Request {
 	return NewRequest(c).SetVerb(http.MethodPost)
 }

@@ -27,7 +27,7 @@ import (
 
 // Request wrap the http.Request configuration providing functions for configure it in an easier and contained way
 type Request struct {
-	restClient *RESTClient
+	restClient *APIClient
 
 	verb    string
 	apiPath string
@@ -39,7 +39,7 @@ type Request struct {
 }
 
 // NewRequest creates a new request helper object for calling Mia-Platform Console API
-func NewRequest(client *RESTClient) *Request {
+func NewRequest(client *APIClient) *Request {
 	request := &Request{
 		restClient: client,
 	}

@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRESTClientForConfig(t *testing.T) {
+func TestAPIClientForConfig(t *testing.T) {
 	testCases := map[string]struct {
 		Config *Config
 		Err    bool
@@ -50,7 +50,7 @@ func TestRESTClientForConfig(t *testing.T) {
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
-			restClient, err := RESTClientForConfig(testCase.Config)
+			restClient, err := APIClientForConfig(testCase.Config)
 			switch {
 			case testCase.Err:
 				assert.Error(t, err)
