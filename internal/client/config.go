@@ -17,6 +17,7 @@ package client
 
 import (
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -34,6 +35,8 @@ type Config struct {
 	// UserAgent is an optional field that specifies the caller of this request.
 	UserAgent string
 
+	// Transport add a custom transport instead of creating a new one. Wrappers will be added to it
+	Transport http.RoundTripper
 	// The maximum length of time to wait before giving up on a server request. A value of zero means no timeout.
 	Timeout time.Duration
 }
@@ -62,7 +65,8 @@ type contentConfig struct {
 // APIClientForConfig create a APIClient with config
 func APIClientForConfig(config *Config) (*APIClient, error) {
 	// Validate Host before constructing the transport/client so we can fail fast.
-	if _, err := defaultServerURL(config); err != nil {
+	baseURL, err := defaultServerURL(config)
+	if err != nil {
 		return nil, err
 	}
 
@@ -71,16 +75,11 @@ func APIClientForConfig(config *Config) (*APIClient, error) {
 		return nil, err
 	}
 
-	return apiClientForConfigAndClient(config, httpClient)
+	return apiClientForHTTPClient(baseURL, httpClient)
 }
 
 // apiClientForConfigAndClient create a APIClient with config and httpClient
-func apiClientForConfigAndClient(config *Config, httpClient *http.Client) (*APIClient, error) {
-	baseURL, err := defaultServerURL(config)
-	if err != nil {
-		return nil, err
-	}
-
+func apiClientForHTTPClient(baseURL *url.URL, httpClient *http.Client) (*APIClient, error) {
 	contentConfig := contentConfig{
 		AcceptContentTypes: "application/json",
 		ContentType:        "application/json",

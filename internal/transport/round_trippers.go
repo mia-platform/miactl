@@ -17,7 +17,6 @@ package transport
 
 import (
 	"net/http"
-	// "github.com/mia-platform/miactl/internal/authorization"
 )
 
 func roundTripperWrappersForConfig(config *Config, roundTripper http.RoundTripper) http.RoundTripper {
@@ -25,8 +24,10 @@ func roundTripperWrappersForConfig(config *Config, roundTripper http.RoundTrippe
 		roundTripper = NewUserAgentRoundTripper(config.UserAgent, roundTripper)
 	}
 
-	// always keep this tripper last, so we can use all the others rt for the authorization flow
-	// roundTripper = NewAuthorizationRoundTripper(config, roundTripper)
+	// keep this wrapping as the latest possible to allow the reusage of the roundTripper during auth flow
+	if config.AuthorizeWrapper != nil {
+		roundTripper = config.AuthorizeWrapper(roundTripper)
+	}
 	return roundTripper
 }
 
@@ -50,21 +51,6 @@ func (rt *userAgentRoundTripper) RoundTrip(req *http.Request) (*http.Response, e
 	clonedReq.Header.Set("User-Agent", rt.userAgent)
 	return rt.next.RoundTrip(clonedReq)
 }
-
-// type authorizationRoundTripper struct {
-// 	authorizer authorization.Authenticator
-// 	next       http.RoundTripper
-// }
-
-// func NewAuthorizationRoundTripper(config *Config, next http.RoundTripper) http.RoundTripper {
-// 	return &authorizationRoundTripper{
-// 		next: next,
-// 	}
-// }
-
-// func (rt *authorizationRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-// 	return rt.next.RoundTrip(req)
-// }
 
 // cloneRequest return a cloned version of request, used to abide to the RoundTripper contract
 func cloneRequest(request *http.Request) *http.Request {

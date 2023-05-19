@@ -189,11 +189,10 @@ func (r *Request) request(ctx context.Context, fn func(*http.Request, *http.Resp
 func (r *Request) httpRequest(ctx context.Context) (*http.Request, error) {
 	bodyReader := bytes.NewReader(r.body)
 	url := r.URL().String()
-	req, err := http.NewRequest(r.verb, url, bodyReader)
+	req, err := http.NewRequestWithContext(ctx, r.verb, url, bodyReader)
 	if err != nil {
 		return nil, err
 	}
-	req = req.WithContext(ctx)
 	req.Header = r.headers
 	return req, nil
 }

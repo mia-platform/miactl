@@ -15,12 +15,16 @@
 
 package transport
 
+import "net/http"
+
 // Config transport layer configurations for setting up http.Transport
 type Config struct {
 	// UserAgent is an optional field that specifies the caller of this request.
 	UserAgent string
 	// TLSConfig contains settings to enable transport layer security
 	TLSConfig
+	// AuthorizeWrapper will add authorization header to the wrapped RoundTripper
+	AuthorizeWrapper AuthorizeWrapperFunc
 }
 
 // TLSConfig contains settings to enable transport layer security
@@ -31,6 +35,8 @@ type TLSConfig struct {
 	// Trusted root certificates for server
 	CAFile string
 }
+
+type AuthorizeWrapperFunc func(rt http.RoundTripper) http.RoundTripper
 
 func (c *Config) HasCA() bool {
 	return len(c.CAFile) > 0

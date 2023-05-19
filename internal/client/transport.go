@@ -25,15 +25,8 @@ import (
 // Will return the default http.DefaultClient if no special case behavior is needed.
 func httpClientForConfig(config *Config) (*http.Client, error) {
 	httpClient := http.DefaultClient
-	transportConfig := &transport.Config{
-		UserAgent: config.UserAgent,
-		TLSConfig: transport.TLSConfig{
-			Insecure: config.Insecure,
-			CAFile:   config.CAFile,
-		},
-	}
 
-	transport, err := transport.NewTransport(transportConfig)
+	transport, err := transportForConfig(config)
 	if err != nil {
 		return nil, err
 	}
@@ -46,4 +39,26 @@ func httpClientForConfig(config *Config) (*http.Client, error) {
 	}
 
 	return httpClient, nil
+}
+
+// transportForConfig return a new transport for the config or the one attached to it
+func transportForConfig(config *Config) (http.RoundTripper, error) {
+	if config.Transport != nil {
+		return config.Transport, nil
+	}
+
+	transportConfig := &transport.Config{
+		UserAgent: config.UserAgent,
+		TLSConfig: transport.TLSConfig{
+			Insecure: config.Insecure,
+			CAFile:   config.CAFile,
+		},
+	}
+
+	if authProvider != nil {
+		provider := authProvider(config, nil)
+		transportConfig.AuthorizeWrapper = provider.Wrap
+	}
+
+	return transport.NewTransport(transportConfig)
 }
