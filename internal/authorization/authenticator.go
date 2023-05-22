@@ -23,7 +23,9 @@ import (
 )
 
 func init() {
-	client.RegisterAuthProvider(NewAuthenticator)
+	if err := client.RegisterAuthProvider(NewAuthenticator); err != nil {
+		panic(fmt.Sprintf("failed to register: %s", err))
+	}
 }
 
 func NewAuthenticator(config *client.Config, cacheReadWriter client.AuthCacheReadWriter) client.AuthProvider {
@@ -51,6 +53,12 @@ func (a *authenticator) Wrap(rt http.RoundTripper) http.RoundTripper {
 		client:   client,
 		next:     rt,
 		userAuth: a.cacheReadWriter,
+		serverReadyHandler: func(url string) error {
+			if err := open(url); err != nil {
+				return fmt.Errorf("could not open the browser: %w", err)
+			}
+			return nil
+		},
 	}
 
 	return userAuth

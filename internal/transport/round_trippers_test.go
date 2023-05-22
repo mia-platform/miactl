@@ -61,3 +61,45 @@ func TestUserAgentRoundTripper(t *testing.T) {
 		assert.Equal(t, rtRequest.Header.Get("User-Agent"), "test")
 	})
 }
+
+type testAuthTripper struct{}
+
+func (rt *testAuthTripper) RoundTrip(req *http.Request) (*http.Response, error) { return nil, nil }
+
+func TestRoundTripperWrapping(t *testing.T) {
+	baseTransport := &http.Transport{}
+
+	testCases := map[string]struct {
+		config       *Config
+		expectedType interface{}
+	}{
+		"empty config": {
+			config:       &Config{},
+			expectedType: baseTransport,
+		},
+		"user agent": {
+			config:       &Config{UserAgent: "foo"},
+			expectedType: &userAgentRoundTripper{},
+		},
+		"auth wrapper": {
+			config: &Config{
+				AuthorizeWrapper: func(rt http.RoundTripper) http.RoundTripper { return &testAuthTripper{} },
+			},
+			expectedType: &testAuthTripper{},
+		},
+		"both config, return auth wrapper": {
+			config: &Config{
+				UserAgent:        "foo",
+				AuthorizeWrapper: func(rt http.RoundTripper) http.RoundTripper { return &testAuthTripper{} },
+			},
+			expectedType: &testAuthTripper{},
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			wrappedTransform := roundTripperWrappersForConfig(testCase.config, baseTransport)
+			assert.IsType(t, testCase.expectedType, wrappedTransform)
+		})
+	}
+}

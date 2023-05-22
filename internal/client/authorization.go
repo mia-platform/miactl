@@ -16,6 +16,7 @@
 package client
 
 import (
+	"fmt"
 	"net/http"
 	"sync"
 
@@ -24,7 +25,6 @@ import (
 
 type AuthCacheReadWriter interface {
 	ReadJWTToken() *oauth2.Token
-	ReadRefreshToken() string
 	WriteJWTToken(*oauth2.Token)
 }
 
@@ -40,8 +40,14 @@ type AuthProviderCreator func(*Config, AuthCacheReadWriter) AuthProvider
 var authProvidersLock sync.Mutex
 var authProvider AuthProviderCreator
 
-func RegisterAuthProvider(ap AuthProviderCreator) {
+func RegisterAuthProvider(ap AuthProviderCreator) error {
 	authProvidersLock.Lock()
 	defer authProvidersLock.Unlock()
+
+	if authProvider != nil {
+		return fmt.Errorf("another auth provider is already registred")
+	}
+
 	authProvider = ap
+	return nil
 }

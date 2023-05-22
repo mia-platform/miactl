@@ -32,9 +32,9 @@ import (
 )
 
 const (
-	providerEndpointStringTemplate = "/api/apps/%s/providers"
-	refreshTokenEndpointString     = "/api/refreshtoken"
-	authorizeEndpointString        = "/api/authorize"
+	providerEndpointStringTemplate = "/api/apps/%s/providers/"
+	refreshTokenEndpointString     = "/api/refreshtoken/"
+	authorizeEndpointString        = "/api/authorize/"
 	callbackEndpointString         = "/oauth/callback"
 	// disable gosec for false positive in G101, because it is not an hardcoded credentials...
 	getTokenEndpointString = "/oauth/token" //nolint:gosec
@@ -86,6 +86,9 @@ type Config struct {
 
 	// Client the http client to use for sending the request
 	Client client.Interface
+
+	// ServerReadyHandler function to call when the local server is ready to receive traffic
+	ServerReadyHandler LocalServerReadyHandler
 }
 
 // GetToken performs the authorization flow against the Mia-Platform Console
@@ -124,7 +127,7 @@ func (c *Config) startLoginFlow(ctx context.Context) (*oauth2.Token, error) {
 		SetParam(appIDKey, c.AppID).
 		SetParam(providerID, providerID).URL().String()
 
-	authResponse, err := startLocalServerForToken(ctx, startFlowURL, listener)
+	authResponse, err := startLocalServerForToken(ctx, startFlowURL, listener, c.ServerReadyHandler)
 	if err != nil {
 		return nil, err
 	}
@@ -165,7 +168,7 @@ func providerIDForApplication(ctx context.Context, appID string, client client.I
 	}
 
 	providers := make([]*resources.AuthProvider, 0)
-	if err := response.ParseResponse(providers); err != nil {
+	if err := response.ParseResponse(&providers); err != nil {
 		return "", err
 	}
 	if len(providers) == 0 {
@@ -177,7 +180,7 @@ func providerIDForApplication(ctx context.Context, appID string, client client.I
 }
 
 // startLocalServerForToken start a server for listening to callback requests for the login flow
-func startLocalServerForToken(ctx context.Context, startFlowURL string, listener net.Listener) (*authResponse, error) {
+func startLocalServerForToken(ctx context.Context, startFlowURL string, listener net.Listener, readyFn LocalServerReadyHandler) (*authResponse, error) {
 	shutdownChannel := make(chan int)
 	responseChannel := make(chan *authResponse)
 
@@ -229,8 +232,11 @@ func startLocalServerForToken(ctx context.Context, startFlowURL string, listener
 		return nil
 	})
 	taskGroup.Go(func() error {
-		if err := open(server.Addr); err != nil {
-			return fmt.Errorf("could not open the browser: %w", err)
+		fmt.Println("HELLO!!!!!!!!")
+		if readyFn != nil {
+			if err := readyFn(server.Addr); err != nil {
+				return err
+			}
 		}
 		return nil
 	})

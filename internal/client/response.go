@@ -62,7 +62,10 @@ func (r *Response) StatusCode() int {
 
 // Error return the error found in the response
 func (r *Response) Error() error {
-	return &ResponseError{body: r.body}
+	if r.statusCode > http.StatusBadRequest {
+		return &ResponseError{body: r.body}
+	}
+	return nil
 }
 
 // ParseResponse will parse the underlying body inside the obj passed

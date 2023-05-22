@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"golang.org/x/oauth2"
 )
 
 const (
@@ -28,29 +29,49 @@ const (
 	appID     = "miactl"
 )
 
+type LocalServerReadyHandler func(string) error
+
 type userAuthenticator struct {
-	mutex    sync.Mutex
-	userAuth client.AuthCacheReadWriter
-	client   client.Interface
-	next     http.RoundTripper
+	mutex              sync.Mutex
+	userAuth           client.AuthCacheReadWriter
+	client             client.Interface
+	next               http.RoundTripper
+	serverReadyHandler LocalServerReadyHandler
 }
 
 func (ua *userAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
+	reqBodyClosed := false
+	if req.Body != nil {
+		defer func() {
+			if !reqBodyClosed {
+				req.Body.Close()
+			}
+		}()
+	}
+
 	if len(req.Header.Get("Authorization")) != 0 {
+		reqBodyClosed = true
 		return ua.next.RoundTrip(req)
 	}
 
-	return ua.next.RoundTrip(req)
+	accessToken, err := ua.AccessToken()
+	if err != nil {
+		return nil, err
+	}
+
+	clonedReq := *req
+	accessToken.SetAuthHeader(&clonedReq)
+	return ua.next.RoundTrip(&clonedReq)
 }
 
-func (ua *userAuthenticator) AccessToken() (string, error) {
+func (ua *userAuthenticator) AccessToken() (*oauth2.Token, error) {
 	ua.mutex.Lock()
 	defer ua.mutex.Unlock()
 
 	jwt := ua.userAuth.ReadJWTToken()
 
 	if jwt.Valid() {
-		return jwt.AccessToken, nil
+		return jwt, nil
 	}
 
 	if refreshToken := jwt.RefreshToken; len(refreshToken) > 0 {
@@ -60,23 +81,24 @@ func (ua *userAuthenticator) AccessToken() (string, error) {
 	return ua.logUser()
 }
 
-func (ua *userAuthenticator) refreshAuthWithToken(_ string) (string, error) {
+func (ua *userAuthenticator) refreshAuthWithToken(_ string) (*oauth2.Token, error) {
 	// TODO: implement refresh logic
 	return ua.logUser()
 }
 
-func (ua *userAuthenticator) logUser() (string, error) {
+func (ua *userAuthenticator) logUser() (*oauth2.Token, error) {
 	browserLoginConfig := Config{
 		AppID:                  appID,
 		LocalServerBindAddress: []string{localhost},
 		Client:                 ua.client,
+		ServerReadyHandler:     ua.serverReadyHandler,
 	}
 
 	jwt, err := browserLoginConfig.GetToken(context.Background())
 	if err != nil {
-		return "", nil
+		return nil, err
 	}
 
 	ua.userAuth.WriteJWTToken(jwt)
-	return jwt.AccessToken, nil
+	return jwt, nil
 }
