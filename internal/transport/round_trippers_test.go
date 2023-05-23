@@ -64,7 +64,7 @@ func TestUserAgentRoundTripper(t *testing.T) {
 
 type testAuthTripper struct{}
 
-func (rt *testAuthTripper) RoundTrip(req *http.Request) (*http.Response, error) { return nil, nil }
+func (rt *testAuthTripper) RoundTrip(_ *http.Request) (*http.Response, error) { return nil, nil }
 
 func TestRoundTripperWrapping(t *testing.T) {
 	baseTransport := &http.Transport{}

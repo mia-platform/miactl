@@ -58,43 +58,41 @@ func TestUserAuthenticator(t *testing.T) {
 		testServer        *httptest.Server
 		testServerHandler http.HandlerFunc
 	}{
-		// "valid jwt access token": {
-		// 	authCacheProvider: &testAuthCacheProvider{},
-		// 	expectedToken:     "foo",
-		// 	testServer: testServer(t, func(_ http.ResponseWriter, _ *http.Request) {
-		// 		assert.Fail(t, "we don't expect to call the test server")
-		// 	}),
-		// },
-		// "expired jwt access, with refresh token": {
-		// 	authCacheProvider: &testAuthCacheProvider{expired: true, refreshToken: "foo"},
-		// 	expectedToken:     "foo",
-		// 	testServer:        testServer(t),
-		// },
-		// "expired jwt access, with expired refresh token": {
-		// 	authCacheProvider: &testAuthCacheProvider{expired: true, refreshToken: "expired"},
-		// 	expectedToken:     "foo",
-		// 	testServer:        testServer(t),
-		// },
-		"expired jwt, without refresh token": {
-			authCacheProvider: &testAuthCacheProvider{expired: true},
+		"valid jwt access token": {
+			authCacheProvider: &testAuthCacheProvider{},
 			expectedToken:     "foo",
+			testServer: testServer(t, func(_ http.ResponseWriter, _ *http.Request) {
+				assert.Fail(t, "we don't expect to call the test server")
+			}),
+		},
+		"expired jwt access, with refresh token": {
+			authCacheProvider: &testAuthCacheProvider{expired: true, refreshToken: "foo"},
+			expectedToken:     "refresh",
 			testServer: testServer(t, func(w http.ResponseWriter, r *http.Request) {
 				switch {
-				case r.Method == http.MethodGet && r.RequestURI == fmt.Sprintf(providerEndpointStringTemplate, appID):
-					testProvider := resources.AuthProvider{
-						ID:    "foo",
-						Label: "Foo",
-						Type:  "foo-type",
+				case r.Method == http.MethodPost && r.RequestURI == refreshTokenEndpointString:
+					testUserToken := resources.UserToken{
+						AccessToken:  "refresh",
+						RefreshToken: "refresh",
+						ExpiresAt:    time.Now().Add(1 * time.Hour).Unix(),
 					}
 					encoder := json.NewEncoder(w)
-					err := encoder.Encode([]*resources.AuthProvider{&testProvider})
+					err := encoder.Encode(&testUserToken)
 					require.NoError(t, err)
-				case r.Method == http.MethodGet && r.RequestURI == authorizeEndpointString:
-					assert.Fail(t, "not implemented")
 				default:
 					assert.Failf(t, "unexpected request", "%s request %s", r.Method, r.RequestURI)
 				}
 			}),
+		},
+		"expired jwt access, with expired refresh token": {
+			authCacheProvider: &testAuthCacheProvider{expired: true, refreshToken: "expired"},
+			expectedToken:     "expired-refresh",
+			testServer:        testServerForCompleteFlow(t),
+		},
+		"expired jwt, without refresh token": {
+			authCacheProvider: &testAuthCacheProvider{expired: true},
+			expectedToken:     "new",
+			testServer:        testServerForCompleteFlow(t),
 		},
 	}
 
@@ -116,16 +114,20 @@ func TestUserAuthenticator(t *testing.T) {
 					query.Set("state", "bar")
 					req, err := url.Parse(s)
 					require.NoError(t, err)
+					req.Path = callbackEndpointString
 					req.RawQuery = query.Encode()
 					resp, err := http.Get(req.String())
+					if resp.Body != nil {
+						resp.Body.Close()
+					}
 					require.NoError(t, err)
 					assert.Equal(t, resp.StatusCode, http.StatusOK)
-					return nil
+					return err
 				},
 			}
 
 			token, err := ua.AccessToken()
-			assert.NoError(t, err)
+			require.NoError(t, err)
 			assert.Equal(t, testCase.expectedToken, token.AccessToken)
 		})
 	}
@@ -134,4 +136,41 @@ func TestUserAuthenticator(t *testing.T) {
 func testServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(handler)
+}
+
+func testServerForCompleteFlow(t *testing.T) *httptest.Server {
+	t.Helper()
+	accessToken := "new"
+	return testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodGet && r.RequestURI == fmt.Sprintf(providerEndpointStringTemplate, appID):
+			testProvider := resources.AuthProvider{
+				ID:    "foo",
+				Label: "Foo",
+				Type:  "foo-type",
+			}
+			encoder := json.NewEncoder(w)
+			err := encoder.Encode([]*resources.AuthProvider{&testProvider})
+			require.NoError(t, err)
+		case r.Method == http.MethodGet && r.RequestURI == authorizeEndpointString:
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("{\"statusCode\":500,\"message\":\"not implemented\"}"))
+			assert.Fail(t, "not implemented")
+		case r.Method == http.MethodPost && r.RequestURI == refreshTokenEndpointString:
+			accessToken = "expired-refresh"
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("{\"statusCode\":500,\"message\":\"not implemented\"}"))
+		case r.Method == http.MethodPost && r.RequestURI == getTokenEndpointString:
+			testUserToken := resources.UserToken{
+				AccessToken:  accessToken,
+				RefreshToken: "refresh",
+				ExpiresAt:    time.Now().Add(1 * time.Hour).Unix(),
+			}
+			encoder := json.NewEncoder(w)
+			err := encoder.Encode(&testUserToken)
+			require.NoError(t, err)
+		default:
+			assert.Failf(t, "unexpected request", "%s request %s", r.Method, r.RequestURI)
+		}
+	})
 }

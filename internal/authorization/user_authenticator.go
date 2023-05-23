@@ -81,13 +81,16 @@ func (ua *userAuthenticator) AccessToken() (*oauth2.Token, error) {
 	return ua.logUser()
 }
 
-func (ua *userAuthenticator) refreshAuthWithToken(_ string) (*oauth2.Token, error) {
-	// TODO: implement refresh logic
+func (ua *userAuthenticator) refreshAuthWithToken(refreshToken string) (*oauth2.Token, error) {
+	if token, err := ua.refreshToken(refreshToken); err == nil {
+		return token, nil
+	}
+
 	return ua.logUser()
 }
 
 func (ua *userAuthenticator) logUser() (*oauth2.Token, error) {
-	browserLoginConfig := Config{
+	browserLoginConfig := &Config{
 		AppID:                  appID,
 		LocalServerBindAddress: []string{localhost},
 		Client:                 ua.client,
@@ -95,10 +98,21 @@ func (ua *userAuthenticator) logUser() (*oauth2.Token, error) {
 	}
 
 	jwt, err := browserLoginConfig.GetToken(context.Background())
-	if err != nil {
-		return nil, err
+	if jwt != nil {
+		ua.userAuth.WriteJWTToken(jwt)
 	}
 
-	ua.userAuth.WriteJWTToken(jwt)
-	return jwt, nil
+	return jwt, err
+}
+
+func (ua *userAuthenticator) refreshToken(token string) (*oauth2.Token, error) {
+	browserLoginConfig := &Config{
+		Client: ua.client,
+	}
+
+	jwt, err := browserLoginConfig.RefreshToken(context.Background(), token)
+	if jwt != nil {
+		ua.userAuth.WriteJWTToken(jwt)
+	}
+	return jwt, err
 }

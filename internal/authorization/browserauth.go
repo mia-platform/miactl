@@ -37,7 +37,7 @@ const (
 	authorizeEndpointString        = "/api/authorize/"
 	callbackEndpointString         = "/oauth/callback"
 	// disable gosec for false positive in G101, because it is not an hardcoded credentials...
-	getTokenEndpointString = "/oauth/token" //nolint:gosec
+	getTokenEndpointString = "/api/oauth/token/" //nolint:gosec
 	appIDKey               = "appId"
 	providerIDKey          = "providerId"
 )
@@ -109,6 +109,19 @@ func (c *Config) GetToken(ctx context.Context) (*oauth2.Token, error) {
 	}
 
 	return c.startLoginFlow(ctx)
+}
+
+// RefreshToken perform a refresh token request and return an error if something went wrong or the new oauth2 token
+func (c *Config) RefreshToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
+	if len(refreshToken) == 0 {
+		return nil, fmt.Errorf("missing refresh token")
+	}
+
+	if c.Client == nil {
+		return nil, fmt.Errorf("cannot refresh token without a valid client")
+	}
+
+	return c.startRefreshFlow(ctx, refreshToken)
 }
 
 func (c *Config) startLoginFlow(ctx context.Context) (*oauth2.Token, error) {
@@ -194,6 +207,7 @@ func startLocalServerForToken(ctx context.Context, startFlowURL string, listener
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
+	hostAddress := fmt.Sprintf("http://%s", listener.Addr().String())
 	var taskGroup errgroup.Group
 	var respOut *authResponse
 	taskGroup.Go(func() error {
@@ -232,13 +246,10 @@ func startLocalServerForToken(ctx context.Context, startFlowURL string, listener
 		return nil
 	})
 	taskGroup.Go(func() error {
-		fmt.Println("HELLO!!!!!!!!")
-		if readyFn != nil {
-			if err := readyFn(server.Addr); err != nil {
-				return err
-			}
+		if readyFn == nil {
+			return nil
 		}
-		return nil
+		return readyFn(hostAddress)
 	})
 
 	if err := taskGroup.Wait(); err != nil {
@@ -256,25 +267,14 @@ func jwtToken(ctx context.Context, response *authResponse, client client.Interfa
 	}
 
 	jwtResponse, err := client.
-		Get().
+		Post().
 		APIPath(getTokenEndpointString).
 		Body(bodydata).
 		Do(ctx)
-
 	if err != nil {
 		return nil, err
 	}
-
-	if jwtResponse.Error() != nil {
-		return nil, jwtResponse.Error()
-	}
-
-	jwt := new(oauth2.Token)
-	if err := jwtResponse.ParseResponse(&jwt); err != nil {
-		return nil, err
-	}
-
-	return jwt, nil
+	return parseJWTResponse(jwtResponse)
 }
 
 type authResponse struct {
@@ -292,7 +292,7 @@ type httpHandler struct {
 func (h *httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	switch {
-	case r.Method == http.MethodGet && r.URL.Path == "/" && q.Get("error") != "":
+	case r.Method == http.MethodGet && r.URL.Path == callbackEndpointString && q.Get("error") != "":
 		h.syncOneResponse.Do(func() {
 			q := r.URL.Query()
 			errorCode, errorDescription := q.Get("error"), q.Get("error_description")
@@ -312,13 +312,47 @@ func (h *httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 			h.responseChannel <- &authResponse{Code: code, State: state}
 		})
-	case r.Method == http.MethodGet && r.URL.Path == "/":
+	case r.Method == http.MethodGet && r.RequestURI == "/":
 		http.Redirect(w, r, h.startFlowURL, http.StatusFound)
 	default:
 		http.NotFound(w, r)
+		h.responseChannel <- &authResponse{
+			Err: fmt.Errorf("callback not recognized: %s %s", r.Method, r.URL.Path),
+		}
 	}
 }
 
 func open(url string) error {
 	return openBrowser(url)
+}
+
+func parseJWTResponse(jwtResponse *client.Response) (*oauth2.Token, error) {
+	if jwtResponse.Error() != nil {
+		return nil, jwtResponse.Error()
+	}
+
+	jwt := new(resources.UserToken)
+	if err := jwtResponse.ParseResponse(&jwt); err != nil {
+		return nil, err
+	}
+
+	return jwt.JWTToken(), nil
+}
+
+func (c *Config) startRefreshFlow(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
+	bodydata, err := (&resources.RefreshTokenRequest{RefreshToken: refreshToken}).JSONEncoded()
+	if err != nil {
+		return nil, err
+	}
+
+	jwtResponse, err := c.Client.
+		Post().
+		APIPath(refreshTokenEndpointString).
+		Body(bodydata).
+		Do(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+	return parseJWTResponse(jwtResponse)
 }

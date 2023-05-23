@@ -18,6 +18,9 @@ package resources
 import (
 	"bytes"
 	"encoding/json"
+	"time"
+
+	"golang.org/x/oauth2"
 )
 
 type APIResource struct{}
@@ -33,6 +36,21 @@ type JWTTokenRequest struct {
 	APIResource
 	Code  string `json:"code"`
 	State string `json:"state"`
+}
+
+type UserToken struct {
+	APIResource
+	AccessToken  string `json:"accessToken"`
+	RefreshToken string `json:"refreshToken"`
+	ExpiresAt    int64  `json:"expiresAt"`
+}
+
+func (ut *UserToken) JWTToken() *oauth2.Token {
+	return &oauth2.Token{
+		AccessToken:  ut.AccessToken,
+		RefreshToken: ut.RefreshToken,
+		Expiry:       time.Unix(ut.ExpiresAt, 0),
+	}
 }
 
 type RefreshTokenRequest struct {
