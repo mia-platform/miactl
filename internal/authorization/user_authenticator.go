@@ -61,6 +61,7 @@ func (ua *userAuthenticator) RoundTrip(req *http.Request) (*http.Response, error
 
 	clonedReq := *req
 	accessToken.SetAuthHeader(&clonedReq)
+	reqBodyClosed = true
 	return ua.next.RoundTrip(&clonedReq)
 }
 

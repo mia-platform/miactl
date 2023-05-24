@@ -16,8 +16,9 @@
 package authorization
 
 import (
+	"bytes"
 	"encoding/json"
-	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -28,28 +29,7 @@ import (
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"golang.org/x/oauth2"
 )
-
-type testAuthCacheProvider struct {
-	expired      bool
-	refreshToken string
-}
-
-func (ap *testAuthCacheProvider) ReadJWTToken() *oauth2.Token {
-	expiry := time.Now().Add(1 * time.Hour)
-	if ap.expired {
-		// if the expiry is now, is under the skew delta, and so it count as expired
-		expiry = time.Now()
-	}
-	return &oauth2.Token{
-		AccessToken:  "foo",
-		RefreshToken: ap.refreshToken,
-		Expiry:       expiry,
-	}
-}
-
-func (ap *testAuthCacheProvider) WriteJWTToken(_ *oauth2.Token) {}
 
 func TestUserAuthenticator(t *testing.T) {
 	testCases := map[string]struct {
@@ -133,44 +113,33 @@ func TestUserAuthenticator(t *testing.T) {
 	}
 }
 
-func testServer(t *testing.T, handler http.HandlerFunc) *httptest.Server {
-	t.Helper()
-	return httptest.NewServer(handler)
-}
+func TestRoundTrip(t *testing.T) {
+	rt := &testRoundTripper{}
+	auth := &userAuthenticator{
+		userAuth: &testAuthCacheProvider{},
+		client:   nil,
+		next:     rt,
+	}
 
-func testServerForCompleteFlow(t *testing.T) *httptest.Server {
-	t.Helper()
-	accessToken := "new"
-	return testServer(t, func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.Method == http.MethodGet && r.RequestURI == fmt.Sprintf(providerEndpointStringTemplate, appID):
-			testProvider := resources.AuthProvider{
-				ID:    "foo",
-				Label: "Foo",
-				Type:  "foo-type",
-			}
-			encoder := json.NewEncoder(w)
-			err := encoder.Encode([]*resources.AuthProvider{&testProvider})
-			require.NoError(t, err)
-		case r.Method == http.MethodGet && r.RequestURI == authorizeEndpointString:
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("{\"statusCode\":500,\"message\":\"not implemented\"}"))
-			assert.Fail(t, "not implemented")
-		case r.Method == http.MethodPost && r.RequestURI == refreshTokenEndpointString:
-			accessToken = "expired-refresh"
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("{\"statusCode\":500,\"message\":\"not implemented\"}"))
-		case r.Method == http.MethodPost && r.RequestURI == getTokenEndpointString:
-			testUserToken := resources.UserToken{
-				AccessToken:  accessToken,
-				RefreshToken: "refresh",
-				ExpiresAt:    time.Now().Add(1 * time.Hour).Unix(),
-			}
-			encoder := json.NewEncoder(w)
-			err := encoder.Encode(&testUserToken)
-			require.NoError(t, err)
-		default:
-			assert.Failf(t, "unexpected request", "%s request %s", r.Method, r.RequestURI)
-		}
-	})
+	req := &http.Request{
+		Header: make(http.Header),
+	}
+
+	auth.RoundTrip(req) //nolint:bodyclose
+	rtRequest := rt.Request
+	require.NotNil(t, rtRequest)
+	assert.NotSame(t, rtRequest, req)
+	assert.Equal(t, "Bearer foo", rtRequest.Header.Get("Authorization"))
+
+	req = &http.Request{
+		Header: make(http.Header),
+	}
+	req.Header.Set("Authorization", "Bearer existing")
+	req.Body = io.NopCloser(bytes.NewBuffer([]byte("")))
+
+	auth.RoundTrip(req) //nolint:bodyclose
+	rtRequest = rt.Request
+	require.NotNil(t, rtRequest)
+	assert.Same(t, rtRequest, req)
+	assert.Equal(t, "Bearer existing", rtRequest.Header.Get("Authorization"))
 }
