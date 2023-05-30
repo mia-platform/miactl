@@ -29,7 +29,7 @@ import (
 func TestNewGetCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
-		cmd := NewListCompaniesCmd(opts)
+		cmd := ListCmd(opts)
 		require.NotNil(t, cmd)
 	})
 }
@@ -43,7 +43,7 @@ func TestListCompanies(t *testing.T) {
 	}{
 		"valid get response": {
 			server:       mockServer(t, true),
-			companiesURI: companiesURI,
+			companiesURI: listCompaniesEndpoint,
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
@@ -54,7 +54,7 @@ func TestListCompanies(t *testing.T) {
 				Transport: http.DefaultTransport,
 			},
 			err:          true,
-			companiesURI: companiesURI,
+			companiesURI: listCompaniesEndpoint,
 		},
 	}
 
@@ -109,7 +109,7 @@ func mockServer(t *testing.T, validResponse bool) *httptest.Server {
 	}
 ]`
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != companiesURI && r.Method != http.MethodGet {
+		if r.RequestURI != listCompaniesEndpoint && r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			require.Fail(t, "unsupported call")
 			return

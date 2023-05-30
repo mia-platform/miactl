@@ -28,15 +28,18 @@ import (
 )
 
 const (
-	companiesURI = "/api/backend/tenants/"
+	listCompaniesEndpoint = "/api/backend/tenants/"
 )
 
-// NewListCompaniesCmd func creates a new command
-func NewListCompaniesCmd(options *clioptions.CLIOptions) *cobra.Command {
+// ListCmd return a new cobra command for listing companies
+func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
-		Short: "list mia companies in the current context",
-		RunE: func(_ *cobra.Command, args []string) error {
+		Short: "List user companies",
+		Long: `List the companies that the current user can access.
+
+Companies can be used to logically group projects by organizations or internal teams.`,
+		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
@@ -49,7 +52,7 @@ func NewListCompaniesCmd(options *clioptions.CLIOptions) *cobra.Command {
 // listCompanies retrieves the companies belonging to the current context
 func listCompanies(client *client.APIClient) error {
 	// execute the request
-	resp, err := client.Get().APIPath(companiesURI).Do(context.Background())
+	resp, err := client.Get().APIPath(listCompaniesEndpoint).Do(context.Background())
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}

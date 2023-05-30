@@ -16,82 +16,81 @@
 package project
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 	"os"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/context"
-	"github.com/mia-platform/miactl/internal/httphandler"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
 const (
-	oktaProvider = "okta"
-	projectsURI  = "/api/backend/projects/"
+	listProjectsEndpoint = "/api/backend/projects/"
 )
 
-// NewListProjectsCmd func creates a new command
-func NewListProjectsCmd(options *clioptions.CLIOptions) *cobra.Command {
-	return &cobra.Command{
+// ListCmd return a cobra command for listing projects
+func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
+	prjListCmd := &cobra.Command{
 		Use:   "list",
-		Short: "list mia projects in the current context",
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			currentContext, err := context.GetCurrentContext()
-			if err != nil {
-				return err
-			}
-			return context.SetContextValues(cmd, currentContext)
-		},
+		Short: "List projects for the current user",
+		Long: `List projects for the current user in the selected company.
+
+The company can be set via the dedicated flag, or it will be inferred from
+the current context. If no company can be selected the command will return
+an error.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			mc, err := httphandler.ConfigureDefaultMiaClient(options, projectsURI)
-			if err != nil {
-				return err
-			}
-			return listProjects(mc, options)
+			restConfig, err := options.ToRESTConfig()
+			cobra.CheckErr(err)
+			client, err := client.APIClientForConfig(restConfig)
+			cobra.CheckErr(err)
+			return listProjects(client, restConfig.CompanyID)
 		},
 	}
+
+	return prjListCmd
 }
 
 // listProjects retrieves the projects with the company ID of the current context
-func listProjects(mc *httphandler.MiaClient, opts *clioptions.CLIOptions) error {
+func listProjects(client *client.APIClient, companyID string) error {
+	if len(companyID) == 0 {
+		return fmt.Errorf("missing company id, please set one with the flag or context")
+	}
+
 	// execute the request
-	resp, err := mc.GetSession().Get().ExecuteRequest()
+	resp, err := client.
+		Get().
+		SetParam("tenantIds", companyID).
+		APIPath(listProjectsEndpoint).
+		Do(context.Background())
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
-	defer resp.Body.Close()
-
-	var projects []resources.Project
-	currentContext := mc.GetSession().GetContext()
-
-	if resp.StatusCode == http.StatusOK {
-		companyID := opts.CompanyID
-		if companyID == "" {
-			return fmt.Errorf("please set a company ID for context %s", currentContext)
-		}
-		if err := httphandler.ParseResponseBody(currentContext, resp.Body, &projects); err != nil {
-			return fmt.Errorf("error parsing response body: %w", err)
-		}
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeader([]string{"Name", "Project ID", "Configuration Git Path"})
-		for _, project := range projects {
-			if project.TenantID == companyID {
-				table.Append([]string{project.Name, project.ProjectID, project.ConfigurationGitPath})
-			}
-		}
-		table.Render()
-	} else {
-		return fmt.Errorf("request failed with status code: %s", resp.Status)
+	if err := resp.Error(); err != nil {
+		return err
 	}
 
+	projects := make([]*resources.Project, 0)
+	if err := resp.ParseResponse(&projects); err != nil {
+		return fmt.Errorf("error parsing response body: %w", err)
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeader([]string{"Name", "Project ID", "Configuration Git Path"})
+	for _, project := range projects {
+		if project.TenantID == companyID {
+			table.Append([]string{project.Name, project.ProjectID, project.ConfigurationGitPath})
+		}
+	}
+
+	table.Render()
 	return nil
 }

@@ -13,23 +13,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package company
+package cmd
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/project"
 	"github.com/spf13/cobra"
 )
 
-func NewCompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "company",
-		Short: "view and manage mia companies",
+func ProjectCmd(o *clioptions.CLIOptions) *cobra.Command {
+	projectCmd := &cobra.Command{
+		Use:   "project",
+		Short: "Manage Mia-Platform Console projects",
+		Long: `Manage Mia-Platform Console projects.
+
+Projects contains the configurations for the various Services, APIs, CronJobs and the other
+resources that make up the applications of a specific company.
+		`,
 	}
 
-	options.AddConnectionFlags(cmd.PersistentFlags())
-	options.AddContextFlags(cmd.PersistentFlags())
+	// add cmd flags
+	flags := projectCmd.PersistentFlags()
+	o.AddConnectionFlags(flags)
+	o.AddContextFlags(flags)
+	o.AddCompanyFlags(flags)
 
-	cmd.AddCommand(NewListCompaniesCmd(options))
+	// add sub commnads
+	projectCmd.AddCommand(
+		project.ListCmd(o),
+	)
 
-	return cmd
+	return projectCmd
 }

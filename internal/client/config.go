@@ -44,6 +44,12 @@ type Config struct {
 	// AuthCacheReadWriter provides access to authorization cache
 	AuthCacheReadWriter
 
+	// CompanyID contains the company id that can be used for filtering requests
+	CompanyID string
+
+	// ProjectID contains the project id that can be used for filtering requests
+	ProjectID string
+
 	// The maximum length of time to wait before giving up on a server request. A value of zero means no timeout.
 	Timeout time.Duration
 }

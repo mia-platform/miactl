@@ -13,19 +13,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package project
+package cmd
 
 import (
-	"testing"
-
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/stretchr/testify/require"
+	"github.com/mia-platform/miactl/internal/cmd/company"
+	"github.com/spf13/cobra"
 )
 
-func TestNewContextCmd(t *testing.T) {
-	t.Run("test command creation", func(t *testing.T) {
-		opts := clioptions.NewCLIOptions()
-		cmd := NewProjectCmd(opts)
-		require.NotNil(t, cmd)
-	})
+func CompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "company",
+		Short: "view and manage mia companies",
+	}
+
+	// add cmd flags
+	flags := cmd.PersistentFlags()
+	options.AddConnectionFlags(flags)
+	options.AddContextFlags(flags)
+
+	// add sub commnads
+	cmd.AddCommand(company.ListCmd(options))
+
+	return cmd
 }

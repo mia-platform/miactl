@@ -17,11 +17,9 @@ package cmd
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/company"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/deploy"
 	"github.com/mia-platform/miactl/internal/cmd/login"
-	"github.com/mia-platform/miactl/internal/cmd/project"
 	"github.com/spf13/cobra"
 )
 
@@ -42,11 +40,12 @@ func NewRootCommand() *cobra.Command {
 	options.AddGlobalFlags(rootCmd.PersistentFlags())
 
 	// add sub commands
-	rootCmd.AddCommand(project.NewProjectCmd(options),
+	rootCmd.AddCommand(
 		login.NewLoginCmd(options),
 		deploy.NewDeployCmd(options),
 		miacontext.NewContextCmd(options),
-		company.NewCompanyCmd(options),
+		CompanyCmd(options),
+		ProjectCmd(options),
 		ServiceAccountCmd(options),
 	)
 

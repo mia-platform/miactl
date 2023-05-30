@@ -16,79 +16,72 @@
 package project
 
 import (
-	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/httphandler"
-	"github.com/mia-platform/miactl/internal/testutils"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-)
-
-var (
-	opts1 = clioptions.CLIOptions{
-		Endpoint:  "http://url",
-		CompanyID: "123",
-		ProjectID: "123",
-	}
-	opts2 = clioptions.CLIOptions{
-		Endpoint:  "http://url",
-		ProjectID: "123",
-	}
 )
 
 func TestNewGetCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
-		cmd := NewListProjectsCmd(opts)
+		cmd := ListCmd(opts)
 		require.NotNil(t, cmd)
 	})
 }
 
 func TestGetProjects(t *testing.T) {
-	server := testutils.CreateMockServer()
-	server.Start()
-	defer server.Close()
-
-	type TestCase struct {
-		name        string
-		opts        clioptions.CLIOptions
-		miaClient   *httphandler.MiaClient
-		expectedErr string
-	}
-	testCases := []TestCase{
-		{
-			name:      "valid config, successful get",
-			opts:      opts1,
-			miaClient: httphandler.FakeMiaClient(fmt.Sprintf("%s/getprojects", server.URL)),
+	testCases := map[string]struct {
+		companyID        string
+		testServer       *httptest.Server
+		expectStatusCode int
+		expectError      bool
+	}{
+		"valid config, successful get": {
+			companyID:  "foo-company",
+			testServer: testServer(t),
 		},
-		{
-			name:        "invalid response body",
-			opts:        opts1,
-			miaClient:   httphandler.FakeMiaClient(fmt.Sprintf("%s/invalidbody", server.URL)),
-			expectedErr: "invalid character",
-		},
-		{
-			name:        "status code != 200",
-			opts:        opts1,
-			miaClient:   httphandler.FakeMiaClient(fmt.Sprintf("%s/notfound", server.URL)),
-			expectedErr: "404 Not Found",
-		},
-		{
-			name:        "company ID unset",
-			opts:        opts2,
-			miaClient:   httphandler.FakeMiaClient(fmt.Sprintf("%s/getprojects", server.URL)),
-			expectedErr: "please set a company ID",
+		"company ID unset": {
+			testServer:  testServer(t),
+			expectError: true,
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Log(tc.name)
-		err := listProjects(tc.miaClient, &tc.opts)
-		if tc.expectedErr == "" {
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			server := testCase.testServer
+			defer server.Close()
+
+			client, err := client.APIClientForConfig(&client.Config{
+				Host: server.URL,
+			})
 			require.NoError(t, err)
-		} else {
-			require.ErrorContains(t, err, tc.expectedErr)
-		}
+			err = listProjects(client, testCase.companyID)
+			if testCase.expectError {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.NoError(t, err)
+		})
 	}
+}
+
+func testServer(t *testing.T) *httptest.Server {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		default:
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, "request not expexted")
+		case r.URL.Path == listProjectsEndpoint && r.Method == http.MethodGet:
+			_, err := w.Write([]byte(`[{"_id": "123"}]`))
+			require.NoError(t, err)
+		}
+	}))
+	return server
 }

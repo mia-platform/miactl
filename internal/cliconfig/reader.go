@@ -48,6 +48,8 @@ func (cr *ConfigReader) ClientConfig(locator *ConfigPathLocator) (*client.Config
 			Insecure: context.InsecureSkipTLSVerify,
 		},
 		AuthCacheReadWriter: NewAuthReadWriter(locator, context),
+		CompanyID:           context.CompanyID,
+		ProjectID:           context.ProjectID,
 	}
 
 	authConfig, found := cr.getAuthConfig()
@@ -70,7 +72,14 @@ func (cr *ConfigReader) getContext() (*api.ContextConfig, error) {
 	}
 
 	if cr.overrides != nil {
-		_ = mergo.Merge(mergedContext, cr.overrides, mergo.WithOverride)
+		overrides := &api.ContextConfig{
+			Endpoint:              cr.overrides.Endpoint,
+			CertificateAuthority:  cr.overrides.CertificateAuthority,
+			InsecureSkipTLSVerify: cr.overrides.InsecureSkipTLSVerify,
+			CompanyID:             cr.overrides.CompanyID,
+			ProjectID:             cr.overrides.ProjectID,
+		}
+		_ = mergo.Merge(mergedContext, overrides, mergo.WithOverride)
 	}
 
 	return mergedContext, nil
