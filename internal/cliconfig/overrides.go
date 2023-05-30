@@ -13,19 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package cliconfig
 
-import (
-	"os"
-
-	_ "github.com/mia-platform/miactl/internal/authorization"
-	"github.com/mia-platform/miactl/internal/cmd"
-)
-
-func main() {
-	rootCmd := cmd.NewRootCommand()
-	if err := rootCmd.Execute(); err != nil {
-		os.Exit(1)
-	}
-	os.Exit(0)
+type ConfigOverrides struct {
+	Endpoint              string
+	CertificateAuthority  string
+	InsecureSkipTLSVerify bool
+	CompanyID             string
+	ProjectID             string
+	Context               string
 }

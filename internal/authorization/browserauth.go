@@ -33,11 +33,11 @@ import (
 
 const (
 	providerEndpointStringTemplate = "/api/apps/%s/providers/"
-	refreshTokenEndpointString     = "/api/refreshtoken/"
-	authorizeEndpointString        = "/api/authorize/"
+	refreshTokenEndpointString     = "/api/refreshtoken"
+	authorizeEndpointString        = "/api/authorize"
 	callbackEndpointString         = "/oauth/callback"
 	// disable gosec for false positive in G101, because it is not an hardcoded credentials...
-	getTokenEndpointString = "/api/oauth/token/" //nolint:gosec
+	getTokenEndpointString = "/api/oauth/token" //nolint:gosec
 	appIDKey               = "appId"
 	providerIDKey          = "providerId"
 )
@@ -138,7 +138,7 @@ func (c *Config) startLoginFlow(ctx context.Context) (*oauth2.Token, error) {
 	startFlowURL := c.Client.Get().
 		APIPath(authorizeEndpointString).
 		SetParam(appIDKey, c.AppID).
-		SetParam(providerID, providerID).URL().String()
+		SetParam(providerIDKey, providerID).URL().String()
 
 	authResponse, err := startLocalServerForToken(ctx, startFlowURL, listener, c.ServerReadyHandler)
 	if err != nil {
@@ -261,7 +261,8 @@ func startLocalServerForToken(ctx context.Context, startFlowURL string, listener
 
 // jwtToken exhange code and status of the authorization response for a jwt token
 func jwtToken(ctx context.Context, response *authResponse, client client.Interface) (*oauth2.Token, error) {
-	bodydata, err := (&resources.JWTTokenRequest{Code: response.Code, State: response.State}).JSONEncoded()
+	request := &resources.JWTTokenRequest{Code: response.Code, State: response.State}
+	bodydata, err := resources.EncodeResourceToJSON(&request)
 	if err != nil {
 		return nil, err
 	}
@@ -340,7 +341,7 @@ func parseJWTResponse(jwtResponse *client.Response) (*oauth2.Token, error) {
 }
 
 func (c *Config) startRefreshFlow(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
-	bodydata, err := (&resources.RefreshTokenRequest{RefreshToken: refreshToken}).JSONEncoded()
+	bodydata, err := resources.EncodeResourceToJSON(&resources.RefreshTokenRequest{RefreshToken: refreshToken})
 	if err != nil {
 		return nil, err
 	}

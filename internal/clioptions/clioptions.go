@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/configpath"
 	"github.com/spf13/pflag"
@@ -122,15 +123,29 @@ func (o *CLIOptions) AddServiceAccountFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.ServiceAccountRole, "service-account-role", "r", "", "the company role of the service account")
 }
 
-func (o *CLIOptions) ToRESTConfig() *client.Config {
-	return &client.Config{
-		Host:      o.Endpoint,
-		UserAgent: defaultUserAgent(),
-		TLSClientConfig: client.TLSClientConfig{
-			Insecure: o.Insecure,
-			CAFile:   o.CAFile,
-		},
+func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
+	locator := cliconfig.NewConfigPathLocator()
+	locator.ExplicitPath = o.MiactlConfig
+
+	config, err := locator.ReadConfig()
+	if err != nil {
+		return nil, err
 	}
+
+	overrides := new(cliconfig.ConfigOverrides)
+	overrides.Endpoint = o.Endpoint
+	overrides.CompanyID = o.CompanyID
+	overrides.ProjectID = o.ProjectID
+	overrides.Context = o.Context
+	overrides.CertificateAuthority = o.CAFile
+	overrides.InsecureSkipTLSVerify = o.Insecure
+
+	clientConfig, err := cliconfig.NewConfigReader(config, overrides).ClientConfig(locator)
+	if err != nil {
+		return nil, err
+	}
+	clientConfig.UserAgent = defaultUserAgent()
+	return clientConfig, nil
 }
 
 func defaultUserAgent() string {

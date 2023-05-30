@@ -37,6 +37,13 @@ type Config struct {
 
 	// Transport add a custom transport instead of creating a new one. Wrappers will be added to it
 	Transport http.RoundTripper
+
+	// AuthConfig contains settings for settign up authentication for the http requests
+	AuthConfig
+
+	// AuthCacheReadWriter provides access to authorization cache
+	AuthCacheReadWriter
+
 	// The maximum length of time to wait before giving up on a server request. A value of zero means no timeout.
 	Timeout time.Duration
 }
@@ -48,6 +55,12 @@ type TLSClientConfig struct {
 
 	// Trusted root certificates for server
 	CAFile string
+}
+
+// AuthConfig contains settings for settign up authentication for the http requests
+type AuthConfig struct {
+	ClientID     string
+	ClientSecret string
 }
 
 // contentConfig contains settings that affect how objects are transformed when sent to the server.

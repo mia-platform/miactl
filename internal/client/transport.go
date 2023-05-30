@@ -19,6 +19,7 @@ import (
 	"net/http"
 
 	"github.com/mia-platform/miactl/internal/transport"
+	"golang.org/x/oauth2"
 )
 
 // httpClientForConfig return a new http.Client with the transport security provided in the config
@@ -41,6 +42,11 @@ func httpClientForConfig(config *Config) (*http.Client, error) {
 	return httpClient, nil
 }
 
+type noopProvider struct{}
+
+func (*noopProvider) ReadJWTToken() *oauth2.Token { return nil }
+func (*noopProvider) WriteJWTToken(*oauth2.Token) {}
+
 // transportForConfig return a new transport for the config or the one attached to it
 func transportForConfig(config *Config) (http.RoundTripper, error) {
 	if config.Transport != nil {
@@ -56,7 +62,11 @@ func transportForConfig(config *Config) (http.RoundTripper, error) {
 	}
 
 	if authProvider != nil {
-		provider := authProvider(config, nil)
+		var cacheProvider AuthCacheReadWriter = &noopProvider{}
+		if config.AuthCacheReadWriter != nil {
+			cacheProvider = config.AuthCacheReadWriter
+		}
+		provider := authProvider(config, cacheProvider)
 		transportConfig.AuthorizeWrapper = provider.Wrap
 	}
 

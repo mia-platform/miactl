@@ -23,23 +23,18 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type APIResource struct{}
-
 type AuthProvider struct {
-	APIResource
 	ID    string `json:"id"`
 	Label string `json:"label"`
 	Type  string `json:"type"`
 }
 
 type JWTTokenRequest struct {
-	APIResource
 	Code  string `json:"code"`
 	State string `json:"state"`
 }
 
 type UserToken struct {
-	APIResource
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 	ExpiresAt    int64  `json:"expiresAt"`
@@ -54,35 +49,30 @@ func (ut *UserToken) JWTToken() *oauth2.Token {
 }
 
 type RefreshTokenRequest struct {
-	APIResource
 	RefreshToken string `json:"refreshToken"`
 }
 
 type APIError struct {
-	APIResource
 	StatusCode int    `json:"statusCode"`
 	Message    string `json:"message"`
 }
 
 type Cluster struct {
-	APIResource
 	Hostname  string `json:"hostname"`
 	Namespace string `json:"namespace"`
 }
 
 type Environment struct {
-	APIResource
 	DisplayName string  `json:"label"` //nolint:tagliatelle
 	EnvID       string  `json:"value"` //nolint:tagliatelle
 	Cluster     Cluster `json:"cluster"`
 }
+
 type Pipelines struct {
-	APIResource
 	Type string `json:"type"`
 }
 
 type Project struct {
-	APIResource
 	ID                   string        `json:"_id"` //nolint:tagliatelle
 	Name                 string        `json:"name"`
 	ConfigurationGitPath string        `json:"configurationGitPath"`
@@ -93,7 +83,6 @@ type Project struct {
 }
 
 type Company struct {
-	APIResource
 	ID         string     `json:"_id"` //nolint:tagliatelle
 	Name       string     `json:"name"`
 	TenantID   string     `json:"tenantId"`
@@ -102,15 +91,14 @@ type Company struct {
 }
 
 type Repository struct {
-	APIResource
 	Type string `json:"type"`
 }
 
-func (r *APIResource) JSONEncoded() ([]byte, error) {
+func EncodeResourceToJSON(obj interface{}) ([]byte, error) {
 	buffer := &bytes.Buffer{}
 	enc := json.NewEncoder(buffer)
 	enc.SetEscapeHTML(false)
-	err := enc.Encode(r)
+	err := enc.Encode(obj)
 	if err != nil {
 		return nil, err
 	}

@@ -68,7 +68,7 @@ func TestSetAPIPath(t *testing.T) {
 	validPath := "/valid/path"
 	r.APIPath(validPath)
 	assert.NoError(t, r.Error())
-	assert.Equal(t, r.apiPath, fmt.Sprintf("%s/", "/valid/path"))
+	assert.Equal(t, validPath, r.apiPath)
 	r.APIPath(":invalid-url")
 	assert.Error(t, r.Error())
 

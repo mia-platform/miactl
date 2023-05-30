@@ -13,19 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+// +k8s:deepcopy-gen=package
 
-import (
-	"os"
-
-	_ "github.com/mia-platform/miactl/internal/authorization"
-	"github.com/mia-platform/miactl/internal/cmd"
-)
-
-func main() {
-	rootCmd := cmd.NewRootCommand()
-	if err := rootCmd.Execute(); err != nil {
-		os.Exit(1)
-	}
-	os.Exit(0)
-}
+// package api contains the definitions of the struct for the miactl configuration
+package api

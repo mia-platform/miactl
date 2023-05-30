@@ -13,19 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
-
-import (
-	"os"
-
-	_ "github.com/mia-platform/miactl/internal/authorization"
-	"github.com/mia-platform/miactl/internal/cmd"
-)
-
-func main() {
-	rootCmd := cmd.NewRootCommand()
-	if err := rootCmd.Execute(); err != nil {
-		os.Exit(1)
-	}
-	os.Exit(0)
-}
+// cliconfig package will provide functions for getting the correct configuration for the client,
+// it will correctly handling on disk configuration and overrides
+package cliconfig

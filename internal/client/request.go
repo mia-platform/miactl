@@ -22,7 +22,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 // Request wrap the http.Request configuration providing functions for configure it in an easier and contained way
@@ -50,6 +49,13 @@ func NewRequest(client *APIClient) *Request {
 	case len(client.contentConfig.ContentType) > 0:
 		request.SetHeader("Accept", client.contentConfig.ContentType+", */*")
 	}
+
+	// sadly some calls will not work correctly without the content-type set
+	// hopefully in the future we can remove this
+	if len(client.contentConfig.ContentType) > 0 {
+		request.SetHeader("Content-Type", client.contentConfig.ContentType)
+	}
+
 	return request
 }
 
@@ -98,9 +104,11 @@ func (r *Request) APIPath(apiPath string) *Request {
 	}
 
 	r.apiPath = parsedURI.Path
-	if !strings.HasSuffix(r.apiPath, "/") {
-		r.apiPath += "/"
-	}
+	// comment out this, because not every request support the trailing /
+	// hopefully in the future they will
+	// if !strings.HasSuffix(r.apiPath, "/") {
+	// 	r.apiPath += "/"
+	// }
 	return r
 }
 
