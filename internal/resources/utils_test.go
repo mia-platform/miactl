@@ -13,22 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package browser
+package resources
 
 import (
-	"github.com/skratchdot/open-golang/open"
+	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
-type URLOpener interface {
-	Open(string) error
-}
-
-type urlOpener struct{}
-
-func NewURLOpener() URLOpener {
-	return &urlOpener{}
-}
-
-func (b urlOpener) Open(url string) error {
-	return open.Run(url)
+func TestIsValidRole(t *testing.T) {
+	for _, role := range validServiceAccountRoles {
+		require.True(t, IsValidServiceAccountRole(role))
+	}
+	require.False(t, IsValidServiceAccountRole("wrong-role"))
 }

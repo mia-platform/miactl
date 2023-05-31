@@ -16,14 +16,12 @@
 package basic
 
 import (
-	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
-	"net/http"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/context"
-	"github.com/mia-platform/miactl/internal/httphandler"
+	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/spf13/cobra"
 )
 
@@ -35,17 +33,8 @@ type basicServiceAccountResponse struct {
 }
 
 const (
-	companyServiceAccountsURITemplate = "api/companies/%s/service-accounts"
+	companyServiceAccountsEndpointTemplate = "api/companies/%s/service-accounts"
 )
-
-var validServiceAccountRoles = []string{
-	"company-owner",
-	"project-admin",
-	"maintainer",
-	"developer",
-	"reporter",
-	"guest",
-}
 
 func ServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
@@ -57,23 +46,17 @@ You can create a service account with the same or lower role than the role that
 the current authentication has. The role company-owner can be used only when the
 service account is created on the company.`,
 		Args: cobra.ExactArgs(1),
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			currentContext, err := context.GetCurrentContext()
-			if err != nil {
-				return err
-			}
-			return context.SetContextValues(cmd, currentContext)
-		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fullURI := fmt.Sprintf(companyServiceAccountsURITemplate, options.CompanyID)
-			mc, err := httphandler.ConfigureDefaultMiaClient(options, fullURI)
+			serviceAccountName := args[0]
+			restConfig, err := options.ToRESTConfig()
+			cobra.CheckErr(err)
+			client, err := client.APIClientForConfig(restConfig)
+			cobra.CheckErr(err)
+			credentials, err := createBasicServiceAccount(client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.ServiceAccountRole))
 			if err != nil {
 				return err
 			}
-			credentials, err := createBasicServiceAccount(args[0], mc, options)
-			if err != nil {
-				return err
-			}
+
 			cmd.Println("Service account created, please save the following parameters:")
 			cmd.Println("")
 			cmd.Printf("Client ID: %s\nClient Secret: %s\n", credentials[0], credentials[1])
@@ -84,7 +67,14 @@ service account is created on the company.`,
 	// add cmd flags
 	options.AddServiceAccountFlags(cmd.Flags())
 	err := cmd.RegisterFlagCompletionFunc("service-account-role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return validServiceAccountRoles, cobra.ShellCompDirectiveDefault
+		return []string{
+			resources.ServiceAccountRoleGuest.String(),
+			resources.ServiceAccountRoleReporter.String(),
+			resources.ServiceAccountRoleDeveloper.String(),
+			resources.ServiceAccountRoleMaintainer.String(),
+			resources.ServiceAccountRoleProjectAdmin.String(),
+			resources.ServiceAccountRoleCompanyOwner.String(),
+		}, cobra.ShellCompDirectiveDefault
 	})
 
 	if err != nil {
@@ -95,53 +85,40 @@ service account is created on the company.`,
 	return cmd
 }
 
-func createBasicServiceAccount(name string, mc *httphandler.MiaClient, opts *clioptions.CLIOptions) ([]string, error) {
-	if !isValidServiceAccountRole(opts.ServiceAccountRole) {
-		return []string{}, fmt.Errorf("invalid service account role %s", opts.ServiceAccountRole)
+func createBasicServiceAccount(client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) ([]string, error) {
+	if !resources.IsValidServiceAccountRole(role) {
+		return []string{}, fmt.Errorf("invalid service account role %s", role)
 	}
 
-	payload := struct {
-		Name                    string `json:"name"`
-		TokenEndpointAuthMethod string `json:"tokenEndpointAuthMethod"`
-		Role                    string `json:"role"`
-	}{
-		Name:                    name,
-		TokenEndpointAuthMethod: "client_secret_basic",
-		Role:                    opts.ServiceAccountRole,
+	payload := &resources.ServiceAccountRequest{
+		Name: name,
+		Type: resources.ServiceAccountBasic,
+		Role: role,
 	}
-	jsonPayload, err := json.Marshal(payload)
+
+	body, err := resources.EncodeResourceToJSON(payload)
 	if err != nil {
-		return nil, fmt.Errorf("error building request payload: %w", err)
+		return nil, fmt.Errorf("failed to encode request body: %w", err)
 	}
 
-	resp, err := mc.SessionHandler.Post(bytes.NewBuffer(jsonPayload)).ExecuteRequest()
-	if err != nil {
-		return nil, fmt.Errorf("error executing request for service account creation: %w", err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		// TODO: review console error when creating a service account with a name that is already taken
-		// map[message:POST http://client-credentials/clients: 400 - {"error":"invalid_client_metadata",
-		// "error_description":"fails to create the client"} statusCode:400]
-		return nil, fmt.Errorf("service account creation failed with status: %d", resp.StatusCode)
-	}
-	defer resp.Body.Close()
+	resp, err := client.
+		Post().
+		APIPath(fmt.Sprintf(companyServiceAccountsEndpointTemplate, companyID)).
+		Body(body).
+		Do(context.Background())
 
-	var response basicServiceAccountResponse
-
-	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return nil, err
 	}
 
-	return []string{response.ClientID, response.ClientSecret}, nil
-}
-
-func isValidServiceAccountRole(role string) bool {
-	for _, validRole := range validServiceAccountRoles {
-		if validRole == role {
-			return true
-		}
+	if err := resp.Error(); err != nil {
+		return nil, err
 	}
 
-	return false
+	response := new(basicServiceAccountResponse)
+	if err := resp.ParseResponse(response); err != nil {
+		return nil, err
+	}
+
+	return []string{response.ClientID, response.ClientSecret}, nil
 }

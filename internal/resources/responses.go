@@ -16,22 +16,20 @@
 package resources
 
 import (
-	"bytes"
-	"encoding/json"
 	"time"
 
 	"golang.org/x/oauth2"
 )
 
+type APIError struct {
+	StatusCode int    `json:"statusCode"`
+	Message    string `json:"message"`
+}
+
 type AuthProvider struct {
 	ID    string `json:"id"`
 	Label string `json:"label"`
 	Type  string `json:"type"`
-}
-
-type JWTTokenRequest struct {
-	Code  string `json:"code"`
-	State string `json:"state"`
 }
 
 type UserToken struct {
@@ -48,27 +46,19 @@ func (ut *UserToken) JWTToken() *oauth2.Token {
 	}
 }
 
-type RefreshTokenRequest struct {
-	RefreshToken string `json:"refreshToken"`
-}
-
-type APIError struct {
-	StatusCode int    `json:"statusCode"`
-	Message    string `json:"message"`
-}
-
-type Cluster struct {
-	Hostname  string `json:"hostname"`
-	Namespace string `json:"namespace"`
-}
-
-type Environment struct {
-	DisplayName string  `json:"label"` //nolint:tagliatelle
-	EnvID       string  `json:"value"` //nolint:tagliatelle
-	Cluster     Cluster `json:"cluster"`
+type Company struct {
+	ID         string     `json:"_id"` //nolint:tagliatelle
+	Name       string     `json:"name"`
+	TenantID   string     `json:"tenantId"`
+	Pipelines  Pipelines  `json:"pipelines"`
+	Repository Repository `json:"repository"`
 }
 
 type Pipelines struct {
+	Type string `json:"type"`
+}
+
+type Repository struct {
 	Type string `json:"type"`
 }
 
@@ -82,26 +72,23 @@ type Project struct {
 	TenantID             string        `json:"tenantId"`
 }
 
-type Company struct {
-	ID         string     `json:"_id"` //nolint:tagliatelle
-	Name       string     `json:"name"`
-	TenantID   string     `json:"tenantId"`
-	Pipelines  Pipelines  `json:"pipelines"`
-	Repository Repository `json:"repository"`
+type Environment struct {
+	DisplayName string  `json:"label"` //nolint:tagliatelle
+	EnvID       string  `json:"value"` //nolint:tagliatelle
+	Cluster     Cluster `json:"cluster"`
 }
 
-type Repository struct {
-	Type string `json:"type"`
+type Cluster struct {
+	Hostname  string `json:"hostname"`
+	Namespace string `json:"namespace"`
 }
 
-func EncodeResourceToJSON(obj interface{}) ([]byte, error) {
-	buffer := &bytes.Buffer{}
-	enc := json.NewEncoder(buffer)
-	enc.SetEscapeHTML(false)
-	err := enc.Encode(obj)
-	if err != nil {
-		return nil, err
-	}
+type DeployProject struct {
+	ID  int    `json:"id"`
+	URL string `json:"url"`
+}
 
-	return buffer.Bytes(), nil
+type PipelineStatus struct {
+	ID     int    `json:"id"`
+	Status string `json:"status"`
 }

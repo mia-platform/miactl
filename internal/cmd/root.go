@@ -19,7 +19,6 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/deploy"
-	"github.com/mia-platform/miactl/internal/cmd/login"
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +40,6 @@ func NewRootCommand() *cobra.Command {
 
 	// add sub commands
 	rootCmd.AddCommand(
-		login.NewLoginCmd(options),
 		deploy.NewDeployCmd(options),
 		miacontext.NewContextCmd(options),
 		CompanyCmd(options),

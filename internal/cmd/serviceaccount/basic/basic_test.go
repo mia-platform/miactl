@@ -14,16 +14,3 @@
 // limitations under the License.
 
 package basic
-
-import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-)
-
-func TestIsValidRole(t *testing.T) {
-	for _, role := range validServiceAccountRoles {
-		require.True(t, isValidServiceAccountRole(role))
-	}
-	require.False(t, isValidServiceAccountRole("wrong-role"))
-}

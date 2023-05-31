@@ -17,130 +17,78 @@ package deploy
 
 import (
 	"fmt"
-	"strings"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/httphandler"
-	"github.com/mia-platform/miactl/internal/testutils"
-	"github.com/spf13/viper"
+	"github.com/mia-platform/miactl/internal/resources"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestNewDeployCmd(t *testing.T) {
-	t.Run("test command creation", func(t *testing.T) {
-		opts := clioptions.NewCLIOptions()
-		cmd := NewDeployCmd(opts)
-		require.NotNil(t, cmd)
-	})
-}
+func TestDeploy(t *testing.T) {
+	sleepDuration = 0
 
-func TestInitializeClient(t *testing.T) {
-	viper.SetConfigType("yaml")
-	err := viper.ReadConfig(strings.NewReader(""))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
+	testCases := map[string]struct {
+		server    *httptest.Server
+		projectID string
+		expectErr bool
+	}{
+		"pipeline succeed": {
+			server:    testServer(t),
+			projectID: "correct",
+		},
+		"missing project ID": {
+			server:    testServer(t),
+			projectID: "",
+			expectErr: true,
+		},
 	}
-	viper.Set("contexts.ctx.endpoint", "endpoint")
-	viper.Set("contexts.ctx.projectid", "projectid")
-	viper.Set("contexts.ctx.companyid", "companyid")
 
-	t.Run("Inizialize a client successfully", func(t *testing.T) {
-		opts := clioptions.NewCLIOptions()
-		ep := "endpoint"
-		ctx := "ctx"
-
-		mc, err := initializeClient(opts, ep, ctx)
-
-		require.NoError(t, err)
-		require.NotNil(t, mc)
-	})
-}
-
-func TestTriggerPipeline(t *testing.T) {
-	server := testutils.CreateMockServer()
-	server.Start()
-
-	defer server.Close()
-
-	opts := clioptions.CLIOptions{
-		Revision:   "test",
-		DeployType: "smart-deploy",
-		NoSemVer:   true,
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			server := testCase.server
+			defer server.Close()
+			options := &clioptions.CLIOptions{
+				Endpoint:  server.URL,
+				ProjectID: testCase.projectID,
+			}
+			err := run("environmentName", options)
+			if testCase.expectErr {
+				require.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+		})
 	}
-	mc := httphandler.FakeMiaClient(fmt.Sprintf("%s/api/deploy/projects/projectid/trigger/pipeline/", server.URL))
-	t.Run("Trigger successfully a pipeline", func(t *testing.T) {
-		exectedBody := deployResponse{
-			ID:  123,
-			URL: "pipeline.eu",
-		}
-
-		body, err := triggerPipeline(mc, "fake-env", &opts)
-		if err != nil {
-			fmt.Println(err)
-		}
-		require.Equal(t, *body, exectedBody)
-	})
-
-	t.Run("Trigger successfully a pipeline with deploy_all", func(t *testing.T) {
-		opts.DeployType = "deploy_all"
-		exectedBody := deployResponse{
-			ID:  123,
-			URL: "pipeline.eu",
-		}
-
-		body, err := triggerPipeline(mc, "fake-env", &opts)
-		if err != nil {
-			fmt.Println(err)
-		}
-		require.Equal(t, *body, exectedBody)
-	})
-	mc = httphandler.FakeMiaClient(fmt.Sprintf("%s/notfound", server.URL))
-	t.Run("Trigger a pipeline with response status 404", func(t *testing.T) {
-		_, err := triggerPipeline(mc, "fake-env", &opts)
-		if err != nil {
-			fmt.Println(err)
-		}
-		fmt.Println(err)
-		require.ErrorContains(t, err, "pipeline exited with status: 404")
-	})
 }
 
-func TestWaitStatus(t *testing.T) {
-	server := testutils.CreateMockServer()
-	server.Start()
+func testServer(t *testing.T) *httptest.Server {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Helper()
+		switch {
+		case r.Method == http.MethodPost && r.URL.Path == fmt.Sprintf(deployProjectEndpointTemplate, "correct"):
+			data, err := resources.EncodeResourceToJSON(&resources.DeployProject{
+				ID:  1,
+				URL: "http://example.com",
+			})
 
-	defer server.Close()
-	t.Run("wait successfully for pipeline completion", func(t *testing.T) {
-		mc := httphandler.FakeMiaClient(fmt.Sprintf("%s/api/deploy/projects/projectid/pipelines/123/status/", server.URL))
-
-		result, err := waitStatus(mc)
-		if err != nil {
-			fmt.Println(err)
+			require.NoError(t, err)
+			w.Write(data)
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "correct", 1):
+			data, err := resources.EncodeResourceToJSON(&resources.PipelineStatus{
+				ID:     1,
+				Status: "succeeded",
+			})
+			require.NoError(t, err)
+			w.Write(data)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+			require.FailNowf(t, "unknown http request", "request method: %s request URL: %s", r.Method, r.URL)
 		}
-		require.Equal(t, "succeed", result)
-	})
-}
+	}))
 
-func TestRun(t *testing.T) {
-	opts := clioptions.NewCLIOptions()
-	opts.ProjectID = "projectid"
-	t.Run("run successfully", func(t *testing.T) {
-		err := run("fake-env", opts, initMiaClientWithURL)
-		if err != nil {
-			panic(err)
-		}
-
-		require.NoError(t, err)
-	})
-}
-
-func initMiaClientWithURL(_ *clioptions.CLIOptions, endpoint string, _ string) (*httphandler.MiaClient, error) {
-	server := testutils.CreateMockServer()
-	server.Start()
-
-	url := fmt.Sprintf("%s%s", server.URL, endpoint)
-	mc := httphandler.FakeMiaClient(url)
-
-	return mc, nil
+	return server
 }
