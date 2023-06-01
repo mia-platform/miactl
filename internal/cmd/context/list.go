@@ -17,51 +17,47 @@ package context
 
 import (
 	"fmt"
+	"io"
 	"sort"
 
+	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
+	"golang.org/x/exp/maps"
 )
 
-func NewListContextsCmd(_ *clioptions.CLIOptions) *cobra.Command {
+func ListCmd(opts *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list [flags]",
-		Short: "list configured contexts",
+		Short: "List available contexts",
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			contextNames, err := getContextNames()
-			if err != nil {
-				return err
-			}
-			current, err := GetCurrentContext()
-			if err != nil {
-				return err
-			}
-			for _, name := range contextNames {
-				if name == current {
-					fmt.Printf("* %s\n", name)
-				} else {
-					fmt.Printf("  %s\n", name)
-				}
-			}
+			locator := cliconfig.NewConfigPathLocator()
+			locator.ExplicitPath = opts.MiactlConfig
 
-			return nil
+			return printContexts(cmd.OutOrStdout(), locator)
 		},
 	}
 
 	return cmd
 }
 
-// getContextNames prints the list of context names, with the current context
-// marked with a star (*)
-func getContextNames() ([]string, error) {
-	contextMap, err := getContextMap()
+func printContexts(out io.Writer, locator *cliconfig.ConfigPathLocator) error {
+	config, err := locator.ReadConfig()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	var contextList []string
-	for contextName := range contextMap {
-		contextList = append(contextList, contextName)
+
+	currentContext := config.CurrentContext
+	contextNames := maps.Keys(config.Contexts)
+	sort.Strings(contextNames)
+
+	for _, key := range contextNames {
+		switch key {
+		case currentContext:
+			fmt.Fprintf(out, "* %s\n", key)
+		default:
+			fmt.Fprintf(out, "  %s\n", key)
+		}
 	}
-	sort.Strings(contextList)
-	return contextList, nil
+	return nil
 }

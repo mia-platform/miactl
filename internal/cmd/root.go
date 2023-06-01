@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/deploy"
 	"github.com/spf13/cobra"
 )
@@ -33,7 +32,6 @@ func NewRootCommand() *cobra.Command {
 
 	// initialize clioptions and setup during initialization
 	options := clioptions.NewCLIOptions()
-	cobra.OnInitialize(clioptions.InitConfig(options))
 
 	// add cmd flags
 	options.AddGlobalFlags(rootCmd.PersistentFlags())
@@ -41,8 +39,8 @@ func NewRootCommand() *cobra.Command {
 	// add sub commands
 	rootCmd.AddCommand(
 		deploy.NewDeployCmd(options),
-		miacontext.NewContextCmd(options),
 		CompanyCmd(options),
+		ContextCmd(options),
 		ProjectCmd(options),
 		ServiceAccountCmd(options),
 	)

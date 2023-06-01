@@ -18,54 +18,64 @@ package context
 import (
 	"fmt"
 
+	"github.com/imdario/mergo"
+	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func NewSetContextCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "set CONTEXT [flags]",
-		Short: "update available contexts for miactl",
+		Short: "Set a context for miactl",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			updatedContexts := updateContextMap(options, args[0])
-			viper.Set("contexts", updatedContexts)
-			if err := viper.WriteConfig(); err != nil {
-				fmt.Println("error saving the configuration")
+			contextName := args[0]
+			modified, err := setContext(args[0], options)
+			if err != nil {
 				return err
 			}
-			fmt.Println("OK")
+
+			if modified {
+				fmt.Printf("Context \"%s\" modified.\n", contextName)
+			} else {
+				fmt.Printf("Context \"%s\" created.\n", contextName)
+			}
+
 			return nil
 		},
 	}
-	options.AddConnectionFlags(cmd.PersistentFlags())
-	options.AddCompanyFlags(cmd.PersistentFlags())
-	options.AddProjectFlags(cmd.PersistentFlags())
+
+	flags := cmd.Flags()
+	options.AddConnectionFlags(flags)
+	options.AddCompanyFlags(flags)
+	options.AddProjectFlags(flags)
+
 	return cmd
 }
 
-func updateContextMap(opts *clioptions.CLIOptions, contextName string) map[string]interface{} {
-	contextMap := make(map[string]interface{})
-	if viper.Get("contexts") != nil {
-		contextMap = viper.Get("contexts").(map[string]interface{})
-	}
-	newContext := make(map[string]interface{})
-	newContext["endpoint"] = opts.Endpoint
-	if opts.ProjectID != "" {
-		newContext["projectid"] = opts.ProjectID
-	}
-	if opts.CompanyID != "" {
-		newContext["companyid"] = opts.CompanyID
-	}
-	if opts.CAFile != "" {
-		newContext["ca-cert"] = opts.CAFile
-	}
-	if opts.Insecure {
-		newContext["insecure"] = opts.Insecure
+func setContext(contextName string, opts *clioptions.CLIOptions) (bool, error) {
+	locator := cliconfig.NewConfigPathLocator()
+	locator.ExplicitPath = opts.MiactlConfig
+
+	config, err := locator.ReadConfig()
+	if err != nil {
+		return false, err
 	}
 
-	contextMap[contextName] = newContext
+	newConfigContext := &cliconfig.ConfigOverrides{
+		Endpoint:              opts.Endpoint,
+		CertificateAuthority:  opts.CAFile,
+		CompanyID:             opts.CompanyID,
+		ProjectID:             opts.ProjectID,
+		InsecureSkipTLSVerify: opts.Insecure,
+	}
 
-	return contextMap
+	contextConfig, found := config.Contexts[contextName]
+	if err := mergo.MergeWithOverwrite(contextConfig, newConfigContext, mergo.WithOverride); err != nil {
+		return false, err
+	}
+
+	config.Contexts[contextName] = contextConfig
+	return found, locator.WriteConfig(config)
 }

@@ -25,7 +25,6 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/configpath"
 	"github.com/spf13/pflag"
-	"github.com/spf13/viper"
 )
 
 type CLIOptions struct {
@@ -53,28 +52,6 @@ type CLIOptions struct {
 // NewCLIOptions return a new CLIOptions instance
 func NewCLIOptions() *CLIOptions {
 	return &CLIOptions{}
-}
-
-func InitConfig(o *CLIOptions) func() {
-	return func() {
-		if o.MiactlConfig != "" {
-			viper.SetConfigFile(o.MiactlConfig)
-		} else {
-			viper.SetConfigFile(configpath.ConfigFilePath())
-		}
-		viper.SetConfigType("yaml")
-
-		// If a config file is found, read it in.
-		if o.Verbose {
-			fmt.Printf("read configuration from file: %s\n", viper.ConfigFileUsed())
-		}
-		err := viper.ReadInConfig()
-
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-	}
 }
 
 func (o *CLIOptions) AddGlobalFlags(flags *pflag.FlagSet) {

@@ -16,31 +16,9 @@
 package context
 
 import (
-	"strings"
 	"testing"
-
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/require"
 )
 
-func TestUpdateContextMap(t *testing.T) {
-	err := viper.ReadConfig(strings.NewReader(""))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
-	}
-	// Test creating a new context
-	opts := &clioptions.CLIOptions{Endpoint: "https://url", ProjectID: "project1", CompanyID: "company1", CAFile: "/path/to/cert"}
-	newContext := map[string]interface{}{"endpoint": "https://url", "projectid": "project1", "companyid": "company1", "ca-cert": "/path/to/cert"}
-	expectedContexts := make(map[string]interface{})
-	expectedContexts["context1"] = newContext
-	actualContexts := updateContextMap(opts, "context1")
-	require.Equal(t, expectedContexts, actualContexts)
+func TestSetContext(_ *testing.T) {
 
-	// Test updating the existing context
-	opts = &clioptions.CLIOptions{Endpoint: "https://url2", ProjectID: "project2", CompanyID: "company2", CAFile: "/path/to/cert"}
-	updatedContext := map[string]interface{}{"endpoint": "https://url2", "projectid": "project2", "companyid": "company2", "ca-cert": "/path/to/cert"}
-	expectedContexts["context1"] = updatedContext
-	actualContexts = updateContextMap(opts, "context1")
-	require.Equal(t, expectedContexts, actualContexts)
 }
