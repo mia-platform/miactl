@@ -33,7 +33,7 @@ type basicServiceAccountResponse struct {
 }
 
 const (
-	companyServiceAccountsEndpointTemplate = "api/companies/%s/service-accounts"
+	companyServiceAccountsEndpointTemplate = "/api/companies/%s/service-accounts"
 )
 
 func ServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -87,7 +87,7 @@ service account is created on the company.`,
 
 func createBasicServiceAccount(client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) ([]string, error) {
 	if !resources.IsValidServiceAccountRole(role) {
-		return []string{}, fmt.Errorf("invalid service account role %s", role)
+		return nil, fmt.Errorf("invalid service account role %s", role)
 	}
 
 	payload := &resources.ServiceAccountRequest{
