@@ -21,7 +21,6 @@ import (
 	"path/filepath"
 
 	"github.com/mia-platform/miactl/internal/cliconfig/api"
-	"github.com/mia-platform/miactl/internal/configpath"
 	"gopkg.in/yaml.v3"
 )
 
@@ -34,7 +33,7 @@ type ConfigPathLocator struct {
 }
 
 func NewConfigPathLocator() *ConfigPathLocator {
-	filePath := configpath.ConfigFilePath()
+	filePath := ConfigFilePath()
 
 	if envVarFiles := os.Getenv(ConfigPathEnvVarName); len(envVarFiles) != 0 {
 		filePath = filepath.SplitList(envVarFiles)[0]
@@ -43,6 +42,10 @@ func NewConfigPathLocator() *ConfigPathLocator {
 	return &ConfigPathLocator{
 		filePath: filePath,
 	}
+}
+
+func (cr *ConfigPathLocator) DefaultConfigPath() string {
+	return ConfigFilePathString()
 }
 
 func (cr *ConfigPathLocator) ReadConfig() (*api.Config, error) {

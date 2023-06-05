@@ -23,7 +23,6 @@ import (
 
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/configpath"
 	"github.com/spf13/pflag"
 )
 
@@ -55,7 +54,8 @@ func NewCLIOptions() *CLIOptions {
 }
 
 func (o *CLIOptions) AddGlobalFlags(flags *pflag.FlagSet) {
-	configFilePathDescription := fmt.Sprintf("path to the config file default to %s", configpath.ConfigFilePathString())
+	locator := cliconfig.NewConfigPathLocator()
+	configFilePathDescription := fmt.Sprintf("path to the config file default to %s", locator.DefaultConfigPath())
 	flags.StringVarP(&o.MiactlConfig, "config", "c", "", configFilePathDescription)
 	flags.BoolVar(&o.Verbose, "verbose", false, "increase the verbosity of the cli output")
 }

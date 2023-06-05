@@ -24,7 +24,6 @@ import (
 	"path/filepath"
 
 	"github.com/mia-platform/miactl/internal/cliconfig/api"
-	"github.com/mia-platform/miactl/internal/configpath"
 	"golang.org/x/oauth2"
 )
 
@@ -42,7 +41,7 @@ func NewAuthReadWriter(locator *ConfigPathLocator, config *api.ContextConfig) *A
 
 func (rw *AuthReadWriter) ReadJWTToken() *oauth2.Token {
 	cacheKey := fmt.Sprintf("%x", sha256.Sum256([]byte(rw.config.Endpoint)))
-	tokenPath := filepath.Join(configpath.CacheFolderPath(), cacheKey)
+	tokenPath := filepath.Join(CacheFolderPath(), cacheKey)
 	tokenData, err := os.ReadFile(tokenPath)
 	if err != nil {
 		return &oauth2.Token{}
@@ -58,7 +57,7 @@ func (rw *AuthReadWriter) ReadJWTToken() *oauth2.Token {
 
 func (rw *AuthReadWriter) WriteJWTToken(jwt *oauth2.Token) {
 	cacheKey := fmt.Sprintf("%x", sha256.Sum256([]byte(rw.config.Endpoint)))
-	tokenPath := filepath.Join(configpath.CacheFolderPath(), cacheKey)
+	tokenPath := filepath.Join(CacheFolderPath(), cacheKey)
 	dir := filepath.Dir(tokenPath)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
 		if err = os.MkdirAll(dir, 0755); err != nil {
