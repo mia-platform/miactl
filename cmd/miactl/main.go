@@ -16,9 +16,16 @@
 package main
 
 import (
+	"os"
+
+	_ "github.com/mia-platform/miactl/internal/authorization"
 	"github.com/mia-platform/miactl/internal/cmd"
 )
 
 func main() {
-	cmd.Execute()
+	rootCmd := cmd.NewRootCommand()
+	if err := rootCmd.Execute(); err != nil {
+		os.Exit(1)
+	}
+	os.Exit(0)
 }

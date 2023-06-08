@@ -16,79 +16,71 @@
 package company
 
 import (
+	"context"
 	"fmt"
-	"net/http"
 	"os"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/context"
-	"github.com/mia-platform/miactl/internal/cmd/resources"
-	"github.com/mia-platform/miactl/internal/httphandler"
+	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
 const (
-	companiesURI = "/api/backend/tenants/"
+	listCompaniesEndpoint = "/api/backend/tenants/"
 )
 
-// NewListCompaniesCmd func creates a new command
-func NewListCompaniesCmd(options *clioptions.CLIOptions) *cobra.Command {
+// ListCmd return a new cobra command for listing companies
+func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
-		Short: "list mia companies in the current context",
-		PreRunE: func(cmd *cobra.Command, args []string) error {
-			currentContext, err := context.GetCurrentContext()
-			if err != nil {
-				return err
-			}
-			return context.SetContextValues(cmd, currentContext)
-		},
+		Short: "List user companies",
+		Long: `List the companies that the current user can access.
+
+Companies can be used to logically group projects by organizations or internal teams.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			mc, err := httphandler.ConfigureDefaultMiaClient(options, companiesURI)
-			if err != nil {
-				return err
-			}
-			return listCompanies(mc)
+			restConfig, err := options.ToRESTConfig()
+			cobra.CheckErr(err)
+			client, err := client.APIClientForConfig(restConfig)
+			cobra.CheckErr(err)
+			return listCompanies(client)
 		},
 	}
 }
 
 // listCompanies retrieves the companies belonging to the current context
-func listCompanies(mc *httphandler.MiaClient) error {
+func listCompanies(client *client.APIClient) error {
 	// execute the request
-	resp, err := mc.GetSession().Get().ExecuteRequest()
+	resp, err := client.Get().APIPath(listCompaniesEndpoint).Do(context.Background())
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
-	defer resp.Body.Close()
-
-	var companies []resources.Company
-	currentContext := mc.GetSession().GetContext()
-
-	if resp.StatusCode == http.StatusOK {
-		if err := httphandler.ParseResponseBody(currentContext, resp.Body, &companies); err != nil {
-			return fmt.Errorf("error parsing response body: %w", err)
-		}
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-		table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
-		table.SetRowSeparator("")
-		table.SetHeader([]string{"Name", "Company ID", "Git Provider", "Pipelines"})
-		for _, company := range companies {
-			repositoryType := company.Repository.Type
-			if repositoryType == "" {
-				repositoryType = "gitlab"
-			}
-			table.Append([]string{company.Name, company.TenantID, repositoryType, company.Pipelines.Type})
-		}
-		table.Render()
-	} else {
-		return fmt.Errorf("request failed with status code: %s", resp.Status)
+	if err := resp.Error(); err != nil {
+		return err
 	}
 
+	companies := make([]*resources.Company, 0)
+	if err := resp.ParseResponse(&companies); err != nil {
+		return fmt.Errorf("error parsing response body: %w", err)
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeader([]string{"Name", "Company ID", "Git Provider", "Pipelines"})
+	for _, company := range companies {
+		repositoryType := company.Repository.Type
+		if repositoryType == "" {
+			repositoryType = "gitlab"
+		}
+		table.Append([]string{company.Name, company.TenantID, repositoryType, company.Pipelines.Type})
+	}
+
+	table.Render()
 	return nil
 }

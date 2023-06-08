@@ -18,25 +18,25 @@ package context
 import (
 	"fmt"
 
+	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-func NewUseContextCmd(_ *clioptions.CLIOptions) *cobra.Command {
+func UseCmd(opts *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "use CONTEXT [flags]",
-		Short: "select a context for miactl",
+		Short: "Select a context to use",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if _, err := contextLookUp(args[0]); err != nil {
-				return fmt.Errorf("error looking up the context in the config file: %w", err)
+			locator := cliconfig.NewConfigPathLocator()
+			locator.ExplicitPath = opts.MiactlConfig
+			newContext := args[0]
+			if err := setCurrentContext(args[0], locator); err != nil {
+				return err
 			}
-			viper.Set("current-context", args[0])
-			if err := viper.WriteConfig(); err != nil {
-				return fmt.Errorf("error updating the configuration: %w", err)
-			}
-			fmt.Println("OK")
+
+			fmt.Printf("Switched to context \"%s\",\n", newContext)
 			return nil
 		},
 	}
@@ -44,13 +44,16 @@ func NewUseContextCmd(_ *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func contextLookUp(contextName string) (map[string]interface{}, error) {
-	contextMap, err := getContextMap()
+func setCurrentContext(newContext string, locator *cliconfig.ConfigPathLocator) error {
+	config, err := locator.ReadConfig()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	if contextMap[contextName] == nil {
-		return nil, fmt.Errorf("context %s does not exist", contextName)
+
+	if _, found := config.Contexts[newContext]; !found {
+		return fmt.Errorf("no context named \"%s\" exists", newContext)
 	}
-	return contextMap[contextName].(map[string]interface{}), nil
+
+	config.CurrentContext = newContext
+	return locator.WriteConfig(config)
 }

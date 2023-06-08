@@ -16,20 +16,20 @@
 package company
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/httphandler"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestNewGetCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
-		cmd := NewListCompaniesCmd(opts)
+		cmd := ListCmd(opts)
 		require.NotNil(t, cmd)
 	})
 }
@@ -37,34 +37,38 @@ func TestNewGetCmd(t *testing.T) {
 func TestListCompanies(t *testing.T) {
 	testCases := map[string]struct {
 		server       *httptest.Server
+		clientConfig *client.Config
 		companiesURI string
-		expectedErr  string
+		err          bool
 	}{
 		"valid get response": {
 			server:       mockServer(t, true),
-			companiesURI: companiesURI,
+			companiesURI: listCompaniesEndpoint,
+			clientConfig: &client.Config{
+				Transport: http.DefaultTransport,
+			},
 		},
 		"invalid body response": {
-			server:       mockServer(t, false),
-			expectedErr:  "invalid character",
-			companiesURI: companiesURI,
-		},
-		"missing API": {
-			server:       mockServer(t, true),
-			expectedErr:  "404 Not Found",
-			companiesURI: "/not-found-uri",
+			server: mockServer(t, false),
+			clientConfig: &client.Config{
+				Transport: http.DefaultTransport,
+			},
+			err:          true,
+			companiesURI: listCompaniesEndpoint,
 		},
 	}
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
 			defer testCase.server.Close()
-			miaClient := httphandler.FakeMiaClient(fmt.Sprintf("%s%s", testCase.server.URL, testCase.companiesURI))
-			err := listCompanies(miaClient)
-			if testCase.expectedErr == "" {
-				require.NoError(t, err)
+			testCase.clientConfig.Host = testCase.server.URL
+			client, err := client.APIClientForConfig(testCase.clientConfig)
+			require.NoError(t, err)
+			err = listCompanies(client)
+			if testCase.err {
+				assert.Error(t, err)
 			} else {
-				require.ErrorContains(t, err, testCase.expectedErr)
+				assert.NoError(t, err)
 			}
 		})
 	}
@@ -105,8 +109,9 @@ func mockServer(t *testing.T, validResponse bool) *httptest.Server {
 	}
 ]`
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != companiesURI || r.Method != http.MethodGet {
+		if r.RequestURI != listCompaniesEndpoint && r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
+			require.Fail(t, "unsupported call")
 			return
 		}
 		w.WriteHeader(http.StatusOK)

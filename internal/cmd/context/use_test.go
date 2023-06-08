@@ -16,47 +16,63 @@
 package context
 
 import (
-	"strings"
+	"io"
+	"os"
+	"path/filepath"
 	"testing"
 
-	"github.com/spf13/viper"
+	"github.com/mia-platform/miactl/internal/cliconfig"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-const missingContextName = "missing"
-const contextName1 = "context1"
+func TestSetCurrentContext(t *testing.T) {
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+	testdata := filepath.Join(wd, "testdata", "config.yaml")
 
-func TestContextLookUpEmptyContextMap(t *testing.T) {
-	viper.SetConfigType("yaml")
-	config := ``
-	err := viper.ReadConfig(strings.NewReader(config))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
+	testCases := map[string]struct {
+		configPath string
+		newContext string
+		expectErr  bool
+	}{
+		"change context": {
+			newContext: "context3",
+		},
+		"wrong context": {
+			newContext: "foo",
+			expectErr:  true,
+		},
+		"same context": {
+			newContext: "context2",
+		},
 	}
-	context, err := contextLookUp(missingContextName)
-	require.Nil(t, context)
-	require.EqualError(t, err, "no context specified in config file")
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			tempFile := copyFile(t, testdata)
+			locator := cliconfig.NewConfigPathLocator()
+			locator.ExplicitPath = tempFile
+
+			err := setCurrentContext(testCase.newContext, locator)
+			switch testCase.expectErr {
+			case true:
+				assert.Error(t, err)
+			default:
+				assert.NoError(t, err)
+			}
+		})
+	}
 }
 
-func TestContextLookUp(t *testing.T) {
-	viper.SetConfigType("yaml")
-	config := `contexts:
-  context1:
-    endpoint: http://url
-    companyid: "123"
-    projectid: "123"`
-	err := viper.ReadConfig(strings.NewReader(config))
-	if err != nil {
-		t.Fatalf("unexpected error reading config: %v", err)
-	}
-	context, err := contextLookUp(missingContextName)
-	require.Nil(t, context)
-	require.EqualError(t, err, "context missing does not exist")
+func copyFile(t *testing.T, in string) string {
+	t.Helper()
+	inFile, err := os.OpenFile(in, os.O_RDONLY, os.ModePerm)
+	require.NoError(t, err)
+	outFile, err := os.CreateTemp(t.TempDir(), "use-context")
+	require.NoError(t, err)
 
-	context, err = contextLookUp(contextName1)
-	require.Nil(t, err)
-	require.NotNil(t, context)
-	require.Equal(t, "http://url", context["endpoint"])
-	require.Equal(t, "123", context["companyid"])
-	require.Equal(t, "123", context["projectid"])
+	_, err = io.Copy(outFile, inFile)
+	require.NoError(t, err)
+	return outFile.Name()
 }

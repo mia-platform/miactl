@@ -16,116 +16,34 @@
 package cmd
 
 import (
-	"context"
-	"fmt"
-	"os"
-	"path"
-
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/company"
-	miacontext "github.com/mia-platform/miactl/internal/cmd/context"
 	"github.com/mia-platform/miactl/internal/cmd/deploy"
-	"github.com/mia-platform/miactl/internal/cmd/login"
-	"github.com/mia-platform/miactl/internal/cmd/project"
-	homedir "github.com/mitchellh/go-homedir"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
-const (
-	cfgDir      = ".config/miactl"
-	cfgFileName = "config"
-	// nolint gosec
-	credentialsDir = "cache/credentials"
-)
-
-var (
-	cfgFile string
-	verbose bool
-)
-
-// NewRootCmd creates a new root command
-func NewRootCmd() *cobra.Command {
+func NewRootCommand() *cobra.Command {
 	rootCmd := &cobra.Command{
-		Use:          "miactl",
-		SilenceUsage: true,
-		/* SilenceErrors must be set to true, since a custom error visualization
-		logic is implemented in the execute command below.
-		On the contrary, errors are visualized twice or more */
-		SilenceErrors: true,
+		Use:   "miactl",
+		Short: "Mia-Platform Console CLI",
+		Long: `miactl is a CLI for interacting with Mia-Platform Console
+
+	Find more information at: https://docs.mia-platform.eu/docs/cli/miactl/overview`,
 	}
 
+	// initialize clioptions and setup during initialization
 	options := clioptions.NewCLIOptions()
-	options.AddGlobalFlags(rootCmd)
 
-	// add sub command to root command
-	rootCmd.AddCommand(project.NewProjectCmd(options))
-	rootCmd.AddCommand(deploy.NewDeployCmd(options))
-	rootCmd.AddCommand(miacontext.NewContextCmd(options))
-	rootCmd.AddCommand(company.NewCompanyCmd(options))
-	rootCmd.AddCommand(login.NewLoginCmd(options))
+	// add cmd flags
+	options.AddGlobalFlags(rootCmd.PersistentFlags())
+
+	// add sub commands
+	rootCmd.AddCommand(
+		deploy.NewDeployCmd(options),
+		CompanyCmd(options),
+		ContextCmd(options),
+		ProjectCmd(options),
+		ServiceAccountCmd(options),
+	)
+
 	return rootCmd
-}
-
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	rootCmd := NewRootCmd()
-	if err := rootCmd.ExecuteContext(context.Background()); err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-}
-
-func init() {
-	cobra.OnInitialize(initConfig)
-}
-
-// initConfig reads in config file and ENV variables if set.
-func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		home, err := homedir.Dir()
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-
-		cfgPath := path.Join(home, cfgDir)
-
-		// Search config in home directory with name ".miaplatformctl" (without extension).
-		viper.SetConfigName(cfgFileName)
-		viper.SetConfigType("yaml")
-		viper.AddConfigPath(cfgPath)
-
-		// create a default config file if it does not exist
-		if err := os.MkdirAll(cfgPath, os.ModePerm); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		if err := viper.SafeWriteConfigAs(path.Join(cfgPath, cfgFileName)); err != nil && verbose {
-			fmt.Println(err)
-		}
-
-		credPath := path.Join(cfgPath, credentialsDir)
-
-		// create a default config file if it does not exist
-		if err := os.MkdirAll(credPath, os.ModePerm); err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	}
-
-	viper.AutomaticEnv() // read in environment variables that match
-
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Println("Error loading file:", viper.ConfigFileUsed())
-	}
-	if verbose {
-		fmt.Printf("Using config file: %s\n\n", viper.ConfigFileUsed())
-	}
 }

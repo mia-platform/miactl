@@ -1,0 +1,9 @@
+contexts:
+  context1:
+    endpoint: https://example.com
+  context2:
+    company-id: mia-platform-multitenant
+    endpoint: https://example.com
+  context3:
+    endpoint: https://example.com
+current-context: context2

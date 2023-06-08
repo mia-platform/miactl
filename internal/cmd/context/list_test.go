@@ -16,56 +16,58 @@
 package context
 
 import (
-	"strings"
+	"bytes"
+	"os"
+	"path/filepath"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/spf13/viper"
-	"github.com/stretchr/testify/require"
+	"github.com/mia-platform/miactl/internal/cliconfig"
+	"github.com/stretchr/testify/assert"
 )
 
-func TestNewListContextsCmd(t *testing.T) {
-	t.Run("test command creation", func(t *testing.T) {
-		opts := clioptions.NewCLIOptions()
-		cmd := NewListContextsCmd(opts)
-		require.NotNil(t, cmd)
-	})
-}
+func TestPrintContexts(t *testing.T) {
+	wd, _ := os.Getwd()
+	testDataFolder := filepath.Join(wd, "testdata")
 
-func TestGetContextNames(t *testing.T) {
-	viper.SetConfigType("yaml")
-
-	testCases := []struct {
-		name        string
-		config      string
-		expectedOut []string
-		expectedErr string
+	testCases := map[string]struct {
+		locatorPath    string
+		expectedOutput string
+		expectErr      bool
 	}{
-		{
-			name:        "valid config and context",
-			config:      valid,
-			expectedOut: []string{"fake-ctx", "other-ctx"},
-			expectedErr: "",
+		"list with current context": {
+			locatorPath: filepath.Join(testDataFolder, "config.yaml"),
+			expectedOutput: `  context1
+* context2
+  context3
+`,
 		},
-		{
-			name:        "valid config and context",
-			config:      valid,
-			expectedOut: []string{"fake-ctx", "other-ctx"},
-			expectedErr: "",
+		"list without current context": {
+			locatorPath: filepath.Join(testDataFolder, "missing-current.yaml"),
+			expectedOutput: `  context1
+  context2
+  context3
+`,
+		},
+		"error in parsing the config": {
+			locatorPath:    filepath.Join(testDataFolder, "err-config"),
+			expectErr:      true,
+			expectedOutput: "",
 		},
 	}
 
-	for _, tc := range testCases {
-		err := viper.ReadConfig(strings.NewReader(tc.config))
-		if err != nil {
-			t.Fatalf("unexpected error reading config: %v", err)
-		}
-		names, err := getContextNames()
-		if tc.expectedErr == "" {
-			require.NoError(t, err)
-		} else {
-			require.ErrorContains(t, err, tc.expectedErr)
-		}
-		require.Equal(t, tc.expectedOut, names)
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			locator := cliconfig.NewConfigPathLocator()
+			locator.ExplicitPath = testCase.locatorPath
+
+			buffer := bytes.NewBuffer([]byte{})
+			err := printContexts(buffer, locator)
+			if testCase.expectErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, testCase.expectedOutput, buffer.String())
+		})
 	}
 }
