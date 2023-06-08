@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### Changed
+
+- reworked the http connection to the remote servers to allow support for custom installations
+
+### Added
+
+- creation of service account for your company
+
+### Fixed
+
+- if you use a url that ends with `/` as endpoint, the remote calls are not broken anymore
+
 ## 0.5.0 2022-05-10
 
 ### Changed
