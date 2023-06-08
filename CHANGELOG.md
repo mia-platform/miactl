@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2023-06-08
+
 ### Changed
 
 - reworked the http connection to the remote servers to allow support for custom installations
@@ -20,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - if you use a url that ends with `/` as endpoint, the remote calls are not broken anymore
 
-## [0.5.0] - 2022-05-10
+## [0.5.0] - 2023-05-10
 
 ### Changed
 
@@ -30,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - new command for listing the user companies
 
-## [0.4.0] - 2022-04-07
+## [0.4.0] - 2023-04-07
 
 ### Changed
 
