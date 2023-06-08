@@ -40,7 +40,7 @@ func ServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "basic SERVICEACCOUNT [flags]",
 		Short: "Create a new basic authentication service account",
-		Long: `Create a new basic authentication service account in the provided company or project.
+		Long: `Create a new basic authentication service account in the provided company.
 
 You can create a service account with the same or lower role than the role that
 the current authentication has. The role company-owner can be used only when the

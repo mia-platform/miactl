@@ -36,7 +36,6 @@ Mia-Platform Console support two kinds of authentication: basic or jwt.`,
 	o.AddConnectionFlags(serviceAccountCmd.PersistentFlags())
 	o.AddContextFlags(serviceAccountCmd.PersistentFlags())
 	o.AddCompanyFlags(serviceAccountCmd.PersistentFlags())
-	o.AddProjectFlags(serviceAccountCmd.PersistentFlags())
 
 	// add sub commands
 	serviceAccountCmd.AddCommand(serviceaccount.CreateServiceAccountCmd(o))
