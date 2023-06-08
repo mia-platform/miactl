@@ -28,18 +28,20 @@ func init() {
 	}
 }
 
-func NewAuthenticator(config *client.Config, cacheReadWriter client.AuthCacheReadWriter) client.AuthProvider {
+func NewAuthenticator(config *client.Config, cacheReadWriter client.AuthCacheReadWriter, authConfig client.AuthConfig) client.AuthProvider {
 	clonedConfig := *config
 
 	return &authenticator{
 		config:          &clonedConfig,
 		cacheReadWriter: cacheReadWriter,
+		authConfig:      authConfig,
 	}
 }
 
 type authenticator struct {
 	config          *client.Config
 	cacheReadWriter client.AuthCacheReadWriter
+	authConfig      client.AuthConfig
 }
 
 func (a *authenticator) Wrap(rt http.RoundTripper) http.RoundTripper {
@@ -49,16 +51,29 @@ func (a *authenticator) Wrap(rt http.RoundTripper) http.RoundTripper {
 		fmt.Println(err)
 	}
 
-	userAuth := &userAuthenticator{
-		client:   client,
-		next:     rt,
-		userAuth: a.cacheReadWriter,
-		serverReadyHandler: func(url string) error {
-			if err := open(url); err != nil {
-				return fmt.Errorf("could not open the browser: %w", err)
-			}
-			return nil
-		},
+	authConfig := a.authConfig
+	var userAuth http.RoundTripper
+	switch {
+	case len(authConfig.ClientID) > 0 && len(authConfig.ClientSecret) > 0:
+		userAuth = &basicAuthenticator{
+			client:       client,
+			next:         rt,
+			userAuth:     a.cacheReadWriter,
+			clientID:     authConfig.ClientID,
+			clientSecret: authConfig.ClientSecret,
+		}
+	default:
+		userAuth = &userAuthenticator{
+			client:   client,
+			next:     rt,
+			userAuth: a.cacheReadWriter,
+			serverReadyHandler: func(url string) error {
+				if err := open(url); err != nil {
+					return fmt.Errorf("could not open the browser: %w", err)
+				}
+				return nil
+			},
+		}
 	}
 
 	return userAuth

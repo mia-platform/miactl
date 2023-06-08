@@ -35,7 +35,7 @@ type AuthProvider interface {
 }
 
 // AuthProviderCreator is a function that return an AuthProvider
-type AuthProviderCreator func(*Config, AuthCacheReadWriter) AuthProvider
+type AuthProviderCreator func(*Config, AuthCacheReadWriter, AuthConfig) AuthProvider
 
 var authProvidersLock sync.Mutex
 var authProvider AuthProviderCreator
