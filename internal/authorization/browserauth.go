@@ -298,7 +298,7 @@ func (h *httpHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			q := r.URL.Query()
 			errorCode, errorDescription := q.Get("error"), q.Get("error_description")
 
-			http.Error(w, "authorization error", 500)
+			http.Error(w, "authorization error", http.StatusInternalServerError)
 			h.responseChannel <- &authResponse{
 				Err: fmt.Errorf("authorization error from server: %s %s", errorCode, errorDescription),
 			}
