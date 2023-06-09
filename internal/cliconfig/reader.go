@@ -41,18 +41,19 @@ func (cr *ConfigReader) ClientConfig(locator *ConfigPathLocator) (*client.Config
 		return nil, err
 	}
 
+	authConfig, found := cr.getAuthConfig()
+
 	clientConfig := &client.Config{
 		Host: context.Endpoint,
 		TLSClientConfig: client.TLSClientConfig{
 			CAFile:   context.CertificateAuthority,
 			Insecure: context.InsecureSkipTLSVerify,
 		},
-		AuthCacheReadWriter: NewAuthReadWriter(locator, context),
+		AuthCacheReadWriter: NewAuthReadWriter(locator, context, authConfig),
 		CompanyID:           context.CompanyID,
 		ProjectID:           context.ProjectID,
 	}
 
-	authConfig, found := cr.getAuthConfig()
 	if found {
 		clientConfig.AuthConfig = client.AuthConfig{
 			ClientID:     authConfig.ClientID,
