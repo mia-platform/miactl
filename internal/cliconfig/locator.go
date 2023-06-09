@@ -100,6 +100,7 @@ func writeFile(path string, config *api.Config) error {
 
 	configBuffer := bytes.NewBuffer([]byte{})
 	encoder := yaml.NewEncoder(configBuffer)
+	encoder.SetIndent(2)
 
 	if err := encoder.Encode(config); err != nil {
 		return err

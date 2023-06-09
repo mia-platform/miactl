@@ -35,6 +35,7 @@ type CLIOptions struct {
 	CAFile   string
 
 	Context   string
+	Auth      string
 	ProjectID string
 	CompanyID string
 
@@ -75,6 +76,11 @@ func (o *CLIOptions) AddConnectionFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddContextFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Context, "context", "", "the name of the miactl context to use")
+	o.AddAuthFlags(flags)
+}
+
+func (o *CLIOptions) AddAuthFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.Auth, "auth-name", "", "the name of the miactl auth to use")
 }
 
 func (o *CLIOptions) AddProjectFlags(flags *pflag.FlagSet) {
@@ -114,6 +120,7 @@ func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
 	overrides.CompanyID = o.CompanyID
 	overrides.ProjectID = o.ProjectID
 	overrides.Context = o.Context
+	overrides.AuthName = o.Auth
 	overrides.CertificateAuthority = o.CAFile
 	overrides.InsecureSkipTLSVerify = o.Insecure
 

@@ -1,0 +1,4 @@
+credentials:
+  credential1:
+    client-id: "12345"
+    client-secret: "67890"
