@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- support for authenticate API calls with service account
+- `context auth` command for saving the service account in the config file
+
+### Fixed
+
+- error during saving context configuration in particular cases
+
 ## [0.6.0] - 2023-06-08
 
 ### Changed

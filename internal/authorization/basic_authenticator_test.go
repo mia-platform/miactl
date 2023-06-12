@@ -17,26 +17,21 @@ package authorization
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"testing"
-	"time"
 
 	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestUserAuthenticator(t *testing.T) {
+func TestBasicAuthenticator(t *testing.T) {
 	testCases := map[string]struct {
 		authCacheProvider client.AuthCacheReadWriter
 		expectedToken     string
 		testServer        *httptest.Server
-		testServerHandler http.HandlerFunc
 	}{
 		"valid jwt access token": {
 			authCacheProvider: &testAuthCacheProvider{},
@@ -45,34 +40,10 @@ func TestUserAuthenticator(t *testing.T) {
 				assert.Fail(t, "we don't expect to call the test server")
 			}),
 		},
-		"expired jwt access, with refresh token": {
-			authCacheProvider: &testAuthCacheProvider{expired: true, refreshToken: "foo"},
-			expectedToken:     "refresh",
-			testServer: testServer(t, func(w http.ResponseWriter, r *http.Request) {
-				switch {
-				case r.Method == http.MethodPost && r.RequestURI == refreshTokenEndpointString:
-					testUserToken := resources.UserToken{
-						AccessToken:  "refresh",
-						RefreshToken: "refresh",
-						ExpiresAt:    time.Now().Add(1 * time.Hour).Unix(),
-					}
-					encoder := json.NewEncoder(w)
-					err := encoder.Encode(&testUserToken)
-					require.NoError(t, err)
-				default:
-					assert.Failf(t, "unexpected request", "%s request %s", r.Method, r.RequestURI)
-				}
-			}),
-		},
-		"expired jwt access, with expired refresh token": {
-			authCacheProvider: &testAuthCacheProvider{expired: true, refreshToken: "expired"},
-			expectedToken:     "expired-refresh",
-			testServer:        testServerForCompleteFlow(t),
-		},
-		"expired jwt, without refresh token": {
+		"expired jwt access": {
 			authCacheProvider: &testAuthCacheProvider{expired: true},
 			expectedToken:     "new",
-			testServer:        testServerForCompleteFlow(t),
+			testServer:        testServerForServiceAccount(t),
 		},
 	}
 
@@ -83,27 +54,14 @@ func TestUserAuthenticator(t *testing.T) {
 				Host:      testCase.testServer.URL,
 				Transport: http.DefaultTransport,
 			}
+
 			restClient, err := client.APIClientForConfig(restConfig)
 			require.NoError(t, err)
-			ua := &userAuthenticator{
-				userAuth: testCase.authCacheProvider,
-				client:   restClient,
-				serverReadyHandler: func(s string) error {
-					query := make(url.Values)
-					query.Set("code", "foo")
-					query.Set("state", "bar")
-					req, err := url.Parse(s)
-					require.NoError(t, err)
-					req.Path = callbackEndpointString
-					req.RawQuery = query.Encode()
-					resp, err := http.Get(req.String())
-					if resp.Body != nil {
-						resp.Body.Close()
-					}
-					require.NoError(t, err)
-					assert.Equal(t, resp.StatusCode, http.StatusOK)
-					return err
-				},
+			ua := &basicAuthenticator{
+				userAuth:     testCase.authCacheProvider,
+				client:       restClient,
+				clientID:     "id",
+				clientSecret: "secret",
 			}
 
 			token, err := ua.AccessToken()
@@ -113,9 +71,9 @@ func TestUserAuthenticator(t *testing.T) {
 	}
 }
 
-func TestUserAuthenticatorRoundTrip(t *testing.T) {
+func TestBasicAuthenticatorRoundTrip(t *testing.T) {
 	rt := &testRoundTripper{}
-	auth := &userAuthenticator{
+	auth := &basicAuthenticator{
 		userAuth: &testAuthCacheProvider{},
 		client:   nil,
 		next:     rt,
@@ -142,4 +100,17 @@ func TestUserAuthenticatorRoundTrip(t *testing.T) {
 	require.NotNil(t, rtRequest)
 	assert.Same(t, rtRequest, req)
 	assert.Equal(t, "Bearer existing", rtRequest.Header.Get("Authorization"))
+}
+
+func testServerForServiceAccount(t *testing.T) *httptest.Server {
+	t.Helper()
+	return testServer(t, func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodPost && r.RequestURI == basicAuthEndpoint:
+			w.Header().Add("Content-Type", "application/json")
+			w.Write([]byte("{\"access_token\":\"new\",\"token_type\":\"Bearer\",\"expires_in\":3600}"))
+		default:
+			assert.Failf(t, "unexpected request", "%s request %s", r.Method, r.RequestURI)
+		}
+	})
 }

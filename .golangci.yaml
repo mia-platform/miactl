@@ -3,6 +3,7 @@ run:
 
 linters:
   enable:
+  - asasalint
   - asciicheck
   - bodyclose
   - goconst
@@ -13,13 +14,21 @@ linters:
   - goimports
   - gomnd
   - gosec
+  - gosmopolitan
   - misspell
+  - nolintlint
+  - prealloc
+  - predeclared
   - revive
   - tagliatelle
+  - tenv
+  - thelper
   - unconvert
   - unparam
   - unused
+  - usestdlibvars
   - whitespace
+  - zerologlint
 linters-settings:
   gocyclo:
     min-complexity: 15
@@ -32,6 +41,8 @@ linters-settings:
       use-field-name: true
       rules:
         yaml: camel
+  tenv:
+    all: true
   unparam:
     check-exported: false
   gomnd:

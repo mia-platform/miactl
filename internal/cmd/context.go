@@ -39,7 +39,8 @@ back in that file
 
 	// add sub commnads
 	cmd.AddCommand(
-		context.NewSetContextCmd(options),
+		context.AuthCmd(options),
+		context.SetCmd(options),
 		context.UseCmd(options),
 		context.ListCmd(options),
 	)

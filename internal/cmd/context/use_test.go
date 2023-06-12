@@ -32,7 +32,6 @@ func TestSetCurrentContext(t *testing.T) {
 	testdata := filepath.Join(wd, "testdata", "config.yaml")
 
 	testCases := map[string]struct {
-		configPath string
 		newContext string
 		expectErr  bool
 	}{
@@ -69,7 +68,7 @@ func copyFile(t *testing.T, in string) string {
 	t.Helper()
 	inFile, err := os.OpenFile(in, os.O_RDONLY, os.ModePerm)
 	require.NoError(t, err)
-	outFile, err := os.CreateTemp(t.TempDir(), "use-context")
+	outFile, err := os.CreateTemp(t.TempDir(), "test-file")
 	require.NoError(t, err)
 
 	_, err = io.Copy(outFile, inFile)

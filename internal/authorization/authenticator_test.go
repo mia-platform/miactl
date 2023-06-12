@@ -25,7 +25,7 @@ import (
 
 func TestNewAuthenticator(t *testing.T) {
 	config := &client.Config{}
-	authProvider := NewAuthenticator(config, &testAuthCacheProvider{})
+	authProvider := NewAuthenticator(config, &testAuthCacheProvider{}, client.AuthConfig{})
 	assert.NotNil(t, authProvider)
 	assert.IsType(t, &authenticator{}, authProvider)
 }

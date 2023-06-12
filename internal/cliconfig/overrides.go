@@ -22,4 +22,5 @@ type ConfigOverrides struct {
 	CompanyID             string
 	ProjectID             string
 	Context               string
+	AuthName              string
 }

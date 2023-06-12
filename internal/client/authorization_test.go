@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func testAuthProviderCreator(*Config, AuthCacheReadWriter) AuthProvider {
+func testAuthProviderCreator(*Config, AuthCacheReadWriter, AuthConfig) AuthProvider {
 	return &testAuthProvider{}
 }
 

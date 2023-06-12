@@ -56,6 +56,8 @@ func NewRequest(client *APIClient) *Request {
 		request.SetHeader("Content-Type", client.contentConfig.ContentType)
 	}
 
+	request.SetHeader("client-key", "miactl")
+
 	return request
 }
 
@@ -224,7 +226,7 @@ func parseRequestAndResponse(req *http.Request, resp *http.Response) *Response {
 			rawResponse: resp,
 			rawRequest:  req,
 			statusCode:  resp.StatusCode,
-			err:         &ResponseError{body: body},
+			err:         &ResponseError{body: body, statusCode: resp.StatusCode},
 		}
 	}
 

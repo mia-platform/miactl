@@ -30,17 +30,19 @@ import (
 type AuthReadWriter struct {
 	locator *ConfigPathLocator
 	config  *api.ContextConfig
+	auth    *api.AuthConfig
 }
 
-func NewAuthReadWriter(locator *ConfigPathLocator, config *api.ContextConfig) *AuthReadWriter {
+func NewAuthReadWriter(locator *ConfigPathLocator, config *api.ContextConfig, auth *api.AuthConfig) *AuthReadWriter {
 	return &AuthReadWriter{
 		locator: locator,
 		config:  config,
+		auth:    auth,
 	}
 }
 
 func (rw *AuthReadWriter) ReadJWTToken() *oauth2.Token {
-	cacheKey := fmt.Sprintf("%x", sha256.Sum256([]byte(rw.config.Endpoint)))
+	cacheKey := cacheKeyForConfig(rw.config, rw.auth)
 	tokenPath := filepath.Join(CacheFolderPath(), cacheKey)
 	tokenData, err := os.ReadFile(tokenPath)
 	if err != nil {
@@ -56,7 +58,7 @@ func (rw *AuthReadWriter) ReadJWTToken() *oauth2.Token {
 }
 
 func (rw *AuthReadWriter) WriteJWTToken(jwt *oauth2.Token) {
-	cacheKey := fmt.Sprintf("%x", sha256.Sum256([]byte(rw.config.Endpoint)))
+	cacheKey := cacheKeyForConfig(rw.config, rw.auth)
 	tokenPath := filepath.Join(CacheFolderPath(), cacheKey)
 	dir := filepath.Dir(tokenPath)
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
@@ -72,4 +74,9 @@ func (rw *AuthReadWriter) WriteJWTToken(jwt *oauth2.Token) {
 		return
 	}
 	_ = os.WriteFile(tokenPath, jwtBuffer.Bytes(), 0600)
+}
+
+func cacheKeyForConfig(config *api.ContextConfig, auth *api.AuthConfig) string {
+	stringKey := config.Endpoint + auth.ClientID
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(stringKey)))
 }

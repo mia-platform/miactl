@@ -26,7 +26,8 @@ import (
 
 // ResponseError represent an error from an api call
 type ResponseError struct {
-	body []byte
+	body       []byte
+	statusCode int
 }
 
 // Error return the message of the api call error
@@ -37,7 +38,18 @@ func (r *ResponseError) Error() string {
 		return fmt.Sprintf("error parsing error response from server: %s", err)
 	}
 
-	return out.Message
+	if len(out.Message) > 0 {
+		return out.Message
+	}
+
+	switch r.statusCode {
+	case http.StatusBadRequest:
+		return "something went wrong"
+	case http.StatusForbidden:
+		return "you are not allowed to make this call, contact your admin"
+	default:
+		return fmt.Sprintf("error received from remote: %d", r.statusCode)
+	}
 }
 
 // Response wrap an http.Response and provide functions to operate safely on it
@@ -66,7 +78,7 @@ func (r *Response) Error() error {
 	case r.err != nil:
 		return r.err
 	case r.statusCode >= http.StatusBadRequest:
-		return &ResponseError{body: r.body}
+		return &ResponseError{body: r.body, statusCode: r.statusCode}
 	default:
 		return nil
 	}

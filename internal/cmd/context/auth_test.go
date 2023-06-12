@@ -25,43 +25,46 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSetContext(t *testing.T) {
+func TestSetAuth(t *testing.T) {
 	wd, err := os.Getwd()
 	require.NoError(t, err)
 	testdata := filepath.Join(wd, "testdata")
 	testCases := map[string]struct {
 		configPath     string
-		contextName    string
+		authName       string
 		options        *clioptions.CLIOptions
 		expectOverride bool
 	}{
 		"empty file": {
-			contextName: "context",
-			configPath:  filepath.Join(t.TempDir(), "empty"),
+			authName:   "credential",
+			configPath: filepath.Join(t.TempDir(), "empty"),
 			options: &clioptions.CLIOptions{
-				Endpoint: "example.com",
+				BasicClientID:     "id",
+				BasicClientSecret: "secret",
 			},
 		},
 		"existing file": {
-			contextName: "contextTest",
-			configPath:  copyFile(t, filepath.Join(testdata, "config.yaml")),
+			authName:   "credentialTest",
+			configPath: copyFile(t, filepath.Join(testdata, "auth.yaml")),
 			options: &clioptions.CLIOptions{
-				Endpoint: "example.com",
+				BasicClientID:     "id",
+				BasicClientSecret: "secret",
 			},
 		},
-		"merge context": {
-			contextName: "context1",
-			configPath:  copyFile(t, filepath.Join(testdata, "config.yaml")),
+		"merge auth": {
+			authName:   "credential1",
+			configPath: copyFile(t, filepath.Join(testdata, "auth.yaml")),
 			options: &clioptions.CLIOptions{
-				CompanyID: "company",
+				BasicClientSecret: "secret",
 			},
 			expectOverride: true,
 		},
-		"config with only auth": {
-			contextName: "contextTest",
-			configPath:  copyFile(t, filepath.Join(testdata, "auth.yaml")),
+		"config with only contexts": {
+			authName:   "credentialTest",
+			configPath: copyFile(t, filepath.Join(testdata, "config.yaml")),
 			options: &clioptions.CLIOptions{
-				CompanyID: "company",
+				BasicClientID:     "id",
+				BasicClientSecret: "secret",
 			},
 		},
 	}
@@ -71,7 +74,7 @@ func TestSetContext(t *testing.T) {
 			tempFile := testCase.configPath
 
 			testCase.options.MiactlConfig = tempFile
-			override, err := setContext(testCase.contextName, testCase.options)
+			override, err := setAuth(testCase.authName, testCase.options)
 			assert.NoError(t, err)
 			assert.Equal(t, testCase.expectOverride, override)
 		})

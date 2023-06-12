@@ -28,6 +28,7 @@ const defaultContentType = "application/json"
 type Interface interface {
 	Get() *Request
 	Post() *Request
+	HTTPClient() *http.Client
 }
 
 // APIClient wrap an http.Client that can connect to Mia-Platform Console
@@ -69,4 +70,8 @@ func (c *APIClient) Get() *Request {
 // Get return a new Request object for a POST http request
 func (c *APIClient) Post() *Request {
 	return NewRequest(c).SetVerb(http.MethodPost)
+}
+
+func (c *APIClient) HTTPClient() *http.Client {
+	return c.client
 }

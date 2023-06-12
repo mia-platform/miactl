@@ -66,7 +66,7 @@ func transportForConfig(config *Config) (http.RoundTripper, error) {
 		if config.AuthCacheReadWriter != nil {
 			cacheProvider = config.AuthCacheReadWriter
 		}
-		provider := authProvider(config, cacheProvider)
+		provider := authProvider(config, cacheProvider, config.AuthConfig)
 		transportConfig.AuthorizeWrapper = provider.Wrap
 	}
 

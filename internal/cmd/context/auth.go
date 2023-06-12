@@ -25,38 +25,40 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func SetCmd(options *clioptions.CLIOptions) *cobra.Command {
+func AuthCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "set CONTEXT [flags]",
-		Short: "Set a context for miactl",
-		Args:  cobra.ExactArgs(1),
+		Use:   "auth NAME",
+		Short: "Set an auth configuration for miactl",
+		Long: `Set an auth configuration for miactl. You can set service account access
+and then attach it to one or more contexts.`,
+		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			contextName := args[0]
-			modified, err := setContext(args[0], options)
+			authName := args[0]
+			modified, err := setAuth(args[0], options)
 			if err != nil {
 				return err
 			}
 
 			if modified {
-				fmt.Printf("Context \"%s\" modified.\n", contextName)
+				fmt.Printf("Auth \"%s\" modified.\n", authName)
 			} else {
-				fmt.Printf("Context \"%s\" created.\n", contextName)
+				fmt.Printf("Auth \"%s\" created.\n", authName)
 			}
 
 			return nil
 		},
 	}
 
+	// add cmd flags
 	flags := cmd.Flags()
-	options.AddConnectionFlags(flags)
-	options.AddCompanyFlags(flags)
-	options.AddProjectFlags(flags)
-	options.AddAuthFlags(flags)
+	options.AddBasicAuthFlags(flags)
+
+	// add sub commands
 
 	return cmd
 }
 
-func setContext(contextName string, opts *clioptions.CLIOptions) (bool, error) {
+func setAuth(authName string, opts *clioptions.CLIOptions) (bool, error) {
 	locator := cliconfig.NewConfigPathLocator()
 	locator.ExplicitPath = opts.MiactlConfig
 
@@ -65,29 +67,25 @@ func setContext(contextName string, opts *clioptions.CLIOptions) (bool, error) {
 		return false, err
 	}
 
-	newConfigContext := &api.ContextConfig{
-		Endpoint:              opts.Endpoint,
-		CertificateAuthority:  opts.CAFile,
-		CompanyID:             opts.CompanyID,
-		ProjectID:             opts.ProjectID,
-		InsecureSkipTLSVerify: opts.Insecure,
-		AuthName:              opts.Auth,
+	newAuth := &api.AuthConfig{
+		ClientID:     opts.BasicClientID,
+		ClientSecret: opts.BasicClientSecret,
 	}
 
-	contextConfig, found := config.Contexts[contextName]
+	authConfig, found := config.Auth[authName]
 	if !found {
-		contextConfig = new(api.ContextConfig)
+		authConfig = new(api.AuthConfig)
 	}
 
-	if err := mergo.Merge(contextConfig, newConfigContext, mergo.WithOverride); err != nil {
+	if err := mergo.Merge(authConfig, newAuth, mergo.WithOverride); err != nil {
 		return false, err
 	}
 
-	if config.Contexts != nil {
-		config.Contexts[contextName] = contextConfig
+	if config.Auth != nil {
+		config.Auth[authName] = authConfig
 	} else {
-		config.Contexts = map[string]*api.ContextConfig{
-			contextName: contextConfig,
+		config.Auth = map[string]*api.AuthConfig{
+			authName: authConfig,
 		}
 	}
 
