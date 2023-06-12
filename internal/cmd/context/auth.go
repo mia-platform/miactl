@@ -53,7 +53,7 @@ and then attach it to one or more contexts.`,
 	flags := cmd.Flags()
 	options.AddBasicAuthFlags(flags)
 
-	// add sub commnads
+	// add sub commands
 
 	return cmd
 }
