@@ -13,10 +13,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package basic
+package jwt
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"encoding/base64"
+	"encoding/binary"
+	"encoding/json"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -26,14 +31,24 @@ import (
 )
 
 const (
+	rsaKeyBytes                            = 4096
 	companyServiceAccountsEndpointTemplate = "/api/companies/%s/service-accounts"
+	defaultJSONType                        = "service_account"
+	defaultKeyID                           = "miactl"
 )
+
+type jsonRepresantation struct {
+	Type           string `json:"type"`
+	KeyID          string `json:"key-id"`           //nolint: tagliatelle
+	PrivateKeyData string `json:"private-key-data"` //nolint: tagliatelle
+	ClientID       string `json:"client-id"`        //nolint: tagliatelle
+}
 
 func ServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "basic SERVICEACCOUNT [flags]",
-		Short: "Create a new basic authentication service account",
-		Long: `Create a new basic authentication service account in the provided company.
+		Use:   "jwt SERVICEACCOUNT [flags]",
+		Short: "Create a new jwt authentication service account",
+		Long: `Create a new jwt authentication service account in the provided company.
 
 You can create a service account with the same or lower role than the role that
 the current authentication has. The role company-owner can be used only when the
@@ -45,15 +60,14 @@ service account is created on the company.`,
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			credentials, err := createBasicServiceAccount(client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.ServiceAccountRole))
+			credentials, err := createJWTServiceAccount(client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.ServiceAccountRole))
 			if err != nil {
 				return err
 			}
 
-			cmd.Println("Service account created, please save the following parameters:")
-			cmd.Println("")
-			cmd.Printf("Client ID: %s\nClient Secret: %s\n", credentials[0], credentials[1])
-			return nil
+			cmd.Println("Service account created, save the following json for later uses:")
+			encoder := json.NewEncoder(cmd.OutOrStdout())
+			return encoder.Encode(credentials)
 		},
 	}
 
@@ -78,17 +92,17 @@ service account is created on the company.`,
 	return cmd
 }
 
-func createBasicServiceAccount(client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) ([]string, error) {
+func createJWTServiceAccount(client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) (*jsonRepresantation, error) {
 	if !resources.IsValidServiceAccountRole(role) {
 		return nil, fmt.Errorf("invalid service account role %s", role)
 	}
 
-	payload := &resources.ServiceAccountRequest{
-		Name: name,
-		Type: resources.ServiceAccountBasic,
-		Role: role,
+	key, err := generateRSAKey()
+	if err != nil {
+		return nil, err
 	}
 
+	payload := requestFromKey(name, role, key)
 	body, err := resources.EncodeResourceToJSON(payload)
 	if err != nil {
 		return nil, fmt.Errorf("failed to encode request body: %w", err)
@@ -113,5 +127,51 @@ func createBasicServiceAccount(client *client.APIClient, name, companyID string,
 		return nil, err
 	}
 
-	return []string{response.ClientID, response.ClientSecret}, nil
+	return &jsonRepresantation{
+		Type:           defaultJSONType,
+		KeyID:          defaultKeyID,
+		PrivateKeyData: base64.RawURLEncoding.EncodeToString(key.N.Bytes()),
+		ClientID:       response.ClientID,
+	}, nil
+}
+
+func generateRSAKey() (*rsa.PrivateKey, error) {
+	return rsa.GenerateKey(rand.Reader, rsaKeyBytes)
+}
+
+func requestFromKey(name string, role resources.ServiceAccountRole, key *rsa.PrivateKey) *resources.ServiceAccountRequest {
+	encoder := base64.RawURLEncoding
+	modulus, exponent := rsaPublicKeyToBytes(&key.PublicKey)
+
+	return &resources.ServiceAccountRequest{
+		Name: name,
+		Role: role,
+		PublicKey: resources.PublicKey{
+			Use:       "sig",
+			Type:      "RSA",
+			Algorithm: "RSA256",
+			KeyID:     defaultKeyID,
+			Modulus:   encoder.EncodeToString(modulus),
+			Exponent:  encoder.EncodeToString(exponent),
+		},
+	}
+}
+
+// rsaPublicKeyToBytes take an RSA PublicKey struct as inpunt and return two
+// bytes array, that follows the  https://www.rfc-editor.org/rfc/rfc7518#section-6.3.1
+// specification, needed by a JWK
+func rsaPublicKeyToBytes(key *rsa.PublicKey) ([]byte, []byte) {
+	modulus := key.N.Bytes()
+
+	// convert exponent in 8 byte and then truncate until the first byte set to 1
+	exponentData := make([]byte, 8)
+	binary.BigEndian.PutUint64(exponentData, uint64(key.E))
+	i := 0
+	var emptyByte byte = 0x0
+	for ; i < len(exponentData); i++ {
+		if exponentData[i] != emptyByte {
+			break
+		}
+	}
+	return modulus, exponentData[i:]
 }

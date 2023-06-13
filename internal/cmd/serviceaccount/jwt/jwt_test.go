@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package basic
+package jwt
 
 import (
 	"fmt"
@@ -22,47 +22,47 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestServiceAccountCmd(t *testing.T) {
-	cmd := ServiceAccountCmd(&clioptions.CLIOptions{})
-	assert.NotNil(t, cmd)
+func TestRequestFromKey(t *testing.T) {
+	key, err := generateRSAKey()
+	assert.NoError(t, err)
+
+	payload := requestFromKey("testName", resources.ServiceAccountRoleCompanyOwner, key)
+	assert.Equal(t, "testName", payload.Name)
+	assert.Equal(t, resources.ServiceAccountRoleCompanyOwner, payload.Role)
+	assert.Equal(t, "sig", payload.PublicKey.Use)
+	assert.Equal(t, "RSA", payload.PublicKey.Type)
+	assert.Equal(t, "RSA256", payload.PublicKey.Algorithm)
+	assert.NotEmpty(t, payload.PublicKey.Modulus)
+	assert.Equal(t, "AQAB", payload.PublicKey.Exponent)
 }
 
-func TestCreateBasicServiceAccount(t *testing.T) {
+func TestCreateServiceAccount(t *testing.T) {
 	testCases := map[string]struct {
-		server              *httptest.Server
-		serviceAccountName  string
-		companyID           string
-		role                resources.ServiceAccountRole
-		expectedCredentials []string
-		expectErr           bool
+		server    *httptest.Server
+		companyID string
+		role      resources.ServiceAccountRole
+		expectErr bool
 	}{
-		"create a new service account": {
-			server:             testServer(t),
-			serviceAccountName: "new-sa",
-			companyID:          "company",
-			role:               resources.ServiceAccountRoleReporter,
-			expectedCredentials: []string{
-				"client-id",
-				"client-secret",
-			},
-		},
-		"server return error": {
-			server:              testServer(t),
-			serviceAccountName:  "new-sa",
-			companyID:           "error",
-			role:                resources.ServiceAccountRoleReporter,
-			expectErr:           true,
-			expectedCredentials: nil,
+		"create successul": {
+			server:    testServer(t),
+			companyID: "company",
+			role:      resources.ServiceAccountRoleGuest,
 		},
 		"wrong role": {
 			server:    testServer(t),
+			companyID: "unused",
 			role:      resources.ServiceAccountRole("wrong"),
+			expectErr: true,
+		},
+		"remote error": {
+			server:    testServer(t),
+			companyID: "error",
+			role:      resources.ServiceAccountRoleGuest,
 			expectErr: true,
 		},
 	}
@@ -75,19 +75,14 @@ func TestCreateBasicServiceAccount(t *testing.T) {
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			credentials, err := createBasicServiceAccount(
-				client,
-				testCase.serviceAccountName,
-				testCase.companyID,
-				testCase.role,
-			)
-
+			response, err := createJWTServiceAccount(client, "foo", testCase.companyID, testCase.role)
 			if testCase.expectErr {
-				require.Error(t, err)
+				assert.Error(t, err)
+				assert.Nil(t, response)
 			} else {
-				require.NoError(t, err)
+				assert.NoError(t, err)
+				assert.NotNil(t, response)
 			}
-			assert.Equal(t, testCase.expectedCredentials, credentials)
 		})
 	}
 }
@@ -99,9 +94,7 @@ func testServer(t *testing.T) *httptest.Server {
 		case r.Method == http.MethodPost && r.URL.Path == fmt.Sprintf(companyServiceAccountsEndpointTemplate, "company"):
 			body := &resources.ServiceAccount{
 				ClientID:         "client-id",
-				ClientSecret:     "client-secret",
 				ClientIDIssuedAt: 0,
-				Company:          "company",
 			}
 			data, err := resources.EncodeResourceToJSON(body)
 			require.NoError(t, err)
