@@ -67,6 +67,7 @@ service account is created on the company.`,
 
 			cmd.Println("Service account created, save the following json for later uses:")
 			encoder := json.NewEncoder(cmd.OutOrStdout())
+			encoder.SetIndent("", "	")
 			return encoder.Encode(credentials)
 		},
 	}
@@ -95,6 +96,10 @@ service account is created on the company.`,
 func createJWTServiceAccount(client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) (*jsonRepresantation, error) {
 	if !resources.IsValidServiceAccountRole(role) {
 		return nil, fmt.Errorf("invalid service account role %s", role)
+	}
+
+	if len(companyID) == 0 {
+		return nil, fmt.Errorf("company id is required, please set it via flag or context")
 	}
 
 	key, err := generateRSAKey()
@@ -146,6 +151,7 @@ func requestFromKey(name string, role resources.ServiceAccountRole, key *rsa.Pri
 	return &resources.ServiceAccountRequest{
 		Name: name,
 		Role: role,
+		Type: resources.ServiceAccountJWT,
 		PublicKey: resources.PublicKey{
 			Use:       "sig",
 			Type:      "RSA",

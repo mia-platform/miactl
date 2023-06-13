@@ -83,6 +83,10 @@ func createBasicServiceAccount(client *client.APIClient, name, companyID string,
 		return nil, fmt.Errorf("invalid service account role %s", role)
 	}
 
+	if len(companyID) == 0 {
+		return nil, fmt.Errorf("company id is required, please set it via flag or context")
+	}
+
 	payload := &resources.ServiceAccountRequest{
 		Name: name,
 		Type: resources.ServiceAccountBasic,
