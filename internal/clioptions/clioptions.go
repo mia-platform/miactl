@@ -47,6 +47,7 @@ type CLIOptions struct {
 	BasicClientSecret string
 
 	ServiceAccountRole string
+	OutputPath         string
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -104,6 +105,11 @@ func (o *CLIOptions) AddBasicAuthFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddServiceAccountFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.ServiceAccountRole, "service-account-role", "r", "", "the company role of the service account")
+}
+
+func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
+	o.AddServiceAccountFlags(flags)
+	flags.StringVarP(&o.OutputPath, "output", "o", "", "write the service account to a file")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {

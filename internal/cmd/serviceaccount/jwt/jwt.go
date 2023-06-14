@@ -23,6 +23,8 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -65,15 +67,12 @@ service account is created on the company.`,
 				return err
 			}
 
-			cmd.Println("Service account created, save the following json for later uses:")
-			encoder := json.NewEncoder(cmd.OutOrStdout())
-			encoder.SetIndent("", "	")
-			return encoder.Encode(credentials)
+			return saveCredentialsIfNeeded(credentials, options.OutputPath, cmd.OutOrStdout())
 		},
 	}
 
 	// add cmd flags
-	options.AddServiceAccountFlags(cmd.Flags())
+	options.AddJWTServiceAccountFlags(cmd.Flags())
 	err := cmd.RegisterFlagCompletionFunc("service-account-role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{
 			resources.ServiceAccountRoleGuest.String(),
@@ -85,6 +84,12 @@ service account is created on the company.`,
 		}, cobra.ShellCompDirectiveDefault
 	})
 
+	if err != nil {
+		// we panic here because if we reach here, something nasty is happenign in flag autocomplete registration
+		panic(err)
+	}
+
+	err = cmd.MarkFlagDirname("output")
 	if err != nil {
 		// we panic here because if we reach here, something nasty is happenign in flag autocomplete registration
 		panic(err)
@@ -138,6 +143,32 @@ func createJWTServiceAccount(client *client.APIClient, name, companyID string, r
 		PrivateKeyData: base64.RawURLEncoding.EncodeToString(key.N.Bytes()),
 		ClientID:       response.ClientID,
 	}, nil
+}
+
+func saveCredentialsIfNeeded(credentials *jsonRepresantation, outputPath string, stdout io.Writer) error {
+	var encoder *json.Encoder
+	var fileDest *os.File
+	if len(outputPath) > 0 {
+		var err error
+		fileDest, err = os.OpenFile(outputPath, os.O_CREATE|os.O_WRONLY, 0600)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(stdout, "Service account created, credentials saved in %s\n", outputPath)
+		encoder = json.NewEncoder(fileDest)
+	} else {
+		fmt.Fprintln(stdout, "Service account created, save the following json for later uses:")
+		encoder = json.NewEncoder(stdout)
+	}
+
+	defer func() {
+		if fileDest != nil {
+			fileDest.Close()
+		}
+	}()
+
+	encoder.SetIndent("", "	")
+	return encoder.Encode(credentials)
 }
 
 func generateRSAKey() (*rsa.PrivateKey, error) {

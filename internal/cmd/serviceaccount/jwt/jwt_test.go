@@ -16,9 +16,11 @@
 package jwt
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -85,6 +87,34 @@ func TestCreateServiceAccount(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSaveCredentials(t *testing.T) {
+	testBuffer := bytes.NewBuffer([]byte{})
+	testCredentials := &jsonRepresantation{
+		Type:           "type",
+		KeyID:          "key-id",
+		PrivateKeyData: "data",
+		ClientID:       "client-id",
+	}
+	expectedString := `Service account created, save the following json for later uses:
+{
+	"type": "type",
+	"key-id": "key-id",
+	"private-key-data": "data",
+	"client-id": "client-id"
+}
+`
+	err := saveCredentialsIfNeeded(testCredentials, "", testBuffer)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedString, testBuffer.String())
+	testBuffer.Reset()
+
+	testFile := filepath.Join(t.TempDir(), "file.json")
+	expectedString = fmt.Sprintf("Service account created, credentials saved in %s\n", testFile)
+	err = saveCredentialsIfNeeded(testCredentials, testFile, testBuffer)
+	assert.NoError(t, err)
+	assert.Equal(t, expectedString, testBuffer.String())
 }
 
 func testServer(t *testing.T) *httptest.Server {
