@@ -17,6 +17,12 @@
 
 GOLANGCI_LINT_MODE?= colored-line-number
 
+# if not already installed in the system install a pinned version in tools folder
+GOLANGCI_PATH:= $(shell command -v golangci-lint 2> /dev/null)
+ifndef GOLANGCI_PATH
+	GOLANGCI_PATH:=$(TOOLS_BIN)/golangci-lint
+endif
+
 .PHONY: lint
 lint:
 
@@ -25,12 +31,12 @@ lint-deps:
 
 .PHONY: golangci-lint
 lint: golangci-lint
-golangci-lint: $(TOOLS_BIN)/golangci-lint
+golangci-lint: $(GOLANGCI_PATH)
 	$(info Running golangci-lint with .golangci.yaml config file...)
-	$(TOOLS_BIN)/golangci-lint run --out-format=$(GOLANGCI_LINT_MODE) --config=.golangci.yaml --build-tags=conformance,integration
+	$(GOLANGCI_PATH) run --out-format=$(GOLANGCI_LINT_MODE) --config=.golangci.yaml --build-tags=conformance,integration
 
-lint-deps: $(TOOLS_BIN)/golangci-lint
-$(TOOLS_BIN)/golangci-lint: $(TOOLS_DIR)/GOLANGCI_LINT_VERSION
+lint-deps: $(GOLANGCI_PATH)
+$(GOLANGCI_PATH): $(TOOLS_DIR)/GOLANGCI_LINT_VERSION
 	$(eval GOLANGCI_LINT_VERSION:= $(shell cat $<))
 	mkdir -p $(TOOLS_BIN)
 	$(info Installing golangci-lint $(GOLANGCI_LINT_VERSION) bin in $(TOOLS_BIN))

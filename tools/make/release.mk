@@ -15,6 +15,12 @@
 
 ##@ Release Goals
 
+# if not already installed in the system install a pinned version in tools folder
+GORELEASER_PATH:= $(shell command -v goreleaser 2> /dev/null)
+ifndef GORELEASER_PATH
+	GORELEASER_PATH:=$(TOOLS_BIN)/goreleaser
+endif
+
 SNAPSHOT_RELEASE?= 1
 GORELEASER_SNAPSHOT:=
 
@@ -24,13 +30,13 @@ endif
 
 .PHONY: goreleaser/release
 goreleaser/release:
-	$(TOOLS_BIN)/goreleaser release $(GORELEASER_SNAPSHOT) --clean --config=.goreleaser.yaml
+	$(GORELEASER_PATH) release $(GORELEASER_SNAPSHOT) --clean --config=.goreleaser.yaml
 
 goreleaser/check:
-	$(TOOLS_BIN)/goreleaser check --config=.goreleaser.yaml
+	$(GORELEASER_PATH) check --config=.goreleaser.yaml
 
 .PHONY: release-deps
-release-deps: $(TOOLS_BIN)/goreleaser
+release-deps: $(GORELEASER_PATH)
 
 .PHONY: ci-release
 ci-release: release-deps goreleaser/release

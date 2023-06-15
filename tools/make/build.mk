@@ -47,28 +47,28 @@ go/build/%:
 	$(eval ARM:= $(word 3,$(subst /, ,$*)))
 	$(info Building image for $(OS) $(ARCH) $(ARM))
 
-	GOOS=$(OS) GOARCH=$(ARCH) GOARM=$(ARM) $(TOOLS_BIN)/goreleaser build \
+	GOOS=$(OS) GOARCH=$(ARCH) GOARM=$(ARM) $(GORELEASER_PATH) build \
 		--single-target --snapshot --clean --config=.goreleaser.yaml
 
 .PHONY: go/build/multiarch
 go/build/multiarch:
-	$(TOOLS_BIN)/goreleaser build --snapshot --clean --config=.goreleaser.yaml
+	$(GORELEASER_PATH) build --snapshot --clean --config=.goreleaser.yaml
 
 .PHONY: build-deps
 build-deps:
 
-$(TOOLS_BIN)/goreleaser: $(TOOLS_DIR)/GORELEASER_VERSION
+$(GORELEASER_PATH): $(TOOLS_DIR)/GORELEASER_VERSION
 	$(eval GORELEASER_VERSION:= $(shell cat $<))
 	mkdir -p $(TOOLS_BIN)
 	$(info Installing goreleaser $(GORELEASER_VERSION) bin in $(TOOLS_BIN))
 	GOBIN=$(TOOLS_BIN) go install github.com/goreleaser/goreleaser@$(GORELEASER_VERSION)
 
-build-deps: $(TOOLS_BIN)/goreleaser
+build-deps: $(GORELEASER_PATH)
 
-build: $(TOOLS_BIN)/goreleaser
+build: $(GORELEASER_PATH)
 
 .PHONY: build-multiarch
-build-multiarch: $(TOOLS_BIN)/goreleaser go/build/multiarch
+build-multiarch: $(GORELEASER_PATH) go/build/multiarch
 
 endif
 
