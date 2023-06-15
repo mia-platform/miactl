@@ -19,9 +19,11 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/binary"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io"
 	"os"
@@ -137,10 +139,17 @@ func createJWTServiceAccount(client *client.APIClient, name, companyID string, r
 		return nil, err
 	}
 
+	pemData := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: x509.MarshalPKCS1PrivateKey(key),
+		},
+	)
+
 	return &jsonRepresantation{
 		Type:           defaultJSONType,
 		KeyID:          defaultKeyID,
-		PrivateKeyData: base64.RawURLEncoding.EncodeToString(key.N.Bytes()),
+		PrivateKeyData: base64.StdEncoding.EncodeToString(pemData),
 		ClientID:       response.ClientID,
 	}, nil
 }
