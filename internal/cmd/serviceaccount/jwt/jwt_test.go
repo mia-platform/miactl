@@ -91,7 +91,7 @@ func TestCreateServiceAccount(t *testing.T) {
 
 func TestSaveCredentials(t *testing.T) {
 	testBuffer := bytes.NewBuffer([]byte{})
-	testCredentials := &jsonRepresantation{
+	testCredentials := &resources.JWTServiceAccountJSON{
 		Type:           "type",
 		KeyID:          "key-id",
 		PrivateKeyData: "data",

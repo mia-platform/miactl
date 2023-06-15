@@ -41,13 +41,6 @@ const (
 	defaultKeyID                           = "miactl"
 )
 
-type jsonRepresantation struct {
-	Type           string `json:"type"`
-	KeyID          string `json:"key-id"`           //nolint: tagliatelle
-	PrivateKeyData string `json:"private-key-data"` //nolint: tagliatelle
-	ClientID       string `json:"client-id"`        //nolint: tagliatelle
-}
-
 func ServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "jwt SERVICEACCOUNT [flags]",
@@ -100,7 +93,7 @@ service account is created on the company.`,
 	return cmd
 }
 
-func createJWTServiceAccount(client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) (*jsonRepresantation, error) {
+func createJWTServiceAccount(client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) (*resources.JWTServiceAccountJSON, error) {
 	if !resources.IsValidServiceAccountRole(role) {
 		return nil, fmt.Errorf("invalid service account role %s", role)
 	}
@@ -146,7 +139,7 @@ func createJWTServiceAccount(client *client.APIClient, name, companyID string, r
 		},
 	)
 
-	return &jsonRepresantation{
+	return &resources.JWTServiceAccountJSON{
 		Type:           defaultJSONType,
 		KeyID:          defaultKeyID,
 		PrivateKeyData: base64.StdEncoding.EncodeToString(pemData),
@@ -154,7 +147,7 @@ func createJWTServiceAccount(client *client.APIClient, name, companyID string, r
 	}, nil
 }
 
-func saveCredentialsIfNeeded(credentials *jsonRepresantation, outputPath string, stdout io.Writer) error {
+func saveCredentialsIfNeeded(credentials *resources.JWTServiceAccountJSON, outputPath string, stdout io.Writer) error {
 	var encoder *json.Encoder
 	var fileDest *os.File
 	if len(outputPath) > 0 {
