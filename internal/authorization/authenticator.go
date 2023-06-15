@@ -55,7 +55,7 @@ func (a *authenticator) Wrap(rt http.RoundTripper) http.RoundTripper {
 	var userAuth http.RoundTripper
 	switch {
 	case len(authConfig.ClientID) > 0 && len(authConfig.ClientSecret) > 0:
-		userAuth = &basicAuthenticator{
+		userAuth = &serviceAccountAuthenticator{
 			client:       client,
 			next:         rt,
 			userAuth:     a.cacheReadWriter,

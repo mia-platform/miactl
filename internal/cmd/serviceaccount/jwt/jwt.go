@@ -132,10 +132,15 @@ func createJWTServiceAccount(client *client.APIClient, name, companyID string, r
 		return nil, err
 	}
 
+	pkcs8, err := x509.MarshalPKCS8PrivateKey(key)
+	if err != nil {
+		return nil, err
+	}
+
 	pemData := pem.EncodeToMemory(
 		&pem.Block{
-			Type:  "RSA PRIVATE KEY",
-			Bytes: x509.MarshalPKCS1PrivateKey(key),
+			Type:  "PRIVATE KEY",
+			Bytes: pkcs8,
 		},
 	)
 

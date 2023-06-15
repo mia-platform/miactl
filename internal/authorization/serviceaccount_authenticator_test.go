@@ -57,7 +57,7 @@ func TestBasicAuthenticator(t *testing.T) {
 
 			restClient, err := client.APIClientForConfig(restConfig)
 			require.NoError(t, err)
-			ua := &basicAuthenticator{
+			ua := &serviceAccountAuthenticator{
 				userAuth:     testCase.authCacheProvider,
 				client:       restClient,
 				clientID:     "id",
@@ -73,7 +73,7 @@ func TestBasicAuthenticator(t *testing.T) {
 
 func TestBasicAuthenticatorRoundTrip(t *testing.T) {
 	rt := &testRoundTripper{}
-	auth := &basicAuthenticator{
+	auth := &serviceAccountAuthenticator{
 		userAuth: &testAuthCacheProvider{},
 		client:   nil,
 		next:     rt,
@@ -106,7 +106,7 @@ func testServerForServiceAccount(t *testing.T) *httptest.Server {
 	t.Helper()
 	return testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case r.Method == http.MethodPost && r.RequestURI == basicAuthEndpoint:
+		case r.Method == http.MethodPost && r.RequestURI == serviceAccountAuthEndpoint:
 			w.Header().Add("Content-Type", "application/json")
 			w.Write([]byte("{\"access_token\":\"new\",\"token_type\":\"Bearer\",\"expires_in\":3600}"))
 		default:
