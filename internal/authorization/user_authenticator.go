@@ -21,6 +21,7 @@ import (
 	"sync"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/netutil"
 	"golang.org/x/oauth2"
 )
 
@@ -59,10 +60,10 @@ func (ua *userAuthenticator) RoundTrip(req *http.Request) (*http.Response, error
 		return nil, err
 	}
 
-	clonedReq := *req
-	accessToken.SetAuthHeader(&clonedReq)
+	clonedReq := netutil.CloneRequest(req)
+	accessToken.SetAuthHeader(clonedReq)
 	reqBodyClosed = true
-	return ua.next.RoundTrip(&clonedReq)
+	return ua.next.RoundTrip(clonedReq)
 }
 
 func (ua *userAuthenticator) AccessToken() (*oauth2.Token, error) {
