@@ -16,11 +16,13 @@
 package context
 
 import (
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -34,6 +36,7 @@ func TestSetAuth(t *testing.T) {
 		authName       string
 		options        *clioptions.CLIOptions
 		expectOverride bool
+		expectErr      bool
 	}{
 		"empty file": {
 			authName:   "credential",
@@ -67,6 +70,15 @@ func TestSetAuth(t *testing.T) {
 				BasicClientSecret: "secret",
 			},
 		},
+		"config with both type of user set": {
+			authName:   "cretendialTest",
+			configPath: copyFile(t, filepath.Join(testdata, "auth.yaml")),
+			options: &clioptions.CLIOptions{
+				BasicClientSecret: "secret",
+				JWTJsonPath:       "path",
+			},
+			expectErr: true,
+		},
 	}
 
 	for testName, testCase := range testCases {
@@ -75,8 +87,38 @@ func TestSetAuth(t *testing.T) {
 
 			testCase.options.MiactlConfig = tempFile
 			override, err := setAuth(testCase.authName, testCase.options)
+			if testCase.expectErr {
+				assert.Error(t, err)
+				return
+			}
+
 			assert.NoError(t, err)
 			assert.Equal(t, testCase.expectOverride, override)
 		})
 	}
+}
+
+func TestJWTUser(t *testing.T) {
+	tempFile := filepath.Join(t.TempDir(), "jwt.json")
+	data, err := json.Marshal(&resources.JWTServiceAccountJSON{
+		Type:           "jwt",
+		KeyID:          "key-id",
+		PrivateKeyData: "data",
+		ClientID:       "client-id",
+	})
+	require.NoError(t, err)
+	err = os.WriteFile(tempFile, data, 0600)
+	require.NoError(t, err)
+
+	wd, err := os.Getwd()
+	require.NoError(t, err)
+	testdata := filepath.Join(wd, "testdata")
+	configFile := copyFile(t, filepath.Join(testdata, "auth.yaml"))
+	options := &clioptions.CLIOptions{
+		MiactlConfig: configFile,
+		JWTJsonPath:  tempFile,
+	}
+	override, err := setAuth("jwt", options)
+	assert.NoError(t, err)
+	assert.False(t, override)
 }

@@ -45,6 +45,7 @@ type CLIOptions struct {
 
 	BasicClientID     string
 	BasicClientSecret string
+	JWTJsonPath       string
 
 	ServiceAccountRole string
 	OutputPath         string
@@ -98,9 +99,10 @@ func (o *CLIOptions) AddDeployFlags(flags *pflag.FlagSet) {
 	flags.BoolVar(&o.NoSemVer, "no-semver", false, "force the deploy wihout semver")
 }
 
-func (o *CLIOptions) AddBasicAuthFlags(flags *pflag.FlagSet) {
+func (o *CLIOptions) AddContextcAuthFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.BasicClientID, "client-id", "", "the client ID of the service account")
 	flags.StringVar(&o.BasicClientSecret, "client-secret", "", "the client secret of the service account")
+	flags.StringVar(&o.JWTJsonPath, "jwt-json", "", "path of the json containing the json config of a jwt service account")
 }
 
 func (o *CLIOptions) AddServiceAccountFlags(flags *pflag.FlagSet) {
