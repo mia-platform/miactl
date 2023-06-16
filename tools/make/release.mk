@@ -15,12 +15,6 @@
 
 ##@ Release Goals
 
-# if not already installed in the system install a pinned version in tools folder
-GORELEASER_PATH:= $(shell command -v goreleaser 2> /dev/null)
-ifndef GORELEASER_PATH
-	GORELEASER_PATH:=$(TOOLS_BIN)/goreleaser
-endif
-
 SNAPSHOT_RELEASE?= 1
 GORELEASER_SNAPSHOT:=
 

@@ -18,6 +18,12 @@
 .PHONY: build
 build:
 
+# if not already installed in the system install a pinned version in tools folder
+GORELEASER_PATH:= $(shell command -v goreleaser 2> /dev/null)
+ifndef GORELEASER_PATH
+GORELEASER_PATH:= $(TOOLS_BIN)/goreleaser
+endif
+
 ifeq ($(IS_LIBRARY), 1)
 
 BUILD_DATE:= $(shell date -u "+%Y-%m-%d")
@@ -65,7 +71,7 @@ $(GORELEASER_PATH): $(TOOLS_DIR)/GORELEASER_VERSION
 
 build-deps: $(GORELEASER_PATH)
 
-build: $(GORELEASER_PATH)
+build: build-deps
 
 .PHONY: build-multiarch
 build-multiarch: $(GORELEASER_PATH) go/build/multiarch
