@@ -56,8 +56,10 @@ func (cr *ConfigReader) ClientConfig(locator *ConfigPathLocator) (*client.Config
 
 	if found {
 		clientConfig.AuthConfig = client.AuthConfig{
-			ClientID:     authConfig.ClientID,
-			ClientSecret: authConfig.ClientSecret,
+			ClientID:          authConfig.ClientID,
+			ClientSecret:      authConfig.ClientSecret,
+			JWTKeyID:          authConfig.JWTKeyID,
+			JWTPrivateKeyData: authConfig.JWTPrivateKeyData,
 		}
 	}
 	return clientConfig, nil

@@ -27,10 +27,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/jws"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
-	"golang.org/x/oauth2/jws"
 )
 
 const (
@@ -115,6 +116,9 @@ func getJWTToken(ctx context.Context, apiClient client.Interface, keyID, clientI
 		Iss: clientID,
 		Sub: clientID,
 		Aud: "console-client-credentials",
+		PrivateClaims: map[string]interface{}{
+			"jti": uuid.New(),
+		},
 	}
 
 	signedJWS, err := jws.Encode(jwsHeader, jwsClaim, key)
@@ -163,7 +167,7 @@ func getJWTToken(ctx context.Context, apiClient client.Interface, keyID, clientI
 }
 
 func rsaKeyFromBase64(base64Data string) (*rsa.PrivateKey, error) {
-	keyData, err := base64.RawStdEncoding.DecodeString(base64Data)
+	keyData, err := base64.StdEncoding.DecodeString(base64Data)
 	if err != nil {
 		return nil, err
 	}

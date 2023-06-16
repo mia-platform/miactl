@@ -65,8 +65,10 @@ type TLSClientConfig struct {
 
 // AuthConfig contains settings for settign up authentication for the http requests
 type AuthConfig struct {
-	ClientID     string
-	ClientSecret string
+	ClientID          string
+	ClientSecret      string
+	JWTKeyID          string
+	JWTPrivateKeyData string
 }
 
 // contentConfig contains settings that affect how objects are transformed when sent to the server.
