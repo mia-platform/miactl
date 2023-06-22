@@ -66,7 +66,7 @@ func TestSetCurrentContext(t *testing.T) {
 
 func copyFile(t *testing.T, in string) string {
 	t.Helper()
-	inFile, err := os.OpenFile(in, os.O_RDONLY, os.ModePerm)
+	inFile, err := os.OpenFile(in, os.O_RDONLY, 0644)
 	require.NoError(t, err)
 	outFile, err := os.CreateTemp(t.TempDir(), "test-file")
 	require.NoError(t, err)

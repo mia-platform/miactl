@@ -15,6 +15,7 @@ on:
 
 env:
   GO_VERSION: 1.20.4
+  GORELEASER_VERSION: v1.18.2
   GO_CACHE: true
 jobs:
   lint:
@@ -84,6 +85,11 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
         cache: true
+    - name: Setup Goreleaser
+      uses: goreleaser/goreleaser-action@v4
+      with:
+        version: ${{ env.GORELEASER_VERSION }}
+        install-only: true
     - name: Run Build Multiarchitecture
       run: make build-multiarch
 
@@ -106,6 +112,7 @@ jobs:
     - name: Setup Goreleaser
       uses: goreleaser/goreleaser-action@v4
       with:
+        version: ${{ env.GORELEASER_VERSION }}
         install-only: true
     - name: Set Snapshot Release Environment
       if: github.ref_type == 'branch'

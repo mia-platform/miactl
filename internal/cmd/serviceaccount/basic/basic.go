@@ -25,13 +25,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type basicServiceAccountResponse struct {
-	ClientID         string `json:"clientId"`
-	ClientSecret     string `json:"clientSecret"`
-	ClientIDIssuedAt int64  `json:"clientIdIssuedAt"`
-	Company          string `json:"company"`
-}
-
 const (
 	companyServiceAccountsEndpointTemplate = "/api/companies/%s/service-accounts"
 )
@@ -66,7 +59,7 @@ service account is created on the company.`,
 
 	// add cmd flags
 	options.AddServiceAccountFlags(cmd.Flags())
-	err := cmd.RegisterFlagCompletionFunc("service-account-role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	err := cmd.RegisterFlagCompletionFunc("role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{
 			resources.ServiceAccountRoleGuest.String(),
 			resources.ServiceAccountRoleReporter.String(),
@@ -88,6 +81,10 @@ service account is created on the company.`,
 func createBasicServiceAccount(client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) ([]string, error) {
 	if !resources.IsValidServiceAccountRole(role) {
 		return nil, fmt.Errorf("invalid service account role %s", role)
+	}
+
+	if len(companyID) == 0 {
+		return nil, fmt.Errorf("company id is required, please set it via flag or context")
 	}
 
 	payload := &resources.ServiceAccountRequest{
@@ -115,7 +112,7 @@ func createBasicServiceAccount(client *client.APIClient, name, companyID string,
 		return nil, err
 	}
 
-	response := new(basicServiceAccountResponse)
+	response := new(resources.ServiceAccount)
 	if err := resp.ParseResponse(response); err != nil {
 		return nil, err
 	}

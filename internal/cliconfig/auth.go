@@ -77,6 +77,6 @@ func (rw *AuthReadWriter) WriteJWTToken(jwt *oauth2.Token) {
 }
 
 func cacheKeyForConfig(config *api.ContextConfig, auth *api.AuthConfig) string {
-	stringKey := config.Endpoint + auth.ClientID
+	stringKey := config.Endpoint + auth.ClientID + auth.JWTKeyID + auth.JWTPrivateKeyData
 	return fmt.Sprintf("%x", sha256.Sum256([]byte(stringKey)))
 }

@@ -13,27 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package serviceaccount
+package netutil
 
 import (
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/basic"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/jwt"
-	"github.com/spf13/cobra"
+	"net/http"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-func CreateServiceAccountCmd(o *clioptions.CLIOptions) *cobra.Command {
-	createCmd := &cobra.Command{
-		Use:   "create",
-		Short: "Create a service account",
-		Long:  "Create a service account using specified subcommand",
-	}
+func TestCloneRequest(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet, "http://example.com", nil)
+	require.NoError(t, err)
 
-	// add sub commands
-	createCmd.AddCommand(
-		basic.ServiceAccountCmd(o),
-		jwt.ServiceAccountCmd(o),
-	)
-
-	return createCmd
+	clonedReq := CloneRequest(req)
+	assert.NotSame(t, clonedReq, req)
+	assert.NotNil(t, clonedReq.Header)
 }

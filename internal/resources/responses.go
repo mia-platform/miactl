@@ -92,3 +92,10 @@ type PipelineStatus struct {
 	ID     int    `json:"id"`
 	Status string `json:"status"`
 }
+
+type ServiceAccount struct {
+	ClientID         string `json:"clientId"`
+	ClientSecret     string `json:"clientSecret"`
+	ClientIDIssuedAt int64  `json:"clientIdIssuedAt"`
+	Company          string `json:"company"`
+}

@@ -13,27 +13,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package serviceaccount
+package netutil
 
-import (
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/basic"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/jwt"
-	"github.com/spf13/cobra"
-)
+import "net/http"
 
-func CreateServiceAccountCmd(o *clioptions.CLIOptions) *cobra.Command {
-	createCmd := &cobra.Command{
-		Use:   "create",
-		Short: "Create a service account",
-		Long:  "Create a service account using specified subcommand",
+// CloneRequest return a cloned version of request, used to abide to the RoundTripper contract
+func CloneRequest(request *http.Request) *http.Request {
+	// shallow copy of the struct
+	clone := new(http.Request)
+	*clone = *request
+
+	// deep copy of the Header
+	clone.Header = request.Header.Clone()
+	if clone.Header == nil {
+		clone.Header = make(http.Header)
 	}
 
-	// add sub commands
-	createCmd.AddCommand(
-		basic.ServiceAccountCmd(o),
-		jwt.ServiceAccountCmd(o),
-	)
-
-	return createCmd
+	return clone
 }

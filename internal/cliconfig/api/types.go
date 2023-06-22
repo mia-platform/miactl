@@ -31,8 +31,10 @@ type ContextConfig struct {
 }
 
 type AuthConfig struct {
-	ClientID     string `yaml:"client-id,omitempty"`     //nolint:tagliatelle
-	ClientSecret string `yaml:"client-secret,omitempty"` //nolint:tagliatelle
+	ClientID          string `yaml:"client-id,omitempty"`        //nolint:tagliatelle
+	ClientSecret      string `yaml:"client-secret,omitempty"`    //nolint:tagliatelle
+	JWTKeyID          string `yaml:"key-id,omitempty"`           //nolint:tagliatelle
+	JWTPrivateKeyData string `yaml:"private-key-data,omitempty"` //nolint:tagliatelle
 }
 
 func NewConfig() *Config {

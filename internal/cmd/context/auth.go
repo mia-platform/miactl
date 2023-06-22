@@ -16,12 +16,15 @@
 package context
 
 import (
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/imdario/mergo"
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +54,7 @@ and then attach it to one or more contexts.`,
 
 	// add cmd flags
 	flags := cmd.Flags()
-	options.AddBasicAuthFlags(flags)
+	options.AddContextAuthFlags(flags)
 
 	// add sub commands
 
@@ -59,20 +62,32 @@ and then attach it to one or more contexts.`,
 }
 
 func setAuth(authName string, opts *clioptions.CLIOptions) (bool, error) {
+	if len(opts.JWTJsonPath) > 0 && (len(opts.BasicClientID) > 0 || len(opts.BasicClientSecret) > 0) {
+		return false, fmt.Errorf("is not possible to set both jwt and basic service account configs")
+	}
+
 	locator := cliconfig.NewConfigPathLocator()
 	locator.ExplicitPath = opts.MiactlConfig
+	if len(opts.JWTJsonPath) > 0 {
+		return saveJWTServiceAccount(authName, opts.JWTJsonPath, locator)
+	}
+	return saveBasicServiceAccount(authName, opts.BasicClientID, opts.BasicClientSecret, locator)
+}
 
+func saveBasicServiceAccount(name, clientID, clientSecret string, locator *cliconfig.ConfigPathLocator) (bool, error) {
 	config, err := locator.ReadConfig()
 	if err != nil {
 		return false, err
 	}
 
 	newAuth := &api.AuthConfig{
-		ClientID:     opts.BasicClientID,
-		ClientSecret: opts.BasicClientSecret,
+		ClientID:          clientID,
+		ClientSecret:      clientSecret,
+		JWTKeyID:          "",
+		JWTPrivateKeyData: "",
 	}
 
-	authConfig, found := config.Auth[authName]
+	authConfig, found := config.Auth[name]
 	if !found {
 		authConfig = new(api.AuthConfig)
 	}
@@ -82,10 +97,54 @@ func setAuth(authName string, opts *clioptions.CLIOptions) (bool, error) {
 	}
 
 	if config.Auth != nil {
-		config.Auth[authName] = authConfig
+		config.Auth[name] = authConfig
 	} else {
 		config.Auth = map[string]*api.AuthConfig{
-			authName: authConfig,
+			name: authConfig,
+		}
+	}
+
+	return found, locator.WriteConfig(config)
+}
+
+func saveJWTServiceAccount(name, jwtJSONPath string, locator *cliconfig.ConfigPathLocator) (bool, error) {
+	fileData, err := os.ReadFile(jwtJSONPath)
+	if err != nil {
+		return false, err
+	}
+
+	jwtServiceAccount := new(resources.JWTServiceAccountJSON)
+	err = json.Unmarshal(fileData, jwtServiceAccount)
+	if err != nil {
+		return false, err
+	}
+
+	config, err := locator.ReadConfig()
+	if err != nil {
+		return false, err
+	}
+
+	authConfig, found := config.Auth[name]
+	if !found {
+		authConfig = new(api.AuthConfig)
+	}
+
+	newAuth := &api.AuthConfig{
+		ClientID:          jwtServiceAccount.ClientID,
+		ClientSecret:      "",
+		JWTKeyID:          jwtServiceAccount.KeyID,
+		JWTPrivateKeyData: jwtServiceAccount.PrivateKeyData,
+	}
+
+	if err := mergo.Merge(authConfig, newAuth, mergo.WithOverride); err != nil {
+		return false, err
+	}
+
+	if config.Auth != nil {
+		config.Auth[name] = authConfig
+	} else {
+		config.Auth = map[string]*api.AuthConfig{
+			name: authConfig,
 		}
 	}
 

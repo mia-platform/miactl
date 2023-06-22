@@ -17,6 +17,8 @@ package transport
 
 import (
 	"net/http"
+
+	"github.com/mia-platform/miactl/internal/netutil"
 )
 
 func roundTripperWrappersForConfig(config *Config, roundTripper http.RoundTripper) http.RoundTripper {
@@ -47,22 +49,7 @@ func (rt *userAgentRoundTripper) RoundTrip(req *http.Request) (*http.Response, e
 	if len(req.Header.Get("User-Agent")) != 0 {
 		return rt.next.RoundTrip(req)
 	}
-	clonedReq := cloneRequest(req)
+	clonedReq := netutil.CloneRequest(req)
 	clonedReq.Header.Set("User-Agent", rt.userAgent)
 	return rt.next.RoundTrip(clonedReq)
-}
-
-// cloneRequest return a cloned version of request, used to abide to the RoundTripper contract
-func cloneRequest(request *http.Request) *http.Request {
-	// shallow copy of the struct
-	clone := new(http.Request)
-	*clone = *request
-
-	// deep copy of the Header
-	clone.Header = request.Header.Clone()
-	if clone.Header == nil {
-		clone.Header = make(http.Header)
-	}
-
-	return clone
 }

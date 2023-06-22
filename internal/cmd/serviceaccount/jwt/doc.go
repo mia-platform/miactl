@@ -13,27 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package serviceaccount
-
-import (
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/basic"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/jwt"
-	"github.com/spf13/cobra"
-)
-
-func CreateServiceAccountCmd(o *clioptions.CLIOptions) *cobra.Command {
-	createCmd := &cobra.Command{
-		Use:   "create",
-		Short: "Create a service account",
-		Long:  "Create a service account using specified subcommand",
-	}
-
-	// add sub commands
-	createCmd.AddCommand(
-		basic.ServiceAccountCmd(o),
-		jwt.ServiceAccountCmd(o),
-	)
-
-	return createCmd
-}
+// jwt package contains the function for creating a jwt authentication service account
+package jwt

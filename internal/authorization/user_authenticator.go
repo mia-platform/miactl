@@ -40,29 +40,7 @@ type userAuthenticator struct {
 }
 
 func (ua *userAuthenticator) RoundTrip(req *http.Request) (*http.Response, error) {
-	reqBodyClosed := false
-	if req.Body != nil {
-		defer func() {
-			if !reqBodyClosed {
-				req.Body.Close()
-			}
-		}()
-	}
-
-	if len(req.Header.Get("Authorization")) != 0 {
-		reqBodyClosed = true
-		return ua.next.RoundTrip(req)
-	}
-
-	accessToken, err := ua.AccessToken()
-	if err != nil {
-		return nil, err
-	}
-
-	clonedReq := *req
-	accessToken.SetAuthHeader(&clonedReq)
-	reqBodyClosed = true
-	return ua.next.RoundTrip(&clonedReq)
+	return roundTrip(req, ua.next, ua.AccessToken)
 }
 
 func (ua *userAuthenticator) AccessToken() (*oauth2.Token, error) {

@@ -25,15 +25,26 @@ type RefreshTokenRequest struct {
 }
 
 type ServiceAccountRequest struct {
-	Name string             `json:"name"`
-	Type string             `json:"tokenEndpointAuthMethod"` //nolint: tagliatelle
-	Role ServiceAccountRole `json:"role"`
+	Name      string             `json:"name"`
+	Type      string             `json:"tokenEndpointAuthMethod"` //nolint: tagliatelle
+	Role      ServiceAccountRole `json:"role"`
+	PublicKey PublicKey          `json:"publicKey,omitempty"`
+}
+
+type PublicKey struct {
+	Type      string `json:"kty"` //nolint: tagliatelle
+	Use       string `json:"use"` //nolint: tagliatelle
+	Algorithm string `json:"alg"` //nolint: tagliatelle
+	KeyID     string `json:"kid"` //nolint: tagliatelle
+	Modulus   string `json:"n"`   //nolint: tagliatelle
+	Exponent  string `json:"e"`   //nolint: tagliatelle
 }
 
 type ServiceAccountRole string
 
 const (
 	ServiceAccountBasic = "client_secret_basic"
+	ServiceAccountJWT   = "private_key_jwt"
 
 	ServiceAccountRoleGuest        = ServiceAccountRole("guest")
 	ServiceAccountRoleReporter     = ServiceAccountRole("reporter")

@@ -55,12 +55,21 @@ func (a *authenticator) Wrap(rt http.RoundTripper) http.RoundTripper {
 	var userAuth http.RoundTripper
 	switch {
 	case len(authConfig.ClientID) > 0 && len(authConfig.ClientSecret) > 0:
-		userAuth = &basicAuthenticator{
+		userAuth = &serviceAccountAuthenticator{
 			client:       client,
 			next:         rt,
 			userAuth:     a.cacheReadWriter,
 			clientID:     authConfig.ClientID,
 			clientSecret: authConfig.ClientSecret,
+		}
+	case len(authConfig.ClientID) > 0 && len(authConfig.JWTKeyID) > 0 && len(authConfig.JWTPrivateKeyData) > 0:
+		userAuth = &serviceAccountAuthenticator{
+			client:         client,
+			next:           rt,
+			userAuth:       a.cacheReadWriter,
+			clientID:       authConfig.ClientID,
+			keyID:          authConfig.JWTKeyID,
+			privateKeyData: authConfig.JWTPrivateKeyData,
 		}
 	default:
 		userAuth = &userAuthenticator{

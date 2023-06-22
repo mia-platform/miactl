@@ -45,8 +45,10 @@ type CLIOptions struct {
 
 	BasicClientID     string
 	BasicClientSecret string
+	JWTJsonPath       string
 
 	ServiceAccountRole string
+	OutputPath         string
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -97,13 +99,19 @@ func (o *CLIOptions) AddDeployFlags(flags *pflag.FlagSet) {
 	flags.BoolVar(&o.NoSemVer, "no-semver", false, "force the deploy wihout semver")
 }
 
-func (o *CLIOptions) AddBasicAuthFlags(flags *pflag.FlagSet) {
+func (o *CLIOptions) AddContextAuthFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.BasicClientID, "client-id", "", "the client ID of the service account")
 	flags.StringVar(&o.BasicClientSecret, "client-secret", "", "the client secret of the service account")
+	flags.StringVar(&o.JWTJsonPath, "jwt-json", "", "path of the json containing the json config of a jwt service account")
 }
 
 func (o *CLIOptions) AddServiceAccountFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.ServiceAccountRole, "service-account-role", "r", "", "the company role of the service account")
+	flags.StringVarP(&o.ServiceAccountRole, "role", "r", "", "the company role of the service account")
+}
+
+func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
+	o.AddServiceAccountFlags(flags)
+	flags.StringVarP(&o.OutputPath, "output", "o", "", "write the service account to a file")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
