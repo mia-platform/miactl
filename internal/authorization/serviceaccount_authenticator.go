@@ -36,6 +36,7 @@ import (
 
 const (
 	serviceAccountAuthEndpoint = "/api/m2m/oauth/token"
+	formEncoded                = "application/x-www-form-urlencoded"
 )
 
 type serviceAccountAuthenticator struct {
@@ -135,7 +136,7 @@ func getJWTToken(ctx context.Context, apiClient client.Interface, keyID, clientI
 	response, err := apiClient.
 		Post().
 		APIPath(serviceAccountAuthEndpoint).
-		SetHeader("Content-Type", "application/x-www-form-urlencoded").
+		SetHeader("Content-Type", formEncoded).
 		Body([]byte(values.Encode())).
 		Do(ctx)
 	if err != nil {
@@ -174,5 +175,10 @@ func rsaKeyFromBase64(base64Data string) (*rsa.PrivateKey, error) {
 
 	pemData, _ := pem.Decode(keyData)
 	key, err := x509.ParsePKCS8PrivateKey(pemData.Bytes)
-	return key.(*rsa.PrivateKey), err
+	rsaKey, ok := key.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("only rsa key are supported")
+	}
+
+	return rsaKey, err
 }

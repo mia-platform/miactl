@@ -158,7 +158,7 @@ func testServerForServiceAccount(t *testing.T) *httptest.Server {
 	return testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		contentType := r.Header.Get("Content-Type")
 		switch {
-		case r.Method == http.MethodPost && r.RequestURI == serviceAccountAuthEndpoint && contentType == "application/x-www-form-urlencoded":
+		case r.Method == http.MethodPost && r.RequestURI == serviceAccountAuthEndpoint && contentType == formEncoded:
 			w.Header().Add("Content-Type", "application/json")
 			w.Write([]byte("{\"access_token\":\"new\",\"token_type\":\"Bearer\",\"expires_in\":3600}"))
 		default:

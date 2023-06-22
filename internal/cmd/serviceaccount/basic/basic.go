@@ -59,7 +59,7 @@ service account is created on the company.`,
 
 	// add cmd flags
 	options.AddServiceAccountFlags(cmd.Flags())
-	err := cmd.RegisterFlagCompletionFunc("service-account-role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	err := cmd.RegisterFlagCompletionFunc("role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{
 			resources.ServiceAccountRoleGuest.String(),
 			resources.ServiceAccountRoleReporter.String(),
