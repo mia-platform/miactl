@@ -18,7 +18,7 @@ package context
 import (
 	"fmt"
 
-	"github.com/imdario/mergo"
+	"dario.cat/mergo"
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"github.com/mia-platform/miactl/internal/clioptions"

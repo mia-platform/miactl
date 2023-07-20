@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- update go version to 1.20.6
+- update mergo to v1.0.0
+- update exp to v0.0.0-20230522175609-2e198f4a06a1
+- update oauth2 to v0.10.0
+
 ## [0.7.0] - 2023-06-26
 
 ### Added

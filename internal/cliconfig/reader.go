@@ -18,7 +18,7 @@ package cliconfig
 import (
 	"fmt"
 
-	"github.com/imdario/mergo"
+	"dario.cat/mergo"
 	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"github.com/mia-platform/miactl/internal/client"
 )
