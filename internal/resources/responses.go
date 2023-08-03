@@ -54,6 +54,13 @@ type Company struct {
 	Repository Repository `json:"repository"`
 }
 
+type MarketplaceItem struct {
+	ID          string `json:"_id"` //nolint:tagliatelle
+	Name        string `json:"name"`
+	Type        string `json:"type"`
+	SupportedBy string `json:"supportedBy"`
+}
+
 type Pipelines struct {
 	Type string `json:"type"`
 }

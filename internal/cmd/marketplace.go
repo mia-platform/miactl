@@ -17,34 +17,24 @@ package cmd
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/deploy"
+	"github.com/mia-platform/miactl/internal/cmd/marketplace"
 	"github.com/spf13/cobra"
 )
 
-func NewRootCommand() *cobra.Command {
-	rootCmd := &cobra.Command{
-		Use:   "miactl",
-		Short: "Mia-Platform Console CLI",
-		Long: `miactl is a CLI for interacting with Mia-Platform Console
-
-	Find more information at: https://docs.mia-platform.eu/docs/cli/miactl/overview`,
+func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "marketplace",
+		Short: "view and manage mia marketplace items",
 	}
 
-	// initialize clioptions and setup during initialization
-	options := clioptions.NewCLIOptions()
-
 	// add cmd flags
-	options.AddGlobalFlags(rootCmd.PersistentFlags())
+	flags := cmd.PersistentFlags()
+	options.AddConnectionFlags(flags)
+	options.AddCompanyFlags(flags)
+	options.AddContextFlags(flags)
 
-	// add sub commands
-	rootCmd.AddCommand(
-		deploy.NewDeployCmd(options),
-		CompanyCmd(options),
-		ContextCmd(options),
-		ProjectCmd(options),
-		ServiceAccountCmd(options),
-		MarketplaceCmd(options),
-	)
+	// add sub commnads
+	cmd.AddCommand(marketplace.ListCmd(options))
 
-	return rootCmd
+	return cmd
 }
