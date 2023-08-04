@@ -78,23 +78,21 @@ func mockServer(t *testing.T, validResponse bool) *httptest.Server {
 	t.Helper()
 	validBodyString := `[
 	{
-		"_id": "63775c07a09ac0996ebfb7ef",
-		"name": "ACL Service",
-		"description": "This service provides REST API that can be configured to manage request ACL",
+		"_id": "43774c07d09ac6996ecfb3ef",
+		"name": "Space Travel Service",
+		"description": "This service provides a REST API to book your next travel to space!",
 		"type": "plugin",
-		"imageUrl": "/v2/files/download/5354b282-d5eb-4089-91f1-b5108a1e98f4.png",
-		"supportedByImageUrl": "/v2/files/download/83b11dd9-41f6-4920-bb2d-2a809e944851.png",
-		"supportedBy": "Mia-Platform",
+		"imageUrl": "/v2/files/download/space.png",
+		"supportedByImageUrl": "/v2/files/download/23b12dd9-43a6-4920-cb2d-2a809d946851.png",
+		"supportedBy": "My-Company",
 		"category": {
 			"id": "auth",
-			"label": "Core Plugins - Authentication & Authorization"
+			"label": "Core Plugins - Travel"
 		},
-		"repositoryUrl": "https://git.tools.mia-platform.eu/platform/core/acl-service",
-		"componentsIds": [],
-		"publishOnMiaDocumentation": true,
+		"repositoryUrl": "https://git.tools.my-company.eu/plugins/core/space-travel-service",
 		"documentation": {
 			"type": "externalLink",
-			"url": "https://docs.mia-platform.eu/docs/runtime_suite/acl-service/overview"
+			"url": "https://docs.my-company.eu/docs/space-travel-service/overview"
 		}
 	}
 ]`

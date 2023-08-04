@@ -47,7 +47,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	}
 }
 
-func getMarketplaceItemsByCompany(client *client.APIClient, companyID string) ([]*resources.MarketplaceItem, error) {
+func getMarketplaceItemsByCompanyId(client *client.APIClient, companyID string) ([]*resources.MarketplaceItem, error) {
 	if len(companyID) == 0 {
 		return nil, fmt.Errorf("missing company id, please set one with the flag or context")
 	}
@@ -76,7 +76,7 @@ func getMarketplaceItemsByCompany(client *client.APIClient, companyID string) ([
 
 // listMarketplaceItems retrieves the marketplace items belonging to the current context
 func listMarketplaceItems(client *client.APIClient, companyID string) error {
-	marketplaceItems, err := getMarketplaceItemsByCompany(client, companyID)
+	marketplaceItems, err := getMarketplaceItemsByCompanyId(client, companyID)
 	if err != nil {
 		return err
 	}
