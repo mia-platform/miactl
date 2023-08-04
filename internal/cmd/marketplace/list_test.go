@@ -89,7 +89,7 @@ func mockServer(t *testing.T, validResponse bool) *httptest.Server {
 			"id": "auth",
 			"label": "Core Plugins - Travel"
 		},
-		"repositoryUrl": "https://git.tools.my-company.eu/plugins/core/space-travel-service",
+		"repositoryUrl": "https://git.com/plugins/core/space-travel-service",
 		"documentation": {
 			"type": "externalLink",
 			"url": "https://docs.my-company.eu/docs/space-travel-service/overview"
