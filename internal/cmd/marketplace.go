@@ -17,23 +17,24 @@ package cmd
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/company"
+	"github.com/mia-platform/miactl/internal/cmd/marketplace"
 	"github.com/spf13/cobra"
 )
 
-func CompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
+func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "company",
-		Short: "View and manage Mia-Platform companies",
+		Use:   "marketplace",
+		Short: "View and manage marketplace items",
 	}
 
 	// add cmd flags
 	flags := cmd.PersistentFlags()
 	options.AddConnectionFlags(flags)
+	options.AddCompanyFlags(flags)
 	options.AddContextFlags(flags)
 
 	// add sub commands
-	cmd.AddCommand(company.ListCmd(options))
+	cmd.AddCommand(marketplace.ListCmd(options))
 
 	return cmd
 }

@@ -43,6 +43,7 @@ func NewRootCommand() *cobra.Command {
 		ContextCmd(options),
 		ProjectCmd(options),
 		ServiceAccountCmd(options),
+		MarketplaceCmd(options),
 	)
 
 	return rootCmd
