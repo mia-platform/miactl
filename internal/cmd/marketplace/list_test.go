@@ -64,7 +64,7 @@ func TestListMarketplaceItems(t *testing.T) {
 			testCase.clientConfig.Host = testCase.server.URL
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
-			err = listMarketplaceItems(client, "")
+			err = listMarketplaceItems(client, "my-company")
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

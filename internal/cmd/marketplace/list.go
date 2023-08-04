@@ -49,28 +49,39 @@ Mia-Platform Marketplace contains several code resources which help develop any 
 	}
 }
 
-// listMarketplaceItems retrieves the marketplace items belonging to the current context
-func listMarketplaceItems(client *client.APIClient, companyID string) error {
-	req := client.
-		Get().
-		APIPath(listMarketplaceEndpoint)
-
-	if len(companyID) != 0 {
-		req.SetParam("tenantId", companyID)
+func getMarketplaceItemsByCompany(client *client.APIClient, companyID string) ([]*resources.MarketplaceItem, error) {
+	if len(companyID) == 0 {
+		return nil, fmt.Errorf("missing company id, please set one with the flag or context")
 	}
+
 	// execute the request
-	resp, err := req.Do(context.Background())
+	resp, err := client.
+		Get().
+		SetParam("tenantId", companyID).
+		APIPath(listMarketplaceEndpoint).
+		Do(context.Background())
+
 	if err != nil {
-		return fmt.Errorf("error executing request: %w", err)
+		return nil, fmt.Errorf("error executing request: %w", err)
 	}
 
 	if err := resp.Error(); err != nil {
-		return err
+		return nil, err
 	}
 
 	marketplaceItems := make([]*resources.MarketplaceItem, 0)
 	if err := resp.ParseResponse(&marketplaceItems); err != nil {
-		return fmt.Errorf("error parsing response body: %w", err)
+		return nil, fmt.Errorf("error parsing response body: %w", err)
+	}
+
+	return marketplaceItems, nil
+}
+
+// listMarketplaceItems retrieves the marketplace items belonging to the current context
+func listMarketplaceItems(client *client.APIClient, companyID string) error {
+	marketplaceItems, err := getMarketplaceItemsByCompany(client, companyID)
+	if err != nil {
+		return err
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -79,13 +90,12 @@ func listMarketplaceItems(client *client.APIClient, companyID string) error {
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
-	table.SetHeader([]string{"Name", "ID", "Type", "Supported By"})
+	table.SetHeader([]string{"ID", "Name", "Type"})
 	for _, marketplaceItem := range marketplaceItems {
 		table.Append([]string{
-			marketplaceItem.Name,
 			marketplaceItem.ID,
+			marketplaceItem.Name,
 			marketplaceItem.Type,
-			marketplaceItem.SupportedBy,
 		})
 	}
 
