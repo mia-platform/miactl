@@ -80,7 +80,7 @@ func mockServer(t *testing.T, validResponse bool) *httptest.Server {
 	{
 		"_id": "43774c07d09ac6996ecfb3ef",
 		"name": "Space Travel Service",
-		"description": "This service provides a REST API to book your next travel to space!",
+		"description": "This service provides a REST API to book your next journey to space!",
 		"type": "plugin",
 		"imageUrl": "/v2/files/download/space.png",
 		"supportedByImageUrl": "/v2/files/download/23b12dd9-43a6-4920-cb2d-2a809d946851.png",
