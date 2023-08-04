@@ -52,7 +52,6 @@ func getMarketplaceItemsByCompany(client *client.APIClient, companyID string) ([
 		return nil, fmt.Errorf("missing company id, please set one with the flag or context")
 	}
 
-	// execute the request
 	resp, err := client.
 		Get().
 		SetParam("tenantId", companyID).

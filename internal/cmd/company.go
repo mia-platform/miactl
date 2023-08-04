@@ -24,7 +24,7 @@ import (
 func CompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "company",
-		Short: "view and manage mia companies",
+		Short: "View and manage Mia-Platform companies",
 	}
 
 	// add cmd flags
@@ -32,7 +32,7 @@ func CompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	options.AddConnectionFlags(flags)
 	options.AddContextFlags(flags)
 
-	// add sub commnads
+	// add sub commands
 	cmd.AddCommand(company.ListCmd(options))
 
 	return cmd
