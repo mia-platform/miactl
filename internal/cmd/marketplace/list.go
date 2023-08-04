@@ -36,9 +36,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
 		Short: "List marketplace items",
-		Long: `List the marketplace items that the current user can access.
-
-Mia-Platform Marketplace contains several code resources which help develop any architecture faster.`,
+		Long:  `List the marketplace items that the current user can access.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
