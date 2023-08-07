@@ -115,7 +115,7 @@ func getMarketplaceResource(client *client.APIClient, resourceID string, outputF
 	}
 
 	if format == JSON {
-		json, err := marketplaceItem.MarshalMarketplaceItem()
+		json, err := marketplaceItem.MarshalMarketplaceItemIndent()
 		if err != nil {
 			return err
 		}
