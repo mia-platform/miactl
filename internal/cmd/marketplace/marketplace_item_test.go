@@ -117,5 +117,5 @@ func TestMarketplaceItemToYAML(t *testing.T) {
 	yaml, err := marketplaceItem.MarshalMarketplaceItemYaml()
 	require.NoError(t, err)
 	assert.NotEmpty(t, yaml)
-	snaps.MatchSnapshot(t, yaml)
+	snaps.MatchSnapshot(t, string(yaml))
 }
