@@ -30,13 +30,6 @@ const (
 	YAML                   string = "yaml"
 )
 
-const ()
-
-var SupportedFormats = map[string]string{
-	JSON: JSON,
-	YAML: YAML,
-}
-
 // GetCmd return a new cobra command for getting a single marketplace resource
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
@@ -99,6 +92,15 @@ func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*Marke
 	return marketplaceItem, nil
 }
 
+func formatAndPrint(formatFunc func() ([]byte, error)) error {
+	data, err := formatFunc()
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(data))
+	return nil
+}
+
 // getMarketplaceResource retrieves the marketplace items for a given resource ID
 func getMarketplaceResource(client *client.APIClient, resourceID string, outputFormat string) error {
 	marketplaceItem, err := getMarketplaceItemByID(client, resourceID)
@@ -106,26 +108,17 @@ func getMarketplaceResource(client *client.APIClient, resourceID string, outputF
 		return err
 	}
 
-	var format string
-
-	if _, ok := SupportedFormats[outputFormat]; ok {
-		format = outputFormat
-	} else {
+	switch outputFormat {
+	case JSON:
+		err = formatAndPrint(marketplaceItem.MarshalMarketplaceItemIndent)
+	case YAML:
+		err = formatAndPrint(marketplaceItem.MarshalMarketplaceItemYaml)
+	default:
 		return fmt.Errorf("invalid output format %s", outputFormat)
 	}
 
-	if format == JSON {
-		json, err := marketplaceItem.MarshalMarketplaceItemIndent()
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(json))
-	} else if format == YAML {
-		yaml, err := marketplaceItem.MarshalMarketplaceItemYaml()
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(yaml))
+	if err != nil {
+		return err
 	}
 
 	return nil
