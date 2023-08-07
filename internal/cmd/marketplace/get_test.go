@@ -31,17 +31,6 @@ const (
 	mock_resource_id = "resource-id"
 )
 
-type TestConfig struct {
-	ExpectedError bool
-	ReturnCode    int
-}
-
-type ServerConfig struct {
-	Server       *httptest.Server
-	ClientConfig *client.Config
-	TestConfig   TestConfig
-}
-
 func TestGetResourceCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
