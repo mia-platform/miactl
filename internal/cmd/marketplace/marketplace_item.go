@@ -12,8 +12,26 @@ func UnmarshalMarketplaceItem(data []byte) (MarketplaceItem, error) {
 	return r, err
 }
 
+type JsonMarshalOptions struct {
+	Indent bool
+}
+
 func (r *MarketplaceItem) MarshalMarketplaceItem() ([]byte, error) {
-	return json.Marshal(r)
+	return r.marshalMarketplaceItemWithOptions(JsonMarshalOptions{})
+}
+
+func (r *MarketplaceItem) MarshalMarketplaceItemIndent() ([]byte, error) {
+	return r.marshalMarketplaceItemWithOptions(JsonMarshalOptions{
+		Indent: true,
+	})
+}
+
+func (r *MarketplaceItem) marshalMarketplaceItemWithOptions(options JsonMarshalOptions) ([]byte, error) {
+	if options.Indent {
+		return json.MarshalIndent(r, "", " ")
+	} else {
+		return json.Marshal(r)
+	}
 }
 
 func UnmarshalMarketplaceItemYaml(data []byte) (MarketplaceItem, error) {

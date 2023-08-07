@@ -93,6 +93,16 @@ func TestMarketplaceItemToJSON(t *testing.T) {
 	snaps.MatchJSON(t, json)
 }
 
+func TestMarketplaceItemToJSONIndent(t *testing.T) {
+	marketplaceItem, err := UnmarshalMarketplaceItem([]byte(MarketplaceItemJson))
+	require.NoError(t, err)
+	assert.NotEmpty(t, marketplaceItem)
+	json, err := marketplaceItem.MarshalMarketplaceItemIndent()
+	require.NoError(t, err)
+	assert.NotEmpty(t, json)
+	snaps.MatchSnapshot(t, string(json))
+}
+
 func TestYAMLParsing(t *testing.T) {
 	marketplaceItem, err := UnmarshalMarketplaceItemYaml([]byte(MarketplaceItemYaml))
 	require.NoError(t, err)

@@ -145,3 +145,36 @@ marketplace.MarketplaceItem{
     Type:                &"example",
 }
 ---
+
+[TestMarketplaceItemToJSONIndent - 1]
+{
+ "_id": "1234567890abcdefg",
+ "categoryId": "rocketScience",
+ "description": "A simple Hello Universe example based on Rocket-Launcher's Interstellar Template.",
+ "documentation": {
+  "type": "markdown",
+  "url": "https://raw.githubusercontent.com/rocket-launcher/Interstellar-Hello-Universe-Example/master/README.md"
+ },
+ "imageUrl": "/v2/files/download/rocket-launch-image.png",
+ "name": "RocketScience 101: Hello Universe Example",
+ "resources": {
+  "services": {
+   "rocket-science-hello-universe-example": {
+    "archiveUrl": "https://github.com/rocket-launcher/Interstellar-Hello-Universe-Example/archive/master.tar.gz",
+    "containerPorts": [
+     {
+      "from": 80,
+      "name": "spaceport",
+      "protocol": "TCP",
+      "to": 3000
+     }
+    ],
+    "type": "template"
+   }
+  }
+ },
+ "supportedBy": "NASA's Humor Department",
+ "supportedByImageUrl": "/v2/files/download/rocket-science-logo.png",
+ "type": "example"
+}
+---
