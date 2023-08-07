@@ -40,7 +40,7 @@ var SupportedFormats = map[string]string{
 // GetCmd return a new cobra command for getting a single marketplace resource
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "Get",
+		Use:   "get [resource-id]",
 		Short: "Get marketplace item",
 		Long:  `Get a single marketplace item by its ID`,
 		Args:  cobra.MaximumNArgs(1),
@@ -71,7 +71,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*MarketplaceItem, error) {
 	if len(resourceID) == 0 {
-		return nil, fmt.Errorf("missing company id, please set one with the flag or context")
+		return nil, fmt.Errorf("missing resource id, please provide one")
 	}
 
 	resp, err := client.
