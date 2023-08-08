@@ -1,3 +1,18 @@
+// Copyright Mia srl
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package marketplace
 
 import (
@@ -6,46 +21,45 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-func UnmarshalMarketplaceItem(data []byte) (MarketplaceItem, error) {
-	var r MarketplaceItem
+func UnmarshalMarketplaceItem(data []byte) (Item, error) {
+	var r Item
 	err := json.Unmarshal(data, &r)
 	return r, err
 }
 
-type JsonMarshalOptions struct {
+type JSONMarshalOptions struct {
 	Indent bool
 }
 
-func (r *MarketplaceItem) MarshalMarketplaceItem() ([]byte, error) {
-	return r.marshalMarketplaceItemWithOptions(JsonMarshalOptions{})
+func (r *Item) MarshalMarketplaceItem() ([]byte, error) {
+	return r.marshalMarketplaceItemWithOptions(JSONMarshalOptions{})
 }
 
-func (r *MarketplaceItem) MarshalMarketplaceItemIndent() ([]byte, error) {
-	return r.marshalMarketplaceItemWithOptions(JsonMarshalOptions{
+func (r *Item) MarshalMarketplaceItemIndent() ([]byte, error) {
+	return r.marshalMarketplaceItemWithOptions(JSONMarshalOptions{
 		Indent: true,
 	})
 }
 
-func (r *MarketplaceItem) marshalMarketplaceItemWithOptions(options JsonMarshalOptions) ([]byte, error) {
+func (r *Item) marshalMarketplaceItemWithOptions(options JSONMarshalOptions) ([]byte, error) {
 	if options.Indent {
 		return json.MarshalIndent(r, "", " ")
-	} else {
-		return json.Marshal(r)
 	}
+	return json.Marshal(r)
 }
 
-func UnmarshalMarketplaceItemYaml(data []byte) (MarketplaceItem, error) {
-	var r MarketplaceItem
+func UnmarshalMarketplaceItemYaml(data []byte) (Item, error) {
+	var r Item
 	err := yaml.Unmarshal(data, &r)
 	return r, err
 }
 
-func (r *MarketplaceItem) MarshalMarketplaceItemYaml() ([]byte, error) {
+func (r *Item) MarshalMarketplaceItemYaml() ([]byte, error) {
 	return yaml.Marshal(r)
 }
 
-type MarketplaceItem struct {
-	ID                        *string        `json:"_id,omitempty"  yaml:"_id,omitempty"`
+type Item struct {
+	ID                        *string        `json:"_id,omitempty"  yaml:"_id,omitempty"` //nolint:tagliatelle
 	Category                  *Category      `json:"category,omitempty"  yaml:"category,omitempty"`
 	CategoryID                *string        `json:"categoryId,omitempty"  yaml:"categoryId,omitempty"`
 	ComingSoon                *bool          `json:"comingSoon,omitempty"  yaml:"comingSoon,omitempty"`

@@ -59,7 +59,7 @@ type: example
 ---
 
 [TestYAMLParsing - 1]
-marketplace.MarketplaceItem{
+marketplace.Item{
     ID:                        &"1234567890abcdefg",
     Category:                  (*marketplace.Category)(nil),
     CategoryID:                &"rocketScience",
@@ -114,7 +114,7 @@ marketplace.MarketplaceItem{
 ---
 
 [TestJSONParsing - 1]
-marketplace.MarketplaceItem{
+marketplace.Item{
     ID:                        &"1234567890abcdefg",
     Category:                  (*marketplace.Category)(nil),
     CategoryID:                &"rocketScience",

@@ -62,7 +62,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*MarketplaceItem, error) {
+func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*Item, error) {
 	if len(resourceID) == 0 {
 		return nil, fmt.Errorf("missing resource id, please provide one")
 	}
@@ -80,7 +80,7 @@ func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*Marke
 		return nil, err
 	}
 
-	var marketplaceItem *MarketplaceItem
+	var marketplaceItem *Item
 	if err := resp.ParseResponse(&marketplaceItem); err != nil {
 		return nil, fmt.Errorf("error parsing response body: %w", err)
 	}

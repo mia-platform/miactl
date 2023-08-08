@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	mock_resource_id = "resource-id"
+	mockResourceID = "resource-id"
 )
 
 func TestGetResourceCmd(t *testing.T) {
@@ -47,21 +47,21 @@ func TestGetResourceById(t *testing.T) {
 		outputFormat string
 	}{
 		"valid get response - json": {
-			server: getByIdMockServer(t, true, http.StatusOK),
+			server: getByIDMockServer(t, true, http.StatusOK),
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
 			outputFormat: JSON,
 		},
 		"valid get response - yaml": {
-			server: getByIdMockServer(t, true, http.StatusOK),
+			server: getByIDMockServer(t, true, http.StatusOK),
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
 			outputFormat: YAML,
 		},
 		"invalid body response": {
-			server: getByIdMockServer(t, false, http.StatusOK),
+			server: getByIDMockServer(t, false, http.StatusOK),
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
@@ -69,7 +69,7 @@ func TestGetResourceById(t *testing.T) {
 			outputFormat: JSON,
 		},
 		"resource not found": {
-			server: getByIdMockServer(t, true, http.StatusNotFound),
+			server: getByIDMockServer(t, true, http.StatusNotFound),
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
@@ -77,7 +77,7 @@ func TestGetResourceById(t *testing.T) {
 			outputFormat: JSON,
 		},
 		"internal server error": {
-			server: getByIdMockServer(t, true, http.StatusInternalServerError),
+			server: getByIDMockServer(t, true, http.StatusInternalServerError),
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
@@ -92,7 +92,7 @@ func TestGetResourceById(t *testing.T) {
 			testCase.clientConfig.Host = testCase.server.URL
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
-			err = getMarketplaceResource(client, mock_resource_id, testCase.outputFormat)
+			err = getMarketplaceResource(client, mockResourceID, testCase.outputFormat)
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
@@ -102,7 +102,7 @@ func TestGetResourceById(t *testing.T) {
 	}
 }
 
-func getByIdMockServer(t *testing.T, validResponse bool, statusCode int) *httptest.Server {
+func getByIDMockServer(t *testing.T, validResponse bool, statusCode int) *httptest.Server {
 	t.Helper()
 	validBodyString := `{
 		"_id": "1234567890abcdefg",
@@ -141,7 +141,7 @@ func getByIdMockServer(t *testing.T, validResponse bool, statusCode int) *httpte
 		}
 	}`
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != fmt.Sprintf(getMarketplaceEndpoint, mock_resource_id) && r.Method != http.MethodGet {
+		if r.RequestURI != fmt.Sprintf(getMarketplaceEndpoint, mockResourceID) && r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
 			require.Fail(t, "unsupported call")
 			return
