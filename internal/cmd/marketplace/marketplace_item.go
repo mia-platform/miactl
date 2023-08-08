@@ -168,20 +168,20 @@ type AdditionalContainerDefaultAnnotation struct {
 }
 
 type AdditionalContainerDefaultConfigMap struct {
-	Files          []PurpleFile `json:"files,omitempty"  yaml:"files,omitempty"`
-	Link           *PurpleLink  `json:"link,omitempty"  yaml:"link,omitempty"`
-	MountPath      *string      `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
-	Name           *string      `json:"name,omitempty"  yaml:"name,omitempty"`
-	SubPaths       []string     `json:"subPaths,omitempty"  yaml:"subPaths,omitempty"`
-	ViewAsReadOnly *bool        `json:"viewAsReadOnly,omitempty"  yaml:"viewAsReadOnly,omitempty"`
+	Files          []AdditionalContainerFile `json:"files,omitempty"  yaml:"files,omitempty"`
+	Link           *AdditionalContainerLink  `json:"link,omitempty"  yaml:"link,omitempty"`
+	MountPath      *string                   `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
+	Name           *string                   `json:"name,omitempty"  yaml:"name,omitempty"`
+	SubPaths       []string                  `json:"subPaths,omitempty"  yaml:"subPaths,omitempty"`
+	ViewAsReadOnly *bool                     `json:"viewAsReadOnly,omitempty"  yaml:"viewAsReadOnly,omitempty"`
 }
 
-type PurpleFile struct {
+type AdditionalContainerFile struct {
 	Content *string `json:"content,omitempty"  yaml:"content,omitempty"`
 	Name    *string `json:"name,omitempty"  yaml:"name,omitempty"`
 }
 
-type PurpleLink struct {
+type AdditionalContainerLink struct {
 	TargetSection *string `json:"targetSection,omitempty"  yaml:"targetSection,omitempty"`
 }
 
@@ -199,21 +199,21 @@ type AdditionalContainerDefaultLabel struct {
 }
 
 type AdditionalContainerDefaultMonitoring struct {
-	Endpoints []PurpleEndpoint `json:"endpoints,omitempty"  yaml:"endpoints,omitempty"`
+	Endpoints []AdditionalContainerEndpoint `json:"endpoints,omitempty"  yaml:"endpoints,omitempty"`
 }
 
-type PurpleEndpoint struct {
+type AdditionalContainerEndpoint struct {
 	Interval *string `json:"interval,omitempty"  yaml:"interval,omitempty"`
 	Path     *string `json:"path,omitempty"  yaml:"path,omitempty"`
 	Port     *string `json:"port,omitempty"  yaml:"port,omitempty"`
 }
 
 type AdditionalContainerDefaultProbes struct {
-	Liveness  *PurpleLiveness  `json:"liveness,omitempty"  yaml:"liveness,omitempty"`
-	Readiness *PurpleReadiness `json:"readiness,omitempty"  yaml:"readiness,omitempty"`
+	Liveness  *AdditionalContainerLiveness  `json:"liveness,omitempty"  yaml:"liveness,omitempty"`
+	Readiness *AdditionalContainerReadiness `json:"readiness,omitempty"  yaml:"readiness,omitempty"`
 }
 
-type PurpleLiveness struct {
+type AdditionalContainerLiveness struct {
 	Cmd                 []string `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
 	FailureThreshold    *float64 `json:"failureThreshold,omitempty"  yaml:"failureThreshold,omitempty"`
 	InitialDelaySeconds *float64 `json:"initialDelaySeconds,omitempty"  yaml:"initialDelaySeconds,omitempty"`
@@ -224,7 +224,7 @@ type PurpleLiveness struct {
 	TimeoutSeconds      *float64 `json:"timeoutSeconds,omitempty"  yaml:"timeoutSeconds,omitempty"`
 }
 
-type PurpleReadiness struct {
+type AdditionalContainerReadiness struct {
 	Cmd                 []string `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
 	FailureThreshold    *float64 `json:"failureThreshold,omitempty"  yaml:"failureThreshold,omitempty"`
 	InitialDelaySeconds *float64 `json:"initialDelaySeconds,omitempty"  yaml:"initialDelaySeconds,omitempty"`
@@ -236,16 +236,16 @@ type PurpleReadiness struct {
 }
 
 type AdditionalContainerDefaultResources struct {
-	CPULimits    *PurpleCPULimits    `json:"cpuLimits,omitempty"  yaml:"cpuLimits,omitempty"`
-	MemoryLimits *PurpleMemoryLimits `json:"memoryLimits,omitempty"  yaml:"memoryLimits,omitempty"`
+	CPULimits    *AdditionalContainerCPULimits    `json:"cpuLimits,omitempty"  yaml:"cpuLimits,omitempty"`
+	MemoryLimits *AdditionalContainerMemoryLimits `json:"memoryLimits,omitempty"  yaml:"memoryLimits,omitempty"`
 }
 
-type PurpleCPULimits struct {
+type AdditionalContainerCPULimits struct {
 	Max *string `json:"max,omitempty"  yaml:"max,omitempty"`
 	Min *string `json:"min,omitempty"  yaml:"min,omitempty"`
 }
 
-type PurpleMemoryLimits struct {
+type AdditionalContainerMemoryLimits struct {
 	Max *string `json:"max,omitempty"  yaml:"max,omitempty"`
 	Min *string `json:"min,omitempty"  yaml:"min,omitempty"`
 }
@@ -277,20 +277,20 @@ type ServiceDefaultAnnotation struct {
 }
 
 type ServiceDefaultConfigMap struct {
-	Files          []FluffyFile `json:"files,omitempty"  yaml:"files,omitempty"`
-	Link           *FluffyLink  `json:"link,omitempty"  yaml:"link,omitempty"`
-	MountPath      *string      `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
-	Name           *string      `json:"name,omitempty"  yaml:"name,omitempty"`
-	SubPaths       []string     `json:"subPaths,omitempty"  yaml:"subPaths,omitempty"`
-	ViewAsReadOnly *bool        `json:"viewAsReadOnly,omitempty"  yaml:"viewAsReadOnly,omitempty"`
+	Files          []ServiceDefaultFile `json:"files,omitempty"  yaml:"files,omitempty"`
+	Link           *ServiceDefaultLink  `json:"link,omitempty"  yaml:"link,omitempty"`
+	MountPath      *string              `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
+	Name           *string              `json:"name,omitempty"  yaml:"name,omitempty"`
+	SubPaths       []string             `json:"subPaths,omitempty"  yaml:"subPaths,omitempty"`
+	ViewAsReadOnly *bool                `json:"viewAsReadOnly,omitempty"  yaml:"viewAsReadOnly,omitempty"`
 }
 
-type FluffyFile struct {
+type ServiceDefaultFile struct {
 	Content *string `json:"content,omitempty"  yaml:"content,omitempty"`
 	Name    *string `json:"name,omitempty"  yaml:"name,omitempty"`
 }
 
-type FluffyLink struct {
+type ServiceDefaultLink struct {
 	TargetSection *string `json:"targetSection,omitempty"  yaml:"targetSection,omitempty"`
 }
 
@@ -308,21 +308,21 @@ type ServiceDefaultLabel struct {
 }
 
 type ServiceDefaultMonitoring struct {
-	Endpoints []FluffyEndpoint `json:"endpoints,omitempty"  yaml:"endpoints,omitempty"`
+	Endpoints []ServiceDefaultEndpoint `json:"endpoints,omitempty"  yaml:"endpoints,omitempty"`
 }
 
-type FluffyEndpoint struct {
+type ServiceDefaultEndpoint struct {
 	Interval *string `json:"interval,omitempty"  yaml:"interval,omitempty"`
 	Path     *string `json:"path,omitempty"  yaml:"path,omitempty"`
 	Port     *string `json:"port,omitempty"  yaml:"port,omitempty"`
 }
 
 type ServiceDefaultProbes struct {
-	Liveness  *FluffyLiveness  `json:"liveness,omitempty"  yaml:"liveness,omitempty"`
-	Readiness *FluffyReadiness `json:"readiness,omitempty"  yaml:"readiness,omitempty"`
+	Liveness  *ServiceDefaultLiveness  `json:"liveness,omitempty"  yaml:"liveness,omitempty"`
+	Readiness *ServiceDefaultReadiness `json:"readiness,omitempty"  yaml:"readiness,omitempty"`
 }
 
-type FluffyLiveness struct {
+type ServiceDefaultLiveness struct {
 	Cmd                 []string `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
 	FailureThreshold    *float64 `json:"failureThreshold,omitempty"  yaml:"failureThreshold,omitempty"`
 	InitialDelaySeconds *float64 `json:"initialDelaySeconds,omitempty"  yaml:"initialDelaySeconds,omitempty"`
@@ -333,7 +333,7 @@ type FluffyLiveness struct {
 	TimeoutSeconds      *float64 `json:"timeoutSeconds,omitempty"  yaml:"timeoutSeconds,omitempty"`
 }
 
-type FluffyReadiness struct {
+type ServiceDefaultReadiness struct {
 	Cmd                 []string `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
 	FailureThreshold    *float64 `json:"failureThreshold,omitempty"  yaml:"failureThreshold,omitempty"`
 	InitialDelaySeconds *float64 `json:"initialDelaySeconds,omitempty"  yaml:"initialDelaySeconds,omitempty"`
@@ -345,16 +345,16 @@ type FluffyReadiness struct {
 }
 
 type ServiceDefaultResources struct {
-	CPULimits    *FluffyCPULimits    `json:"cpuLimits,omitempty"  yaml:"cpuLimits,omitempty"`
-	MemoryLimits *FluffyMemoryLimits `json:"memoryLimits,omitempty"  yaml:"memoryLimits,omitempty"`
+	CPULimits    *ServiceDefaultCPULimits    `json:"cpuLimits,omitempty"  yaml:"cpuLimits,omitempty"`
+	MemoryLimits *ServiceDefaultMemoryLimits `json:"memoryLimits,omitempty"  yaml:"memoryLimits,omitempty"`
 }
 
-type FluffyCPULimits struct {
+type ServiceDefaultCPULimits struct {
 	Max *string `json:"max,omitempty"  yaml:"max,omitempty"`
 	Min *string `json:"min,omitempty"  yaml:"min,omitempty"`
 }
 
-type FluffyMemoryLimits struct {
+type ServiceDefaultMemoryLimits struct {
 	Max *string `json:"max,omitempty"  yaml:"max,omitempty"`
 	Min *string `json:"min,omitempty"  yaml:"min,omitempty"`
 }
