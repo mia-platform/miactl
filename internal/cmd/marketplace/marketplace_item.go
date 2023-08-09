@@ -15,47 +15,20 @@
 
 package marketplace
 
-import (
-	"encoding/json"
+import "github.com/mia-platform/miactl/internal/encoding"
 
-	"gopkg.in/yaml.v2"
-)
-
-func UnmarshalMarketplaceItem(data []byte) (Item, error) {
+func Unmarshal(data []byte, encodingFormat string) (Item, error) {
 	var r Item
-	err := json.Unmarshal(data, &r)
-	return r, err
-}
 
-type JSONMarshalOptions struct {
-	Indent bool
-}
-
-func (r *Item) MarshalMarketplaceItem() ([]byte, error) {
-	return r.marshalMarketplaceItemWithOptions(JSONMarshalOptions{})
-}
-
-func (r *Item) MarshalMarketplaceItemIndent() ([]byte, error) {
-	return r.marshalMarketplaceItemWithOptions(JSONMarshalOptions{
-		Indent: true,
-	})
-}
-
-func (r *Item) marshalMarketplaceItemWithOptions(options JSONMarshalOptions) ([]byte, error) {
-	if options.Indent {
-		return json.MarshalIndent(r, "", " ")
+	err := encoding.UnmarshalData(data, encodingFormat, &r)
+	if err != nil {
+		return Item{}, err
 	}
-	return json.Marshal(r)
+	return r, nil
 }
 
-func UnmarshalMarketplaceItemYaml(data []byte) (Item, error) {
-	var r Item
-	err := yaml.Unmarshal(data, &r)
-	return r, err
-}
-
-func (r *Item) MarshalMarketplaceItemYaml() ([]byte, error) {
-	return yaml.Marshal(r)
+func (r *Item) Marshal(encodingFormat string) ([]byte, error) {
+	return encoding.MarshalData(r, encodingFormat, encoding.MarshalOptions{Indent: true})
 }
 
 type Item struct {
@@ -107,113 +80,113 @@ type Service struct {
 	AdditionalContainers                 []AdditionalContainer      `json:"additionalContainers,omitempty"  yaml:"additionalContainers,omitempty"`
 	ArchiveURL                           *string                    `json:"archiveUrl,omitempty"  yaml:"archiveUrl,omitempty"`
 	ComponentID                          *string                    `json:"componentId,omitempty"  yaml:"componentId,omitempty"`
-	ContainerPorts                       []ServiceContainerPort     `json:"containerPorts,omitempty"  yaml:"containerPorts,omitempty"`
-	CustomFilesConfig                    []ServiceCustomFilesConfig `json:"customFilesConfig,omitempty"  yaml:"customFilesConfig,omitempty"`
-	DefaultAnnotations                   []ServiceDefaultAnnotation `json:"defaultAnnotations,omitempty"  yaml:"defaultAnnotations,omitempty"`
+	ContainerPorts                       []DefaultContainerPort     `json:"containerPorts,omitempty"  yaml:"containerPorts,omitempty"`
+	CustomFilesConfig                    []DefaultCustomFilesConfig `json:"customFilesConfig,omitempty"  yaml:"customFilesConfig,omitempty"`
+	DefaultAnnotations                   []DefaultAnnotation        `json:"defaultAnnotations,omitempty"  yaml:"defaultAnnotations,omitempty"`
 	DefaultArgs                          []string                   `json:"defaultArgs,omitempty"  yaml:"defaultArgs,omitempty"`
-	DefaultConfigMaps                    []ServiceDefaultConfigMap  `json:"defaultConfigMaps,omitempty"  yaml:"defaultConfigMaps,omitempty"`
+	DefaultConfigMaps                    []DefaultConfigMap         `json:"defaultConfigMaps,omitempty"  yaml:"defaultConfigMaps,omitempty"`
 	DefaultDocumentationPath             *string                    `json:"defaultDocumentationPath,omitempty"  yaml:"defaultDocumentationPath,omitempty"`
 	DefaultEnvironmentVariables          []map[string]interface{}   `json:"defaultEnvironmentVariables,omitempty"  yaml:"defaultEnvironmentVariables,omitempty"`
-	DefaultHeaders                       []ServiceDefaultHeader     `json:"defaultHeaders,omitempty"  yaml:"defaultHeaders,omitempty"`
-	DefaultLabels                        []ServiceDefaultLabel      `json:"defaultLabels,omitempty"  yaml:"defaultLabels,omitempty"`
+	DefaultHeaders                       []DefaultHeader            `json:"defaultHeaders,omitempty"  yaml:"defaultHeaders,omitempty"`
+	DefaultLabels                        []DefaultLabel             `json:"defaultLabels,omitempty"  yaml:"defaultLabels,omitempty"`
 	DefaultLogParser                     *string                    `json:"defaultLogParser,omitempty"  yaml:"defaultLogParser,omitempty"`
-	DefaultMonitoring                    *ServiceDefaultMonitoring  `json:"defaultMonitoring,omitempty"  yaml:"defaultMonitoring,omitempty"`
-	DefaultProbes                        *ServiceDefaultProbes      `json:"defaultProbes,omitempty"  yaml:"defaultProbes,omitempty"`
-	DefaultResources                     *ServiceDefaultResources   `json:"defaultResources,omitempty"  yaml:"defaultResources,omitempty"`
-	DefaultSecrets                       []ServiceDefaultSecret     `json:"defaultSecrets,omitempty"  yaml:"defaultSecrets,omitempty"`
+	DefaultMonitoring                    *DefaultMonitoring         `json:"defaultMonitoring,omitempty"  yaml:"defaultMonitoring,omitempty"`
+	DefaultProbes                        *DefaultProbes             `json:"defaultProbes,omitempty"  yaml:"defaultProbes,omitempty"`
+	DefaultResources                     *DefaultResources          `json:"defaultResources,omitempty"  yaml:"defaultResources,omitempty"`
+	DefaultSecrets                       []DefaultSecret            `json:"defaultSecrets,omitempty"  yaml:"defaultSecrets,omitempty"`
 	DefaultTerminationGracePeriodSeconds *float64                   `json:"defaultTerminationGracePeriodSeconds,omitempty"  yaml:"defaultTerminationGracePeriodSeconds,omitempty"`
 	Type                                 *string                    `json:"type,omitempty"  yaml:"type,omitempty"`
 }
 
 type AdditionalContainer struct {
-	ArchiveURL                           *string                                `json:"archiveUrl,omitempty"  yaml:"archiveUrl,omitempty"`
-	ComponentID                          *string                                `json:"componentId,omitempty"  yaml:"componentId,omitempty"`
-	ContainerPorts                       []AdditionalContainerContainerPort     `json:"containerPorts,omitempty"  yaml:"containerPorts,omitempty"`
-	CustomFilesConfig                    []AdditionalContainerCustomFilesConfig `json:"customFilesConfig,omitempty"  yaml:"customFilesConfig,omitempty"`
-	DefaultAnnotations                   []AdditionalContainerDefaultAnnotation `json:"defaultAnnotations,omitempty"  yaml:"defaultAnnotations,omitempty"`
-	DefaultArgs                          []string                               `json:"defaultArgs,omitempty"  yaml:"defaultArgs,omitempty"`
-	DefaultConfigMaps                    []AdditionalContainerDefaultConfigMap  `json:"defaultConfigMaps,omitempty"  yaml:"defaultConfigMaps,omitempty"`
-	DefaultDocumentationPath             *string                                `json:"defaultDocumentationPath,omitempty"  yaml:"defaultDocumentationPath,omitempty"`
-	DefaultEnvironmentVariables          []map[string]interface{}               `json:"defaultEnvironmentVariables,omitempty"  yaml:"defaultEnvironmentVariables,omitempty"`
-	DefaultHeaders                       []AdditionalContainerDefaultHeader     `json:"defaultHeaders,omitempty"  yaml:"defaultHeaders,omitempty"`
-	DefaultLabels                        []AdditionalContainerDefaultLabel      `json:"defaultLabels,omitempty"  yaml:"defaultLabels,omitempty"`
-	DefaultLogParser                     *string                                `json:"defaultLogParser,omitempty"  yaml:"defaultLogParser,omitempty"`
-	DefaultMonitoring                    *AdditionalContainerDefaultMonitoring  `json:"defaultMonitoring,omitempty"  yaml:"defaultMonitoring,omitempty"`
-	DefaultProbes                        *AdditionalContainerDefaultProbes      `json:"defaultProbes,omitempty"  yaml:"defaultProbes,omitempty"`
-	DefaultResources                     *AdditionalContainerDefaultResources   `json:"defaultResources,omitempty"  yaml:"defaultResources,omitempty"`
-	DefaultSecrets                       []AdditionalContainerDefaultSecret     `json:"defaultSecrets,omitempty"  yaml:"defaultSecrets,omitempty"`
-	DefaultTerminationGracePeriodSeconds *float64                               `json:"defaultTerminationGracePeriodSeconds,omitempty"  yaml:"defaultTerminationGracePeriodSeconds,omitempty"`
-	Type                                 *string                                `json:"type,omitempty"  yaml:"type,omitempty"`
+	ArchiveURL                           *string                    `json:"archiveUrl,omitempty"  yaml:"archiveUrl,omitempty"`
+	ComponentID                          *string                    `json:"componentId,omitempty"  yaml:"componentId,omitempty"`
+	ContainerPorts                       []DefaultContainerPort     `json:"containerPorts,omitempty"  yaml:"containerPorts,omitempty"`
+	CustomFilesConfig                    []DefaultCustomFilesConfig `json:"customFilesConfig,omitempty"  yaml:"customFilesConfig,omitempty"`
+	DefaultAnnotations                   []DefaultAnnotation        `json:"defaultAnnotations,omitempty"  yaml:"defaultAnnotations,omitempty"`
+	DefaultArgs                          []string                   `json:"defaultArgs,omitempty"  yaml:"defaultArgs,omitempty"`
+	DefaultConfigMaps                    []DefaultConfigMap         `json:"defaultConfigMaps,omitempty"  yaml:"defaultConfigMaps,omitempty"`
+	DefaultDocumentationPath             *string                    `json:"defaultDocumentationPath,omitempty"  yaml:"defaultDocumentationPath,omitempty"`
+	DefaultEnvironmentVariables          []map[string]interface{}   `json:"defaultEnvironmentVariables,omitempty"  yaml:"defaultEnvironmentVariables,omitempty"`
+	DefaultHeaders                       []DefaultHeader            `json:"defaultHeaders,omitempty"  yaml:"defaultHeaders,omitempty"`
+	DefaultLabels                        []DefaultLabel             `json:"defaultLabels,omitempty"  yaml:"defaultLabels,omitempty"`
+	DefaultLogParser                     *string                    `json:"defaultLogParser,omitempty"  yaml:"defaultLogParser,omitempty"`
+	DefaultMonitoring                    *DefaultMonitoring         `json:"defaultMonitoring,omitempty"  yaml:"defaultMonitoring,omitempty"`
+	DefaultProbes                        *DefaultProbes             `json:"defaultProbes,omitempty"  yaml:"defaultProbes,omitempty"`
+	DefaultResources                     *DefaultResources          `json:"defaultResources,omitempty"  yaml:"defaultResources,omitempty"`
+	DefaultSecrets                       []DefaultSecret            `json:"defaultSecrets,omitempty"  yaml:"defaultSecrets,omitempty"`
+	DefaultTerminationGracePeriodSeconds *float64                   `json:"defaultTerminationGracePeriodSeconds,omitempty"  yaml:"defaultTerminationGracePeriodSeconds,omitempty"`
+	Type                                 *string                    `json:"type,omitempty"  yaml:"type,omitempty"`
 }
 
-type AdditionalContainerContainerPort struct {
+type DefaultContainerPort struct {
 	From     interface{} `json:"from"  yaml:"from"`
 	Name     string      `json:"name"  yaml:"name"`
 	Protocol *string     `json:"protocol,omitempty"  yaml:"protocol,omitempty"`
 	To       interface{} `json:"to"  yaml:"to"`
 }
 
-type AdditionalContainerCustomFilesConfig struct {
+type DefaultCustomFilesConfig struct {
 	FileName *string `json:"fileName,omitempty"  yaml:"fileName,omitempty"`
 	FilePath *string `json:"filePath,omitempty"  yaml:"filePath,omitempty"`
 	FileType *string `json:"fileType,omitempty"  yaml:"fileType,omitempty"`
 	Ref      *string `json:"ref,omitempty"  yaml:"ref,omitempty"`
 }
 
-type AdditionalContainerDefaultAnnotation struct {
+type DefaultAnnotation struct {
 	Description *string `json:"description,omitempty"  yaml:"description,omitempty"`
 	Name        string  `json:"name"  yaml:"name"`
 	ReadOnly    *bool   `json:"readOnly,omitempty"  yaml:"readOnly,omitempty"`
 	Value       string  `json:"value"  yaml:"value"`
 }
 
-type AdditionalContainerDefaultConfigMap struct {
-	Files          []AdditionalContainerFile `json:"files,omitempty"  yaml:"files,omitempty"`
-	Link           *AdditionalContainerLink  `json:"link,omitempty"  yaml:"link,omitempty"`
-	MountPath      *string                   `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
-	Name           *string                   `json:"name,omitempty"  yaml:"name,omitempty"`
-	SubPaths       []string                  `json:"subPaths,omitempty"  yaml:"subPaths,omitempty"`
-	ViewAsReadOnly *bool                     `json:"viewAsReadOnly,omitempty"  yaml:"viewAsReadOnly,omitempty"`
+type DefaultConfigMap struct {
+	Files          []DefaultFile `json:"files,omitempty"  yaml:"files,omitempty"`
+	Link           *DefaultLink  `json:"link,omitempty"  yaml:"link,omitempty"`
+	MountPath      *string       `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
+	Name           *string       `json:"name,omitempty"  yaml:"name,omitempty"`
+	SubPaths       []string      `json:"subPaths,omitempty"  yaml:"subPaths,omitempty"`
+	ViewAsReadOnly *bool         `json:"viewAsReadOnly,omitempty"  yaml:"viewAsReadOnly,omitempty"`
 }
 
-type AdditionalContainerFile struct {
+type DefaultFile struct {
 	Content *string `json:"content,omitempty"  yaml:"content,omitempty"`
 	Name    *string `json:"name,omitempty"  yaml:"name,omitempty"`
 }
 
-type AdditionalContainerLink struct {
+type DefaultLink struct {
 	TargetSection *string `json:"targetSection,omitempty"  yaml:"targetSection,omitempty"`
 }
 
-type AdditionalContainerDefaultHeader struct {
+type DefaultHeader struct {
 	Description string `json:"description"  yaml:"description"`
 	Name        string `json:"name"  yaml:"name"`
 	Value       string `json:"value"  yaml:"value"`
 }
 
-type AdditionalContainerDefaultLabel struct {
+type DefaultLabel struct {
 	Description *string `json:"description,omitempty"  yaml:"description,omitempty"`
 	Name        string  `json:"name"  yaml:"name"`
 	ReadOnly    *bool   `json:"readOnly,omitempty"  yaml:"readOnly,omitempty"`
 	Value       string  `json:"value"  yaml:"value"`
 }
 
-type AdditionalContainerDefaultMonitoring struct {
-	Endpoints []AdditionalContainerEndpoint `json:"endpoints,omitempty"  yaml:"endpoints,omitempty"`
+type DefaultMonitoring struct {
+	Endpoints []DefaultEndpoint `json:"endpoints,omitempty"  yaml:"endpoints,omitempty"`
 }
 
-type AdditionalContainerEndpoint struct {
+type DefaultEndpoint struct {
 	Interval *string `json:"interval,omitempty"  yaml:"interval,omitempty"`
 	Path     *string `json:"path,omitempty"  yaml:"path,omitempty"`
 	Port     *string `json:"port,omitempty"  yaml:"port,omitempty"`
 }
 
-type AdditionalContainerDefaultProbes struct {
-	Liveness  *AdditionalContainerLiveness  `json:"liveness,omitempty"  yaml:"liveness,omitempty"`
-	Readiness *AdditionalContainerReadiness `json:"readiness,omitempty"  yaml:"readiness,omitempty"`
+type DefaultProbes struct {
+	Liveness  *DefaultLiveness  `json:"liveness,omitempty"  yaml:"liveness,omitempty"`
+	Readiness *DefaultReadiness `json:"readiness,omitempty"  yaml:"readiness,omitempty"`
 }
 
-type AdditionalContainerLiveness struct {
+type DefaultLiveness struct {
 	Cmd                 []string `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
 	FailureThreshold    *float64 `json:"failureThreshold,omitempty"  yaml:"failureThreshold,omitempty"`
 	InitialDelaySeconds *float64 `json:"initialDelaySeconds,omitempty"  yaml:"initialDelaySeconds,omitempty"`
@@ -224,7 +197,7 @@ type AdditionalContainerLiveness struct {
 	TimeoutSeconds      *float64 `json:"timeoutSeconds,omitempty"  yaml:"timeoutSeconds,omitempty"`
 }
 
-type AdditionalContainerReadiness struct {
+type DefaultReadiness struct {
 	Cmd                 []string `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
 	FailureThreshold    *float64 `json:"failureThreshold,omitempty"  yaml:"failureThreshold,omitempty"`
 	InitialDelaySeconds *float64 `json:"initialDelaySeconds,omitempty"  yaml:"initialDelaySeconds,omitempty"`
@@ -235,131 +208,22 @@ type AdditionalContainerReadiness struct {
 	TimeoutSeconds      *float64 `json:"timeoutSeconds,omitempty"  yaml:"timeoutSeconds,omitempty"`
 }
 
-type AdditionalContainerDefaultResources struct {
-	CPULimits    *AdditionalContainerCPULimits    `json:"cpuLimits,omitempty"  yaml:"cpuLimits,omitempty"`
-	MemoryLimits *AdditionalContainerMemoryLimits `json:"memoryLimits,omitempty"  yaml:"memoryLimits,omitempty"`
+type DefaultResources struct {
+	CPULimits    *DefaultCPULimits    `json:"cpuLimits,omitempty"  yaml:"cpuLimits,omitempty"`
+	MemoryLimits *DefaultMemoryLimits `json:"memoryLimits,omitempty"  yaml:"memoryLimits,omitempty"`
 }
 
-type AdditionalContainerCPULimits struct {
+type DefaultCPULimits struct {
 	Max *string `json:"max,omitempty"  yaml:"max,omitempty"`
 	Min *string `json:"min,omitempty"  yaml:"min,omitempty"`
 }
 
-type AdditionalContainerMemoryLimits struct {
+type DefaultMemoryLimits struct {
 	Max *string `json:"max,omitempty"  yaml:"max,omitempty"`
 	Min *string `json:"min,omitempty"  yaml:"min,omitempty"`
 }
 
-type AdditionalContainerDefaultSecret struct {
-	MountPath *string `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
-	Name      *string `json:"name,omitempty"  yaml:"name,omitempty"`
-}
-
-type ServiceContainerPort struct {
-	From     interface{} `json:"from"  yaml:"from"`
-	Name     string      `json:"name"  yaml:"name"`
-	Protocol *string     `json:"protocol,omitempty"  yaml:"protocol,omitempty"`
-	To       interface{} `json:"to"  yaml:"to"`
-}
-
-type ServiceCustomFilesConfig struct {
-	FileName *string `json:"fileName,omitempty"  yaml:"fileName,omitempty"`
-	FilePath *string `json:"filePath,omitempty"  yaml:"filePath,omitempty"`
-	FileType *string `json:"fileType,omitempty"  yaml:"fileType,omitempty"`
-	Ref      *string `json:"ref,omitempty"  yaml:"ref,omitempty"`
-}
-
-type ServiceDefaultAnnotation struct {
-	Description *string `json:"description,omitempty"  yaml:"description,omitempty"`
-	Name        string  `json:"name"  yaml:"name"`
-	ReadOnly    *bool   `json:"readOnly,omitempty"  yaml:"readOnly,omitempty"`
-	Value       string  `json:"value"  yaml:"value"`
-}
-
-type ServiceDefaultConfigMap struct {
-	Files          []ServiceDefaultFile `json:"files,omitempty"  yaml:"files,omitempty"`
-	Link           *ServiceDefaultLink  `json:"link,omitempty"  yaml:"link,omitempty"`
-	MountPath      *string              `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
-	Name           *string              `json:"name,omitempty"  yaml:"name,omitempty"`
-	SubPaths       []string             `json:"subPaths,omitempty"  yaml:"subPaths,omitempty"`
-	ViewAsReadOnly *bool                `json:"viewAsReadOnly,omitempty"  yaml:"viewAsReadOnly,omitempty"`
-}
-
-type ServiceDefaultFile struct {
-	Content *string `json:"content,omitempty"  yaml:"content,omitempty"`
-	Name    *string `json:"name,omitempty"  yaml:"name,omitempty"`
-}
-
-type ServiceDefaultLink struct {
-	TargetSection *string `json:"targetSection,omitempty"  yaml:"targetSection,omitempty"`
-}
-
-type ServiceDefaultHeader struct {
-	Description string `json:"description"  yaml:"description"`
-	Name        string `json:"name"  yaml:"name"`
-	Value       string `json:"value"  yaml:"value"`
-}
-
-type ServiceDefaultLabel struct {
-	Description *string `json:"description,omitempty"  yaml:"description,omitempty"`
-	Name        string  `json:"name"  yaml:"name"`
-	ReadOnly    *bool   `json:"readOnly,omitempty"  yaml:"readOnly,omitempty"`
-	Value       string  `json:"value"  yaml:"value"`
-}
-
-type ServiceDefaultMonitoring struct {
-	Endpoints []ServiceDefaultEndpoint `json:"endpoints,omitempty"  yaml:"endpoints,omitempty"`
-}
-
-type ServiceDefaultEndpoint struct {
-	Interval *string `json:"interval,omitempty"  yaml:"interval,omitempty"`
-	Path     *string `json:"path,omitempty"  yaml:"path,omitempty"`
-	Port     *string `json:"port,omitempty"  yaml:"port,omitempty"`
-}
-
-type ServiceDefaultProbes struct {
-	Liveness  *ServiceDefaultLiveness  `json:"liveness,omitempty"  yaml:"liveness,omitempty"`
-	Readiness *ServiceDefaultReadiness `json:"readiness,omitempty"  yaml:"readiness,omitempty"`
-}
-
-type ServiceDefaultLiveness struct {
-	Cmd                 []string `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
-	FailureThreshold    *float64 `json:"failureThreshold,omitempty"  yaml:"failureThreshold,omitempty"`
-	InitialDelaySeconds *float64 `json:"initialDelaySeconds,omitempty"  yaml:"initialDelaySeconds,omitempty"`
-	Path                *string  `json:"path,omitempty"  yaml:"path,omitempty"`
-	PeriodSeconds       *float64 `json:"periodSeconds,omitempty"  yaml:"periodSeconds,omitempty"`
-	Port                *int64   `json:"port,omitempty"  yaml:"port,omitempty"`
-	SuccessThreshold    *float64 `json:"successThreshold,omitempty"  yaml:"successThreshold,omitempty"`
-	TimeoutSeconds      *float64 `json:"timeoutSeconds,omitempty"  yaml:"timeoutSeconds,omitempty"`
-}
-
-type ServiceDefaultReadiness struct {
-	Cmd                 []string `json:"cmd,omitempty"  yaml:"cmd,omitempty"`
-	FailureThreshold    *float64 `json:"failureThreshold,omitempty"  yaml:"failureThreshold,omitempty"`
-	InitialDelaySeconds *float64 `json:"initialDelaySeconds,omitempty"  yaml:"initialDelaySeconds,omitempty"`
-	Path                *string  `json:"path,omitempty"  yaml:"path,omitempty"`
-	PeriodSeconds       *float64 `json:"periodSeconds,omitempty"  yaml:"periodSeconds,omitempty"`
-	Port                *int64   `json:"port,omitempty"  yaml:"port,omitempty"`
-	SuccessThreshold    *float64 `json:"successThreshold,omitempty"  yaml:"successThreshold,omitempty"`
-	TimeoutSeconds      *float64 `json:"timeoutSeconds,omitempty"  yaml:"timeoutSeconds,omitempty"`
-}
-
-type ServiceDefaultResources struct {
-	CPULimits    *ServiceDefaultCPULimits    `json:"cpuLimits,omitempty"  yaml:"cpuLimits,omitempty"`
-	MemoryLimits *ServiceDefaultMemoryLimits `json:"memoryLimits,omitempty"  yaml:"memoryLimits,omitempty"`
-}
-
-type ServiceDefaultCPULimits struct {
-	Max *string `json:"max,omitempty"  yaml:"max,omitempty"`
-	Min *string `json:"min,omitempty"  yaml:"min,omitempty"`
-}
-
-type ServiceDefaultMemoryLimits struct {
-	Max *string `json:"max,omitempty"  yaml:"max,omitempty"`
-	Min *string `json:"min,omitempty"  yaml:"min,omitempty"`
-}
-
-type ServiceDefaultSecret struct {
+type DefaultSecret struct {
 	MountPath *string `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
 	Name      *string `json:"name,omitempty"  yaml:"name,omitempty"`
 }

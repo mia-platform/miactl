@@ -92,15 +92,6 @@ func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*Item,
 	return marketplaceItem, nil
 }
 
-func formatAndPrint(formatFunc func() ([]byte, error)) error {
-	data, err := formatFunc()
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(data))
-	return nil
-}
-
 // getMarketplaceResource retrieves the marketplace items for a given resource ID
 func getMarketplaceResource(client *client.APIClient, resourceID string, outputFormat string) error {
 	marketplaceItem, err := getMarketplaceItemByID(client, resourceID)
@@ -108,18 +99,12 @@ func getMarketplaceResource(client *client.APIClient, resourceID string, outputF
 		return err
 	}
 
-	switch outputFormat {
-	case JSON:
-		err = formatAndPrint(marketplaceItem.MarshalMarketplaceItemIndent)
-	case YAML:
-		err = formatAndPrint(marketplaceItem.MarshalMarketplaceItemYaml)
-	default:
-		return fmt.Errorf("invalid output format %s", outputFormat)
-	}
-
+	data, err := marketplaceItem.Marshal(outputFormat)
 	if err != nil {
 		return err
 	}
+
+	fmt.Println(string(data))
 
 	return nil
 }

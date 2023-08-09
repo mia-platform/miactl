@@ -92,44 +92,33 @@ resources:
 )
 
 func TestJSONParsing(t *testing.T) {
-	marketplaceItem, err := UnmarshalMarketplaceItem([]byte(MarketplaceItemJSON))
+	marketplaceItem, err := Unmarshal([]byte(MarketplaceItemJSON), JSON)
 	require.NoError(t, err)
 	assert.NotEmpty(t, marketplaceItem)
 	snaps.MatchSnapshot(t, marketplaceItem)
 }
 
 func TestMarketplaceItemToJSON(t *testing.T) {
-	marketplaceItem, err := UnmarshalMarketplaceItem([]byte(MarketplaceItemJSON))
+	marketplaceItem, err := Unmarshal([]byte(MarketplaceItemJSON), JSON)
 	require.NoError(t, err)
 	assert.NotEmpty(t, marketplaceItem)
-	json, err := marketplaceItem.MarshalMarketplaceItem()
+	json, err := marketplaceItem.Marshal(JSON)
 	require.NoError(t, err)
 	assert.NotEmpty(t, json)
 	snaps.MatchJSON(t, json)
 }
-
-func TestMarketplaceItemToJSONIndent(t *testing.T) {
-	marketplaceItem, err := UnmarshalMarketplaceItem([]byte(MarketplaceItemJSON))
-	require.NoError(t, err)
-	assert.NotEmpty(t, marketplaceItem)
-	json, err := marketplaceItem.MarshalMarketplaceItemIndent()
-	require.NoError(t, err)
-	assert.NotEmpty(t, json)
-	snaps.MatchSnapshot(t, string(json))
-}
-
 func TestYAMLParsing(t *testing.T) {
-	marketplaceItem, err := UnmarshalMarketplaceItemYaml([]byte(MarketplaceItemYaml))
+	marketplaceItem, err := Unmarshal([]byte(MarketplaceItemYaml), YAML)
 	require.NoError(t, err)
 	assert.NotEmpty(t, marketplaceItem)
 	snaps.MatchSnapshot(t, marketplaceItem)
 }
 
 func TestMarketplaceItemToYAML(t *testing.T) {
-	marketplaceItem, err := UnmarshalMarketplaceItem([]byte(MarketplaceItemJSON))
+	marketplaceItem, err := Unmarshal([]byte(MarketplaceItemJSON), JSON)
 	require.NoError(t, err)
 	assert.NotEmpty(t, marketplaceItem)
-	yaml, err := marketplaceItem.MarshalMarketplaceItemYaml()
+	yaml, err := marketplaceItem.Marshal(YAML)
 	require.NoError(t, err)
 	assert.NotEmpty(t, yaml)
 	snaps.MatchSnapshot(t, string(yaml))
