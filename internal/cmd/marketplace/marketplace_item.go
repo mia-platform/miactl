@@ -32,22 +32,23 @@ func (r *Item) Marshal(encodingFormat string) ([]byte, error) {
 }
 
 type Item struct {
-	ID                        *string        `json:"_id,omitempty"  yaml:"_id,omitempty"` //nolint:tagliatelle
-	Category                  *Category      `json:"category,omitempty"  yaml:"category,omitempty"`
-	CategoryID                *string        `json:"categoryId,omitempty"  yaml:"categoryId,omitempty"`
-	ComingSoon                *bool          `json:"comingSoon,omitempty"  yaml:"comingSoon,omitempty"`
-	ComponentsIDS             []string       `json:"componentsIds,omitempty"  yaml:"componentsIds,omitempty"`
-	Description               *string        `json:"description,omitempty"  yaml:"description,omitempty"`
-	Documentation             *Documentation `json:"documentation,omitempty"  yaml:"documentation,omitempty"`
-	ImageURL                  *string        `json:"imageUrl,omitempty"  yaml:"imageUrl,omitempty"`
-	Name                      *string        `json:"name,omitempty"  yaml:"name,omitempty"`
-	PublishOnMiaDocumentation *bool          `json:"publishOnMiaDocumentation,omitempty"  yaml:"publishOnMiaDocumentation,omitempty"`
-	ReleaseStage              *string        `json:"releaseStage,omitempty"  yaml:"releaseStage,omitempty"`
-	RepositoryURL             *string        `json:"repositoryUrl,omitempty"  yaml:"repositoryUrl,omitempty"`
-	Resources                 *Resources     `json:"resources,omitempty"  yaml:"resources,omitempty"`
-	SupportedBy               *string        `json:"supportedBy,omitempty"  yaml:"supportedBy,omitempty"`
-	SupportedByImageURL       *string        `json:"supportedByImageUrl,omitempty"  yaml:"supportedByImageUrl,omitempty"`
-	Type                      *string        `json:"type,omitempty"  yaml:"type,omitempty"`
+	ID                        *string                  `json:"_id,omitempty"  yaml:"_id,omitempty"` //nolint:tagliatelle
+	Category                  *Category                `json:"category,omitempty"  yaml:"category,omitempty"`
+	CategoryID                *string                  `json:"categoryId,omitempty"  yaml:"categoryId,omitempty"`
+	ComingSoon                *bool                    `json:"comingSoon,omitempty"  yaml:"comingSoon,omitempty"`
+	ComponentsIDS             []string                 `json:"componentsIds,omitempty"  yaml:"componentsIds,omitempty"`
+	Description               *string                  `json:"description,omitempty"  yaml:"description,omitempty"`
+	Documentation             []map[string]interface{} `json:"documentation,omitempty"  yaml:"documentation,omitempty"`
+	ImageURL                  *string                  `json:"imageUrl,omitempty"  yaml:"imageUrl,omitempty"`
+	Name                      *string                  `json:"name,omitempty"  yaml:"name,omitempty"`
+	PublishOnMiaDocumentation *bool                    `json:"publishOnMiaDocumentation,omitempty"  yaml:"publishOnMiaDocumentation,omitempty"`
+	ProviderID                *string                  `json:"providerId,omitempty"  yaml:"providerId,omitempty"`
+	ReleaseStage              *string                  `json:"releaseStage,omitempty"  yaml:"releaseStage,omitempty"`
+	RepositoryURL             *string                  `json:"repositoryUrl,omitempty"  yaml:"repositoryUrl,omitempty"`
+	Resources                 *Resources               `json:"resources,omitempty"  yaml:"resources,omitempty"`
+	SupportedBy               *string                  `json:"supportedBy,omitempty"  yaml:"supportedBy,omitempty"`
+	SupportedByImageURL       *string                  `json:"supportedByImageUrl,omitempty"  yaml:"supportedByImageUrl,omitempty"`
+	Type                      *string                  `json:"type,omitempty"  yaml:"type,omitempty"`
 }
 
 type Category struct {
@@ -55,25 +56,11 @@ type Category struct {
 	Label string `json:"label"  yaml:"label"`
 }
 
-type Documentation struct {
-	Type Type   `json:"type"  yaml:"type"`
-	URL  string `json:"url"  yaml:"url"`
-}
-
 type Resources struct {
-	Collections         map[string]Collection         `json:"collections,omitempty"  yaml:"collections,omitempty"`
-	Endpoints           map[string]EndpointValue      `json:"endpoints,omitempty"  yaml:"endpoints,omitempty"`
-	Services            map[string]Service            `json:"services,omitempty"  yaml:"services,omitempty"`
-	UnsecretedVariables map[string]UnsecretedVariable `json:"unsecretedVariables,omitempty"  yaml:"unsecretedVariables,omitempty"`
-}
-
-type Collection struct {
-	DefaultName *string `json:"defaultName,omitempty"  yaml:"defaultName,omitempty"`
-}
-
-type EndpointValue struct {
-	DefaultBasePath    *string `json:"defaultBasePath,omitempty"  yaml:"defaultBasePath,omitempty"`
-	DefaultPathRewrite *string `json:"defaultPathRewrite,omitempty"  yaml:"defaultPathRewrite,omitempty"`
+	Collections         map[string]interface{} `json:"collections,omitempty"  yaml:"collections,omitempty"` // TODO: define this interface if needed
+	Endpoints           map[string]interface{} `json:"endpoints,omitempty"  yaml:"endpoints,omitempty"`     // TODO: define this interface if needed
+	Services            map[string]Service     `json:"services,omitempty"  yaml:"services,omitempty"`
+	UnsecretedVariables map[string]interface{} `json:"unsecretedVariables,omitempty"  yaml:"unsecretedVariables,omitempty"` // TODO: define this interface if needed
 }
 
 type Service struct {
@@ -95,6 +82,7 @@ type Service struct {
 	DefaultResources                     *DefaultResources          `json:"defaultResources,omitempty"  yaml:"defaultResources,omitempty"`
 	DefaultSecrets                       []DefaultSecret            `json:"defaultSecrets,omitempty"  yaml:"defaultSecrets,omitempty"`
 	DefaultTerminationGracePeriodSeconds *float64                   `json:"defaultTerminationGracePeriodSeconds,omitempty"  yaml:"defaultTerminationGracePeriodSeconds,omitempty"`
+	Name                                 *string                    `json:"name,omitempty"  yaml:"name,omitempty"`
 	Type                                 *string                    `json:"type,omitempty"  yaml:"type,omitempty"`
 }
 
@@ -226,11 +214,6 @@ type DefaultMemoryLimits struct {
 type DefaultSecret struct {
 	MountPath *string `json:"mountPath,omitempty"  yaml:"mountPath,omitempty"`
 	Name      *string `json:"name,omitempty"  yaml:"name,omitempty"`
-}
-
-type UnsecretedVariable struct {
-	NoProductionEnv string `json:"noProductionEnv"  yaml:"noProductionEnv"`
-	ProductionEnv   string `json:"productionEnv"  yaml:"productionEnv"`
 }
 
 type Type string
