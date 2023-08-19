@@ -18,6 +18,7 @@ package encoding
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"gopkg.in/yaml.v2"
@@ -27,6 +28,8 @@ const (
 	JSON = "json"
 	YAML = "yaml"
 )
+
+var MarshalError = errors.New("error while marshalling data")
 
 type MarshalOptions struct {
 	Indent bool
@@ -69,7 +72,7 @@ func MarshalData(input interface{}, encoding string, options MarshalOptions) ([]
 	func() {
 		defer func() {
 			if r := recover(); r != nil {
-				err = fmt.Errorf("marshal panicked: %v", r)
+				err = fmt.Errorf("%w: %s", MarshalError, r)
 			}
 		}()
 		data, err = marshal(input)
