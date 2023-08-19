@@ -20,8 +20,7 @@ import "github.com/mia-platform/miactl/internal/encoding"
 func Unmarshal(data []byte, encodingFormat string) (Item, error) {
 	var r Item
 
-	err := encoding.UnmarshalData(data, encodingFormat, &r)
-	if err != nil {
+	if err := encoding.UnmarshalData(data, encodingFormat, &r); err != nil {
 		return Item{}, err
 	}
 	return r, nil
