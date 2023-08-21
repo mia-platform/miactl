@@ -29,7 +29,7 @@ const (
 	YAML = "yaml"
 )
 
-var MarshalError = errors.New("error while marshalling data")
+var ErrMarshal = errors.New("error while marshalling data")
 
 type MarshalOptions struct {
 	Indent bool
@@ -72,7 +72,7 @@ func MarshalData(input interface{}, encoding string, options MarshalOptions) ([]
 	func() {
 		defer func() {
 			if r := recover(); r != nil {
-				err = fmt.Errorf("%w: %s", MarshalError, r)
+				err = fmt.Errorf("%w: %s", ErrMarshal, r)
 			}
 		}()
 		data, err = marshal(input)
