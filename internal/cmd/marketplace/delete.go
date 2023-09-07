@@ -42,9 +42,10 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			var resourceID string
-			if len(args) > 0 {
-				resourceID = args[0]
+			resourceID := args[0]
+			companyID := restConfig.CompanyID
+			if len(companyID) == 0 {
+				return fmt.Errorf("missing company id, please set one with the flag or context")
 			}
 
 			return deleteMarketplaceResource(client, restConfig.CompanyID, resourceID)
@@ -55,10 +56,6 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 }
 
 func deleteMarketplaceResource(client *client.APIClient, companyID string, resourceID string) error {
-	if len(companyID) == 0 {
-		return fmt.Errorf("missing company id, please set one with the flag or context")
-	}
-
 	resp, err := client.
 		Delete().
 		APIPath(fmt.Sprintf(deleteMarketplaceEndpoint, companyID, resourceID)).
