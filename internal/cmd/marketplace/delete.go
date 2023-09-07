@@ -18,6 +18,7 @@ package marketplace
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -68,12 +69,12 @@ func deleteMarketplaceResource(client *client.APIClient, companyID string, resou
 	}
 
 	switch resp.StatusCode() {
-	case 204:
+	case http.StatusNoContent:
 		fmt.Println("resource deleted successfully")
 		return nil
-	case 404:
+	case http.StatusNotFound:
 		return fmt.Errorf("resource not found")
-	case 500:
+	case http.StatusInternalServerError:
 		return fmt.Errorf("error while deleting resource")
 	default:
 		return fmt.Errorf("unexpected server response: %d", resp.StatusCode())
