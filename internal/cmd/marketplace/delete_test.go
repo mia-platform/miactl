@@ -49,9 +49,6 @@ func deleteByIDMockServer(t *testing.T, statusCode int) *httptest.Server {
 			return
 		}
 		w.WriteHeader(statusCode)
-		if statusCode == http.StatusNotFound || statusCode == http.StatusInternalServerError {
-			return
-		}
 	}))
 }
 
