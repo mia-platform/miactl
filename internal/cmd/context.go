@@ -37,7 +37,7 @@ back in that file
 	}
 	// add cmd flags
 
-	// add sub commnads
+	// add sub commands
 	cmd.AddCommand(
 		context.AuthCmd(options),
 		context.SetCmd(options),

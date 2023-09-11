@@ -17,31 +17,32 @@ package cmd
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/project"
+	"github.com/mia-platform/miactl/internal/cmd/environments"
 	"github.com/spf13/cobra"
 )
 
-func ProjectCmd(o *clioptions.CLIOptions) *cobra.Command {
-	projectCmd := &cobra.Command{
-		Use:   "project",
-		Short: "Manage Mia-Platform Console projects",
-		Long: `Manage Mia-Platform Console projects.
+func RuntimeCmd(o *clioptions.CLIOptions) *cobra.Command {
+	runtimeCmd := &cobra.Command{
+		Use:   "runtime",
+		Short: "Manage resources deployed with Mia-Platform Console",
+		Long: `Manage resources deployed with Mia-Platform Console.
 
-Projects contains the configurations for the various Services, APIs, CronJobs and the other
-resources that make up the applications of a specific company.
-		`,
+Once a project from Mia-Platform Console is deployed at least once, you can manage and monitor
+the resources generated, like Pods, Cronjobs and logs.
+`,
 	}
 
 	// add cmd flags
-	flags := projectCmd.PersistentFlags()
+	flags := runtimeCmd.PersistentFlags()
 	o.AddConnectionFlags(flags)
 	o.AddContextFlags(flags)
 	o.AddCompanyFlags(flags)
+	o.AddProjectFlags(flags)
 
 	// add sub commands
-	projectCmd.AddCommand(
-		project.ListCmd(o),
+	runtimeCmd.AddCommand(
+		environments.EnvironmentCmd(o),
 	)
 
-	return projectCmd
+	return runtimeCmd
 }
