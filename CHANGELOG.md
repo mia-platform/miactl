@@ -11,8 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - update go version to 1.21.1
 - update mergo to v1.0.0
-- update exp to v0.0.0-20230522175609-2e198f4a06a1
-- update oauth2 to v0.10.0
+- update exp to v0.0.0-20230905200255-921286631fa9
+- update oauth2 to v0.12.0
+- update uuid to v1.3.1
 
 ### Added
 
