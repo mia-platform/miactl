@@ -37,7 +37,7 @@ const (
 	authorizeEndpointString        = "/api/authorize"
 	callbackEndpointString         = "/oauth/callback"
 	// disable gosec for false positive in G101, because it is not an hardcoded credentials...
-	getTokenEndpointString = "/api/oauth/token" //nolint:gosec
+	getTokenEndpointString = "/api/oauth/token" // #nosec G101
 	appIDKey               = "appId"
 	providerIDKey          = "providerId"
 )
@@ -189,7 +189,9 @@ func providerIDForApplication(ctx context.Context, appID string, client client.I
 	}
 
 	// TODO: in case of multiple providers  made the user choose the one he wants
-	return providers[0].ID, nil
+	// Temporarily disable gosec G602, which produces a false positive.
+	// See https://github.com/securego/gosec/issues/1005.
+	return providers[0].ID, nil // #nosec G602
 }
 
 // startLocalServerForToken start a server for listening to callback requests for the login flow
