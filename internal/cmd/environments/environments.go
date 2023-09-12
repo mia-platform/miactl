@@ -29,8 +29,8 @@ import (
 )
 
 const (
-	listEnvironmentsEndpointTemplate = "api/backend/projects/%s"
-	getClusterEndpointTemplate       = "api/tenants/%s/clusters/%s"
+	listEnvironmentsEndpointTemplate = "/api/backend/projects/%s"
+	getClusterEndpointTemplate       = "/api/tenants/%s/clusters/%s"
 )
 
 func EnvironmentCmd(o *clioptions.CLIOptions) *cobra.Command {
