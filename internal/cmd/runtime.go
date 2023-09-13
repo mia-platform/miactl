@@ -22,7 +22,7 @@ import (
 )
 
 func RuntimeCmd(o *clioptions.CLIOptions) *cobra.Command {
-	runtimeCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "runtime",
 		Short: "Manage resources deployed with Mia-Platform Console",
 		Long: `Manage resources deployed with Mia-Platform Console.
@@ -33,16 +33,16 @@ the resources generated, like Pods, Cronjobs and logs.
 	}
 
 	// add cmd flags
-	flags := runtimeCmd.PersistentFlags()
+	flags := cmd.PersistentFlags()
 	o.AddConnectionFlags(flags)
 	o.AddContextFlags(flags)
 	o.AddCompanyFlags(flags)
 	o.AddProjectFlags(flags)
 
 	// add sub commands
-	runtimeCmd.AddCommand(
+	cmd.AddCommand(
 		environments.EnvironmentCmd(o),
 	)
 
-	return runtimeCmd
+	return cmd
 }

@@ -34,26 +34,26 @@ const (
 )
 
 func EnvironmentCmd(o *clioptions.CLIOptions) *cobra.Command {
-	runtimeCmd := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "environment",
-		Short: "Manage resources deployed with Mia-Platform Console",
-		Long: `Manage resources deployed with Mia-Platform Console.
+		Short: "Manage Mia-Platform Console project runtime environments",
+		Long: `Manage Mia-Platform Console project runtime environments.
 
-Once a project from Mia-Platform Console is deployed at least once, you can manage and monitor
-the resources generated, like Pods, Cronjobs and logs.
+Every project on Mia-Platform Console can be associated with one or more different runtime environment. This
+environments can be used to separate different regions, deployment stages, etc.
 `,
 	}
 
 	// add sub commands
-	runtimeCmd.AddCommand(
+	cmd.AddCommand(
 		listEnvironmentsCmd(o),
 	)
 
-	return runtimeCmd
+	return cmd
 }
 
 func listEnvironmentsCmd(o *clioptions.CLIOptions) *cobra.Command {
-	listCommand := &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List all environments for a given project id",
 		Long:  "List all environments for a given project id",
@@ -66,7 +66,7 @@ func listEnvironmentsCmd(o *clioptions.CLIOptions) *cobra.Command {
 		},
 	}
 
-	return listCommand
+	return cmd
 }
 
 func printEnvironments(client *client.APIClient, companyID, projectID string) error {
