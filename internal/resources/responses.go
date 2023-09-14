@@ -69,6 +69,14 @@ type Repository struct {
 	Type string `json:"type"`
 }
 
+type Cluster struct {
+	ID           string `json:"_id"`       //nolint:tagliatelle
+	DisplayName  string `json:"clusterId"` //nolint:tagliatelle
+	Description  string `json:"description"`
+	Distribution string `json:"distribution"`
+	Vendor       string `json:"vendor"`
+}
+
 type Project struct {
 	ID                   string        `json:"_id"` //nolint:tagliatelle
 	Name                 string        `json:"name"`
@@ -76,17 +84,18 @@ type Project struct {
 	Environments         []Environment `json:"environments"`
 	ProjectID            string        `json:"projectId"`
 	Pipelines            Pipelines     `json:"pipelines"`
-	TenantID             string        `json:"tenantId"`
+	CompanyID            string        `json:"tenantId"` //nolint:tagliatelle
 }
 
 type Environment struct {
-	DisplayName string  `json:"label"` //nolint:tagliatelle
-	EnvID       string  `json:"value"` //nolint:tagliatelle
-	Cluster     Cluster `json:"cluster"`
+	DisplayName  string         `json:"label"` //nolint:tagliatelle
+	EnvID        string         `json:"envId"`
+	Cluster      ProjectCluster `json:"cluster"`
+	IsProduction bool           `json:"isProduction"`
 }
 
-type Cluster struct {
-	Hostname  string `json:"hostname"`
+type ProjectCluster struct {
+	ID        string `json:"clusterId"` //nolint:tagliatelle
 	Namespace string `json:"namespace"`
 }
 

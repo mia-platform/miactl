@@ -46,6 +46,7 @@ docker/%/multiarch:
 	$(info Building image for following platforms: $(SUPPORTED_PLATFORMS))
 	$(DOCKER_CMD) buildx build --platform "$(DOCKER_SUPPORTED_PLATFORMS)" \
 		--build-arg CMD_NAME=$(CMDNAME) \
+		--provenance=false \
 		$(IMAGE_TAGS) \
 		$(DOCKER_LABELS) \
 		--file ./Dockerfile $(OUTPUT_DIR) $(ADDITIONAL_PARAMETER)

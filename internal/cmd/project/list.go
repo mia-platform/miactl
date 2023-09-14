@@ -86,8 +86,8 @@ func listProjects(client *client.APIClient, companyID string) error {
 	table.SetRowSeparator("")
 	table.SetHeader([]string{"Name", "Project ID", "Configuration Git Path"})
 	for _, project := range projects {
-		if project.TenantID == companyID {
-			table.Append([]string{project.Name, project.ProjectID, project.ConfigurationGitPath})
+		if project.CompanyID == companyID {
+			table.Append([]string{project.Name, project.ID, project.ConfigurationGitPath})
 		}
 	}
 

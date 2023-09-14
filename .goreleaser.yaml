@@ -59,7 +59,7 @@ changelog:
 
 brews:
 - name: "{{ .Env.CMDNAME }}"
-  tap:
+  repository:
     owner: mia-platform
     name: homebrew-tap
 
