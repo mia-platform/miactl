@@ -1,0 +1,176 @@
+{
+    "_id": "64d379ae603f65bf691c17da",
+    "categoryId": "stream",
+    "description": "an item used in order to test miactl",
+    "imageUrl": "/v2/files/download/0d106947-3cc5-416c-952c-d44ee221ed92.png",
+    "name": "miactl team test",
+    "releaseStage": "preview",
+    "resources": {
+        "collections": {
+            "Claim": {
+                "defaultName": "Claim",
+                "description": "Collection of Claim",
+                "fields": [
+                    {
+                        "description": "_id",
+                        "name": "_id",
+                        "nullable": false,
+                        "required": true,
+                        "type": "ObjectId"
+                    },
+                    {
+                        "description": "creatorId",
+                        "name": "creatorId",
+                        "nullable": false,
+                        "required": true,
+                        "type": "string"
+                    }
+                ],
+                "id": "Claim",
+                "indexes": [
+                    {
+                        "fields": [
+                            {
+                                "name": "_id",
+                                "order": 1
+                            }
+                        ],
+                        "name": "_id",
+                        "type": "normal",
+                        "unique": true
+                    },
+                    {
+                        "fields": [
+                            {
+                                "name": "createdAt",
+                                "order": -1
+                            }
+                        ],
+                        "name": "createdAt",
+                        "type": "normal",
+                        "unique": false
+                    }
+                ],
+                "internalEndpoints": [
+                    {
+                        "basePath": "/claim",
+                        "defaultState": "PUBLIC"
+                    }
+                ],
+                "tags": [
+                    "collection"
+                ],
+                "type": "collection"
+            }
+        },
+        "endpoints": {
+            "/claim": {
+                "acl": "true",
+                "allowUnknownRequestContentType": false,
+                "allowUnknownResponseContentType": false,
+                "backofficeAcl": {
+                    "inherited": true
+                },
+                "collectionId": "Claim",
+                "defaultBasePath": "/claim",
+                "defaultPathRewrite": "/claim",
+                "description": "Endpoint /claim",
+                "forceMicroserviceGatewayProxy": false,
+                "pathName": "/",
+                "public": true,
+                "secreted": false,
+                "showInDocumentation": true,
+                "tags": [
+                    "crud"
+                ],
+                "type": "crud"
+            }
+        },
+        "services": {
+            "crud-service": {
+                "componentId": "crud-service",
+                "containerPorts": [
+                    {
+                        "from": 80,
+                        "name": "http",
+                        "protocol": "TCP",
+                        "to": 3000
+                    }
+                ],
+                "defaultConfigMaps": [
+                    {
+                        "files": [],
+                        "link": {
+                            "targetSection": "collections"
+                        },
+                        "mountPath": "/home/node/app/collections",
+                        "name": "crud-service-collections",
+                        "viewAsReadOnly": true
+                    }
+                ],
+                "defaultEnvironmentVariables": [
+                    {
+                        "name": "LOG_LEVEL",
+                        "value": "{{LOG_LEVEL}}",
+                        "valueType": "plain"
+                    },
+                    {
+                        "name": "HTTP_PORT",
+                        "value": "3000",
+                        "valueType": "plain"
+                    },
+                    {
+                        "name": "COLLECTION_DEFINITION_FOLDER",
+                        "value": "/home/node/app/collections",
+                        "valueType": "plain"
+                    },
+                    {
+                        "name": "USER_ID_HEADER_KEY",
+                        "value": "miauserid",
+                        "valueType": "plain"
+                    },
+                    {
+                        "name": "TRUSTED_PROXIES",
+                        "value": "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16",
+                        "valueType": "plain"
+                    },
+                    {
+                        "name": "CRUD_LIMIT_CONSTRAINT_ENABLED",
+                        "value": "{{CRUD_LIMIT_CONSTRAINT_ENABLED}}",
+                        "valueType": "plain"
+                    },
+                    {
+                        "name": "EXPOSE_METRICS",
+                        "value": "false",
+                        "valueType": "plain"
+                    },
+                    {
+                        "name": "MONGODB_URL",
+                        "value": "{{MONGODB_URL}}",
+                        "valueType": "plain"
+                    }
+                ],
+                "defaultResources": {
+                    "memoryLimits": {
+                        "max": "250Mi",
+                        "min": "70Mi"
+                    }
+                },
+                "description": "Use Mia-Platform core Crud Service to manage different instances of the service.",
+                "dockerImage": "miaplatform/crud-service:{{CRUD_SERVICE_VERSION}}",
+                "mapEnvVarToMountPath": {
+                    "collections": {
+                        "envName": "COLLECTION_DEFINITION_FOLDER",
+                        "type": "folder"
+                    }
+                },
+                "name": "crud-service",
+                "repositoryUrl": "https://github.com/mia-platform/crud-service",
+                "type": "plugin"
+            }
+        }
+    },
+    "supportedByImageUrl": "",
+    "type": "application",
+    "tenantId": "tenant"
+}

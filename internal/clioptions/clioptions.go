@@ -49,6 +49,9 @@ type CLIOptions struct {
 
 	ServiceAccountRole string
 	OutputPath         string
+
+	MarketplaceResourceFilePaths []string
+	MarketplaceResourcesDirPath  string
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -112,6 +115,11 @@ func (o *CLIOptions) AddServiceAccountFlags(flags *pflag.FlagSet) {
 func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 	o.AddServiceAccountFlags(flags)
 	flags.StringVarP(&o.OutputPath, "output", "o", "", "write the service account to a file")
+}
+
+func (o *CLIOptions) AddMarketplaceApplyFlags(flags *pflag.FlagSet) {
+	flags.StringArrayVarP(&o.MarketplaceResourceFilePaths, "file", "f", []string{}, "a path to a JSON or YAML file containing a Marketplace resource")
+	flags.StringVarP(&o.MarketplaceResourcesDirPath, "directory", "k", "", "a path to a directory containing Marketplace resource files")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
