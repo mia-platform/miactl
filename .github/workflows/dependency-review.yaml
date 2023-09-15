@@ -8,13 +8,13 @@ on:
     - docs/**
     - examples/**
 
-permissions:
-  contents: read
-
 jobs:
   dependency-review:
     name: Dependencies Review
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
@@ -22,3 +22,6 @@ jobs:
         show-progress: false
     - name: Dependency Review
       uses: actions/dependency-review-action@v3
+      with:
+        fail-on-scope: runtime,development,unknown
+        comment-summary-in-pr: on-failure
