@@ -25,9 +25,7 @@ import (
 )
 
 const (
-	getMarketplaceEndpoint        = "/api/backend/marketplace/%s"
-	JSON                   string = "json"
-	YAML                   string = "yaml"
+	getMarketplaceEndpoint = "/api/backend/marketplace/%s"
 )
 
 // GetCmd return a new cobra command for getting a single marketplace resource

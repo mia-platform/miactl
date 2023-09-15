@@ -42,3 +42,20 @@ func TestApplyResourceCmd(t *testing.T) {
 		t.Skip()
 	})
 }
+
+func TestBuildPathsFromDir(t *testing.T) {
+	t.Run("should read all files in dir, ignoring non json and non yaml files", func(t *testing.T) {
+		dirPath := "./testdata"
+
+		found, err := buildPathsListFromDir(dirPath)
+		require.NoError(t, err)
+		expected := []string{
+			"invalidJson1.json",
+			"invalidYaml.yaml",
+			"invalidYml.yml",
+			"validItem1.json",
+		}
+		require.Equal(t, found, expected)
+	})
+
+}

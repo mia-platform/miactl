@@ -17,6 +17,9 @@ package marketplace
 
 import (
 	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -39,6 +42,12 @@ const (
 	miactl marketplace apply -k myFantasticGoTemplates`
 )
 
+const (
+	YAML_EXTENSION = ".yaml"
+	YML_EXTENSION  = ".yml"
+	JSON_EXTENSION = ".json"
+)
+
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
 func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
@@ -57,7 +66,8 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 				resourceFilesPaths = options.MarketplaceResourceFilePaths
 			}
 			if options.MarketplaceResourcesDirPath != "" {
-				resourceFilesPaths = buildPathsListFromDir(options.MarketplaceResourcesDirPath)
+				resourceFilesPaths, err = buildPathsListFromDir(options.MarketplaceResourcesDirPath)
+				cobra.CheckErr(err)
 			}
 			resources := buildResourcesList(resourceFilesPaths)
 			return applyMarketplaceResource(client, resources)
@@ -74,6 +84,25 @@ func applyMarketplaceResource(client *client.APIClient, resources []string) erro
 	return errors.New("not implemented")
 }
 
-func buildPathsListFromDir(dirPath string) []string { return []string{} }
+func buildPathsListFromDir(dirPath string) ([]string, error) {
+	files, err := os.ReadDir(dirPath)
+	if err != nil {
+		return nil, err
+	}
+	fileNames := []string{}
+	for _, f := range files {
+		switch filepath.Ext(f.Name()) {
+		case YAML_EXTENSION:
+			fallthrough
+		case YML_EXTENSION:
+			fallthrough
+		case JSON_EXTENSION:
+			fileNames = append(fileNames, f.Name())
+		default:
+			fmt.Printf("warning: file %s ignored because it is neither a JSON nor a YAML file\n", f.Name())
+		}
+	}
+	return fileNames, nil
+}
 
 func buildResourcesList(pathList []string) []string { return []string{} }
