@@ -81,22 +81,44 @@ func applyMarketplaceResource(client *client.APIClient, resources []string) erro
 	return errors.New("not implemented")
 }
 
+func listFiles(rootPath string) ([]string, error) {
+	var files []string
+
+	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() {
+			files = append(files, path)
+		}
+
+		return nil
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return files, nil
+}
+
 func buildPathsListFromDir(dirPath string) ([]string, error) {
-	files, err := os.ReadDir(dirPath)
+	filesPaths, err := listFiles(dirPath)
 	if err != nil {
 		return nil, err
 	}
 	filePaths := []string{}
-	for _, f := range files {
-		switch filepath.Ext(f.Name()) {
+	for _, path := range filesPaths {
+		switch filepath.Ext(path) {
 		case encoding.YamlExtension:
 			fallthrough
 		case encoding.YmlExtension:
 			fallthrough
 		case encoding.JsonExtension:
-			filePaths = append(filePaths, f.Name())
+			filePaths = append(filePaths, path)
 		default:
-			fmt.Printf("warning: file %s ignored because it is neither a JSON nor a YAML file\n", f.Name())
+			fmt.Printf("warning: file %s ignored because it is neither a JSON nor a YAML file\n", path)
 		}
 	}
 	return filePaths, nil
@@ -114,11 +136,11 @@ func buildResourcesList(pathList []string) ([]string, error) {
 			fallthrough
 		case encoding.YmlExtension:
 			object := map[string]interface{}{}
-			err := encoding.UnmarshalData(content, encoding.YAML, object) 
+			err := encoding.UnmarshalData(content, encoding.YAML, object)
 			if err != nil {
 				return nil, err
 			}
-			jsonFormatted, err := encoding.MarshalData(object, encoding.JSON, encoding.MarshalOptions{}) 
+			jsonFormatted, err := encoding.MarshalData(object, encoding.JSON, encoding.MarshalOptions{})
 			if err != nil {
 				return nil, err
 			}
@@ -126,11 +148,11 @@ func buildResourcesList(pathList []string) ([]string, error) {
 		case encoding.JsonExtension:
 			if json.Valid(content) {
 				resources = append(resources, string(content))
-			}	
+			}
 		default:
 			return nil, fmt.Errorf("Unsupported format\n")
-		} 
-		
+		}
+
 	}
 	return resources, nil
 }

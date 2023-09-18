@@ -58,9 +58,9 @@ func TestBuildPathsFromDir(t *testing.T) {
 	})
 }
 
-func TestBuildResourcesList(t *testing.T){
+func TestBuildResourcesList(t *testing.T) {
 	t.Run("should read file contents parsing them to json", func(t *testing.T) {
-		dirPath := "./testdata"
+		dirPath := "testdata"
 		found, err := buildPathsListFromDir(dirPath)
 		require.NoError(t, err)
 
@@ -68,7 +68,7 @@ func TestBuildResourcesList(t *testing.T){
 
 		require.NoError(t, err)
 		require.NotEmpty(t, resources)
-		
+
 	})
 
 	t.Run("should return error if file is not valid json", func(t *testing.T) {
