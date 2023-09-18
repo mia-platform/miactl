@@ -44,18 +44,38 @@ func TestApplyResourceCmd(t *testing.T) {
 }
 
 func TestBuildPathsFromDir(t *testing.T) {
-	t.Run("should read all files in dir, ignoring non json and non yaml files", func(t *testing.T) {
+	t.Run("should read all files in dir, ignoring non json and non yaml files, retrieving paths", func(t *testing.T) {
 		dirPath := "./testdata"
 
 		found, err := buildPathsListFromDir(dirPath)
 		require.NoError(t, err)
-		expected := []string{
-			"invalidJson1.json",
-			"invalidYaml.yaml",
-			"invalidYml.yml",
-			"validItem1.json",
-		}
-		require.Equal(t, found, expected)
+		require.Contains(t, found, "invalidJson1.json")
+		require.Contains(t, found, "invalidYaml.yaml")
+		require.Contains(t, found, "invalidYml.yml")
+		require.Contains(t, found, "validItem1.json")
+		require.NotContains(t, found, "someFileNotYamlNotJson.txt")
+		require.Equal(t, 4, len(found))
+	})
+}
+
+func TestBuildResourcesList(t *testing.T){
+	t.Run("should read file contents parsing them to json", func(t *testing.T) {
+		dirPath := "./testdata"
+		found, err := buildPathsListFromDir(dirPath)
+		require.NoError(t, err)
+
+		resources, err := buildResourcesList(found)
+
+		require.NoError(t, err)
+		require.NotEmpty(t, resources)
+		
 	})
 
+	t.Run("should return error if file is not valid json", func(t *testing.T) {
+
+	})
+
+	t.Run("should return error if file is not valid yaml", func(t *testing.T) {
+
+	})
 }

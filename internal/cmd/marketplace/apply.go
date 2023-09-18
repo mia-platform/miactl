@@ -16,6 +16,7 @@
 package marketplace
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -23,13 +24,14 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/spf13/cobra"
 )
 
 const (
-	applyEndpoint = "/api/backend/marketplace/tenants/%s/resources/%s"
+	applyEndpoint = "/api/backend/marketplace/tenants/%s/resources"
 
-	applyLong = `Create or update one or more Marketplace Items.
+	applyLong = `Create or update one or more Marketplace items.
 	You can either specify one or more files or one or more directories, respectively with the flags -f and -k.`
 	applyExample = `
 	# Apply the configuration in myFantasticGoTemplate.json to the Marketplace
@@ -40,12 +42,6 @@ const (
 
 	# Apply all the configurations in the folder myFantasticGoTemplates to the Marketplace
 	miactl marketplace apply -k myFantasticGoTemplates`
-)
-
-const (
-	YAML_EXTENSION = ".yaml"
-	YML_EXTENSION  = ".yml"
-	JSON_EXTENSION = ".json"
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
@@ -69,7 +65,8 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 				resourceFilesPaths, err = buildPathsListFromDir(options.MarketplaceResourcesDirPath)
 				cobra.CheckErr(err)
 			}
-			resources := buildResourcesList(resourceFilesPaths)
+			resources, err := buildResourcesList(resourceFilesPaths)
+			cobra.CheckErr(err)
 			return applyMarketplaceResource(client, resources)
 		},
 	}
@@ -89,20 +86,53 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	fileNames := []string{}
+	filePaths := []string{}
 	for _, f := range files {
 		switch filepath.Ext(f.Name()) {
-		case YAML_EXTENSION:
+		case encoding.YamlExtension:
 			fallthrough
-		case YML_EXTENSION:
+		case encoding.YmlExtension:
 			fallthrough
-		case JSON_EXTENSION:
-			fileNames = append(fileNames, f.Name())
+		case encoding.JsonExtension:
+			filePaths = append(filePaths, f.Name())
 		default:
 			fmt.Printf("warning: file %s ignored because it is neither a JSON nor a YAML file\n", f.Name())
 		}
 	}
-	return fileNames, nil
+	return filePaths, nil
 }
 
-func buildResourcesList(pathList []string) []string { return []string{} }
+func buildResourcesList(pathList []string) ([]string, error) {
+	resources := []string{}
+	for _, path := range pathList {
+		content, err := os.ReadFile(path)
+		if err != nil {
+			return nil, err
+		}
+		switch filepath.Ext(path) {
+		case encoding.YamlExtension:
+			fallthrough
+		case encoding.YmlExtension:
+			object := map[string]interface{}{}
+			err := encoding.UnmarshalData(content, encoding.YAML, object) 
+			if err != nil {
+				return nil, err
+			}
+			jsonFormatted, err := encoding.MarshalData(object, encoding.JSON, encoding.MarshalOptions{}) 
+			if err != nil {
+				return nil, err
+			}
+			resources = append(resources, string(jsonFormatted))
+		case encoding.JsonExtension:
+			if json.Valid(content) {
+				resources = append(resources, string(content))
+			}	
+		default:
+			return nil, fmt.Errorf("Unsupported format\n")
+		} 
+		
+	}
+	return resources, nil
+}
+
+func parseResponse(response ApplyResponse) {}

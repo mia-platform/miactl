@@ -1,176 +1,67 @@
 {
-    "_id": "64d379ae603f65bf691c17da",
-    "categoryId": "stream",
-    "description": "an item used in order to test miactl",
-    "imageUrl": "/v2/files/download/0d106947-3cc5-416c-952c-d44ee221ed92.png",
-    "name": "miactl team test",
-    "releaseStage": "preview",
-    "resources": {
-        "collections": {
-            "Claim": {
-                "defaultName": "Claim",
-                "description": "Collection of Claim",
-                "fields": [
-                    {
-                        "description": "_id",
-                        "name": "_id",
-                        "nullable": false,
-                        "required": true,
-                        "type": "ObjectId"
-                    },
-                    {
-                        "description": "creatorId",
-                        "name": "creatorId",
-                        "nullable": false,
-                        "required": true,
-                        "type": "string"
-                    }
-                ],
-                "id": "Claim",
-                "indexes": [
-                    {
-                        "fields": [
+    "resources": [
+        {
+            "_id": "6504773582a6722338be0e25",
+            "categoryId": "devportal",
+            "description": "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
+            "documentation": {
+                "type": "externalLink",
+                "url": "https://docs.mia-platform.eu/docs/runtime_suite/api-portal/overview"
+            },
+            "imageUrl": "/v2/files/download/e83a1e48-fca7-4114-a244-1a69c0c4e7b2.png",
+            "name": "API Portal by miactl test",
+            "releaseStage": "",
+            "repositoryUrl": "https://git.tools.mia-platform.eu/platform/api-portal/website",
+            "resources": {
+                "services": {
+                    "api-portal": {
+                        "componentId": "api-portal",
+                        "containerPorts": [
                             {
-                                "name": "_id",
-                                "order": 1
+                                "from": 80,
+                                "name": "http",
+                                "protocol": "TCP",
+                                "to": 8080
                             }
                         ],
-                        "name": "_id",
-                        "type": "normal",
-                        "unique": true
-                    },
-                    {
-                        "fields": [
+                        "defaultEnvironmentVariables": [
                             {
-                                "name": "createdAt",
-                                "order": -1
+                                "name": "HTTP_PORT",
+                                "value": "8080",
+                                "valueType": "plain"
+                            },
+                            {
+                                "name": "ANTI_ZOMBIE_PORT",
+                                "value": "090909",
+                                "valueType": "plain"
                             }
                         ],
-                        "name": "createdAt",
-                        "type": "normal",
-                        "unique": false
-                    }
-                ],
-                "internalEndpoints": [
-                    {
-                        "basePath": "/claim",
-                        "defaultState": "PUBLIC"
-                    }
-                ],
-                "tags": [
-                    "collection"
-                ],
-                "type": "collection"
-            }
-        },
-        "endpoints": {
-            "/claim": {
-                "acl": "true",
-                "allowUnknownRequestContentType": false,
-                "allowUnknownResponseContentType": false,
-                "backofficeAcl": {
-                    "inherited": true
-                },
-                "collectionId": "Claim",
-                "defaultBasePath": "/claim",
-                "defaultPathRewrite": "/claim",
-                "description": "Endpoint /claim",
-                "forceMicroserviceGatewayProxy": false,
-                "pathName": "/",
-                "public": true,
-                "secreted": false,
-                "showInDocumentation": true,
-                "tags": [
-                    "crud"
-                ],
-                "type": "crud"
-            }
-        },
-        "services": {
-            "crud-service": {
-                "componentId": "crud-service",
-                "containerPorts": [
-                    {
-                        "from": 80,
-                        "name": "http",
-                        "protocol": "TCP",
-                        "to": 3000
-                    }
-                ],
-                "defaultConfigMaps": [
-                    {
-                        "files": [],
-                        "link": {
-                            "targetSection": "collections"
+                        "defaultLogParser": "mia-nginx",
+                        "defaultProbes": {
+                            "liveness": {
+                                "path": "/index.html"
+                            },
+                            "readiness": {
+                                "path": "/index.html"
+                            }
                         },
-                        "mountPath": "/home/node/app/collections",
-                        "name": "crud-service-collections",
-                        "viewAsReadOnly": true
+                        "defaultResources": {
+                            "memoryLimits": {
+                                "max": "25Mi",
+                                "min": "5Mi"
+                            }
+                        },
+                        "description": "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
+                        "dockerImage": "nexus.mia-platform.eu/api-portal/website:1.16.6",
+                        "name": "api-portal",
+                        "repositoryUrl": "https://git.tools.mia-platform.eu/platform/api-portal/website",
+                        "type": "plugin"
                     }
-                ],
-                "defaultEnvironmentVariables": [
-                    {
-                        "name": "LOG_LEVEL",
-                        "value": "{{LOG_LEVEL}}",
-                        "valueType": "plain"
-                    },
-                    {
-                        "name": "HTTP_PORT",
-                        "value": "3000",
-                        "valueType": "plain"
-                    },
-                    {
-                        "name": "COLLECTION_DEFINITION_FOLDER",
-                        "value": "/home/node/app/collections",
-                        "valueType": "plain"
-                    },
-                    {
-                        "name": "USER_ID_HEADER_KEY",
-                        "value": "miauserid",
-                        "valueType": "plain"
-                    },
-                    {
-                        "name": "TRUSTED_PROXIES",
-                        "value": "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16",
-                        "valueType": "plain"
-                    },
-                    {
-                        "name": "CRUD_LIMIT_CONSTRAINT_ENABLED",
-                        "value": "{{CRUD_LIMIT_CONSTRAINT_ENABLED}}",
-                        "valueType": "plain"
-                    },
-                    {
-                        "name": "EXPOSE_METRICS",
-                        "value": "false",
-                        "valueType": "plain"
-                    },
-                    {
-                        "name": "MONGODB_URL",
-                        "value": "{{MONGODB_URL}}",
-                        "valueType": "plain"
-                    }
-                ],
-                "defaultResources": {
-                    "memoryLimits": {
-                        "max": "250Mi",
-                        "min": "70Mi"
-                    }
-                },
-                "description": "Use Mia-Platform core Crud Service to manage different instances of the service.",
-                "dockerImage": "miaplatform/crud-service:{{CRUD_SERVICE_VERSION}}",
-                "mapEnvVarToMountPath": {
-                    "collections": {
-                        "envName": "COLLECTION_DEFINITION_FOLDER",
-                        "type": "folder"
-                    }
-                },
-                "name": "crud-service",
-                "repositoryUrl": "https://github.com/mia-platform/crud-service",
-                "type": "plugin"
-            }
+                }
+            },
+            "supportedByImageUrl": "/v2/files/download/83b11dd9-41f6-4920-bb2d-2a809e944851.png",
+            "tenantId": "team-rocket-test",
+            "type": "plugin"
         }
-    },
-    "supportedByImageUrl": "",
-    "type": "application",
-    "tenantId": "tenant"
+    ]
 }

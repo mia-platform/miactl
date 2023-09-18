@@ -19,3 +19,27 @@ const (
 	JSON string = "json"
 	YAML string = "yaml"
 )
+
+type ApplyResponse struct {
+	Done  bool                `json:"done"`
+	Items []ApplyResponseItem `json:"items"`
+}
+
+type ApplyResponseItem struct {
+	ItemID string `json:"itemId,omitempty"`
+	Name   string `json:"name,omitempty"`
+
+	Done     bool `json:"done"`
+	Inserted bool `json:"inserted"`
+	Updated  bool `json:"updated"`
+
+	ValidationErrors []ApplyResponseItemValidationError `json:"validationErrors"`
+}
+
+type ApplyResponseItemValidationError struct {
+	Message string `json:"message"`
+}
+
+type ApplyRequest struct {
+	Resources []map[string]interface{} `json:"resources"`
+}
