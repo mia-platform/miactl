@@ -29,22 +29,23 @@ import (
 
 const (
 	applyLong = `Create or update one or more Marketplace items.
+
 	You can either specify one or more files or one or more directories, respectively with the flags -f and -k.`
 	applyExample = `
-	# Apply the configuration in myFantasticGoTemplate.json to the Marketplace
+	# Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Marketplace
 	miactl marketplace apply -f myFantasticGoTemplate.json
 
-	# Apply the configurations in myFantasticGoTemplate.json and myFantasticNodeTemplate.json to the Marketplace
-	miactl marketplace apply -f myFantasticGoTemplate.json -f myFantasticNodeTemplate.json
+	# Apply the configurations in myFantasticGoTemplate.json and myFantasticNodeTemplate.json to the Marketplace, with relative paths
+	miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFantasticNodeTemplate.json
 
-	# Apply all the configurations in the folder myFantasticGoTemplates to the Marketplace
+	# Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
 	miactl marketplace apply -k myFantasticGoTemplates`
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
 func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "apply { { -f file }... | { -k directory }... }",
+		Use:     "apply { { -f file-path }... | { -k directory-path }... }",
 		Short:   "Create or update Marketplace items",
 		Long:    applyLong,
 		Example: applyExample,
@@ -64,7 +65,12 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			}
 			applyReq, err := buildApplyRequest(resourceFilesPaths)
 			cobra.CheckErr(err)
-			return applyMarketplaceResource(client, applyReq)
+			outcome, err := applyMarketplaceResource(client, applyReq)
+			if outcome != "" {
+				fmt.Println(outcome)
+			}
+
+			return err
 		},
 	}
 
@@ -82,10 +88,6 @@ const (
 )
 
 var errNoValidFilesProvided = errors.New("no valid files were provided.")
-
-func applyMarketplaceResource(client *client.APIClient, request *ApplyRequest) error {
-	return errors.New("not implemented")
-}
 
 // listFiles recursively lists file in the given directory path
 func listFiles(rootPath string) ([]string, error) {
@@ -118,7 +120,7 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 			fallthrough
 		case encoding.YmlExtension:
 			fallthrough
-		case encoding.JsonExtension:
+		case encoding.JSONExtension:
 			filePaths = append(filePaths, path)
 		default:
 			fmt.Printf(invalidExtensionWarning, path)
@@ -128,30 +130,30 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 }
 
 func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
-	resources := []*map[string]interface{}{}
+	resources := []*MarketplaceResource{}
 	for _, path := range pathList {
 		content, err := os.ReadFile(path)
 		if err != nil {
 			return nil, fmt.Errorf("error opening file: %w", err)
 		}
-		object := &map[string]interface{}{}
+		mktpResource := &MarketplaceResource{}
 		var fileEncoding string
 		switch filepath.Ext(path) {
 		case encoding.YamlExtension:
 			fallthrough
 		case encoding.YmlExtension:
 			fileEncoding = YAML
-		case encoding.JsonExtension:
+		case encoding.JSONExtension:
 			fileEncoding = JSON
 		default:
 			fmt.Printf(invalidExtensionWarning, path)
 			continue
 		}
-		err = encoding.UnmarshalData(content, fileEncoding, object)
+		err = encoding.UnmarshalData(content, fileEncoding, mktpResource)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing file %s: %w", path, err)
 		}
-		resources = append(resources, object)
+		resources = append(resources, mktpResource)
 	}
 	if len(resources) == 0 {
 		return nil, errNoValidFilesProvided
@@ -161,4 +163,13 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 	}, nil
 }
 
-func parseResponse(response ApplyResponse) {}
+func validateResource(response *MarketplaceResource) error {
+	if ok := *(response)["name"]; !ok {
+		return errors.New(`required field "name" was not found in the resource`)
+	}
+	return nil
+}
+
+func applyMarketplaceResource(client *client.APIClient, request *ApplyRequest) (string, error) {
+	return "", errors.New("not implemented")
+}

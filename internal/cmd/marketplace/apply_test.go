@@ -20,28 +20,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-func applyMockServer(t *testing.T, statusCode int) *httptest.Server {
-	t.Helper()
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var isReqOk = assert.Equal(t, applyEndpoint, r.RequestURI) && assert.Equal(t, http.MethodPost, r.Method)
-		if !isReqOk {
-			w.WriteHeader(http.StatusNotFound)
-			require.Fail(t, "unsupported call")
-			return
-		}
-		w.WriteHeader(statusCode)
-	}))
-}
-
-func TestApplyResourceCmd(t *testing.T) {
-	t.Run("test command creation", func(t *testing.T) {
-		t.Skip()
-	})
-}
 
 func TestBuildPathsFromDir(t *testing.T) {
 	t.Run("should read all files in dir, ignoring non json and non yaml files, retrieving paths", func(t *testing.T) {
@@ -126,4 +108,140 @@ func TestBuildResourcesList(t *testing.T) {
 		require.ErrorIs(t, err, errNoValidFilesProvided)
 		require.Nil(t, found)
 	})
+}
+
+func TestValidateResource(t *testing.T) {
+	t.Run("should return error if resource does not contain a name", func(t *testing.T) {
+		mockResource := &MarketplaceResource{
+			"foo": "bar",
+		}
+
+		err := validateResource(mockResource)
+		require.EqualError(t, err, `required field "name" was not found in the resource`)
+	})
+
+	t.Run("should not return error if resource contains a name", func(t *testing.T) {
+		mockResource := &MarketplaceResource{
+			"foo":  "bar",
+			"name": "some name",
+		}
+
+		err := validateResource(mockResource)
+		require.NoError(t, err)
+	})
+}
+
+func TestApplyResourceCmd(t *testing.T) {
+	validReqMock := &ApplyRequest{
+		Resources: []*MarketplaceResource{
+			{
+				"_id":         "6504773582a6722338be0e25",
+				"categoryId":  "devportal",
+				"description": "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
+				"documentation": map[string]interface{}{
+					"type": "externalLink",
+					"url":  "https://docs.mia-platform.eu/docs/runtime_suite/api-portal/overview",
+				},
+				"imageUrl":      "/v2/files/download/e83a1e48-fca7-4114-a244-1a69c0c4e7b2.png",
+				"name":          "API Portal by miactl test",
+				"releaseStage":  "",
+				"repositoryUrl": "https://git.tools.mia-platform.eu/platform/api-portal/website",
+				"resources": map[string]interface{}{
+					"services": map[string]interface{}{
+						"api-portal": map[string]interface{}{
+							"componentId": "api-portal",
+							"containerPorts": []map[string]interface{}{
+								{
+									"from":     80,
+									"name":     "http",
+									"protocol": "TCP",
+									"to":       8080,
+								},
+							},
+							"defaultEnvironmentVariables": []map[string]interface{}{
+								{
+									"name":      "HTTP_PORT",
+									"value":     "8080",
+									"valueType": "plain",
+								},
+								{
+									"name":      "ANTI_ZOMBIE_PORT",
+									"value":     "090909",
+									"valueType": "plain",
+								},
+							},
+							"defaultLogParser": "mia-nginx",
+							"defaultProbes": map[string]interface{}{
+								"liveness": map[string]interface{}{
+									"path": "/index.html",
+								},
+								"readiness": map[string]interface{}{
+									"path": "/index.html",
+								},
+							},
+							"defaultResources": map[string]interface{}{
+								"memoryLimits": map[string]interface{}{
+									"max": "25Mi",
+									"min": "5Mi",
+								},
+							},
+							"description":   "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
+							"dockerImage":   "nexus.mia-platform.eu/api-portal/website:1.16.6",
+							"name":          "api-portal",
+							"repositoryUrl": "https://git.tools.mia-platform.eu/platform/api-portal/website",
+							"type":          "plugin",
+						},
+					},
+				},
+				"supportedByImageUrl": "/v2/files/download/83b11dd9-41f6-4920-bb2d-2a809e944851.png",
+				"tenantId":            "team-rocket-test",
+				"type":                "plugin",
+			},
+		},
+	}
+	testCases := map[string]struct {
+		server       *httptest.Server
+		clientConfig *client.Config
+		companiesURI string
+		err          bool
+	}{
+		"valid apply response": {
+			server:       applyMockServer(t, 200),
+			companiesURI: applyEndpoint,
+			clientConfig: &client.Config{
+				Transport: http.DefaultTransport,
+			},
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			testCase.clientConfig.Host = testCase.server.URL
+			client, err := client.APIClientForConfig(testCase.clientConfig)
+			require.NoError(t, err)
+
+			found, err := applyMarketplaceResource(client, validReqMock)
+			require.Equal(t, "API Portal by miactl test", found)
+
+			if testCase.err {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func applyMockServer(t *testing.T, statusCode int) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var isReqOk = assert.Equal(t, applyEndpoint, r.RequestURI) && assert.Equal(t, http.MethodPost, r.Method)
+		if !isReqOk {
+			w.WriteHeader(http.StatusNotFound)
+			require.Fail(t, "unsupported call")
+			return
+		}
+		w.WriteHeader(statusCode)
+	}))
 }

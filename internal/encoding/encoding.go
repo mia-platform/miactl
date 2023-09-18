@@ -30,7 +30,7 @@ const (
 
 	YamlExtension = ".yaml"
 	YmlExtension  = ".yml"
-	JsonExtension = ".json"
+	JSONExtension = ".json"
 )
 
 var ErrMarshal = errors.New("error while marshalling data")
