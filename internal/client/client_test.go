@@ -73,7 +73,7 @@ func TestRequestSuccess(t *testing.T) {
 	restClient, err := APIClientForConfig(&Config{Host: testServer.URL})
 	require.NoError(t, err)
 
-	req := restClient.Get().APIPath("test")
+	req := restClient.Get().SetAPIPath("test")
 	response, err := req.Do(context.Background())
 
 	require.NoError(t, err)
@@ -90,7 +90,7 @@ func TestRequestError(t *testing.T) {
 	restClient, err := APIClientForConfig(&Config{Host: testServer.URL})
 	require.NoError(t, err)
 
-	req := restClient.Get().APIPath("test")
+	req := restClient.Get().SetAPIPath("test")
 	response, err := req.Do(context.Background())
 
 	require.Error(t, err)
@@ -104,7 +104,7 @@ func TestRequestServerError(t *testing.T) {
 	restClient, err := APIClientForConfig(&Config{Host: testServer.URL})
 	require.NoError(t, err)
 
-	req := restClient.Get().APIPath("test")
+	req := restClient.Get().SetAPIPath("test")
 	response, err := req.Do(context.Background())
 
 	require.NoError(t, err)
@@ -120,7 +120,7 @@ func TestRequestServer5xx(t *testing.T) {
 	restClient, err := APIClientForConfig(&Config{Host: testServer.URL})
 	require.NoError(t, err)
 
-	req := restClient.Get().APIPath("test")
+	req := restClient.Get().SetAPIPath("test")
 	response, err := req.Do(context.Background())
 
 	require.NoError(t, err)

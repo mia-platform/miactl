@@ -100,8 +100,8 @@ func createBasicServiceAccount(client *client.APIClient, name, companyID string,
 
 	resp, err := client.
 		Post().
-		APIPath(fmt.Sprintf(companyServiceAccountsEndpointTemplate, companyID)).
-		Body(body).
+		SetAPIPath(fmt.Sprintf(companyServiceAccountsEndpointTemplate, companyID)).
+		SetBody(body).
 		Do(context.Background())
 
 	if err != nil {

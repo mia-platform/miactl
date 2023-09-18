@@ -16,6 +16,8 @@
 package marketplace
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -65,7 +67,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			}
 			applyReq, err := buildApplyRequest(resourceFilesPaths)
 			cobra.CheckErr(err)
-			outcome, err := applyMarketplaceResource(client, applyReq)
+			outcome, err := applyMarketplaceResource(client, restConfig.CompanyID, applyReq)
 			if outcome != "" {
 				fmt.Println(outcome)
 			}
@@ -153,6 +155,10 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error parsing file %s: %w", path, err)
 		}
+		err = validateResource(mktpResource)
+		if err != nil {
+			return nil, err
+		}
 		resources = append(resources, mktpResource)
 	}
 	if len(resources) == 0 {
@@ -164,12 +170,36 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 }
 
 func validateResource(response *MarketplaceResource) error {
-	if ok := *(response)["name"]; !ok {
+	if _, ok := (*response)["name"]; !ok {
 		return errors.New(`required field "name" was not found in the resource`)
 	}
 	return nil
 }
 
-func applyMarketplaceResource(client *client.APIClient, request *ApplyRequest) (string, error) {
-	return "", errors.New("not implemented")
+func applyMarketplaceResource(client *client.APIClient, companyID string, request *ApplyRequest) (string, error) {
+
+	bodyBytes, err := json.Marshal(request)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := client.Post().
+		SetParam("tenantId", companyID).
+		SetAPIPath(fmt.Sprintf(applyEndpoint, companyID)).
+		SetBody(bodyBytes).
+		Do(context.Background())
+
+	if err != nil {
+		return "", err
+	}
+
+	applyResponse := &ApplyResponse{}
+
+	err = resp.ParseResponse(applyResponse)
+	if err != nil {
+		return "", err
+	}
+
+	return applyResponse.Items[len(applyResponse.Items)-1].Name,
+		nil
 }

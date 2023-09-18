@@ -52,7 +52,7 @@ Companies can be used to logically group projects by organizations or internal t
 // listCompanies retrieves the companies belonging to the current context
 func listCompanies(client *client.APIClient) error {
 	// execute the request
-	resp, err := client.Get().APIPath(listCompaniesEndpoint).Do(context.Background())
+	resp, err := client.Get().SetAPIPath(listCompaniesEndpoint).Do(context.Background())
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}

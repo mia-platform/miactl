@@ -112,8 +112,8 @@ func triggerPipeline(client *client.APIClient, environmentName, projectID string
 
 	resp, err := client.
 		Post().
-		APIPath(fmt.Sprintf(deployProjectEndpointTemplate, projectID)).
-		Body(requestBody).
+		SetAPIPath(fmt.Sprintf(deployProjectEndpointTemplate, projectID)).
+		SetBody(requestBody).
 		Do(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
@@ -142,7 +142,7 @@ func waitStatus(client *client.APIClient, projectID string, deployID int) (strin
 		time.Sleep(sleepDuration)
 		resp, err := client.
 			Get().
-			APIPath(fmt.Sprintf(pipelineStatusEndpointTemplate, projectID, deployID)).
+			SetAPIPath(fmt.Sprintf(pipelineStatusEndpointTemplate, projectID, deployID)).
 			Do(context.Background())
 
 		if err != nil {

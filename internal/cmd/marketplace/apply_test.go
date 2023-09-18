@@ -16,6 +16,7 @@
 package marketplace
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -132,6 +133,7 @@ func TestValidateResource(t *testing.T) {
 }
 
 func TestApplyResourceCmd(t *testing.T) {
+	mockResName := "API Portal by miactl test"
 	validReqMock := &ApplyRequest{
 		Resources: []*MarketplaceResource{
 			{
@@ -143,7 +145,7 @@ func TestApplyResourceCmd(t *testing.T) {
 					"url":  "https://docs.mia-platform.eu/docs/runtime_suite/api-portal/overview",
 				},
 				"imageUrl":      "/v2/files/download/e83a1e48-fca7-4114-a244-1a69c0c4e7b2.png",
-				"name":          "API Portal by miactl test",
+				"name":          mockResName,
 				"releaseStage":  "",
 				"repositoryUrl": "https://git.tools.mia-platform.eu/platform/api-portal/website",
 				"resources": map[string]interface{}{
@@ -206,7 +208,23 @@ func TestApplyResourceCmd(t *testing.T) {
 		err          bool
 	}{
 		"valid apply response": {
-			server:       applyMockServer(t, 200),
+			server: applyMockServer(
+				t,
+				http.StatusOK,
+				&ApplyResponse{
+					Done: true,
+					Items: []ApplyResponseItem{
+						{
+							ItemID: "some-id",
+							Name:   mockResName,
+
+							Done:     true,
+							Inserted: true,
+							Updated:  false,
+						},
+					},
+				},
+			),
 			companiesURI: applyEndpoint,
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
@@ -221,8 +239,10 @@ func TestApplyResourceCmd(t *testing.T) {
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
 
-			found, err := applyMarketplaceResource(client, validReqMock)
-			require.Equal(t, "API Portal by miactl test", found)
+			found, err := applyMarketplaceResource(client, "some-id", validReqMock)
+			require.NoError(t, err)
+
+			require.Contains(t, found, mockResName)
 
 			if testCase.err {
 				assert.Error(t, err)
@@ -233,7 +253,7 @@ func TestApplyResourceCmd(t *testing.T) {
 	}
 }
 
-func applyMockServer(t *testing.T, statusCode int) *httptest.Server {
+func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var isReqOk = assert.Equal(t, applyEndpoint, r.RequestURI) && assert.Equal(t, http.MethodPost, r.Method)
@@ -243,5 +263,9 @@ func applyMockServer(t *testing.T, statusCode int) *httptest.Server {
 			return
 		}
 		w.WriteHeader(statusCode)
+		res := []byte(`{"name":"ciao"}`)
+		err := json.Unmarshal(res, mockResponse)
+		require.NoError(t, err)
+		w.Write(res)
 	}))
 }
