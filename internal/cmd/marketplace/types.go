@@ -41,5 +41,5 @@ type ApplyResponseItemValidationError struct {
 }
 
 type ApplyRequest struct {
-	Resources []map[string]interface{} `json:"resources"`
+	Resources []*map[string]interface{} `json:"resources"`
 }

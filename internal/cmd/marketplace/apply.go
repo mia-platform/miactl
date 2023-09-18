@@ -16,7 +16,6 @@
 package marketplace
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -29,8 +28,6 @@ import (
 )
 
 const (
-	applyEndpoint = "/api/backend/marketplace/tenants/%s/resources"
-
 	applyLong = `Create or update one or more Marketplace items.
 	You can either specify one or more files or one or more directories, respectively with the flags -f and -k.`
 	applyExample = `
@@ -65,9 +62,9 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 				resourceFilesPaths, err = buildPathsListFromDir(options.MarketplaceResourcesDirPath)
 				cobra.CheckErr(err)
 			}
-			resources, err := buildResourcesList(resourceFilesPaths)
+			applyReq, err := buildApplyRequest(resourceFilesPaths)
 			cobra.CheckErr(err)
-			return applyMarketplaceResource(client, resources)
+			return applyMarketplaceResource(client, applyReq)
 		},
 	}
 
@@ -77,25 +74,31 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func applyMarketplaceResource(client *client.APIClient, resources []string) error {
+const (
+	applyEndpoint           = "/api/backend/marketplace/tenants/%s/resources"
+	invalidExtensionWarning = "warning: file %s was ignored because it has not a recognized extension. Valid extensions are `.json`, `.yaml` and `.yml`\n"
+
+	errParsingFile = "error parsing file: %s"
+)
+
+var errNoValidFilesProvided = errors.New("no valid files were provided.")
+
+func applyMarketplaceResource(client *client.APIClient, request *ApplyRequest) error {
 	return errors.New("not implemented")
 }
 
+// listFiles recursively lists file in the given directory path
 func listFiles(rootPath string) ([]string, error) {
 	var files []string
-
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
-
 		if !info.IsDir() {
 			files = append(files, path)
 		}
-
 		return nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -118,43 +121,44 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 		case encoding.JsonExtension:
 			filePaths = append(filePaths, path)
 		default:
-			fmt.Printf("warning: file %s ignored because it is neither a JSON nor a YAML file\n", path)
+			fmt.Printf(invalidExtensionWarning, path)
 		}
 	}
 	return filePaths, nil
 }
 
-func buildResourcesList(pathList []string) ([]string, error) {
-	resources := []string{}
+func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
+	resources := []*map[string]interface{}{}
 	for _, path := range pathList {
 		content, err := os.ReadFile(path)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("error opening file: %w", err)
 		}
+		object := &map[string]interface{}{}
+		var fileEncoding string
 		switch filepath.Ext(path) {
 		case encoding.YamlExtension:
 			fallthrough
 		case encoding.YmlExtension:
-			object := map[string]interface{}{}
-			err := encoding.UnmarshalData(content, encoding.YAML, object)
-			if err != nil {
-				return nil, err
-			}
-			jsonFormatted, err := encoding.MarshalData(object, encoding.JSON, encoding.MarshalOptions{})
-			if err != nil {
-				return nil, err
-			}
-			resources = append(resources, string(jsonFormatted))
+			fileEncoding = YAML
 		case encoding.JsonExtension:
-			if json.Valid(content) {
-				resources = append(resources, string(content))
-			}
+			fileEncoding = JSON
 		default:
-			return nil, fmt.Errorf("Unsupported format\n")
+			fmt.Printf(invalidExtensionWarning, path)
+			continue
 		}
-
+		err = encoding.UnmarshalData(content, fileEncoding, object)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing file %s: %w", path, err)
+		}
+		resources = append(resources, object)
 	}
-	return resources, nil
+	if len(resources) == 0 {
+		return nil, errNoValidFilesProvided
+	}
+	return &ApplyRequest{
+		Resources: resources,
+	}, nil
 }
 
 func parseResponse(response ApplyResponse) {}
