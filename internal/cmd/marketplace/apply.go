@@ -22,32 +22,37 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
+	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
 const (
 	applyLong = `Create or update one or more Marketplace items.
 
-	You can either specify one or more files or one or more directories, respectively with the flags -f and -k.`
+You can either specify one or more files or one or more directories, respectively with the flags -f and -d.
+	
+Supported formats are JSON (.json files) and YAML (.yaml or .yml files).`
+
 	applyExample = `
-	# Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Marketplace
-	miactl marketplace apply -f myFantasticGoTemplate.json
+# Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Marketplace
+miactl marketplace apply -f myFantasticGoTemplate.json
 
-	# Apply the configurations in myFantasticGoTemplate.json and myFantasticNodeTemplate.json to the Marketplace, with relative paths
-	miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFantasticNodeTemplate.json
+# Apply the configurations in myFantasticGoTemplate.json and myFantasticNodeTemplate.yml to the Marketplace, with relative paths
+miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFantasticNodeTemplate.yml
 
-	# Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
-	miactl marketplace apply -k myFantasticGoTemplates`
+# Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
+miactl marketplace apply -d myFantasticGoTemplates`
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
 func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "apply { { -f file-path }... | { -k directory-path }... }",
+		Use:     "apply { { -f file-path }... | { -d directory-path }... }",
 		Short:   "Create or update Marketplace items",
 		Long:    applyLong,
 		Example: applyExample,
@@ -72,10 +77,9 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			applyReq, err := buildApplyRequest(resourceFilesPaths)
 			cobra.CheckErr(err)
 			outcome, err := applyMarketplaceResource(cmd.Context(), client, restConfig.CompanyID, applyReq)
-			if outcome != nil {
-				fmt.Printf("%+v", outcome)
-			}
 			cobra.CheckErr(err)
+
+			fmt.Println(buildOutcomeSummaryAsTables(outcome))
 
 			return nil
 		},
@@ -88,13 +92,13 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 }
 
 const (
-	applyEndpoint           = "/api/backend/marketplace/tenants/%s/resources"
-	invalidExtensionWarning = "warning: file %s was ignored because it has not a recognized extension. Valid extensions are `.json`, `.yaml` and `.yml`\n"
+	applyEndpoint       = "/api/backend/marketplace/tenants/%s/resources"
+	errInvalidExtension = "file %s has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`\n"
 
 	errParsingFile = "error parsing file: %s"
 )
 
-var errNoValidFilesProvided = errors.New("no valid files were provided.")
+var errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
 
 func listFilesInDirRecursive(rootPath string) ([]string, error) {
 	var files []string
@@ -129,7 +133,7 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 		case encoding.JSONExtension:
 			filePaths = append(filePaths, path)
 		default:
-			fmt.Printf(invalidExtensionWarning, path)
+			return nil, fmt.Errorf(errInvalidExtension, path)
 		}
 	}
 	return filePaths, nil
@@ -151,17 +155,16 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		case encoding.JSONExtension:
 			fileEncoding = JSON
 		default:
-			fmt.Printf(invalidExtensionWarning, path)
-			continue
+			return nil, fmt.Errorf(errInvalidExtension, path)
 		}
 		mktpResource := &MarketplaceResource{}
 		err = encoding.UnmarshalData(content, fileEncoding, mktpResource)
 		if err != nil {
-			return nil, fmt.Errorf("error parsing file %s: %w", path, err)
+			return nil, fmt.Errorf("errors in file %s: %w\n", path, err)
 		}
 		err = validateResource(mktpResource)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("errors in file %s: %w\n", path, err)
 		}
 		resources = append(resources, mktpResource)
 	}
@@ -207,4 +210,96 @@ func applyMarketplaceResource(ctx context.Context, client *client.APIClient, com
 	}
 
 	return applyResponse, nil
+}
+
+func buildTable(headers []string, items []ApplyResponseItem, columnTransform func(item ApplyResponseItem) []string) string {
+	strBuilder := &strings.Builder{}
+	table := tablewriter.NewWriter(strBuilder)
+	table.SetBorder(false)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetAlignment(tablewriter.ALIGN_CENTER)
+	table.SetHeader(headers)
+
+	for _, item := range items {
+		table.Append(columnTransform(item))
+	}
+
+	table.Render()
+	return strBuilder.String()
+}
+
+func buildSuccessTable(items []ApplyResponseItem) string {
+	headers := []string{"Item ID", "Name", "Status"}
+	columnTransform := func(item ApplyResponseItem) []string {
+		var status string
+		switch {
+		case item.Inserted:
+			status = "Inserted"
+		case item.Updated:
+			status = "Updated"
+		default:
+			// should never happen, but just in case:
+			status = "UNKNOWN"
+		}
+		return []string{item.ItemID, item.Name, status}
+	}
+
+	return buildTable(headers, items, columnTransform)
+}
+
+func buildFailureTable(items []ApplyResponseItem) string {
+	headers := []string{"Item ID", "Name", "Validation Errors"}
+	columnTransform := func(item ApplyResponseItem) []string {
+		var validationErrorsStr string
+		validationErrors := item.ValidationErrors
+		for i, valErr := range validationErrors {
+			validationErrorsStr += valErr.Message
+			if len(validationErrors)-1 > i {
+				validationErrorsStr += "\n"
+			}
+		}
+		if validationErrorsStr == "" {
+			validationErrorsStr = "-"
+		}
+		return []string{item.ItemID, item.Name, validationErrorsStr}
+	}
+
+	return buildTable(headers, items, columnTransform)
+}
+
+func buildOutcomeSummaryAsTables(outcome *ApplyResponse) string {
+	successfulItems, failedItems := separateItems(outcome.Items)
+	successfulCount := len(successfulItems)
+	failedCount := len(failedItems)
+
+	var outcomeStr string
+
+	if successfulCount > 0 {
+		outcomeStr += fmt.Sprintf("%d of %d items have been successfully applied:\n\n", successfulCount, len(outcome.Items))
+		outcomeStr += buildSuccessTable(successfulItems)
+	}
+
+	if failedCount > 0 {
+		if successfulCount > 0 {
+			outcomeStr += fmt.Sprintln()
+		}
+		outcomeStr += fmt.Sprintf("%d of %d items have not been applied:\n\n", failedCount, len(outcome.Items))
+		outcomeStr += buildFailureTable(failedItems)
+	}
+	return outcomeStr
+}
+
+func separateItems(items []ApplyResponseItem) ([]ApplyResponseItem, []ApplyResponseItem) {
+	var successfulItems, failedItems []ApplyResponseItem
+	for _, item := range items {
+		if item.Done {
+			successfulItems = append(successfulItems, item)
+		} else {
+			failedItems = append(failedItems, item)
+		}
+	}
+	return successfulItems, failedItems
 }

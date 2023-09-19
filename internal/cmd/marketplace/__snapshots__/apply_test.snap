@@ -1,0 +1,17 @@
+
+[TestPrintApplyOutcome/should_match_snapshot_with_validation_errors - 1]
+3 of 4 items have been successfully applied:
+
+  ITEM ID  NAME         STATUS    
+
+    id1    some name 1  Updated   
+    id2    some name 2  Inserted  
+    id3    some name 3  Inserted  
+
+1 of 4 items have not been applied:
+
+  ITEM ID  NAME         VALIDATION ERRORS      
+
+    id4    some name 4  some validation error  
+
+---

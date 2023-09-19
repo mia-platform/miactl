@@ -23,6 +23,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -266,6 +267,53 @@ func TestApplyResourceCmd(t *testing.T) {
 		require.Nil(t, found)
 	})
 
+}
+
+func TestPrintApplyOutcome(t *testing.T) {
+	t.Run("should match snapshot with validation errors", func(t *testing.T) {
+		mockOutcome := &ApplyResponse{
+			Done: false,
+			Items: []ApplyResponseItem{
+				{
+					ItemID:           "id1",
+					Name:             "some name 1",
+					Done:             true,
+					Inserted:         false,
+					Updated:          true,
+					ValidationErrors: []ApplyResponseItemValidationError{},
+				},
+				{
+					ItemID:           "id2",
+					Name:             "some name 2",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []ApplyResponseItemValidationError{},
+				},
+				{
+					ItemID:           "id3",
+					Name:             "some name 3",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []ApplyResponseItemValidationError{},
+				},
+				{
+					ItemID:   "id4",
+					Name:     "some name 4",
+					Done:     false,
+					Inserted: false,
+					Updated:  false,
+					ValidationErrors: []ApplyResponseItemValidationError{
+						{
+							Message: "some validation error",
+						},
+					},
+				},
+			},
+		}
+		snaps.MatchSnapshot(t, buildOutcomeSummaryAsTables(mockOutcome))
+	})
 }
 
 func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {

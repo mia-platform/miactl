@@ -119,7 +119,7 @@ func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddMarketplaceApplyFlags(flags *pflag.FlagSet) {
 	flags.StringArrayVarP(&o.MarketplaceResourceFilePaths, "file", "f", []string{}, "a path to a JSON or YAML file containing a Marketplace resource")
-	flags.StringVarP(&o.MarketplaceResourcesDirPath, "directory", "k", "", "a path to a directory containing Marketplace resource files")
+	flags.StringVarP(&o.MarketplaceResourcesDirPath, "directory", "d", "", "a path to a directory containing Marketplace resource files")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
