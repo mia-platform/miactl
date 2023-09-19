@@ -30,17 +30,15 @@ import (
 )
 
 func TestBuildPathsFromDir(t *testing.T) {
-	t.Run("should read all files in dir, ignoring non json and non yaml files, retrieving paths", func(t *testing.T) {
-		dirPath := "./testdata"
+	t.Run("should read all files in dir retrieving paths", func(t *testing.T) {
+		dirPath := "./testdata/withoutErrors"
 
 		found, err := buildPathsListFromDir(dirPath)
 		require.NoError(t, err)
-		require.Contains(t, found, "testdata/invalidJson1.json")
-		require.Contains(t, found, "testdata/invalidYaml.yaml")
-		require.Contains(t, found, "testdata/invalidYml.yml")
-		require.Contains(t, found, "testdata/validItem1.json")
-		require.NotContains(t, found, "testdata/someFileNotYamlNotJson.txt")
-		require.Len(t, found, 6)
+		require.Contains(t, found, "testdata/withoutErrors/validItem1.json")
+		require.Contains(t, found, "testdata/withoutErrors/validYaml.yaml")
+		require.Contains(t, found, "testdata/withoutErrors/validYaml.yml")
+		require.Len(t, found, 3)
 	})
 }
 
@@ -64,7 +62,7 @@ func TestBuildResourcesList(t *testing.T) {
 		}
 
 		found, err := buildApplyRequest(filePaths)
-		require.ErrorContains(t, err, "error parsing file")
+		require.ErrorContains(t, err, "errors in file ./testdata/invalidJson1.json")
 		require.Nil(t, found)
 	})
 
@@ -74,7 +72,7 @@ func TestBuildResourcesList(t *testing.T) {
 		}
 
 		found, err := buildApplyRequest(filePaths)
-		require.ErrorContains(t, err, "error parsing file")
+		require.ErrorContains(t, err, "errors in file ./testdata/invalidYaml.yaml")
 		require.Nil(t, found)
 	})
 
@@ -88,7 +86,7 @@ func TestBuildResourcesList(t *testing.T) {
 		require.Nil(t, found)
 	})
 
-	t.Run("should not return error if a file has unknown extensions, but others are valid", func(t *testing.T) {
+	t.Run("should return error if a file has unknown extensions, but others are valid", func(t *testing.T) {
 		filePaths := []string{
 			"./testdata/someFileNotYamlNotJson.txt",
 			"./testdata/validItem1.json",
@@ -97,16 +95,12 @@ func TestBuildResourcesList(t *testing.T) {
 		}
 
 		found, err := buildApplyRequest(filePaths)
-		require.NoError(t, err)
-		require.NotNil(t, found)
-		require.NotEmpty(t, found.Resources)
-		require.Len(t, found.Resources, 3)
+		require.Error(t, err)
+		require.Nil(t, found)
 	})
 
-	t.Run("should return error if resources array is empty, i.e. only files with bad extensions as input", func(t *testing.T) {
-		filePaths := []string{
-			"./testdata/someFileNotYamlNotJson.txt",
-		}
+	t.Run("should return error if resources array is empty", func(t *testing.T) {
+		filePaths := []string{}
 
 		found, err := buildApplyRequest(filePaths)
 		require.ErrorIs(t, err, errNoValidFilesProvided)
