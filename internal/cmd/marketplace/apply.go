@@ -75,8 +75,9 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			if outcome != nil {
 				fmt.Printf("%+v", outcome)
 			}
+			cobra.CheckErr(err)
 
-			return err
+			return nil
 		},
 	}
 
@@ -95,8 +96,7 @@ const (
 
 var errNoValidFilesProvided = errors.New("no valid files were provided.")
 
-// listFiles recursively lists file in the given directory path
-func listFiles(rootPath string) ([]string, error) {
+func listFilesInDirRecursive(rootPath string) ([]string, error) {
 	var files []string
 	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -115,7 +115,7 @@ func listFiles(rootPath string) ([]string, error) {
 }
 
 func buildPathsListFromDir(dirPath string) ([]string, error) {
-	filesPaths, err := listFiles(dirPath)
+	filesPaths, err := listFilesInDirRecursive(dirPath)
 	if err != nil {
 		return nil, err
 	}

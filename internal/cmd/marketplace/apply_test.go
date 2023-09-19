@@ -18,6 +18,7 @@ package marketplace
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -133,6 +134,10 @@ func TestValidateResource(t *testing.T) {
 	})
 }
 
+const mockTenantId = "some-tenant-id"
+
+var mockURI = fmt.Sprintf(applyEndpoint, mockTenantId)
+
 func TestApplyResourceCmd(t *testing.T) {
 	mockResName := "API Portal by miactl test"
 	validReqMock := &ApplyRequest{
@@ -202,61 +207,71 @@ func TestApplyResourceCmd(t *testing.T) {
 			},
 		},
 	}
-	testCases := map[string]struct {
-		server       *httptest.Server
-		clientConfig *client.Config
-		companiesURI string
-		err          bool
-	}{
-		"valid apply response": {
-			server: applyMockServer(
-				t,
-				http.StatusOK,
-				&ApplyResponse{
-					Done: true,
-					Items: []ApplyResponseItem{
-						{
-							ItemID:   "some-id",
-							Name:     mockResName,
-							Done:     true,
-							Inserted: true,
-							Updated:  false,
-						},
-					},
+
+	t.Run("should return response when is 200 OK", func(t *testing.T) {
+		mockResponse := &ApplyResponse{
+			Done: true,
+			Items: []ApplyResponseItem{
+				{
+					ItemID:   "some-id",
+					Name:     mockResName,
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
 				},
-			),
-			companiesURI: applyEndpoint,
-			clientConfig: &client.Config{
-				Transport: http.DefaultTransport,
 			},
-		},
-	}
+		}
+		server := applyMockServer(t, http.StatusOK, mockResponse)
+		defer server.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = server.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
 
-	for testName, testCase := range testCases {
-		t.Run(testName, func(t *testing.T) {
-			defer testCase.server.Close()
-			testCase.clientConfig.Host = testCase.server.URL
-			client, err := client.APIClientForConfig(testCase.clientConfig)
-			require.NoError(t, err)
+		found, err := applyMarketplaceResource(
+			context.Background(),
+			client,
+			mockTenantId,
+			validReqMock,
+		)
 
-			found, err := applyMarketplaceResource(context.Background(), client, "some-id", validReqMock)
-			require.NoError(t, err)
+		require.NoError(t, err)
+		require.Equal(t, found, mockResponse)
+	})
+	t.Run("should return err if response is a http error", func(t *testing.T) {
+		mockResponse := map[string]interface{}{
+			"message":    "You are not allowed to perform the request!",
+			"statusCode": http.StatusForbidden,
+			"error":      "Forbidden",
+		}
+		server := applyMockServer(t, http.StatusForbidden, mockResponse)
+		defer server.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = server.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
 
-			require.Contains(t, found, mockResName)
+		found, err := applyMarketplaceResource(
+			context.Background(),
+			client,
+			mockTenantId,
+			validReqMock,
+		)
 
-			if testCase.err {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
-		})
-	}
+		require.EqualError(t, err, "You are not allowed to perform the request!")
+		require.Nil(t, found)
+	})
+
 }
 
 func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var isReqOk = assert.Equal(t, applyEndpoint, r.RequestURI) && assert.Equal(t, http.MethodPost, r.Method)
+		var isReqOk = assert.Equal(t, mockURI, r.RequestURI) && assert.Equal(t, http.MethodPost, r.Method)
 		if !isReqOk {
 			w.WriteHeader(http.StatusNotFound)
 			require.Fail(t, "unsupported call")
