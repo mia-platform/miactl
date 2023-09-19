@@ -264,7 +264,7 @@ func TestApplyResourceCmd(t *testing.T) {
 }
 
 func TestPrintApplyOutcome(t *testing.T) {
-	t.Run("should match snapshot with validation errors", func(t *testing.T) {
+	t.Run("should match snapshot with both valid files and validation errors", func(t *testing.T) {
 		mockOutcome := &ApplyResponse{
 			Done: false,
 			Items: []ApplyResponseItem{
@@ -303,6 +303,72 @@ func TestPrintApplyOutcome(t *testing.T) {
 							Message: "some validation error",
 						},
 					},
+				},
+			},
+		}
+		snaps.MatchSnapshot(t, buildOutcomeSummaryAsTables(mockOutcome))
+	})
+
+	t.Run("should match snapshot with validation errors only", func(t *testing.T) {
+		mockOutcome := &ApplyResponse{
+			Done: false,
+			Items: []ApplyResponseItem{
+				{
+					ItemID:   "id3",
+					Name:     "some name 3",
+					Done:     false,
+					Inserted: false,
+					Updated:  false,
+					ValidationErrors: []ApplyResponseItemValidationError{
+						{
+							Message: "some validation error",
+						},
+					},
+				},
+				{
+					ItemID:   "id4",
+					Name:     "some name 4",
+					Done:     false,
+					Inserted: false,
+					Updated:  false,
+					ValidationErrors: []ApplyResponseItemValidationError{
+						{
+							Message: "some other validation error",
+						},
+					},
+				},
+			},
+		}
+		snaps.MatchSnapshot(t, buildOutcomeSummaryAsTables(mockOutcome))
+	})
+
+	t.Run("should match snapshot with valid files only", func(t *testing.T) {
+		mockOutcome := &ApplyResponse{
+			Done: false,
+			Items: []ApplyResponseItem{
+				{
+					ItemID:           "id1",
+					Name:             "some name 1",
+					Done:             true,
+					Inserted:         false,
+					Updated:          true,
+					ValidationErrors: []ApplyResponseItemValidationError{},
+				},
+				{
+					ItemID:           "id2",
+					Name:             "some name 2",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []ApplyResponseItemValidationError{},
+				},
+				{
+					ItemID:           "id3",
+					Name:             "some name 3",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []ApplyResponseItemValidationError{},
 				},
 			},
 		}
