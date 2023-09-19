@@ -136,7 +136,7 @@ func (c *Config) startLoginFlow(ctx context.Context) (*oauth2.Token, error) {
 	}
 
 	startFlowURL := c.Client.Get().
-		SetAPIPath(authorizeEndpointString).
+		APIPath(authorizeEndpointString).
 		SetParam(appIDKey, c.AppID).
 		SetParam(providerIDKey, providerID).URL().String()
 
@@ -169,7 +169,7 @@ func newListener(addresses []string) (net.Listener, error) {
 func providerIDForApplication(ctx context.Context, appID string, client client.Interface) (string, error) {
 	response, err := client.
 		Get().
-		SetAPIPath(fmt.Sprintf(providerEndpointStringTemplate, appID)).
+		APIPath(fmt.Sprintf(providerEndpointStringTemplate, appID)).
 		Do(ctx)
 
 	if err != nil {
@@ -271,8 +271,8 @@ func jwtToken(ctx context.Context, response *authResponse, client client.Interfa
 
 	jwtResponse, err := client.
 		Post().
-		SetAPIPath(getTokenEndpointString).
-		SetBody(bodydata).
+		APIPath(getTokenEndpointString).
+		Body(bodydata).
 		Do(ctx)
 	if err != nil {
 		return nil, err
@@ -350,8 +350,8 @@ func (c *Config) startRefreshFlow(ctx context.Context, refreshToken string) (*oa
 
 	jwtResponse, err := c.Client.
 		Post().
-		SetAPIPath(refreshTokenEndpointString).
-		SetBody(bodydata).
+		APIPath(refreshTokenEndpointString).
+		Body(bodydata).
 		Do(ctx)
 
 	if err != nil {

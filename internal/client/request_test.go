@@ -66,14 +66,14 @@ func TestSetAPIPath(t *testing.T) {
 	r := (&Request{})
 
 	validPath := "/valid/path"
-	r.SetAPIPath(validPath)
+	r.APIPath(validPath)
 	assert.NoError(t, r.Error())
 	assert.Equal(t, validPath, r.apiPath)
-	r.SetAPIPath(":invalid-url")
+	r.APIPath(":invalid-url")
 	assert.Error(t, r.Error())
 
 	// once an error is register no other changes can be made
-	r.SetAPIPath(validPath)
+	r.APIPath(validPath)
 	assert.Error(t, r.Error())
 }
 
@@ -86,18 +86,18 @@ func TestPreflightCheck(t *testing.T) {
 			request: (&Request{}).SetVerb("GET"),
 		},
 		"correct POST": {
-			request: (&Request{}).SetVerb("POST").SetBody([]byte("hello")),
+			request: (&Request{}).SetVerb("POST").Body([]byte("hello")),
 		},
 		"empty verb": {
 			request: &Request{},
 			err:     true,
 		},
 		"get with body": {
-			request: (&Request{}).SetVerb("GET").SetBody([]byte("hello")),
+			request: (&Request{}).SetVerb("GET").Body([]byte("hello")),
 			err:     true,
 		},
 		"empty body": {
-			request: (&Request{}).SetVerb("POST").SetBody([]byte{}),
+			request: (&Request{}).SetVerb("POST").Body([]byte{}),
 			err:     true,
 		},
 		"valid verb and body but preexisting error": {

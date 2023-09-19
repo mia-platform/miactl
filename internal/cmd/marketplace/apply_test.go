@@ -16,6 +16,7 @@
 package marketplace
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -215,9 +216,8 @@ func TestApplyResourceCmd(t *testing.T) {
 					Done: true,
 					Items: []ApplyResponseItem{
 						{
-							ItemID: "some-id",
-							Name:   mockResName,
-
+							ItemID:   "some-id",
+							Name:     mockResName,
 							Done:     true,
 							Inserted: true,
 							Updated:  false,
@@ -239,7 +239,7 @@ func TestApplyResourceCmd(t *testing.T) {
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
 
-			found, err := applyMarketplaceResource(client, "some-id", validReqMock)
+			found, err := applyMarketplaceResource(context.Background(), client, "some-id", validReqMock)
 			require.NoError(t, err)
 
 			require.Contains(t, found, mockResName)
@@ -263,9 +263,8 @@ func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *ht
 			return
 		}
 		w.WriteHeader(statusCode)
-		res := []byte(`{"name":"ciao"}`)
-		err := json.Unmarshal(res, mockResponse)
+		resBytes, err := json.Marshal(mockResponse)
 		require.NoError(t, err)
-		w.Write(res)
+		w.Write(resBytes)
 	}))
 }

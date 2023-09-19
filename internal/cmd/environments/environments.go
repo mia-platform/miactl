@@ -79,7 +79,7 @@ func printEnvironments(client *client.APIClient, companyID, projectID string) er
 
 	resp, err := client.
 		Get().
-		SetAPIPath(fmt.Sprintf(listEnvironmentsEndpointTemplate, projectID)).
+		APIPath(fmt.Sprintf(listEnvironmentsEndpointTemplate, projectID)).
 		Do(context.Background())
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
@@ -145,7 +145,7 @@ func clusterNameForID(client *client.APIClient, companyID, clusterID string) (st
 
 	resp, err := client.
 		Get().
-		SetAPIPath(fmt.Sprintf(getClusterEndpointTemplate, companyID, clusterID)).
+		APIPath(fmt.Sprintf(getClusterEndpointTemplate, companyID, clusterID)).
 		Do(context.Background())
 
 	if err != nil {

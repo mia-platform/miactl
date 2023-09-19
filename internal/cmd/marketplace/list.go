@@ -55,7 +55,7 @@ func getMarketplaceItemsByCompanyID(client *client.APIClient, companyID string) 
 	resp, err := client.
 		Get().
 		SetParam("tenantId", companyID).
-		SetAPIPath(listMarketplaceEndpoint).
+		APIPath(listMarketplaceEndpoint).
 		Do(context.Background())
 
 	if err != nil {

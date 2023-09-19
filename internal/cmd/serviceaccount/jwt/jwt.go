@@ -115,8 +115,8 @@ func createJWTServiceAccount(client *client.APIClient, name, companyID string, r
 
 	resp, err := client.
 		Post().
-		SetAPIPath(fmt.Sprintf(companyServiceAccountsEndpointTemplate, companyID)).
-		SetBody(body).
+		APIPath(fmt.Sprintf(companyServiceAccountsEndpointTemplate, companyID)).
+		Body(body).
 		Do(context.Background())
 
 	if err != nil {

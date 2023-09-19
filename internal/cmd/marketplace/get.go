@@ -67,7 +67,7 @@ func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*Item,
 
 	resp, err := client.
 		Get().
-		SetAPIPath(fmt.Sprintf(getMarketplaceEndpoint, resourceID)).
+		APIPath(fmt.Sprintf(getMarketplaceEndpoint, resourceID)).
 		Do(context.Background())
 
 	if err != nil {

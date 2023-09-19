@@ -92,7 +92,7 @@ func (saa *serviceAccountAuthenticator) basicAuth() (*oauth2.Token, error) {
 }
 
 func getClientCredentialsToken(ctx context.Context, apiClient client.Interface, clientID, clientSecret string) (*oauth2.Token, error) {
-	req := apiClient.Post().SetAPIPath(serviceAccountAuthEndpoint)
+	req := apiClient.Post().APIPath(serviceAccountAuthEndpoint)
 	endpoint := req.URL()
 
 	config := clientcredentials.Config{
@@ -135,9 +135,9 @@ func getJWTToken(ctx context.Context, apiClient client.Interface, keyID, clientI
 	values.Set("token_endpoint_auth_method", "private_key_jwt")
 	response, err := apiClient.
 		Post().
-		SetAPIPath(serviceAccountAuthEndpoint).
+		APIPath(serviceAccountAuthEndpoint).
 		SetHeader("Content-Type", formEncoded).
-		SetBody([]byte(values.Encode())).
+		Body([]byte(values.Encode())).
 		Do(ctx)
 	if err != nil {
 		return nil, err

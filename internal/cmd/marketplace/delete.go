@@ -59,7 +59,7 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 func deleteMarketplaceResource(client *client.APIClient, companyID string, resourceID string) error {
 	resp, err := client.
 		Delete().
-		SetAPIPath(fmt.Sprintf(deleteMarketplaceEndpoint, companyID, resourceID)).
+		APIPath(fmt.Sprintf(deleteMarketplaceEndpoint, companyID, resourceID)).
 		Do(context.Background())
 
 	if err != nil {

@@ -22,7 +22,6 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"strings"
 )
 
 // Request wrap the http.Request configuration providing functions for configure it in an easier and contained way
@@ -33,8 +32,6 @@ type Request struct {
 	apiPath string
 	params  url.Values
 	headers http.Header
-
-	ensureTrailingSlash bool
 
 	err  error
 	body []byte
@@ -60,7 +57,6 @@ func NewRequest(client *APIClient) *Request {
 	}
 
 	request.SetHeader("client-key", "miactl")
-	request.ensureTrailingSlash = false
 
 	return request
 }
@@ -95,10 +91,9 @@ func (r *Request) SetParam(key string, values ...string) *Request {
 	return r
 }
 
-// SetAPIPath set the apiPath for the request, if apiPath cannot be parse as a valid path an error can be
-// found with the Error function.
-// If the flag ensureTrailingSlash is true, it will be ensured that the path will always end with /.
-func (r *Request) SetAPIPath(apiPath string) *Request {
+// APIPath set the apiPath for the request, if apiPath cannot be parse as a valid path an error can be
+// found with the Error function. It will be ensured that the path will always end with /.
+func (r *Request) APIPath(apiPath string) *Request {
 	if r.err != nil {
 		return r
 	}
@@ -111,21 +106,16 @@ func (r *Request) SetAPIPath(apiPath string) *Request {
 	}
 
 	r.apiPath = parsedURI.Path
-
-	if r.ensureTrailingSlash && !strings.HasSuffix(r.apiPath, "/") {
-		r.apiPath += "/"
-	}
+	// comment out this, because not every request support the trailing /
+	// hopefully in the future they will
+	// if !strings.HasSuffix(r.apiPath, "/") {
+	// 	r.apiPath += "/"
+	// }
 	return r
 }
 
-// SetEnsureTrailingSlash to true makes sure that the request url ends with a slash when performing the request
-func (r *Request) SetEnsureTrailingSlash(ensureTrailingSlash bool) *Request {
-	r.ensureTrailingSlash = true
-	return r
-}
-
-// SetBody set the body of the request if no error has been found in the request construction
-func (r *Request) SetBody(bodyBytes []byte) *Request {
+// Body set the body of the request if no error has been found in the request construction
+func (r *Request) Body(bodyBytes []byte) *Request {
 	if r.err != nil {
 		return r
 	}

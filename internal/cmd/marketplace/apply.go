@@ -52,6 +52,10 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Long:    applyLong,
 		Example: applyExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if options.MarketplaceResourcesDirPath == "" && len(options.MarketplaceResourceFilePaths) == 0 {
+				return errors.New(`at least one of one of "directory" or "file" must be set`)
+			}
+
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
@@ -67,9 +71,9 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			}
 			applyReq, err := buildApplyRequest(resourceFilesPaths)
 			cobra.CheckErr(err)
-			outcome, err := applyMarketplaceResource(client, restConfig.CompanyID, applyReq)
-			if outcome != "" {
-				fmt.Println(outcome)
+			outcome, err := applyMarketplaceResource(cmd.Context(), client, restConfig.CompanyID, applyReq)
+			if outcome != nil {
+				fmt.Printf("%+v", outcome)
 			}
 
 			return err
@@ -138,7 +142,6 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error opening file: %w", err)
 		}
-		mktpResource := &MarketplaceResource{}
 		var fileEncoding string
 		switch filepath.Ext(path) {
 		case encoding.YamlExtension:
@@ -151,6 +154,7 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 			fmt.Printf(invalidExtensionWarning, path)
 			continue
 		}
+		mktpResource := &MarketplaceResource{}
 		err = encoding.UnmarshalData(content, fileEncoding, mktpResource)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing file %s: %w", path, err)
@@ -176,30 +180,31 @@ func validateResource(response *MarketplaceResource) error {
 	return nil
 }
 
-func applyMarketplaceResource(client *client.APIClient, companyID string, request *ApplyRequest) (string, error) {
+func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *ApplyRequest) (*ApplyResponse, error) {
+	if companyID == "" {
+		return nil, errors.New("companyId should be defined")
+	}
 
 	bodyBytes, err := json.Marshal(request)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	resp, err := client.Post().
-		SetParam("tenantId", companyID).
-		SetAPIPath(fmt.Sprintf(applyEndpoint, companyID)).
-		SetBody(bodyBytes).
-		Do(context.Background())
+		APIPath(fmt.Sprintf(applyEndpoint, companyID)).
+		Body(bodyBytes).
+		Do(ctx)
 
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	applyResponse := &ApplyResponse{}
 
 	err = resp.ParseResponse(applyResponse)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return applyResponse.Items[len(applyResponse.Items)-1].Name,
-		nil
+	return applyResponse, nil
 }

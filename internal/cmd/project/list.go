@@ -63,7 +63,7 @@ func listProjects(client *client.APIClient, companyID string) error {
 	resp, err := client.
 		Get().
 		SetParam("tenantIds", companyID).
-		SetAPIPath(listProjectsEndpoint).
+		APIPath(listProjectsEndpoint).
 		Do(context.Background())
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
