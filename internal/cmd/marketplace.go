@@ -23,8 +23,8 @@ import (
 
 func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "marketplace",
-		Short:   "View and manage Marketplace items",
+		Use:   "marketplace",
+		Short: "View and manage Marketplace items",
 	}
 
 	// add cmd flags
