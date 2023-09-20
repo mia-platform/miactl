@@ -110,7 +110,7 @@ func TestBuildResourcesList(t *testing.T) {
 
 func TestValidateResource(t *testing.T) {
 	t.Run("should return error if resource does not contain a name", func(t *testing.T) {
-		mockResource := &MarketplaceResource{
+		mockResource := &Resource{
 			"foo": "bar",
 		}
 
@@ -119,7 +119,7 @@ func TestValidateResource(t *testing.T) {
 	})
 
 	t.Run("should not return error if resource contains a name", func(t *testing.T) {
-		mockResource := &MarketplaceResource{
+		mockResource := &Resource{
 			"foo":  "bar",
 			"name": "some name",
 		}
@@ -129,14 +129,14 @@ func TestValidateResource(t *testing.T) {
 	})
 }
 
-const mockTenantId = "some-tenant-id"
+const mockTenantID = "some-tenant-id"
 
-var mockURI = fmt.Sprintf(applyEndpoint, mockTenantId)
+var mockURI = fmt.Sprintf(applyEndpoint, mockTenantID)
 
 func TestApplyResourceCmd(t *testing.T) {
 	mockResName := "API Portal by miactl test"
 	validReqMock := &ApplyRequest{
-		Resources: []*MarketplaceResource{
+		Resources: []*Resource{
 			{
 				"_id":         "6504773582a6722338be0e25",
 				"categoryId":  "devportal",
@@ -228,7 +228,7 @@ func TestApplyResourceCmd(t *testing.T) {
 		found, err := applyMarketplaceResource(
 			context.Background(),
 			client,
-			mockTenantId,
+			mockTenantID,
 			validReqMock,
 		)
 
@@ -253,14 +253,13 @@ func TestApplyResourceCmd(t *testing.T) {
 		found, err := applyMarketplaceResource(
 			context.Background(),
 			client,
-			mockTenantId,
+			mockTenantID,
 			validReqMock,
 		)
 
 		require.EqualError(t, err, "You are not allowed to perform the request!")
 		require.Nil(t, found)
 	})
-
 }
 
 func TestPrintApplyOutcome(t *testing.T) {

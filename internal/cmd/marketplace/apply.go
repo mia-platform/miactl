@@ -94,8 +94,6 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 const (
 	applyEndpoint       = "/api/backend/marketplace/tenants/%s/resources"
 	errInvalidExtension = "file %s has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`\n"
-
-	errParsingFile = "error parsing file: %s"
 )
 
 var errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
@@ -140,7 +138,7 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 }
 
 func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
-	resources := []*MarketplaceResource{}
+	resources := []*Resource{}
 	for _, path := range pathList {
 		content, err := os.ReadFile(path)
 		if err != nil {
@@ -157,14 +155,14 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		default:
 			return nil, fmt.Errorf(errInvalidExtension, path)
 		}
-		mktpResource := &MarketplaceResource{}
+		mktpResource := &Resource{}
 		err = encoding.UnmarshalData(content, fileEncoding, mktpResource)
 		if err != nil {
-			return nil, fmt.Errorf("errors in file %s: %w\n", path, err)
+			return nil, fmt.Errorf("errors in file %s: %w", path, err)
 		}
 		err = validateResource(mktpResource)
 		if err != nil {
-			return nil, fmt.Errorf("errors in file %s: %w\n", path, err)
+			return nil, fmt.Errorf("errors in file %s: %w", path, err)
 		}
 		resources = append(resources, mktpResource)
 	}
@@ -176,7 +174,7 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 	}, nil
 }
 
-func validateResource(response *MarketplaceResource) error {
+func validateResource(response *Resource) error {
 	if _, ok := (*response)["name"]; !ok {
 		return errors.New(`required field "name" was not found in the resource`)
 	}

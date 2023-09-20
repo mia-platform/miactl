@@ -1,10 +1,12 @@
 module github.com/mia-platform/miactl
 
-go 1.21.1
+go 1.21
+
+toolchain go1.21.1
 
 require (
 	dario.cat/mergo v1.0.0
-	github.com/gkampitakis/go-snaps v0.4.10
+	github.com/gkampitakis/go-snaps v0.4.9
 	github.com/google/uuid v1.3.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.7.0
