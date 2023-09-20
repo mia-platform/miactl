@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	listEndpointTemplate = "api/projects/%s/environments/%s/pods/describe/"
+	listEndpointTemplate = "/api/projects/%s/environments/%s/pods/describe/"
 )
 
 func PodCmd(o *clioptions.CLIOptions) *cobra.Command {

@@ -16,12 +16,58 @@
 package pods
 
 import (
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func TestPrintPodsList(t *testing.T) {
+	testCases := map[string]struct {
+		testServer *httptest.Server
+		projectID  string
+		err        bool
+	}{
+		"list pod with success": {
+			testServer: testServer(t),
+			projectID:  "found",
+		},
+		"list pod with empty response": {
+			testServer: testServer(t),
+			projectID:  "empty",
+		},
+		"failed request": {
+			testServer: testServer(t),
+			projectID:  "fail",
+			err:        true,
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			server := testCase.testServer
+			defer server.Close()
+
+			client, err := client.APIClientForConfig(&client.Config{
+				Host: server.URL,
+			})
+			require.NoError(t, err)
+
+			err = printPodsList(client, testCase.projectID, "env-id")
+			if testCase.err {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
 
 func TestRowForPod(t *testing.T) {
 	testCases := map[string]struct {
@@ -199,4 +245,51 @@ func TestHumanDurationBoundaries(t *testing.T) {
 	for _, test := range testCases {
 		assert.Equal(t, test.expectedString, HumanDuration(test.duration))
 	}
+}
+
+func testServer(t *testing.T) *httptest.Server {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "found", "env-id"):
+			pod := resources.Pod{
+				Name:      "pod-name",
+				Phase:     "running",
+				Status:    "ok",
+				StartTime: time.Now(),
+				Component: []struct {
+					Name    string `json:"name"`
+					Version string `json:"version"`
+				}{
+					{Name: "component", Version: "version"},
+				},
+				Containers: []struct {
+					Name         string `json:"name"`
+					Ready        bool   `json:"ready"`
+					RestartCount int    `json:"restartCount"`
+					Status       string `json:"status"`
+				}{
+					{
+						Name:         "container-name",
+						Ready:        true,
+						RestartCount: 0,
+						Status:       "running",
+					},
+				},
+			}
+			data, err := resources.EncodeResourceToJSON([]resources.Pod{pod})
+			require.NoError(t, err)
+			w.WriteHeader(http.StatusOK)
+			w.Write(data)
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "fail", "env-id"):
+			w.WriteHeader(http.StatusNotFound)
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "empty", "env-id"):
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("[]"))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+			assert.Failf(t, "unexpected http call", "received call with method: %s uri %s", r.Method, r.RequestURI)
+		}
+	}))
+	return server
 }
