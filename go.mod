@@ -2,8 +2,6 @@ module github.com/mia-platform/miactl
 
 go 1.21
 
-toolchain go1.21.1
-
 require (
 	dario.cat/mergo v1.0.0
 	github.com/gkampitakis/go-snaps v0.4.9
