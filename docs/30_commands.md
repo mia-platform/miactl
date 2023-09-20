@@ -4,8 +4,9 @@ This section explores a summary of the `miactl` commands and their functionaliti
 
 :::tip
 
-You can also display a complete help message on the command line by using the `--help` flag postponed to any `miactl` command.
-This way you can also be sure of the exact features of the `miactl` version you currently have installed.
+You can also display a complete help message on the command line by using the `--help` flag postponed to any `miactl` command or subcommand.
+
+This way you can also be sure of the available features of the `miactl` version you currently have installed.
 
 :::
 
