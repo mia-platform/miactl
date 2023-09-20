@@ -56,7 +56,7 @@ of its environments.
 
 func listCmd(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list [environment]",
+		Use:   "list ENVIRONMENT",
 		Short: "List all pods for a project in an environment",
 		Long:  "List all pods for a project in an environment.",
 		Args:  cobra.ExactArgs(1),
