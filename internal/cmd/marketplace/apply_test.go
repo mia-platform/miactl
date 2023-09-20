@@ -29,7 +29,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBuildPathsFromDir(t *testing.T) {
+func TestApplyBuildPathsFromDir(t *testing.T) {
 	t.Run("should read all files in dir retrieving paths", func(t *testing.T) {
 		dirPath := "./testdata/withoutErrors"
 
@@ -42,12 +42,11 @@ func TestBuildPathsFromDir(t *testing.T) {
 	})
 }
 
-func TestBuildResourcesList(t *testing.T) {
+func TestApplyBuildResourcesList(t *testing.T) {
 	t.Run("should read file contents parsing them to json", func(t *testing.T) {
 		filePaths := []string{
 			"./testdata/validItem1.json",
 			"./testdata/validYaml.yaml",
-			"./testdata/validYaml.yml",
 		}
 
 		found, err := buildApplyRequest(filePaths)
@@ -91,7 +90,6 @@ func TestBuildResourcesList(t *testing.T) {
 			"./testdata/someFileNotYamlNotJson.txt",
 			"./testdata/validItem1.json",
 			"./testdata/validYaml.yaml",
-			"./testdata/validYaml.yml",
 		}
 
 		found, err := buildApplyRequest(filePaths)
@@ -106,26 +104,71 @@ func TestBuildResourcesList(t *testing.T) {
 		require.ErrorIs(t, err, errNoValidFilesProvided)
 		require.Nil(t, found)
 	})
+
+	t.Run("should return error if two resources have the same name", func(t *testing.T) {
+		filePaths := []string{
+			"./testdata/validYaml.yaml",
+			"./testdata/validYaml.yml",
+		}
+
+		found, err := buildApplyRequest(filePaths)
+		require.ErrorIs(t, err, errDuplicatedResName)
+		require.Nil(t, found)
+	})
 }
 
-func TestValidateResource(t *testing.T) {
+func TestApplyValidateResource(t *testing.T) {
 	t.Run("should return error if resource does not contain a name", func(t *testing.T) {
-		mockResource := &Resource{
+		mockResNameToFileName := map[string]string{}
+		mockResource := Resource{
 			"foo": "bar",
 		}
 
-		err := validateResource(mockResource)
-		require.EqualError(t, err, `required field "name" was not found in the resource`)
+		resName, err := retrieveAndValidateResName(mockResource, mockResNameToFileName, "")
+		require.ErrorIs(t, err, errResWithoutName)
+		require.Zero(t, resName)
 	})
 
 	t.Run("should not return error if resource contains a name", func(t *testing.T) {
-		mockResource := &Resource{
+		mockResNameToFileName := map[string]string{}
+		mockResource := Resource{
 			"foo":  "bar",
 			"name": "some name",
 		}
 
-		err := validateResource(mockResource)
+		resName, err := retrieveAndValidateResName(mockResource, mockResNameToFileName, "")
 		require.NoError(t, err)
+		require.Equal(t, resName, "some name")
+	})
+
+	t.Run("should return error if resource name is not a string", func(t *testing.T) {
+		mockResNameToFileName := map[string]string{}
+		mockResource := Resource{
+			"foo": "bar",
+			"name": struct {
+				SomeField string
+			}{
+				SomeField: "not a string",
+			},
+		}
+
+		resName, err := retrieveAndValidateResName(mockResource, mockResNameToFileName, "")
+		require.ErrorIs(t, err, errResNameNotAString)
+		require.Zero(t, resName)
+	})
+
+	t.Run("should return error if resource name is duplicated among files", func(t *testing.T) {
+		mockResNameToFileName := map[string]string{
+			"some name": "res1.json",
+		}
+		mockResource := Resource{
+			"foo":  "bar",
+			"name": "some name",
+		}
+
+		resName, err := retrieveAndValidateResName(mockResource, mockResNameToFileName, "")
+		require.ErrorIs(t, err, errDuplicatedResName)
+		require.Zero(t, resName)
 	})
 }
 
@@ -133,10 +176,10 @@ const mockTenantID = "some-tenant-id"
 
 var mockURI = fmt.Sprintf(applyEndpoint, mockTenantID)
 
-func TestApplyResourceCmd(t *testing.T) {
+func TestApplyApplyResourceCmd(t *testing.T) {
 	mockResName := "API Portal by miactl test"
 	validReqMock := &ApplyRequest{
-		Resources: []*Resource{
+		Resources: []Resource{
 			{
 				"_id":         "6504773582a6722338be0e25",
 				"categoryId":  "devportal",
@@ -262,7 +305,7 @@ func TestApplyResourceCmd(t *testing.T) {
 	})
 }
 
-func TestPrintApplyOutcome(t *testing.T) {
+func TestApplyPrintApplyOutcome(t *testing.T) {
 	t.Run("should match snapshot with both valid files and validation errors", func(t *testing.T) {
 		mockOutcome := &ApplyResponse{
 			Done: false,

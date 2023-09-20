@@ -96,7 +96,12 @@ const (
 	errInvalidExtension = "file %s has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`\n"
 )
 
-var errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
+var (
+	errResWithoutName       = errors.New(`the required field "name" was not found in the resource`)
+	errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
+	errDuplicatedResName    = errors.New("some resources have duplicated name field")
+	errResNameNotAString    = errors.New(`the field "name" must be a string`)
+)
 
 func listFilesInDirRecursive(rootPath string) ([]string, error) {
 	var files []string
@@ -138,14 +143,15 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 }
 
 func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
-	resources := []*Resource{}
-	for _, path := range pathList {
-		content, err := os.ReadFile(path)
+	resources := []Resource{}
+	resNameToFilePath := map[string]string{}
+	for _, filePath := range pathList {
+		content, err := os.ReadFile(filePath)
 		if err != nil {
 			return nil, fmt.Errorf("error opening file: %w", err)
 		}
 		var fileEncoding string
-		switch filepath.Ext(path) {
+		switch filepath.Ext(filePath) {
 		case encoding.YamlExtension:
 			fallthrough
 		case encoding.YmlExtension:
@@ -153,18 +159,19 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		case encoding.JSONExtension:
 			fileEncoding = JSON
 		default:
-			return nil, fmt.Errorf(errInvalidExtension, path)
+			return nil, fmt.Errorf(errInvalidExtension, filePath)
 		}
 		mktpResource := &Resource{}
 		err = encoding.UnmarshalData(content, fileEncoding, mktpResource)
 		if err != nil {
-			return nil, fmt.Errorf("errors in file %s: %w", path, err)
+			return nil, fmt.Errorf("errors in file %s: %w", filePath, err)
 		}
-		err = validateResource(mktpResource)
+		resName, err := retrieveAndValidateResName(*mktpResource, resNameToFilePath, filePath)
 		if err != nil {
-			return nil, fmt.Errorf("errors in file %s: %w", path, err)
+			return nil, fmt.Errorf("errors in file %s: %w", filePath, err)
 		}
-		resources = append(resources, mktpResource)
+		resources = append(resources, *mktpResource)
+		resNameToFilePath[resName] = filePath
 	}
 	if len(resources) == 0 {
 		return nil, errNoValidFilesProvided
@@ -174,11 +181,20 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 	}, nil
 }
 
-func validateResource(response *Resource) error {
-	if _, ok := (*response)["name"]; !ok {
-		return errors.New(`required field "name" was not found in the resource`)
+func retrieveAndValidateResName(res Resource, resNameToFilePath map[string]string, filePath string) (string, error) {
+	resName, ok := res["name"]
+	if !ok {
+		return "", fmt.Errorf("%w:%s", errResWithoutName, filePath)
 	}
-	return nil
+	resNameStr, ok := resName.(string)
+	if !ok {
+		return "", fmt.Errorf("%w: %s", errResNameNotAString, filePath)
+	}
+	if _, ok := resNameToFilePath[resNameStr]; ok {
+		return "", fmt.Errorf("%w: %s", errDuplicatedResName, resName)
+	}
+
+	return resNameStr, nil
 }
 
 func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *ApplyRequest) (*ApplyResponse, error) {
