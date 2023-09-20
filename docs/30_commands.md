@@ -201,7 +201,7 @@ Available flags for the command:
 
 View and manage Marketplace items
 
-All the subcommand inherit the following flags:
+All the subcommands inherit the following flags:
 
 ```
       --auth-name string               the name of the miactl auth to use
