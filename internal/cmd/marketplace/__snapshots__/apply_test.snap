@@ -19,10 +19,12 @@
 [TestApplyPrintApplyOutcome/should_match_snapshot_with_validation_errors_only - 1]
 2 of 2 items have not been applied:
 
-  ITEM ID  NAME         VALIDATION ERRORS            
+  ITEM ID  NAME         VALIDATION ERRORS               
 
-  id3      some name 3  some validation error        
-  id4      some name 4  some other validation error  
+  id3      some name 3  some validation error           
+  id4      some name 4  some other validation error     
+                        and also some other validation  
+                        error                           
 
 ---
 

@@ -93,17 +93,14 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-const (
-	applyEndpoint       = "/api/backend/marketplace/tenants/%s/resources"
-	
-)
+const applyEndpoint = "/api/backend/marketplace/tenants/%s/resources"
 
 var (
 	errResWithoutName       = errors.New(`the required field "name" was not found in the resource`)
 	errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
 	errDuplicatedResName    = errors.New("some resources have duplicated name field")
 	errResNameNotAString    = errors.New(`the field "name" must be a string`)
-	errInvalidExtension = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
+	errInvalidExtension     = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 )
 
 func listFilesInDirRecursive(rootPath string) ([]string, error) {

@@ -377,6 +377,9 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 						{
 							Message: "some other validation error",
 						},
+						{
+							Message: "and also some other validation error",
+						},
 					},
 				},
 			},
