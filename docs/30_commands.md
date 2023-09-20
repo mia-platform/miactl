@@ -226,7 +226,7 @@ List the Marketplace items that the current user can access.
 miactl marketplace list [flags]
 ```
 
-#### get
+### get
 
 Get a Marketplace item
 
