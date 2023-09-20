@@ -288,7 +288,7 @@ func buildFailureTable(items []ApplyResponseItem) string {
 }
 
 func buildOutcomeSummaryAsTables(outcome *ApplyResponse) string {
-	successfulItems, failedItems := separateItems(outcome.Items)
+	successfulItems, failedItems := separateSuccessAndFailures(outcome.Items)
 	successfulCount := len(successfulItems)
 	failedCount := len(failedItems)
 
@@ -309,7 +309,7 @@ func buildOutcomeSummaryAsTables(outcome *ApplyResponse) string {
 	return outcomeStr
 }
 
-func separateItems(items []ApplyResponseItem) ([]ApplyResponseItem, []ApplyResponseItem) {
+func separateSuccessAndFailures(items []ApplyResponseItem) ([]ApplyResponseItem, []ApplyResponseItem) {
 	var successfulItems, failedItems []ApplyResponseItem
 	for _, item := range items {
 		if item.Done {
