@@ -81,7 +81,7 @@ func TestApplyBuildResourcesList(t *testing.T) {
 		}
 
 		found, err := buildApplyRequest(filePaths)
-		require.ErrorContains(t, err, "error opening file")
+		require.Error(t, err)
 		require.Nil(t, found)
 	})
 

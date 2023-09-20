@@ -95,7 +95,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 const (
 	applyEndpoint       = "/api/backend/marketplace/tenants/%s/resources"
-	errInvalidExtension = "file %s has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`\n"
+	
 )
 
 var (
@@ -103,6 +103,7 @@ var (
 	errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
 	errDuplicatedResName    = errors.New("some resources have duplicated name field")
 	errResNameNotAString    = errors.New(`the field "name" must be a string`)
+	errInvalidExtension = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 )
 
 func listFilesInDirRecursive(rootPath string) ([]string, error) {
@@ -138,7 +139,7 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 		case encoding.JSONExtension:
 			filePaths = append(filePaths, path)
 		default:
-			return nil, fmt.Errorf(errInvalidExtension, path)
+			return nil, fmt.Errorf("%w: %s", errInvalidExtension, path)
 		}
 	}
 	return filePaths, nil
