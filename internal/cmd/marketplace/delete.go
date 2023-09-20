@@ -33,8 +33,8 @@ const (
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:        "delete resource-id",
-		Short:      "Delete Marketplace Item",
-		Long:       "Delete a single Marketplace Item by its ID",
+		Short:      "Delete Marketplace item",
+		Long:       "Delete a single Marketplace item by its ID",
 		Args:       cobra.ExactArgs(1),
 		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -24,7 +24,6 @@ import (
 func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "marketplace",
-		Aliases: []string{"mktp"},
 		Short:   "View and manage Marketplace items",
 	}
 

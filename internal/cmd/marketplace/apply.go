@@ -34,7 +34,9 @@ import (
 const (
 	applyLong = `Create or update one or more Marketplace items.
 
-You can either specify one or more files or one or more directories, respectively with the flags -f and -d.
+You can either specify:
+    - one or more files, with the flag -f 
+    - one or more directories, with the flag -d
 	
 Supported formats are JSON (.json files) and YAML (.yaml or .yml files).`
 
@@ -58,7 +60,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Example: applyExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if options.MarketplaceResourcesDirPath == "" && len(options.MarketplaceResourceFilePaths) == 0 {
-				return errors.New(`at least one of one of "directory" or "file" must be set`)
+				return errors.New(`at least one of  "directory" or "file" must be set`)
 			}
 
 			restConfig, err := options.ToRESTConfig()
@@ -148,7 +150,7 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 	for _, filePath := range pathList {
 		content, err := os.ReadFile(filePath)
 		if err != nil {
-			return nil, fmt.Errorf("error opening file: %w", err)
+			return nil, err
 		}
 		var fileEncoding string
 		switch filepath.Ext(filePath) {
@@ -159,7 +161,7 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		case encoding.JSONExtension:
 			fileEncoding = JSON
 		default:
-			return nil, fmt.Errorf(errInvalidExtension, filePath)
+			return nil, fmt.Errorf("%w: %s", errInvalidExtension, filePath)
 		}
 		mktpResource := &Resource{}
 		err = encoding.UnmarshalData(content, fileEncoding, mktpResource)
@@ -168,7 +170,7 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		}
 		resName, err := retrieveAndValidateResName(*mktpResource, resNameToFilePath, filePath)
 		if err != nil {
-			return nil, fmt.Errorf("errors in file %s: %w", filePath, err)
+			return nil, err
 		}
 		resources = append(resources, *mktpResource)
 		resNameToFilePath[resName] = filePath
@@ -184,7 +186,7 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 func retrieveAndValidateResName(res Resource, resNameToFilePath map[string]string, filePath string) (string, error) {
 	resName, ok := res["name"]
 	if !ok {
-		return "", fmt.Errorf("%w:%s", errResWithoutName, filePath)
+		return "", fmt.Errorf("%w: %s", errResWithoutName, filePath)
 	}
 	resNameStr, ok := resName.(string)
 	if !ok {
@@ -199,7 +201,7 @@ func retrieveAndValidateResName(res Resource, resNameToFilePath map[string]strin
 
 func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *ApplyRequest) (*ApplyResponse, error) {
 	if companyID == "" {
-		return nil, errors.New("companyId should be defined")
+		return nil, errors.New("companyID must be defined")
 	}
 
 	bodyBytes, err := json.Marshal(request)
@@ -234,7 +236,7 @@ func buildTable(headers []string, items []ApplyResponseItem, columnTransform fun
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
-	table.SetAlignment(tablewriter.ALIGN_CENTER)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
 	table.SetHeader(headers)
 
 	for _, item := range items {

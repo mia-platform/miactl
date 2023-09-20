@@ -32,8 +32,8 @@ const (
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get resource-id",
-		Short: "Get Marketplace Item",
-		Long:  `Get a single Marketplace Item by its ID`,
+		Short: "Get Marketplace item",
+		Long:  `Get a single Marketplace item by its ID`,
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
