@@ -1,6 +1,14 @@
 # Commands
 
-This section explores the `miactl` commands and their functionalities.
+This section explores a summary of the `miactl` commands and their functionalities.
+
+:::tip
+
+You can also display a complete help message on the command line by using the `--help` flag postponed to any `miactl` command or subcommand.
+
+This way you can also be sure of the available features of the `miactl` version you currently have installed.
+
+:::
 
 ## context
 
@@ -10,8 +18,8 @@ The context resource includes the following information:
 
 - **Name:** the name of the context, decided by the user
 - **API Base URL:** the base URL of the respective Console endpoint
-- **Company ID:** the ID of a company
-- **Project ID:** the ID of a project belonging to the company
+- **Company ID:** the ID of a Company
+- **Project ID:** the ID of a Project belonging to the Company
 - **CA Cert:** the path to a custom CA certificate
 
 Contexts are stored in the `miactl` configuration file, that can be found in `$HOME/.config/miactl/config.yaml`.
@@ -32,8 +40,8 @@ Available flags for the command:
 - `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--company-id`, to set the ID of the desired company
-- `--project-id`, to set the ID of the desired project
+- `--company-id`, to set the ID of the desired Company
+- `--project-id`, to set the ID of the desired Project
 
 ### use
 
@@ -57,14 +65,14 @@ miactl context list
 
 ## company
 
-This command allows you to manage `miactl` companies.
+This command allows you to manage `miactl` Companies.
 
 To access the resources, you need an account with the correct permissions.
 
 ### list
 
-The `company list` subcommand allows you to view the list of companies that you are currently enrolled in. The
-output will shot the **names**, **IDs**, and the default **git provider** and **pipeline type** of the companies.
+The `company list` subcommand allows you to view the list of Companies that you are currently enrolled in. The
+output will shot the **names**, **IDs**, and the default **Git Provider** and **Pipeline Type** of the Companies.
 
 Usage:
 
@@ -81,14 +89,14 @@ Available flags for the command:
 
 ## project
 
-This command allows you to manage `miactl` projects.
+This command allows you to manage `miactl` Projects.
 
 To access the resources, you need an account with the correct permissions.
 
 ### list
 
-The `project list` subcommand allows you to view the list of projects belonging to the company specified in the current
-context. The output will show the **names**, **IDs**, and **Configuration Git paths** of the projects.
+The `project list` subcommand allows you to view the list of Projects belonging to the Company specified in the current
+context. The output will show the **names**, **IDs**, and **Configuration Git paths** of the Projects.
 
 Usage:
 
@@ -102,11 +110,11 @@ Available flags for the command:
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired company
+- `--company-id`, to set the ID of the desired Company
 
 ## deploy
 
-This command allows you to trigger the deploy pipeline for the selected project.
+This command allows you to trigger the deploy pipeline for the selected Project.
 
 Usage:
 
@@ -120,8 +128,8 @@ Available flags for the command:
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired company
-- `--project-id`, to set the ID of the desired project
+- `--company-id`, to set the ID of the desired Company
+- `--project-id`, to set the ID of the desired Project
 - `--deploy-type`, to select a deploy type (default is `smart_deploy`)
 - `--no-semver`, to force the deploy without `semver`
 - `--revision`, to specify the revision of the commit to deploy
@@ -130,7 +138,7 @@ Available flags for the command:
 
 ### create basic
 
-The `serviceaccount create basic` subcommand allows you to create a new service account for your company.
+The `serviceaccount create basic` subcommand allows you to create a new service account for your Company.
 
 Usage:
 
@@ -144,12 +152,12 @@ Available flags for the command:
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired company
-- `--role`, the company role for the service account
+- `--company-id`, to set the ID of the desired Company
+- `--role`, the Company role for the service account
 
 ### create jwt
 
-The `serviceaccount create jwt` subcommand allows you to create a new service account for your company that will
+The `serviceaccount create jwt` subcommand allows you to create a new service account for your Company that will
 use the jwt authorization method.
 
 Usage:
@@ -164,9 +172,9 @@ Available flags for the command:
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired company
+- `--company-id`, to set the ID of the desired Company
 - `--output`, optional flag to save the service account json description in a file at the provided path
-- `--role`, the company role for the service account
+- `--role`, the Company role for the service account
 
 ## runtime
 
@@ -188,3 +196,93 @@ Available flags for the command:
 - `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired company
 - `--project-id`, to set the ID of the desired project
+
+## marketplace
+
+View and manage Marketplace items
+
+All the subcommands inherit the following flags:
+
+```
+      --auth-name string               the name of the miactl auth to use
+      --certificate-authority string   path to a cert file for the certificate authority for the selected endpoint
+      --company-id string              the ID of the company
+  -c, --config string                  path to the config file default to $HOME/miactl/config
+      --context string                 the name of the miactl context to use
+      --endpoint string                the address and port of the Mia-Platform Console server
+      --insecure-skip-tls-verify       if true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
+      --verbose                        increase the verbosity of the cli output
+```
+
+### list
+
+List Marketplace items
+
+#### Synopsis
+
+List the Marketplace items that the current user can access.
+
+```
+miactl marketplace list [flags]
+```
+
+### get
+
+Get a Marketplace item
+
+#### Synopsis
+
+Get a single Marketplace item by its ID
+
+```
+miactl marketplace get resource-id [flags]
+```
+
+### delete
+
+Delete a Marketplace item
+
+#### Synopsis
+
+Delete a single Marketplace item by its ID
+
+```
+miactl marketplace delete resource-id [flags]
+```
+
+### apply
+
+Create or update Marketplace items
+
+#### Synopsis
+
+Create or update one or more Marketplace items.
+
+You can either specify: - one or more files, with the flag -f - one or more directories, with the flag -d
+Supported formats are JSON (.json files) and YAML (.yaml or .yml files).
+
+```
+miactl marketplace apply { { -f file-path }... | { -d directory-path }... } [flags]
+```
+
+#### Examples
+
+```
+
+# Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Marketplace
+miactl marketplace apply -f myFantasticGoTemplate.json
+
+# Apply the configurations in myFantasticGoTemplate.json and myFantasticNodeTemplate.yml to the Marketplace, with relative paths
+miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFantasticNodeTemplate.yml
+
+# Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
+miactl marketplace apply -d myFantasticGoTemplates
+```
+
+#### Options
+
+```
+  -d, --directory string   a path to a directory containing Marketplace resource files
+  -f, --file stringArray   a path to a JSON or YAML file containing a Marketplace resource
+  -h, --help               help for apply
+```
