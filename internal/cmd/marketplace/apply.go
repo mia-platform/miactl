@@ -112,11 +112,7 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 	filePaths := []string{}
 	for _, path := range filesPaths {
 		switch filepath.Ext(path) {
-		case encoding.YamlExtension:
-			fallthrough
-		case encoding.YmlExtension:
-			fallthrough
-		case encoding.JSONExtension:
+		case encoding.YamlExtension, encoding.YmlExtension, encoding.JSONExtension:
 			filePaths = append(filePaths, path)
 		default:
 			return nil, fmt.Errorf("%w: %s", errInvalidExtension, path)
