@@ -8,7 +8,7 @@
   id2      some name 2  Inserted  
   id3      some name 3  Inserted  
 
-1 of 4 items have not been applied:
+1 of 4 items have not been applied due to validation errors:
 
   ITEM ID  NAME         VALIDATION ERRORS      
 
@@ -17,7 +17,7 @@
 ---
 
 [TestApplyPrintApplyOutcome/should_match_snapshot_with_validation_errors_only - 1]
-2 of 2 items have not been applied:
+2 of 2 items have not been applied due to validation errors:
 
   ITEM ID  NAME         VALIDATION ERRORS               
 
