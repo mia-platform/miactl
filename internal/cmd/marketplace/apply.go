@@ -149,7 +149,7 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, error) {
 		case encoding.YamlExtension, encoding.YmlExtension:
 			fileEncoding = marketplace.YAMLFormat
 		case encoding.JSONExtension:
-			fileEncoding = marketplace.JSON
+			fileEncoding = marketplace.JSONFormat
 		default:
 			return nil, fmt.Errorf("%w: %s", errInvalidExtension, filePath)
 		}

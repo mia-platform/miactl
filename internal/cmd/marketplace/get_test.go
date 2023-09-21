@@ -52,7 +52,7 @@ func TestGetResourceById(t *testing.T) {
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
-			outputFormat: marketplace.JSON,
+			outputFormat: marketplace.JSONFormat,
 		},
 		"valid get response - yaml": {
 			server: getByIDMockServer(t, true, http.StatusOK),
@@ -67,7 +67,7 @@ func TestGetResourceById(t *testing.T) {
 				Transport: http.DefaultTransport,
 			},
 			err:          true,
-			outputFormat: marketplace.JSON,
+			outputFormat: marketplace.JSONFormat,
 		},
 		"resource not found": {
 			server: getByIDMockServer(t, true, http.StatusNotFound),
@@ -75,7 +75,7 @@ func TestGetResourceById(t *testing.T) {
 				Transport: http.DefaultTransport,
 			},
 			err:          true,
-			outputFormat: marketplace.JSON,
+			outputFormat: marketplace.JSONFormat,
 		},
 		"internal server error": {
 			server: getByIDMockServer(t, true, http.StatusInternalServerError),
@@ -83,7 +83,7 @@ func TestGetResourceById(t *testing.T) {
 				Transport: http.DefaultTransport,
 			},
 			err:          true,
-			outputFormat: marketplace.JSON,
+			outputFormat: marketplace.JSONFormat,
 		},
 	}
 
