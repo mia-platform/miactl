@@ -233,6 +233,7 @@ func buildTable(headers []string, items []ApplyResponseItem, columnTransform fun
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
 	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAutoWrapText(false)
 	table.SetHeader(headers)
 
 	for _, item := range items {

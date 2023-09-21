@@ -381,6 +381,19 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 							Message: "and also some other validation error",
 						},
 					},
+
+				},
+				{
+					ItemID:   "id4",
+					Name:     "some name 4",
+					Done:     false,
+					Inserted: false,
+					Updated:  false,
+					ValidationErrors: []ApplyResponseItemValidationError{
+						{
+							Message: "some other very very long validation error",
+						},
+					},
 				},
 			},
 		}
