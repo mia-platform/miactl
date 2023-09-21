@@ -197,7 +197,7 @@ func applyMarketplaceResource(ctx context.Context, client *client.APIClient, com
 		Body(bodyBytes).
 		Do(ctx)
 
-	if err != nil {
+	if err := resp.Error(); err != nil {
 		return nil, err
 	}
 
