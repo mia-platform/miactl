@@ -300,7 +300,7 @@ func buildOutcomeSummaryAsTables(outcome *ApplyResponse) string {
 		if successfulCount > 0 {
 			outcomeStr += fmt.Sprintln()
 		}
-		outcomeStr += fmt.Sprintf("%d of %d items have not been applied:\n\n", failedCount, len(outcome.Items))
+		outcomeStr += fmt.Sprintf("%d of %d items have not been applied due to validation errors:\n\n", failedCount, len(outcome.Items))
 		outcomeStr += buildFailureTable(failedItems)
 	}
 	return outcomeStr
