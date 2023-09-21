@@ -69,20 +69,16 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			var resourceFilesPaths []string
-			if len(options.MarketplaceResourceFilePaths) > 0 {
-				resourceFilesPaths = options.MarketplaceResourceFilePaths
-			}
-			if options.MarketplaceResourcesDirPath != "" {
-				resourceFilesPaths, err = buildPathsListFromDir(options.MarketplaceResourcesDirPath)
-				cobra.CheckErr(err)
-			}
-			applyReq, err := buildApplyRequest(resourceFilesPaths)
-			cobra.CheckErr(err)
-			outcome, err := applyMarketplaceResource(cmd.Context(), client, restConfig.CompanyID, applyReq)
+			outcome, err := applyItemsFromFilesOrDir(
+				cmd.Context(),
+				client,
+				restConfig,
+				options.MarketplaceResourceFilePaths,
+				options.MarketplaceResourcesDirPath,
+			)
 			cobra.CheckErr(err)
 
-			fmt.Println(buildOutcomeSummaryAsTables(outcome))
+			fmt.Println(outcome)
 
 			return nil
 		},
@@ -92,6 +88,30 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd.MarkFlagsMutuallyExclusive("file", "directory")
 
 	return cmd
+}
+
+func applyItemsFromFilesOrDir(ctx context.Context, client *client.APIClient, restConfig *client.Config, filePaths []string, dirPath string) (string, error) {
+	var resourceFilesPaths []string
+	if len(filePaths) > 0 {
+		resourceFilesPaths = filePaths
+	}
+	if dirPath != "" {
+		var err error
+		resourceFilesPaths, err = buildPathsListFromDir(dirPath)
+		if err != nil {
+			return "", err
+		}
+	}
+	applyReq, err := buildApplyRequest(resourceFilesPaths)
+	if err != nil {
+		return "", err
+	}
+	outcome, err := applyMarketplaceResource(ctx, client, restConfig.CompanyID, applyReq)
+	if err != nil {
+		return "", err
+	}
+
+	return buildOutcomeSummaryAsTables(outcome), nil
 }
 
 const applyEndpoint = "/api/backend/marketplace/tenants/%s/resources"
@@ -138,17 +158,27 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		default:
 			return nil, fmt.Errorf("%w: %s", errInvalidExtension, filePath)
 		}
+
 		marketplaceItem := &Item{}
 		err = encoding.UnmarshalData(content, fileEncoding, marketplaceItem)
 		if err != nil {
 			return nil, fmt.Errorf("errors in file %s: %w", filePath, err)
 		}
-		resName, err := retrieveAndValidateResName(*marketplaceItem, resNameToFilePath, filePath)
-		if err != nil {
-			return nil, err
+
+		itemName, ok := (*marketplaceItem)["name"]
+		if !ok {
+			return nil, fmt.Errorf("%w: %s", errResWithoutName, filePath)
 		}
+		itemNameStr, ok := itemName.(string)
+		if !ok {
+			return nil, fmt.Errorf("%w: %s", errResNameNotAString, filePath)
+		}
+		if _, ok := resNameToFilePath[itemNameStr]; ok {
+			return nil, fmt.Errorf("%w: %s", errDuplicatedResName, itemName)
+		}
+
 		resources = append(resources, *marketplaceItem)
-		resNameToFilePath[resName] = filePath
+		resNameToFilePath[itemNameStr] = filePath
 	}
 	if len(resources) == 0 {
 		return nil, errNoValidFilesProvided
@@ -156,22 +186,6 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 	return &ApplyRequest{
 		Resources: resources,
 	}, nil
-}
-
-func retrieveAndValidateResName(res Item, resNameToFilePath map[string]string, filePath string) (string, error) {
-	resName, ok := res["name"]
-	if !ok {
-		return "", fmt.Errorf("%w: %s", errResWithoutName, filePath)
-	}
-	resNameStr, ok := resName.(string)
-	if !ok {
-		return "", fmt.Errorf("%w: %s", errResNameNotAString, filePath)
-	}
-	if _, ok := resNameToFilePath[resNameStr]; ok {
-		return "", fmt.Errorf("%w: %s", errDuplicatedResName, resName)
-	}
-
-	return resNameStr, nil
 }
 
 func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *ApplyRequest) (*ApplyResponse, error) {

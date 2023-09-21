@@ -381,7 +381,6 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 							Message: "and also some other validation error",
 						},
 					},
-
 				},
 				{
 					ItemID:   "id4",
