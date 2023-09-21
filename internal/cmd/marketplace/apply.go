@@ -160,16 +160,12 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, error) {
 			return nil, fmt.Errorf("errors in file %s: %w", filePath, err)
 		}
 
-		itemName, ok := (*marketplaceItem)["name"]
-		if !ok {
-			return nil, fmt.Errorf("%w: %s", errResWithoutName, filePath)
-		}
-		itemNameStr, ok := itemName.(string)
-		if !ok {
-			return nil, fmt.Errorf("%w: %s", errResNameNotAString, filePath)
+		itemNameStr, err := validateItemName(marketplaceItem, filePath)
+		if err != nil {
+			return nil, err
 		}
 		if _, ok := resNameToFilePath[itemNameStr]; ok {
-			return nil, fmt.Errorf("%w: %s", errDuplicatedResName, itemName)
+			return nil, fmt.Errorf("%w: %s", errDuplicatedResName, itemNameStr)
 		}
 
 		resources = append(resources, *marketplaceItem)
@@ -181,6 +177,18 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, error) {
 	return &marketplace.ApplyRequest{
 		Resources: resources,
 	}, nil
+}
+
+func validateItemName(marketplaceItem *marketplace.Item, filePath string) (string, error) {
+	itemName, ok := (*marketplaceItem)["name"]
+	if !ok {
+		return "", fmt.Errorf("%w: %s", errResWithoutName, filePath)
+	}
+	itemNameStr, ok := itemName.(string)
+	if !ok {
+		return "", fmt.Errorf("%w: %s", errResNameNotAString, filePath)
+	}
+	return itemNameStr, nil
 }
 
 func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *marketplace.ApplyRequest) (*marketplace.ApplyResponse, error) {
@@ -197,7 +205,9 @@ func applyMarketplaceResource(ctx context.Context, client *client.APIClient, com
 		APIPath(fmt.Sprintf(applyEndpoint, companyID)).
 		Body(bodyBytes).
 		Do(ctx)
-
+	if err != nil {
+		return nil, err
+	}
 	if err := resp.Error(); err != nil {
 		return nil, err
 	}
