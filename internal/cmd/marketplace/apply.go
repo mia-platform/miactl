@@ -27,6 +27,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
+	"github.com/mia-platform/miactl/internal/filesutil"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -103,26 +104,8 @@ var (
 	errInvalidExtension     = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 )
 
-func listFilesInDirRecursive(rootPath string) ([]string, error) {
-	var files []string
-	err := filepath.Walk(rootPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if !info.IsDir() {
-			files = append(files, path)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	return files, nil
-}
-
 func buildPathsListFromDir(dirPath string) ([]string, error) {
-	filesPaths, err := listFilesInDirRecursive(dirPath)
+	filesPaths, err := filesutil.ListFilesInDirRecursive(dirPath)
 	if err != nil {
 		return nil, err
 	}
