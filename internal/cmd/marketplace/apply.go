@@ -35,9 +35,9 @@ const (
 	applyLong = `Create or update one or more Marketplace items.
 
 You can either specify:
-    - one or more files, with the flag -f 
+    - one or more files, with the flag -f
     - one or more directories, with the flag -d
-	
+
 Supported formats are JSON (.json files) and YAML (.yaml or .yml files).`
 
 	applyExample = `
@@ -143,7 +143,7 @@ func buildPathsListFromDir(dirPath string) ([]string, error) {
 }
 
 func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
-	resources := []Resource{}
+	resources := []Item{}
 	resNameToFilePath := map[string]string{}
 	for _, filePath := range pathList {
 		content, err := os.ReadFile(filePath)
@@ -161,16 +161,16 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		default:
 			return nil, fmt.Errorf("%w: %s", errInvalidExtension, filePath)
 		}
-		mktpResource := &Resource{}
-		err = encoding.UnmarshalData(content, fileEncoding, mktpResource)
+		marketplaceItem := &Item{}
+		err = encoding.UnmarshalData(content, fileEncoding, marketplaceItem)
 		if err != nil {
 			return nil, fmt.Errorf("errors in file %s: %w", filePath, err)
 		}
-		resName, err := retrieveAndValidateResName(*mktpResource, resNameToFilePath, filePath)
+		resName, err := retrieveAndValidateResName(*marketplaceItem, resNameToFilePath, filePath)
 		if err != nil {
 			return nil, err
 		}
-		resources = append(resources, *mktpResource)
+		resources = append(resources, *marketplaceItem)
 		resNameToFilePath[resName] = filePath
 	}
 	if len(resources) == 0 {
@@ -181,7 +181,7 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 	}, nil
 }
 
-func retrieveAndValidateResName(res Resource, resNameToFilePath map[string]string, filePath string) (string, error) {
+func retrieveAndValidateResName(res Item, resNameToFilePath map[string]string, filePath string) (string, error) {
 	resName, ok := res["name"]
 	if !ok {
 		return "", fmt.Errorf("%w: %s", errResWithoutName, filePath)

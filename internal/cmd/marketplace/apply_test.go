@@ -120,7 +120,7 @@ func TestApplyBuildResourcesList(t *testing.T) {
 func TestApplyValidateResource(t *testing.T) {
 	t.Run("should return error if resource does not contain a name", func(t *testing.T) {
 		mockResNameToFileName := map[string]string{}
-		mockResource := Resource{
+		mockResource := Item{
 			"foo": "bar",
 		}
 
@@ -131,7 +131,7 @@ func TestApplyValidateResource(t *testing.T) {
 
 	t.Run("should not return error if resource contains a name", func(t *testing.T) {
 		mockResNameToFileName := map[string]string{}
-		mockResource := Resource{
+		mockResource := Item{
 			"foo":  "bar",
 			"name": "some name",
 		}
@@ -143,7 +143,7 @@ func TestApplyValidateResource(t *testing.T) {
 
 	t.Run("should return error if resource name is not a string", func(t *testing.T) {
 		mockResNameToFileName := map[string]string{}
-		mockResource := Resource{
+		mockResource := Item{
 			"foo": "bar",
 			"name": struct {
 				SomeField string
@@ -161,7 +161,7 @@ func TestApplyValidateResource(t *testing.T) {
 		mockResNameToFileName := map[string]string{
 			"some name": "res1.json",
 		}
-		mockResource := Resource{
+		mockResource := Item{
 			"foo":  "bar",
 			"name": "some name",
 		}
@@ -179,7 +179,7 @@ var mockURI = fmt.Sprintf(applyEndpoint, mockTenantID)
 func TestApplyApplyResourceCmd(t *testing.T) {
 	mockResName := "API Portal by miactl test"
 	validReqMock := &ApplyRequest{
-		Resources: []Resource{
+		Resources: []Item{
 			{
 				"_id":         "6504773582a6722338be0e25",
 				"categoryId":  "devportal",

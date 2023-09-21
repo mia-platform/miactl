@@ -40,8 +40,6 @@ type ApplyResponseItemValidationError struct {
 	Message string `json:"message"`
 }
 
-type Resource map[string]interface{}
-
 type ApplyRequest struct {
-	Resources []Resource `json:"resources"`
+	Resources []Item `json:"resources"`
 }
