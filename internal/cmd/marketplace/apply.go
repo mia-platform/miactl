@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -27,7 +28,6 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
-	"github.com/mia-platform/miactl/internal/filesutil"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -35,9 +35,7 @@ import (
 const (
 	applyLong = `Create or update one or more Marketplace items.
 
-You can either specify:
-    - one or more files, with the flag -f
-    - one or more directories, with the flag -d
+The flag -f accepts either files or directories. In case of directories, it explores them recursively.
 
 Supported formats are JSON (.json files) and YAML (.yaml or .yml files).`
 
@@ -49,32 +47,27 @@ miactl marketplace apply -f myFantasticGoTemplate.json
 miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFantasticNodeTemplate.yml
 
 # Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
-miactl marketplace apply -d myFantasticGoTemplates`
+miactl marketplace apply -f myFantasticGoTemplates`
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
 func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     "apply { { -f file-path }... | { -d directory-path }... }",
+		Use:     "apply { -f file-path }... }",
 		Short:   "Create or update Marketplace items",
 		Long:    applyLong,
 		Example: applyExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if options.MarketplaceResourcesDirPath == "" && len(options.MarketplaceResourceFilePaths) == 0 {
-				return errors.New(`at least one of  "directory" or "file" must be set`)
-			}
-
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			outcome, err := applyItemsFromFilesOrDir(
+			outcome, err := applyItemsFromPaths(
 				cmd.Context(),
 				client,
 				restConfig,
-				options.MarketplaceResourceFilePaths,
-				options.MarketplaceResourcesDirPath,
+				options.MarketplaceResourcePaths,
 			)
 			cobra.CheckErr(err)
 
@@ -85,22 +78,15 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	}
 
 	options.AddMarketplaceApplyFlags(cmd.Flags())
-	cmd.MarkFlagsMutuallyExclusive("file", "directory")
+	cmd.MarkFlagRequired("file")
 
 	return cmd
 }
 
-func applyItemsFromFilesOrDir(ctx context.Context, client *client.APIClient, restConfig *client.Config, filePaths []string, dirPath string) (string, error) {
-	var resourceFilesPaths []string
-	if len(filePaths) > 0 {
-		resourceFilesPaths = filePaths
-	}
-	if dirPath != "" {
-		var err error
-		resourceFilesPaths, err = buildPathsListFromDir(dirPath)
-		if err != nil {
-			return "", err
-		}
+func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConfig *client.Config, filePaths []string) (string, error) {
+	resourceFilesPaths, err := buildFilePathsList(filePaths)
+	if err != nil {
+		return "", err
 	}
 	applyReq, err := buildApplyRequest(resourceFilesPaths)
 	if err != nil {
@@ -124,18 +110,26 @@ var (
 	errInvalidExtension     = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 )
 
-func buildPathsListFromDir(dirPath string) ([]string, error) {
-	filesPaths, err := filesutil.ListFilesInDirRecursive(dirPath)
-	if err != nil {
-		return nil, err
-	}
+func buildFilePathsList(paths []string) ([]string, error) {
 	filePaths := []string{}
-	for _, path := range filesPaths {
-		switch filepath.Ext(path) {
-		case encoding.YamlExtension, encoding.YmlExtension, encoding.JSONExtension:
-			filePaths = append(filePaths, path)
-		default:
-			return nil, fmt.Errorf("%w: %s", errInvalidExtension, path)
+	for _, rootPath := range paths {
+		err := filepath.Walk(rootPath, func(path string, info fs.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
+				return nil
+			}
+			switch filepath.Ext(path) {
+			case encoding.YmlExtension, encoding.YamlExtension, encoding.JSONExtension:
+				filePaths = append(filePaths, path)
+			default:
+				return fmt.Errorf("%w: %s", errInvalidExtension, path)
+			}
+			return nil
+		})
+		if err != nil {
+			return nil, err
 		}
 	}
 	return filePaths, nil

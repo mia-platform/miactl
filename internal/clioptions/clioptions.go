@@ -50,8 +50,7 @@ type CLIOptions struct {
 	ServiceAccountRole string
 	OutputPath         string
 
-	MarketplaceResourceFilePaths []string
-	MarketplaceResourcesDirPath  string
+	MarketplaceResourcePaths []string
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -118,8 +117,7 @@ func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 }
 
 func (o *CLIOptions) AddMarketplaceApplyFlags(flags *pflag.FlagSet) {
-	flags.StringArrayVarP(&o.MarketplaceResourceFilePaths, "file", "f", []string{}, "a path to a JSON or YAML file containing a Marketplace resource")
-	flags.StringVarP(&o.MarketplaceResourcesDirPath, "directory", "d", "", "a path to a directory containing Marketplace resource files")
+	flags.StringArrayVarP(&o.MarketplaceResourcePaths, "file-path", "f", []string{}, "paths to to a folder of or to a JSON or YAML file defining a Marketplace item")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {

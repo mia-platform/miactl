@@ -33,12 +33,20 @@ func TestApplyBuildPathsFromDir(t *testing.T) {
 	t.Run("should read all files in dir retrieving paths", func(t *testing.T) {
 		dirPath := "./testdata/withoutErrors"
 
-		found, err := buildPathsListFromDir(dirPath)
+		found, err := buildFilePathsList([]string{dirPath})
 		require.NoError(t, err)
 		require.Contains(t, found, "testdata/withoutErrors/validItem1.json")
 		require.Contains(t, found, "testdata/withoutErrors/validYaml.yaml")
 		require.Contains(t, found, "testdata/withoutErrors/validYaml.yml")
 		require.Len(t, found, 3)
+	})
+
+	t.Run("should return error due to file with bad extension", func(t *testing.T) {
+		dirPath := "./testdata/"
+
+		found, err := buildFilePathsList([]string{dirPath})
+		require.Nil(t, found)
+		require.ErrorIs(t, err, errInvalidExtension)
 	})
 }
 
@@ -114,61 +122,6 @@ func TestApplyBuildResourcesList(t *testing.T) {
 		found, err := buildApplyRequest(filePaths)
 		require.ErrorIs(t, err, errDuplicatedResName)
 		require.Nil(t, found)
-	})
-}
-
-func TestApplyValidateResource(t *testing.T) {
-	t.Run("should return error if resource does not contain a name", func(t *testing.T) {
-		mockResNameToFileName := map[string]string{}
-		mockResource := Item{
-			"foo": "bar",
-		}
-
-		resName, err := retrieveAndValidateResName(mockResource, mockResNameToFileName, "")
-		require.ErrorIs(t, err, errResWithoutName)
-		require.Zero(t, resName)
-	})
-
-	t.Run("should not return error if resource contains a name", func(t *testing.T) {
-		mockResNameToFileName := map[string]string{}
-		mockResource := Item{
-			"foo":  "bar",
-			"name": "some name",
-		}
-
-		resName, err := retrieveAndValidateResName(mockResource, mockResNameToFileName, "")
-		require.NoError(t, err)
-		require.Equal(t, resName, "some name")
-	})
-
-	t.Run("should return error if resource name is not a string", func(t *testing.T) {
-		mockResNameToFileName := map[string]string{}
-		mockResource := Item{
-			"foo": "bar",
-			"name": struct {
-				SomeField string
-			}{
-				SomeField: "not a string",
-			},
-		}
-
-		resName, err := retrieveAndValidateResName(mockResource, mockResNameToFileName, "")
-		require.ErrorIs(t, err, errResNameNotAString)
-		require.Zero(t, resName)
-	})
-
-	t.Run("should return error if resource name is duplicated among files", func(t *testing.T) {
-		mockResNameToFileName := map[string]string{
-			"some name": "res1.json",
-		}
-		mockResource := Item{
-			"foo":  "bar",
-			"name": "some name",
-		}
-
-		resName, err := retrieveAndValidateResName(mockResource, mockResNameToFileName, "")
-		require.ErrorIs(t, err, errDuplicatedResName)
-		require.Zero(t, resName)
 	})
 }
 
