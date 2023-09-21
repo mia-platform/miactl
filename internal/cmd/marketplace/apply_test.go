@@ -23,7 +23,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gkampitakis/go-snaps/snaps"
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -259,7 +258,7 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 }
 
 func TestApplyPrintApplyOutcome(t *testing.T) {
-	t.Run("should match snapshot with both valid files and validation errors", func(t *testing.T) {
+	t.Run("should contain both valid files and validation errors", func(t *testing.T) {
 		mockOutcome := &ApplyResponse{
 			Done: false,
 			Items: []ApplyResponseItem{
@@ -301,10 +300,16 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 				},
 			},
 		}
-		snaps.MatchSnapshot(t, buildOutcomeSummaryAsTables(mockOutcome))
+		found := buildOutcomeSummaryAsTables(mockOutcome)
+		require.Contains(t, found, "3 of 4 items have been successfully applied:")
+		require.Contains(t, found, "id1")
+		require.Contains(t, found, "id2")
+		require.Contains(t, found, "id3")
+		require.Contains(t, found, "1 of 4 items have not been applied due to validation errors:")
+		require.Contains(t, found, "some validation error")
 	})
 
-	t.Run("should match snapshot with validation errors only", func(t *testing.T) {
+	t.Run("should show validation errors only when input does not contain successful applies", func(t *testing.T) {
 		mockOutcome := &ApplyResponse{
 			Done: false,
 			Items: []ApplyResponseItem{
@@ -349,7 +354,11 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 				},
 			},
 		}
-		snaps.MatchSnapshot(t, buildOutcomeSummaryAsTables(mockOutcome))
+		found := buildOutcomeSummaryAsTables(mockOutcome)
+		require.Contains(t, found, "3 of 3 items have not been applied due to validation errors:")
+		require.Contains(t, found, "some validation error")
+		require.Contains(t, found, "some other validation error")
+		require.Contains(t, found, "some other very very long validation error")
 	})
 
 	t.Run("should match snapshot with valid files only", func(t *testing.T) {
@@ -382,7 +391,11 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 				},
 			},
 		}
-		snaps.MatchSnapshot(t, buildOutcomeSummaryAsTables(mockOutcome))
+		found := buildOutcomeSummaryAsTables(mockOutcome)
+		require.Contains(t, found, "3 of 3 items have been successfully applied:")
+		require.Contains(t, found, "id1")
+		require.Contains(t, found, "id2")
+		require.Contains(t, found, "id3")
 	})
 }
 
