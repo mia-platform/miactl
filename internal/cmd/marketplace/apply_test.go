@@ -355,6 +355,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 			},
 		}
 		found := buildOutcomeSummaryAsTables(mockOutcome)
+		require.NotContains(t, found, "items have been successfully applied:")
 		require.Contains(t, found, "3 of 3 items have not been applied due to validation errors:")
 		require.Contains(t, found, "some validation error")
 		require.Contains(t, found, "some other validation error")
@@ -396,6 +397,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		require.Contains(t, found, "id1")
 		require.Contains(t, found, "id2")
 		require.Contains(t, found, "id3")
+		require.NotContains(t, found, "items have not been applied due to validation errors:")
 	})
 }
 
