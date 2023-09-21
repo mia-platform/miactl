@@ -15,10 +15,17 @@
 
 package marketplace
 
+import "github.com/mia-platform/miactl/internal/encoding"
+
 const (
-	JSON string = "json"
-	YAML string = "yaml"
+	YAMLFormat = "yaml"
+	JSONFormat = "json"
 )
+
+// Item is a Marketplace item
+// we use a map[string]interface{} to represent the item
+// this allows to avoid changes in the code in case of a change in the resource structure
+type Item map[string]interface{}
 
 type ApplyResponse struct {
 	Done  bool                `json:"done"`
@@ -42,4 +49,17 @@ type ApplyResponseItemValidationError struct {
 
 type ApplyRequest struct {
 	Resources []Item `json:"resources"`
+}
+
+func UnmarshalItem(data []byte, encodingFormat string) (Item, error) {
+	var r Item
+
+	if err := encoding.UnmarshalData(data, encodingFormat, &r); err != nil {
+		return Item{}, err
+	}
+	return r, nil
+}
+
+func (r *Item) MarshalItem(encodingFormat string) ([]byte, error) {
+	return encoding.MarshalData(r, encodingFormat, encoding.MarshalOptions{Indent: true})
 }

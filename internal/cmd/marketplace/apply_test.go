@@ -24,6 +24,7 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -130,8 +131,8 @@ var mockURI = fmt.Sprintf(applyEndpoint, mockTenantID)
 
 func TestApplyApplyResourceCmd(t *testing.T) {
 	mockResName := "API Portal by miactl test"
-	validReqMock := &ApplyRequest{
-		Resources: []Item{
+	validReqMock := &marketplace.ApplyRequest{
+		Resources: []marketplace.Item{
 			{
 				"_id":         "6504773582a6722338be0e25",
 				"categoryId":  "devportal",
@@ -199,9 +200,9 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 	}
 
 	t.Run("should return response when is 200 OK", func(t *testing.T) {
-		mockResponse := &ApplyResponse{
+		mockResponse := &marketplace.ApplyResponse{
 			Done: true,
-			Items: []ApplyResponseItem{
+			Items: []marketplace.ApplyResponseItem{
 				{
 					ItemID:   "some-id",
 					Name:     mockResName,
@@ -259,16 +260,16 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 
 func TestApplyPrintApplyOutcome(t *testing.T) {
 	t.Run("should contain both valid files and validation errors", func(t *testing.T) {
-		mockOutcome := &ApplyResponse{
+		mockOutcome := &marketplace.ApplyResponse{
 			Done: false,
-			Items: []ApplyResponseItem{
+			Items: []marketplace.ApplyResponseItem{
 				{
 					ItemID:           "id1",
 					Name:             "some name 1",
 					Done:             true,
 					Inserted:         false,
 					Updated:          true,
-					ValidationErrors: []ApplyResponseItemValidationError{},
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
 					ItemID:           "id2",
@@ -276,7 +277,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,
-					ValidationErrors: []ApplyResponseItemValidationError{},
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
 					ItemID:           "id3",
@@ -284,7 +285,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,
-					ValidationErrors: []ApplyResponseItemValidationError{},
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
 					ItemID:   "id4",
@@ -292,7 +293,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
-					ValidationErrors: []ApplyResponseItemValidationError{
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
 						{
 							Message: "some validation error",
 						},
@@ -310,16 +311,16 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 	})
 
 	t.Run("should show validation errors only when input does not contain successful applies", func(t *testing.T) {
-		mockOutcome := &ApplyResponse{
+		mockOutcome := &marketplace.ApplyResponse{
 			Done: false,
-			Items: []ApplyResponseItem{
+			Items: []marketplace.ApplyResponseItem{
 				{
 					ItemID:   "id3",
 					Name:     "some name 3",
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
-					ValidationErrors: []ApplyResponseItemValidationError{
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
 						{
 							Message: "some validation error",
 						},
@@ -331,7 +332,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
-					ValidationErrors: []ApplyResponseItemValidationError{
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
 						{
 							Message: "some other validation error",
 						},
@@ -346,7 +347,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
-					ValidationErrors: []ApplyResponseItemValidationError{
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
 						{
 							Message: "some other very very long validation error",
 						},
@@ -363,16 +364,16 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 	})
 
 	t.Run("should match snapshot with valid files only", func(t *testing.T) {
-		mockOutcome := &ApplyResponse{
+		mockOutcome := &marketplace.ApplyResponse{
 			Done: false,
-			Items: []ApplyResponseItem{
+			Items: []marketplace.ApplyResponseItem{
 				{
 					ItemID:           "id1",
 					Name:             "some name 1",
 					Done:             true,
 					Inserted:         false,
 					Updated:          true,
-					ValidationErrors: []ApplyResponseItemValidationError{},
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
 					ItemID:           "id2",
@@ -380,7 +381,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,
-					ValidationErrors: []ApplyResponseItemValidationError{},
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
 					ItemID:           "id3",
@@ -388,7 +389,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,
-					ValidationErrors: []ApplyResponseItemValidationError{},
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 			},
 		}

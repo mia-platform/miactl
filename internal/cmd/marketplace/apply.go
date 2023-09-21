@@ -28,6 +28,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -135,8 +136,8 @@ func buildFilePathsList(paths []string) ([]string, error) {
 	return filePaths, nil
 }
 
-func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
-	resources := []Item{}
+func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, error) {
+	resources := []marketplace.Item{}
 	resNameToFilePath := map[string]string{}
 	for _, filePath := range pathList {
 		content, err := os.ReadFile(filePath)
@@ -146,14 +147,14 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		var fileEncoding string
 		switch filepath.Ext(filePath) {
 		case encoding.YamlExtension, encoding.YmlExtension:
-			fileEncoding = YAML
+			fileEncoding = marketplace.YAMLFormat
 		case encoding.JSONExtension:
-			fileEncoding = JSON
+			fileEncoding = marketplace.JSON
 		default:
 			return nil, fmt.Errorf("%w: %s", errInvalidExtension, filePath)
 		}
 
-		marketplaceItem := &Item{}
+		marketplaceItem := &marketplace.Item{}
 		err = encoding.UnmarshalData(content, fileEncoding, marketplaceItem)
 		if err != nil {
 			return nil, fmt.Errorf("errors in file %s: %w", filePath, err)
@@ -177,12 +178,12 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 	if len(resources) == 0 {
 		return nil, errNoValidFilesProvided
 	}
-	return &ApplyRequest{
+	return &marketplace.ApplyRequest{
 		Resources: resources,
 	}, nil
 }
 
-func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *ApplyRequest) (*ApplyResponse, error) {
+func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *marketplace.ApplyRequest) (*marketplace.ApplyResponse, error) {
 	if companyID == "" {
 		return nil, errors.New("companyID must be defined")
 	}
@@ -201,17 +202,17 @@ func applyMarketplaceResource(ctx context.Context, client *client.APIClient, com
 		return nil, err
 	}
 
-	applyResponse := &ApplyResponse{}
+	applyResp := &marketplace.ApplyResponse{}
 
-	err = resp.ParseResponse(applyResponse)
+	err = resp.ParseResponse(applyResp)
 	if err != nil {
 		return nil, err
 	}
 
-	return applyResponse, nil
+	return applyResp, nil
 }
 
-func buildTable(headers []string, items []ApplyResponseItem, columnTransform func(item ApplyResponseItem) []string) string {
+func buildTable(headers []string, items []marketplace.ApplyResponseItem, columnTransform func(item marketplace.ApplyResponseItem) []string) string {
 	strBuilder := &strings.Builder{}
 	table := tablewriter.NewWriter(strBuilder)
 	table.SetBorder(false)
@@ -231,9 +232,9 @@ func buildTable(headers []string, items []ApplyResponseItem, columnTransform fun
 	return strBuilder.String()
 }
 
-func buildSuccessTable(items []ApplyResponseItem) string {
+func buildSuccessTable(items []marketplace.ApplyResponseItem) string {
 	headers := []string{"Item ID", "Name", "Status"}
-	columnTransform := func(item ApplyResponseItem) []string {
+	columnTransform := func(item marketplace.ApplyResponseItem) []string {
 		var status string
 		switch {
 		case item.Inserted:
@@ -250,9 +251,9 @@ func buildSuccessTable(items []ApplyResponseItem) string {
 	return buildTable(headers, items, columnTransform)
 }
 
-func buildFailureTable(items []ApplyResponseItem) string {
+func buildFailureTable(items []marketplace.ApplyResponseItem) string {
 	headers := []string{"Item ID", "Name", "Validation Errors"}
-	columnTransform := func(item ApplyResponseItem) []string {
+	columnTransform := func(item marketplace.ApplyResponseItem) []string {
 		var validationErrorsStr string
 		validationErrors := item.ValidationErrors
 		for i, valErr := range validationErrors {
@@ -270,7 +271,7 @@ func buildFailureTable(items []ApplyResponseItem) string {
 	return buildTable(headers, items, columnTransform)
 }
 
-func buildOutcomeSummaryAsTables(outcome *ApplyResponse) string {
+func buildOutcomeSummaryAsTables(outcome *marketplace.ApplyResponse) string {
 	successfulItems, failedItems := separateSuccessAndFailures(outcome.Items)
 	successfulCount := len(successfulItems)
 	failedCount := len(failedItems)
@@ -292,8 +293,8 @@ func buildOutcomeSummaryAsTables(outcome *ApplyResponse) string {
 	return outcomeStr
 }
 
-func separateSuccessAndFailures(items []ApplyResponseItem) ([]ApplyResponseItem, []ApplyResponseItem) {
-	var successfulItems, failedItems []ApplyResponseItem
+func separateSuccessAndFailures(items []marketplace.ApplyResponseItem) ([]marketplace.ApplyResponseItem, []marketplace.ApplyResponseItem) {
+	var successfulItems, failedItems []marketplace.ApplyResponseItem
 	for _, item := range items {
 		if item.Done {
 			successfulItems = append(successfulItems, item)

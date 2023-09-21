@@ -21,6 +21,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/spf13/cobra"
 )
 
@@ -60,7 +61,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*Item, error) {
+func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*marketplace.Item, error) {
 	if len(resourceID) == 0 {
 		return nil, fmt.Errorf("missing resource id, please provide one")
 	}
@@ -78,7 +79,7 @@ func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*Item,
 		return nil, err
 	}
 
-	var marketplaceItem *Item
+	var marketplaceItem *marketplace.Item
 	if err := resp.ParseResponse(&marketplaceItem); err != nil {
 		return nil, fmt.Errorf("error parsing response body: %w", err)
 	}
@@ -97,7 +98,7 @@ func getMarketplaceResource(client *client.APIClient, resourceID string, outputF
 		return err
 	}
 
-	data, err := marketplaceItem.Marshal(outputFormat)
+	data, err := marketplaceItem.MarshalItem(outputFormat)
 	if err != nil {
 		return err
 	}
