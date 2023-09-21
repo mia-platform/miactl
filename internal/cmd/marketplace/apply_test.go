@@ -186,12 +186,12 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 				"description": "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
 				"documentation": map[string]interface{}{
 					"type": "externalLink",
-					"url":  "https://docs.mia-platform.eu/docs/runtime_suite/api-portal/overview",
+					"url":  "https://docs.example.org/docs/runtime_suite/api-portal/overview",
 				},
 				"imageUrl":      "/v2/files/download/e83a1e48-fca7-4114-a244-1a69c0c4e7b2.png",
 				"name":          mockResName,
 				"releaseStage":  "",
-				"repositoryUrl": "https://git.tools.mia-platform.eu/platform/api-portal/website",
+				"repositoryUrl": "https://example.com/repo",
 				"resources": map[string]interface{}{
 					"services": map[string]interface{}{
 						"api-portal": map[string]interface{}{
@@ -232,9 +232,9 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 								},
 							},
 							"description":   "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
-							"dockerImage":   "nexus.mia-platform.eu/api-portal/website:1.16.6",
+							"dockerImage":   "containers.example.com/some-image:latest",
 							"name":          "api-portal",
-							"repositoryUrl": "https://git.tools.mia-platform.eu/platform/api-portal/website",
+							"repositoryUrl": "https://example.com/repo",
 							"type":          "plugin",
 						},
 					},
