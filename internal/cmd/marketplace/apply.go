@@ -152,9 +152,7 @@ func buildApplyRequest(pathList []string) (*ApplyRequest, error) {
 		}
 		var fileEncoding string
 		switch filepath.Ext(filePath) {
-		case encoding.YamlExtension:
-			fallthrough
-		case encoding.YmlExtension:
+		case encoding.YamlExtension, encoding.YmlExtension:
 			fileEncoding = YAML
 		case encoding.JSONExtension:
 			fileEncoding = JSON
