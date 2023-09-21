@@ -78,8 +78,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 		},
 	}
 
-	options.AddMarketplaceApplyFlags(cmd.Flags())
-	cmd.MarkFlagRequired("file")
+	options.AddMarketplaceApplyFlags(cmd)
 
 	return cmd
 }
@@ -164,7 +163,7 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, error) {
 		if err != nil {
 			return nil, err
 		}
-		if _, ok := resNameToFilePath[itemNameStr]; ok {
+		if _, alreadyExists := resNameToFilePath[itemNameStr]; alreadyExists {
 			return nil, fmt.Errorf("%w: %s", errDuplicatedResName, itemNameStr)
 		}
 

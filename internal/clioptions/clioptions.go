@@ -23,6 +23,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
@@ -116,8 +117,13 @@ func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.OutputPath, "output", "o", "", "write the service account to a file")
 }
 
-func (o *CLIOptions) AddMarketplaceApplyFlags(flags *pflag.FlagSet) {
-	flags.StringArrayVarP(&o.MarketplaceResourcePaths, "file-path", "f", []string{}, "paths to to a folder of or to a JSON or YAML file defining a Marketplace item")
+func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
+	cmd.Flags().StringArrayVarP(&o.MarketplaceResourcePaths, "file-path", "f", []string{}, "paths to to a folder of or to a JSON or YAML file defining a Marketplace item")
+	err := cmd.MarkFlagRequired("file-path")
+	if err != nil {
+		// the error is only due to a programming error (missing command), hence panic
+		panic(err)
+	}
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
