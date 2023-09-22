@@ -28,11 +28,10 @@ import (
 type Request struct {
 	restClient *APIClient
 
-	verb        string
-	apiPath     string
-	contentType string
-	params      url.Values
-	headers     http.Header
+	verb    string
+	apiPath string
+	params  url.Values
+	headers http.Header
 
 	err  error
 	body []byte
