@@ -127,6 +127,8 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConf
 			return "", err
 		}
 
+		fmt.Println("uploaded image", imageURL)
+
 		delete(*item, imageKey)
 		(*item)[imageURLKey] = imageURL
 	}

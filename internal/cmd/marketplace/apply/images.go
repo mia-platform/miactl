@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/http"
 	"net/textproto"
 	"os"
 	"path/filepath"
@@ -82,6 +83,18 @@ func validateAndGetImageLocalPath(item *marketplace.Item, imageKey, imageURLKey 
 	return "", nil
 }
 
+// readContentType reads the first 512 bytes of the file and extracts the content type
+func readContentType(file *os.File) (string, error) {
+	headerBytes := make([]byte, 512)
+	_, err := file.Read(headerBytes)
+	if err != nil {
+		return "", err
+	}
+
+	contentType := http.DetectContentType(headerBytes)
+	return contentType, nil
+}
+
 // uploadImage uploads an image and returns the URL
 func uploadImage(ctx context.Context, client *client.APIClient, companyID, imagePath string) (string, error) {
 	if companyID == "" {
@@ -93,11 +106,17 @@ func uploadImage(ctx context.Context, client *client.APIClient, companyID, image
 		return "", err
 	}
 	defer file.Close()
+	contentType, err := readContentType(file)
+	if err != nil {
+		return "", err
+	}
+	file.Seek(0, 0)
+	fmt.Println("detected content type", contentType)
 
 	var bodyBuffer bytes.Buffer
 	var fw io.Writer
 	multipartWriter := multipart.NewWriter(&bodyBuffer)
-	if fw, err = createFormFileWithContentType(multipartWriter, multipartFieldName, filepath.Base(imagePath), "image/png"); err != nil {
+	if fw, err = createFormFileWithContentType(multipartWriter, multipartFieldName, filepath.Base(imagePath), contentType); err != nil {
 		return "", err
 	}
 	if _, err = io.Copy(fw, file); err != nil {
@@ -127,13 +146,11 @@ func uploadImage(ctx context.Context, client *client.APIClient, companyID, image
 	return uploadResp.Location, nil
 }
 
-// CreateFormFile is a convenience wrapper around CreatePart. It creates
-// a new form-data header with the provided field name and file name.
+// createFormFileWithContentType is similar to multipart.CreateFormFile, but it also adds a content type to the file
 func createFormFileWithContentType(w *multipart.Writer, fieldname, filename, contentType string) (io.Writer, error) {
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition",
-		fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
-			fieldname, filename))
+		fmt.Sprintf(`form-data; name="%s"; filename="%s"`, fieldname, filename))
 	h.Set("Content-Type", contentType)
 	return w.CreatePart(h)
 }

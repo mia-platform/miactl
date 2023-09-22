@@ -47,7 +47,7 @@ type ApplyRequest struct {
 }
 
 type UploadImageResponse struct {
-	ID       string `json:"string"`
+	ID       string `json:"string"` //nolint: tagliatelle
 	Name     string `json:"name"`
 	File     string `json:"file"`
 	Size     int64  `json:"size"`
