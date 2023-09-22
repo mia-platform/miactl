@@ -32,15 +32,21 @@ import (
 const (
 	// uploadImageEndpoint has to be `Sprintf`ed with the companyID
 	uploadImageEndpoint = "/api/marketplace/tenants/%s/files"
+	multipartFieldName  = "marketplace_image"
 
 	localPathKey = "localPath"
 
-	multipartFieldName = "marketplace_image"
+	jpegExtension = ".jpeg"
+	jpgExtension  = ".jpg"
+	pngExtension  = ".png"
+	gifExtension  = ".gif"
 )
 
 var (
 	errImageURLConflict   = errors.New(`both "image" and "imageUrl" found in the item, only one is admitted`)
 	errImageObjectInvalid = errors.New("the image object is not valid")
+
+	errFileMustBeImage = errors.New("the file must a jpeg, png or gif image")
 )
 
 // validateAndGetImageLocalPath looks for an imageKey in the Item, if found it returns the local path
@@ -56,7 +62,12 @@ func validateAndGetImageLocalPath(item *marketplace.Item, imageKey, imageURLKey 
 		if !ok {
 			return "", errImageObjectInvalid
 		}
-		return localPath, nil
+		switch filepath.Ext(localPath) {
+		case pngExtension, jpegExtension, jpgExtension:
+			return localPath, nil
+		default:
+			return "", errFileMustBeImage
+		}
 	}
 
 	return "", nil

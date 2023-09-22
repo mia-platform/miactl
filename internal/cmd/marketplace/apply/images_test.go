@@ -34,7 +34,7 @@ func TestApplyValidateImageURLs(t *testing.T) {
 	t.Run("should throw error with an item that contains both image and imageURL", func(t *testing.T) {
 		mockItem := &marketplace.Item{
 			imageKey: map[string]string{
-				"localPath": "some/local/path/image.jpg",
+				localPathKey: "some/local/path/image.jpg",
 			},
 			imageURLKey: "http://some.url",
 		}
@@ -47,7 +47,7 @@ func TestApplyValidateImageURLs(t *testing.T) {
 	t.Run("should return local path if element contains image", func(t *testing.T) {
 		mockItem := &marketplace.Item{
 			imageKey: map[string]string{
-				"localPath": "some/local/path/image.jpg",
+				localPathKey: "some/local/path/image.jpg",
 			},
 		}
 
@@ -55,7 +55,6 @@ func TestApplyValidateImageURLs(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, found, "some/local/path/image.jpg")
 	})
-
 	t.Run("should return error if image object is not valid", func(t *testing.T) {
 		mockItem := &marketplace.Item{
 			imageKey: map[string]string{
@@ -76,12 +75,22 @@ func TestApplyValidateImageURLs(t *testing.T) {
 		require.NoError(t, err)
 		require.Zero(t, found)
 	})
+	t.Run("should return error if file has unrecognized extension", func(t *testing.T) {
+		mockItem := &marketplace.Item{
+			imageKey: map[string]string{
+				localPathKey: "some/local/path/image.txt",
+			},
+		}
+
+		found, err := validateAndGetImageLocalPath(mockItem, imageKey, imageURLKey)
+		require.ErrorIs(t, err, errFileMustBeImage)
+		require.Zero(t, found)
+	})
 }
 
 const mockImagePath = "./testdata/imageTest.png"
 
 func TestApplyUploadImage(t *testing.T) {
-
 	t.Run("should upload image successfully", func(t *testing.T) {
 		mockResp := &marketplace.UploadImageResponse{
 			Location: "https://example.org/image.png",
