@@ -67,8 +67,6 @@ var (
 	errResNameNotAString = errors.New(`the field "name" must be a string`)
 	errInvalidExtension  = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 	errDuplicatedResName = errors.New("some resources have duplicated name field")
-
-	errImageURLConflict = errors.New(`both "image" and "imageUrl" found in the item, only one is admitted`)
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
@@ -198,16 +196,6 @@ func validateItemName(marketplaceItem *marketplace.Item, filePath string) (strin
 		return "", fmt.Errorf("%w: %s", errResNameNotAString, filePath)
 	}
 	return itemNameStr, nil
-}
-
-func validateImageURLs(item *marketplace.Item, imageKey, imageURLKey string) error {
-	_, imageURLExists := (*item)[imageKey]
-	_, imageExists := (*item)[imageURLKey]
-	if imageExists && imageURLExists {
-		return errImageURLConflict
-	}
-
-	return nil
 }
 
 func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *marketplace.ApplyRequest) (*marketplace.ApplyResponse, error) {
