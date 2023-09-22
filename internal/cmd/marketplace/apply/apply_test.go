@@ -402,6 +402,39 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 	})
 }
 
+func TestApplyValidateImageURLs(t *testing.T) {
+	t.Run("should throw error with an item that contains both image and imageURL", func(t *testing.T) {
+		mockItem := &marketplace.Item{
+			imageKey: marketplace.ImageInfo{
+				LocalPath: "some/local/path/image.jpg",
+			},
+			imageURLKey: "http://some.url",
+		}
+
+		err := validateImageURLs(mockItem, imageKey, imageURLKey)
+		require.ErrorIs(t, err, errImageURLConflict)
+	})
+
+	t.Run("should return local path if element contains image", func(t *testing.T) {
+		mockItem := &marketplace.Item{
+			imageKey: marketplace.ImageInfo{
+				LocalPath: "some/local/path/image.jpg",
+			},
+		}
+
+		err := validateImageURLs(mockItem, imageKey, imageURLKey)
+		require.NoError(t, err)
+	})
+	t.Run("should not throw error with an item that contains only an imageUrl", func(t *testing.T) {
+		mockItem := &marketplace.Item{
+			imageURLKey: "http://some.url",
+		}
+
+		err := validateImageURLs(mockItem, imageKey, imageURLKey)
+		require.NoError(t, err)
+	})
+}
+
 func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

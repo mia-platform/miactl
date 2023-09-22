@@ -23,13 +23,11 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -49,6 +47,28 @@ miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/my
 
 # Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
 miactl marketplace apply -f myFantasticGoTemplates`
+
+	// applyEndpoint has to be `Sprintf`ed with the tenantID
+	applyEndpoint = "/api/backend/marketplace/tenants/%s/resources"
+	// uploadImageEndpoint has to be `Sprintf`ed with the tenantID
+	uploadImageEndpoint = "/api/marketplace/tenants/%s/files"
+
+	imageKey    = "image"
+	imageURLKey = "imageUrl"
+
+	supportedByImageKey    = "supportedByImage"
+	supportedByImageURLKey = "supportedByImageUrl"
+)
+
+var (
+	errResWithoutName       = errors.New(`the required field "name" was not found in the resource`)
+	errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
+
+	errResNameNotAString = errors.New(`the field "name" must be a string`)
+	errInvalidExtension  = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
+	errDuplicatedResName = errors.New("some resources have duplicated name field")
+
+	errImageURLConflict = errors.New(`both "image" and "imageUrl" found in the item, only one is admitted`)
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
@@ -99,16 +119,6 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConf
 
 	return buildOutcomeSummaryAsTables(outcome), nil
 }
-
-const applyEndpoint = "/api/backend/marketplace/tenants/%s/resources"
-
-var (
-	errResWithoutName       = errors.New(`the required field "name" was not found in the resource`)
-	errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
-	errDuplicatedResName    = errors.New("some resources have duplicated name field")
-	errResNameNotAString    = errors.New(`the field "name" must be a string`)
-	errInvalidExtension     = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
-)
 
 func buildFilePathsList(paths []string) ([]string, error) {
 	filePaths := []string{}
@@ -190,6 +200,16 @@ func validateItemName(marketplaceItem *marketplace.Item, filePath string) (strin
 	return itemNameStr, nil
 }
 
+func validateImageURLs(item *marketplace.Item, imageKey, imageURLKey string) error {
+	_, imageURLExists := (*item)[imageKey]
+	_, imageExists := (*item)[imageURLKey]
+	if imageExists && imageURLExists {
+		return errImageURLConflict
+	}
+
+	return nil
+}
+
 func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *marketplace.ApplyRequest) (*marketplace.ApplyResponse, error) {
 	if companyID == "" {
 		return nil, errors.New("companyID must be defined")
@@ -219,97 +239,4 @@ func applyMarketplaceResource(ctx context.Context, client *client.APIClient, com
 	}
 
 	return applyResp, nil
-}
-
-func buildTable(headers []string, items []marketplace.ApplyResponseItem, columnTransform func(item marketplace.ApplyResponseItem) []string) string {
-	strBuilder := &strings.Builder{}
-	table := tablewriter.NewWriter(strBuilder)
-	table.SetBorder(false)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAutoWrapText(false)
-	table.SetHeader(headers)
-
-	for _, item := range items {
-		table.Append(columnTransform(item))
-	}
-
-	table.Render()
-	return strBuilder.String()
-}
-
-func buildSuccessTable(items []marketplace.ApplyResponseItem) string {
-	headers := []string{"Item ID", "Name", "Status"}
-	columnTransform := func(item marketplace.ApplyResponseItem) []string {
-		var status string
-		switch {
-		case item.Inserted:
-			status = "Inserted"
-		case item.Updated:
-			status = "Updated"
-		default:
-			// should never happen, but just in case:
-			status = "UNKNOWN"
-		}
-		return []string{item.ItemID, item.Name, status}
-	}
-
-	return buildTable(headers, items, columnTransform)
-}
-
-func buildFailureTable(items []marketplace.ApplyResponseItem) string {
-	headers := []string{"Item ID", "Name", "Validation Errors"}
-	columnTransform := func(item marketplace.ApplyResponseItem) []string {
-		var validationErrorsStr string
-		validationErrors := item.ValidationErrors
-		for i, valErr := range validationErrors {
-			validationErrorsStr += valErr.Message
-			if len(validationErrors)-1 > i {
-				validationErrorsStr += "\n"
-			}
-		}
-		if validationErrorsStr == "" {
-			validationErrorsStr = "-"
-		}
-		return []string{item.ItemID, item.Name, validationErrorsStr}
-	}
-
-	return buildTable(headers, items, columnTransform)
-}
-
-func buildOutcomeSummaryAsTables(outcome *marketplace.ApplyResponse) string {
-	successfulItems, failedItems := separateSuccessAndFailures(outcome.Items)
-	successfulCount := len(successfulItems)
-	failedCount := len(failedItems)
-
-	var outcomeStr string
-
-	if successfulCount > 0 {
-		outcomeStr += fmt.Sprintf("%d of %d items have been successfully applied:\n\n", successfulCount, len(outcome.Items))
-		outcomeStr += buildSuccessTable(successfulItems)
-	}
-
-	if failedCount > 0 {
-		if successfulCount > 0 {
-			outcomeStr += fmt.Sprintln()
-		}
-		outcomeStr += fmt.Sprintf("%d of %d items have not been applied due to validation errors:\n\n", failedCount, len(outcome.Items))
-		outcomeStr += buildFailureTable(failedItems)
-	}
-	return outcomeStr
-}
-
-func separateSuccessAndFailures(items []marketplace.ApplyResponseItem) ([]marketplace.ApplyResponseItem, []marketplace.ApplyResponseItem) {
-	var successfulItems, failedItems []marketplace.ApplyResponseItem
-	for _, item := range items {
-		if item.Done {
-			successfulItems = append(successfulItems, item)
-		} else {
-			failedItems = append(failedItems, item)
-		}
-	}
-	return successfulItems, failedItems
 }

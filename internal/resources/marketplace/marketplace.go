@@ -46,6 +46,10 @@ type ApplyRequest struct {
 	Resources []Item `json:"resources"`
 }
 
+type ImageInfo struct {
+	LocalPath string `json:"localPath`
+}
+
 func (i *Item) MarshalItem(encodingFormat string) ([]byte, error) {
 	return encoding.MarshalData(i, encodingFormat, encoding.MarshalOptions{Indent: true})
 }
