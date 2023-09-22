@@ -43,7 +43,7 @@ type ApplyResponseItemValidationError struct {
 }
 
 type ApplyRequest struct {
-	Resources []Item `json:"resources"`
+	Resources []*Item `json:"resources"`
 }
 
 type UploadImageResponse struct {

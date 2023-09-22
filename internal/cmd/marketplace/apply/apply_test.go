@@ -50,7 +50,7 @@ func TestApplyBuildPathsFromDir(t *testing.T) {
 	})
 }
 
-func TestApplyBuildResourcesList(t *testing.T) {
+func TestApplyBuildApplyRequest(t *testing.T) {
 	t.Run("should read file contents parsing them to json", func(t *testing.T) {
 		filePaths := []string{
 			"./testdata/validItem1.json",
@@ -132,7 +132,7 @@ var mockURI = fmt.Sprintf(applyEndpoint, mockTenantID)
 func TestApplyApplyResourceCmd(t *testing.T) {
 	mockResName := "API Portal by miactl test"
 	validReqMock := &marketplace.ApplyRequest{
-		Resources: []marketplace.Item{
+		Resources: []*marketplace.Item{
 			{
 				"_id":         "6504773582a6722338be0e25",
 				"categoryId":  "devportal",

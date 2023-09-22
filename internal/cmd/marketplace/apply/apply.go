@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -106,10 +107,30 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConf
 	if err != nil {
 		return "", err
 	}
-	applyReq, err := buildApplyRequest(resourceFilesPaths)
+	applyReq, itemNameToFilePath, err := buildApplyRequest(resourceFilesPaths)
 	if err != nil {
 		return "", err
 	}
+
+	for _, item := range applyReq.Resources {
+		localPath, err := validateAndGetImageLocalPath(item, imageKey, imageURLKey)
+		if err != nil {
+			return "", err
+		}
+		itemName := (*item)["name"].(string)
+		itemFilePath := itemNameToFilePath[itemName]
+		itemFileDir := filepath.Dir(itemFilePath)
+		imageFilePath := path.Join(itemFileDir, localPath)
+
+		imageURL, err := uploadImage(ctx, client, restConfig.CompanyID, imageFilePath)
+		if err != nil {
+			return "", err
+		}
+
+		delete(*item, imageKey)
+		(*item)[imageURLKey] = imageURL
+	}
+
 	outcome, err := applyMarketplaceResource(ctx, client, restConfig.CompanyID, applyReq)
 	if err != nil {
 		return "", err
@@ -143,13 +164,13 @@ func buildFilePathsList(paths []string) ([]string, error) {
 	return filePaths, nil
 }
 
-func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, error) {
-	resources := []marketplace.Item{}
+func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string]string, error) {
+	resources := []*marketplace.Item{}
 	resNameToFilePath := map[string]string{}
 	for _, filePath := range pathList {
 		content, err := os.ReadFile(filePath)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		var fileEncoding string
 		switch filepath.Ext(filePath) {
@@ -158,32 +179,32 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, error) {
 		case encoding.JSONExtension:
 			fileEncoding = encoding.JSON
 		default:
-			return nil, fmt.Errorf("%w: %s", errInvalidExtension, filePath)
+			return nil, nil, fmt.Errorf("%w: %s", errInvalidExtension, filePath)
 		}
 
 		marketplaceItem := &marketplace.Item{}
 		err = encoding.UnmarshalData(content, fileEncoding, marketplaceItem)
 		if err != nil {
-			return nil, fmt.Errorf("errors in file %s: %w", filePath, err)
+			return nil, nil, fmt.Errorf("errors in file %s: %w", filePath, err)
 		}
 
 		itemNameStr, err := validateItemName(marketplaceItem, filePath)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		if _, alreadyExists := resNameToFilePath[itemNameStr]; alreadyExists {
-			return nil, fmt.Errorf("%w: %s", errDuplicatedResName, itemNameStr)
+			return nil, nil, fmt.Errorf("%w: %s", errDuplicatedResName, itemNameStr)
 		}
 
-		resources = append(resources, *marketplaceItem)
+		resources = append(resources, marketplaceItem)
 		resNameToFilePath[itemNameStr] = filePath
 	}
 	if len(resources) == 0 {
-		return nil, errNoValidFilesProvided
+		return nil, nil, errNoValidFilesProvided
 	}
 	return &marketplace.ApplyRequest{
 		Resources: resources,
-	}, nil
+	}, resNameToFilePath, nil
 }
 
 func validateItemName(marketplaceItem *marketplace.Item, filePath string) (string, error) {

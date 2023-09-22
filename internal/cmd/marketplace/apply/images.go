@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"mime/multipart"
+	"net/textproto"
 	"os"
 	"path/filepath"
 
@@ -31,7 +32,7 @@ import (
 
 const (
 	// uploadImageEndpoint has to be `Sprintf`ed with the companyID
-	uploadImageEndpoint = "/api/marketplace/tenants/%s/files"
+	uploadImageEndpoint = "/api/backend/marketplace/tenants/%s/files"
 	multipartFieldName  = "marketplace_image"
 
 	localPathKey = "localPath"
@@ -58,13 +59,21 @@ func validateAndGetImageLocalPath(item *marketplace.Item, imageKey, imageURLKey 
 	}
 
 	if imageExists {
-		localPath, ok := imageInfo.(map[string]string)[localPathKey]
+		imageInfoObj, ok := imageInfo.(map[string]interface{})
 		if !ok {
 			return "", errImageObjectInvalid
 		}
-		switch filepath.Ext(localPath) {
+		localPath, ok := imageInfoObj[localPathKey]
+		if !ok {
+			return "", errImageObjectInvalid
+		}
+		localPathStr, ok := localPath.(string)
+		if !ok {
+			return "", errImageObjectInvalid
+		}
+		switch filepath.Ext(localPathStr) {
 		case pngExtension, jpegExtension, jpgExtension:
-			return localPath, nil
+			return localPathStr, nil
 		default:
 			return "", errFileMustBeImage
 		}
@@ -88,7 +97,7 @@ func uploadImage(ctx context.Context, client *client.APIClient, companyID, image
 	var bodyBuffer bytes.Buffer
 	var fw io.Writer
 	multipartWriter := multipart.NewWriter(&bodyBuffer)
-	if fw, err = multipartWriter.CreateFormFile(multipartFieldName, filepath.Base(imagePath)); err != nil {
+	if fw, err = createFormFileWithContentType(multipartWriter, multipartFieldName, filepath.Base(imagePath), "image/png"); err != nil {
 		return "", err
 	}
 	if _, err = io.Copy(fw, file); err != nil {
@@ -116,4 +125,15 @@ func uploadImage(ctx context.Context, client *client.APIClient, companyID, image
 	}
 
 	return uploadResp.Location, nil
+}
+
+// CreateFormFile is a convenience wrapper around CreatePart. It creates
+// a new form-data header with the provided field name and file name.
+func createFormFileWithContentType(w *multipart.Writer, fieldname, filename, contentType string) (io.Writer, error) {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition",
+		fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+			fieldname, filename))
+	h.Set("Content-Type", contentType)
+	return w.CreatePart(h)
 }

@@ -33,7 +33,7 @@ import (
 func TestApplyValidateImageURLs(t *testing.T) {
 	t.Run("should throw error with an item that contains both image and imageURL", func(t *testing.T) {
 		mockItem := &marketplace.Item{
-			imageKey: map[string]string{
+			imageKey: map[string]interface{}{
 				localPathKey: "some/local/path/image.jpg",
 			},
 			imageURLKey: "http://some.url",
@@ -45,11 +45,14 @@ func TestApplyValidateImageURLs(t *testing.T) {
 	})
 
 	t.Run("should return local path if element contains image", func(t *testing.T) {
-		mockItem := &marketplace.Item{
-			imageKey: map[string]string{
-				localPathKey: "some/local/path/image.jpg",
-			},
-		}
+		mockItemJson := []byte(`{
+			"image": {
+				"localPath": "some/local/path/image.jpg"
+			}
+		}`)
+		mockItem := &marketplace.Item{}
+		err := json.Unmarshal(mockItemJson, mockItem)
+		require.NoError(t, err)
 
 		found, err := validateAndGetImageLocalPath(mockItem, imageKey, imageURLKey)
 		require.NoError(t, err)
@@ -57,7 +60,7 @@ func TestApplyValidateImageURLs(t *testing.T) {
 	})
 	t.Run("should return error if image object is not valid", func(t *testing.T) {
 		mockItem := &marketplace.Item{
-			imageKey: map[string]string{
+			imageKey: map[string]interface{}{
 				"someWrongKey": "some/local/path/image.jpg",
 			},
 		}
@@ -77,7 +80,7 @@ func TestApplyValidateImageURLs(t *testing.T) {
 	})
 	t.Run("should return error if file has unrecognized extension", func(t *testing.T) {
 		mockItem := &marketplace.Item{
-			imageKey: map[string]string{
+			imageKey: map[string]interface{}{
 				localPathKey: "some/local/path/image.txt",
 			},
 		}
