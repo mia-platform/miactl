@@ -16,12 +16,27 @@
 package marketplace
 
 import (
+	"bytes"
+	"context"
 	"errors"
+	"fmt"
+	"io"
+	"mime/multipart"
+	"os"
+	"path/filepath"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 )
 
-const localPathKey = "localPath"
+const (
+	// uploadImageEndpoint has to be `Sprintf`ed with the companyID
+	uploadImageEndpoint = "/api/marketplace/tenants/%s/files"
+
+	localPathKey = "localPath"
+
+	multipartFieldName = "marketplace_image"
+)
 
 var (
 	errImageURLConflict   = errors.New(`both "image" and "imageUrl" found in the item, only one is admitted`)
@@ -45,4 +60,49 @@ func validateAndGetImageLocalPath(item *marketplace.Item, imageKey, imageURLKey 
 	}
 
 	return "", nil
+}
+
+// uploadImage uploads an image and returns the URL
+func uploadImage(ctx context.Context, client *client.APIClient, companyID, imagePath string) (string, error) {
+	if companyID == "" {
+		return "", errCompanyIDNotDefined
+	}
+
+	file, err := os.Open(imagePath)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+
+	var bodyBuffer bytes.Buffer
+	var fw io.Writer
+	multipartWriter := multipart.NewWriter(&bodyBuffer)
+	if fw, err = multipartWriter.CreateFormFile(multipartFieldName, filepath.Base(imagePath)); err != nil {
+		return "", err
+	}
+	if _, err = io.Copy(fw, file); err != nil {
+		return "", err
+	}
+	multipartWriter.Close()
+
+	resp, err := client.Post().
+		SetHeader("Content-Type", multipartWriter.FormDataContentType()).
+		APIPath(fmt.Sprintf(uploadImageEndpoint, companyID)).
+		Body(bodyBuffer.Bytes()).
+		Do(ctx)
+	if err != nil {
+		return "", err
+	}
+	if err := resp.Error(); err != nil {
+		return "", err
+	}
+
+	uploadResp := &marketplace.UploadImageResponse{}
+
+	err = resp.ParseResponse(uploadResp)
+	if err != nil {
+		return "", err
+	}
+
+	return uploadResp.Location, nil
 }

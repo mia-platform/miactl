@@ -28,10 +28,11 @@ import (
 type Request struct {
 	restClient *APIClient
 
-	verb    string
-	apiPath string
-	params  url.Values
-	headers http.Header
+	verb        string
+	apiPath     string
+	contentType string
+	params      url.Values
+	headers     http.Header
 
 	err  error
 	body []byte
@@ -67,8 +68,7 @@ func (r *Request) SetHeader(key, value string) *Request {
 		r.headers = http.Header{}
 	}
 
-	r.headers.Del(key)
-	r.headers.Add(key, value)
+	r.headers.Set(key, value)
 	return r
 }
 

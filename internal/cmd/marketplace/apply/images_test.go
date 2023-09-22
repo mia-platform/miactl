@@ -16,8 +16,16 @@
 package marketplace
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"testing"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/require"
 )
@@ -68,4 +76,83 @@ func TestApplyValidateImageURLs(t *testing.T) {
 		require.NoError(t, err)
 		require.Zero(t, found)
 	})
+}
+
+const mockImagePath = "./testdata/imageTest.png"
+
+func TestApplyUploadImage(t *testing.T) {
+
+	t.Run("should upload image successfully", func(t *testing.T) {
+		mockResp := &marketplace.UploadImageResponse{
+			Location: "https://example.org/image.png",
+		}
+		mockServer := uploadImageMockServer(t, http.StatusOK, mockResp)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := uploadImage(context.Background(), client, mockTenantID, mockImagePath)
+		require.NoError(t, err)
+		require.Equal(t, "https://example.org/image.png", found)
+	})
+
+	t.Run("should return error if image file does not exist", func(t *testing.T) {
+		mockServer := uploadImageMockServer(t, http.StatusNoContent, nil)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := uploadImage(context.Background(), client, mockTenantID, "some/path/image.png")
+		require.ErrorIs(t, err, os.ErrNotExist)
+		require.Zero(t, found)
+	})
+
+	t.Run("should return error if companyID is not defined", func(t *testing.T) {
+		mockServer := uploadImageMockServer(t, http.StatusNoContent, nil)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := uploadImage(context.Background(), client, "", mockImagePath)
+		require.ErrorIs(t, err, errCompanyIDNotDefined)
+		require.Zero(t, found)
+	})
+}
+
+func uploadImageMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
+	t.Helper()
+	mockImageURI := fmt.Sprintf(uploadImageEndpoint, mockTenantID)
+	imageFile, err := os.Open(mockImagePath)
+	require.NoError(t, err)
+	imageBytes, err := io.ReadAll(imageFile)
+	require.NoError(t, err)
+
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		require.NoError(t, err)
+		require.Equal(t, mockImageURI, r.RequestURI)
+		require.Equal(t, http.MethodPost, r.Method)
+
+		foundReqFile, _, err := r.FormFile(multipartFieldName)
+		require.NoError(t, err)
+		foundReqFileBytes, err := io.ReadAll(foundReqFile)
+		require.NoError(t, err)
+		require.Equal(t, imageBytes, foundReqFileBytes)
+
+		w.WriteHeader(statusCode)
+		resBytes, err := json.Marshal(mockResponse)
+		require.NoError(t, err)
+		w.Write(resBytes)
+	}))
 }

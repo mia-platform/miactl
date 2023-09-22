@@ -46,6 +46,14 @@ type ApplyRequest struct {
 	Resources []Item `json:"resources"`
 }
 
+type UploadImageResponse struct {
+	ID       string `json:"string"`
+	Name     string `json:"name"`
+	File     string `json:"file"`
+	Size     int64  `json:"size"`
+	Location string `json:"location"`
+}
+
 func (i *Item) MarshalItem(encodingFormat string) ([]byte, error) {
 	return encoding.MarshalData(i, encodingFormat, encoding.MarshalOptions{Indent: true})
 }

@@ -48,10 +48,8 @@ miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/my
 # Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
 miactl marketplace apply -f myFantasticGoTemplates`
 
-	// applyEndpoint has to be `Sprintf`ed with the tenantID
+	// applyEndpoint has to be `Sprintf`ed with the companyID
 	applyEndpoint = "/api/backend/marketplace/tenants/%s/resources"
-	// uploadImageEndpoint has to be `Sprintf`ed with the tenantID
-	uploadImageEndpoint = "/api/marketplace/tenants/%s/files"
 
 	imageKey    = "image"
 	imageURLKey = "imageUrl"
@@ -61,6 +59,8 @@ miactl marketplace apply -f myFantasticGoTemplates`
 )
 
 var (
+	errCompanyIDNotDefined = errors.New("companyID must be defined")
+
 	errResWithoutName       = errors.New(`the required field "name" was not found in the resource`)
 	errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
 
@@ -200,7 +200,7 @@ func validateItemName(marketplaceItem *marketplace.Item, filePath string) (strin
 
 func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *marketplace.ApplyRequest) (*marketplace.ApplyResponse, error) {
 	if companyID == "" {
-		return nil, errors.New("companyID must be defined")
+		return nil, errCompanyIDNotDefined
 	}
 
 	bodyBytes, err := json.Marshal(request)
