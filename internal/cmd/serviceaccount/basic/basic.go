@@ -71,7 +71,7 @@ service account is created on the company.`,
 	})
 
 	if err != nil {
-		// we panic here because if we reach here, something nasty is happenign in flag autocomplete registration
+		// we panic here because if we reach here, something nasty is happening in flag autocomplete registration
 		panic(err)
 	}
 

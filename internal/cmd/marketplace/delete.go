@@ -32,10 +32,11 @@ const (
 // DeleteCmd return a new cobra command for deleting a single marketplace resource
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete [resource-id]",
-		Short: "Delete marketplace item",
-		Long:  "Delete a single marketplace item by its ID",
-		Args:  cobra.ExactArgs(1),
+		Use:        "delete resource-id",
+		Short:      "Delete Marketplace item",
+		Long:       "Delete a single Marketplace item by its ID",
+		Args:       cobra.ExactArgs(1),
+		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)

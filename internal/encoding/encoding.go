@@ -27,6 +27,10 @@ import (
 const (
 	JSON = "json"
 	YAML = "yaml"
+
+	YamlExtension = ".yaml"
+	YmlExtension  = ".yml"
+	JSONExtension = ".json"
 )
 
 var ErrMarshal = errors.New("error while marshalling data")

@@ -23,6 +23,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -51,14 +52,14 @@ func TestGetResourceById(t *testing.T) {
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
-			outputFormat: JSON,
+			outputFormat: encoding.JSON,
 		},
 		"valid get response - yaml": {
 			server: getByIDMockServer(t, true, http.StatusOK),
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
-			outputFormat: YAML,
+			outputFormat: encoding.YAML,
 		},
 		"invalid body response": {
 			server: getByIDMockServer(t, false, http.StatusOK),
@@ -66,7 +67,7 @@ func TestGetResourceById(t *testing.T) {
 				Transport: http.DefaultTransport,
 			},
 			err:          true,
-			outputFormat: JSON,
+			outputFormat: encoding.JSON,
 		},
 		"resource not found": {
 			server: getByIDMockServer(t, true, http.StatusNotFound),
@@ -74,7 +75,7 @@ func TestGetResourceById(t *testing.T) {
 				Transport: http.DefaultTransport,
 			},
 			err:          true,
-			outputFormat: JSON,
+			outputFormat: encoding.JSON,
 		},
 		"internal server error": {
 			server: getByIDMockServer(t, true, http.StatusInternalServerError),
@@ -82,7 +83,7 @@ func TestGetResourceById(t *testing.T) {
 				Transport: http.DefaultTransport,
 			},
 			err:          true,
-			outputFormat: JSON,
+			outputFormat: encoding.JSON,
 		},
 	}
 
