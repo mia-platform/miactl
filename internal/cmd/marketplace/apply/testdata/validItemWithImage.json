@@ -53,7 +53,7 @@
 			}
 		}
 	},
-	"supportedByImageUrl": "/v2/files/download/83b11dd9-41f6-4920-bb2d-2a809e944851.png",
+	"supportedByImageUrl": "/some/path/to/image.png",
 	"tenantId": "team-rocket-test",
 	"type": "plugin"
 }

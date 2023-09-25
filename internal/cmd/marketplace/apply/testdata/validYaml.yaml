@@ -2,7 +2,7 @@
 _id: 6504773582a6722338be0e25
 categoryId: devportal
 description: Some description
-imageUrl: "/v2/files/download/e83a1e48-fca7-4114-a244-1a69c0c4e7b2.png"
+imageUrl: "/some/path/to/image.png"
 name: miactl test
 releaseStage: ""
 repositoryUrl: https://example.com/repo
