@@ -76,10 +76,10 @@ func TestRowForPod(t *testing.T) {
 	}{
 		"basic pod": {
 			pod: resources.Pod{
-				Name:      "pod-name",
-				Phase:     "running",
-				Status:    "ok",
-				StartTime: time.Now(),
+				Name:   "pod-name",
+				Phase:  "running",
+				Status: "ok",
+				Age:    time.Now(),
 				Component: []struct {
 					Name    string `json:"name"`
 					Version string `json:"version"`
@@ -104,13 +104,13 @@ func TestRowForPod(t *testing.T) {
 		},
 		"pod without component": {
 			pod: resources.Pod{
-				StartTime: time.Now(),
+				Age: time.Now(),
 			},
 			expectedRow: []string{"", "", "-", "0/0", "", "0", "0s"},
 		},
 		"pod without component version": {
 			pod: resources.Pod{
-				StartTime: time.Now(),
+				Age: time.Now(),
 				Component: []struct {
 					Name    string `json:"name"`
 					Version string `json:"version"`
@@ -122,7 +122,7 @@ func TestRowForPod(t *testing.T) {
 		},
 		"pod without component name": {
 			pod: resources.Pod{
-				StartTime: time.Now(),
+				Age: time.Now(),
 				Component: []struct {
 					Name    string `json:"name"`
 					Version string `json:"version"`
@@ -134,7 +134,7 @@ func TestRowForPod(t *testing.T) {
 		},
 		"pod without multiple components": {
 			pod: resources.Pod{
-				StartTime: time.Now(),
+				Age: time.Now(),
 				Component: []struct {
 					Name    string `json:"name"`
 					Version string `json:"version"`
@@ -147,7 +147,7 @@ func TestRowForPod(t *testing.T) {
 		},
 		"pod with multiple containers": {
 			pod: resources.Pod{
-				StartTime: time.Now(),
+				Age: time.Now(),
 				Containers: []struct {
 					Name         string `json:"name"`
 					Ready        bool   `json:"ready"`
@@ -185,10 +185,10 @@ func testServer(t *testing.T) *httptest.Server {
 		switch {
 		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "found", "env-id"):
 			pod := resources.Pod{
-				Name:      "pod-name",
-				Phase:     "running",
-				Status:    "ok",
-				StartTime: time.Now(),
+				Name:   "pod-name",
+				Phase:  "running",
+				Status: "ok",
+				Age:    time.Now(),
 				Component: []struct {
 					Name    string `json:"name"`
 					Version string `json:"version"`
