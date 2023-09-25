@@ -46,13 +46,13 @@ func TestApplyGetAndValidateImageLocalPath(t *testing.T) {
 	})
 
 	t.Run("should return local path if element contains image", func(t *testing.T) {
-		mockItemJson := []byte(`{
+		mockItemJSON := []byte(`{
 			"image": {
 				"localPath": "some/local/path/image.jpg"
 			}
 		}`)
 		mockItem := &marketplace.Item{}
-		err := json.Unmarshal(mockItemJson, mockItem)
+		err := json.Unmarshal(mockItemJSON, mockItem)
 		require.NoError(t, err)
 
 		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
@@ -97,6 +97,7 @@ func TestApplyReadContentType(t *testing.T) {
 		require.NoError(t, err)
 		defer imageFile.Close()
 		found, err := readContentType(imageFile)
+		require.NoError(t, err)
 		require.Equal(t, "image/png", found)
 	})
 
