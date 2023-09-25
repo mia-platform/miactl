@@ -97,7 +97,7 @@ func printPodsList(client *client.APIClient, projectID, environment string) erro
 	}
 
 	if len(pods) == 0 {
-		fmt.Printf("No pods found for %s environment", environment)
+		fmt.Printf("No pods found for %s environment\n", environment)
 		return nil
 	}
 
