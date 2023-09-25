@@ -24,6 +24,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
+	"os"
 	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -114,13 +115,40 @@ func buildUploadImageReq(imageMimeType, fileName string, fileContents io.Reader)
 	return reqContentType, bodyBytes, nil
 }
 
-// uploadImage uploads the image and returns the URL
-func uploadImage(ctx context.Context, client *client.APIClient, companyID, imageMimeType, fileName string, fileContents io.Reader) (string, error) {
+func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, restConfig *client.Config, filePath string) (string, error) {
+	imageFile, err := os.Open(filePath)
+	if err != nil {
+		return "", err
+	}
+
+	contentType, err := readContentType(imageFile)
+	if err != nil {
+		return "", err
+	}
+	if err = validateImageContentType(contentType); err != nil {
+		return "", err
+	}
+
+	// we need to go back to start, as the file needs to be re-read later
+	if _, err := imageFile.Seek(0, 0); err != nil {
+		return "", err
+	}
+
+	imageURL, err := uploadSingleFileWithMultipart(ctx, client, restConfig.CompanyID, contentType, imageFile.Name(), imageFile)
+	if err != nil {
+		return "", err
+	}
+	return imageURL, nil
+}
+
+// uploadSingleFileWithMultipart uploads the given Reader as a single multipart file
+// the part will also be given a filename and a contentType
+func uploadSingleFileWithMultipart(ctx context.Context, client *client.APIClient, companyID, fileMimeType, fileName string, fileContents io.Reader) (string, error) {
 	if companyID == "" {
 		return "", errCompanyIDNotDefined
 	}
 
-	contentType, bodyBytes, err := buildUploadImageReq(imageMimeType, fileName, fileContents)
+	contentType, bodyBytes, err := buildUploadImageReq(fileMimeType, fileName, fileContents)
 	if err != nil {
 		return "", nil
 	}

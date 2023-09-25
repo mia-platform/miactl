@@ -112,42 +112,10 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConf
 		return "", err
 	}
 
-	// TODO: introduce a function for this operation (handleResImages)
 	for _, item := range applyReq.Resources {
-		localPath, err := getAndValidateImageLocalPath(item, imageKey, imageURLKey)
-		if err != nil {
+		if err := processItemImages(ctx, client, restConfig, item, itemNameToFilePath); err != nil {
 			return "", err
 		}
-		itemName := (*item)["name"].(string)
-		itemFilePath := itemNameToFilePath[itemName]
-		itemFileDir := filepath.Dir(itemFilePath)
-		imageFilePath := path.Join(itemFileDir, localPath)
-
-		imageFile, err := os.Open(imageFilePath)
-		if err != nil {
-			return "", err
-		}
-
-		contentType, err := readContentType(imageFile)
-		if err != nil {
-			return "", err
-		}
-		if err = validateImageContentType(contentType); err != nil {
-			return "", err
-		}
-
-		// we need to go back to start, as the file needs to be re-read
-		imageFile.Seek(0, 0)
-
-		imageURL, err := uploadImage(ctx, client, restConfig.CompanyID, contentType, imageFile.Name(), imageFile)
-		if err != nil {
-			return "", err
-		}
-
-		fmt.Println("uploaded image", imageURL)
-
-		delete(*item, imageKey)
-		(*item)[imageURLKey] = imageURL
 	}
 
 	outcome, err := applyMarketplaceResource(ctx, client, restConfig.CompanyID, applyReq)
@@ -156,6 +124,39 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConf
 	}
 
 	return buildOutcomeSummaryAsTables(outcome), nil
+}
+
+// processItemImages looks for image object and uploads the image when needed.
+// it processes image and supportedByImage, changing the object keys with respectively imageUrl and supportedByImageUrl after the upload
+func processItemImages(ctx context.Context, client *client.APIClient, restConfig *client.Config, item *marketplace.Item, itemNameToFilePath map[string]string) error {
+	processImage := func(objKey, urlKey string) error {
+		localPath, err := getAndValidateImageLocalPath(item, objKey, urlKey)
+		if err != nil {
+			return err
+		}
+		if localPath == "" {
+			return nil
+		}
+		itemName := (*item)["name"].(string)
+		itemFilePath := itemNameToFilePath[itemName]
+		itemFileDir := filepath.Dir(itemFilePath)
+		imageFilePath := path.Join(itemFileDir, localPath)
+
+		imageURL, err := uploadImageFileAndGetURL(ctx, client, restConfig, imageFilePath)
+		if err != nil {
+			return err
+		}
+
+		item.DeleteKey(imageURLKey)
+		item.SetKey(imageURLKey, imageURL)
+		return nil
+	}
+
+	if err := processImage(imageKey, imageURLKey); err != nil {
+		return err
+	}
+	err := processImage(supportedByImageKey, supportedByImageURLKey)
+	return err
 }
 
 func buildFilePathsList(paths []string) ([]string, error) {

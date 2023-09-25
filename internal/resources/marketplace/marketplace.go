@@ -57,3 +57,11 @@ type UploadImageResponse struct {
 func (i *Item) MarshalItem(encodingFormat string) ([]byte, error) {
 	return encoding.MarshalData(i, encodingFormat, encoding.MarshalOptions{Indent: true})
 }
+
+func (i *Item) DeleteKey(key string) {
+	delete(*i, key)
+}
+
+func (i *Item) SetKey(key string, val interface{}) {
+	(*i)[key] = val
+}

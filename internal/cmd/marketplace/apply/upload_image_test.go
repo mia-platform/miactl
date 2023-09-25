@@ -131,7 +131,7 @@ func TestApplyUploadImage(t *testing.T) {
 		client, err := client.APIClientForConfig(clientConfig)
 		require.NoError(t, err)
 
-		found, err := uploadImage(context.Background(), client, mockTenantID, "image/png", imageFile.Name(), imageFile)
+		found, err := uploadSingleFileWithMultipart(context.Background(), client, mockTenantID, "image/png", imageFile.Name(), imageFile)
 
 		require.NoError(t, err)
 		require.Equal(t, "https://example.org/image.png", found)
@@ -151,7 +151,7 @@ func TestApplyUploadImage(t *testing.T) {
 		client, err := client.APIClientForConfig(clientConfig)
 		require.NoError(t, err)
 
-		found, err := uploadImage(context.Background(), client, "", "image/png", imageFile.Name(), imageFile)
+		found, err := uploadSingleFileWithMultipart(context.Background(), client, "", "image/png", imageFile.Name(), imageFile)
 		require.ErrorIs(t, err, errCompanyIDNotDefined)
 		require.Zero(t, found)
 	})
