@@ -4,7 +4,7 @@
 	"image": {
 		"localPath": "./imageTest.png"
 	},
-	"name": "miactl test with image and local path",
+	"name": "miactl second element with image",
 	"releaseStage": "",
 	"repositoryUrl": "https://example.com/repo",
 	"resources": {
@@ -53,7 +53,9 @@
 			}
 		}
 	},
-	"supportedByImageUrl": "/v2/files/download/83b11dd9-41f6-4920-bb2d-2a809e944851.png",
+	"supportedByImage": {
+		"localPath": "./imageTest.png"
+	},
 	"tenantId": "team-rocket-test",
 	"type": "plugin"
 }

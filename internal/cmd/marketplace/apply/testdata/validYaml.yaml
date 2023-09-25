@@ -1,31 +1,27 @@
 ---
 _id: 6504773582a6722338be0e25
 categoryId: devportal
-description: Use Mia-Platform core API Portal to expose the swagger documentation
-  of your development services in one unique place.
-documentation:
-  type: externalLink
-  url: https://docs.example.org/docs/runtime_suite/api-portal/overview
+description: Some description
 imageUrl: "/v2/files/download/e83a1e48-fca7-4114-a244-1a69c0c4e7b2.png"
-name: API Portal by miactl test
-releaseStage: ''
+name: miactl test
+releaseStage: ""
 repositoryUrl: https://example.com/repo
 resources:
   services:
     api-portal:
       componentId: api-portal
       containerPorts:
-      - from: 80
-        name: http
-        protocol: TCP
-        to: 8080
+        - from: 80
+          name: http
+          protocol: TCP
+          to: 8080
       defaultEnvironmentVariables:
-      - name: HTTP_PORT
-        value: '8080'
-        valueType: plain
-      - name: ANTI_ZOMBIE_PORT
-        value: '090909'
-        valueType: plain
+        - name: HTTP_PORT
+          value: "8080"
+          valueType: plain
+        - name: ANTI_ZOMBIE_PORT
+          value: "090909"
+          valueType: plain
       defaultLogParser: mia-nginx
       defaultProbes:
         liveness:
@@ -36,8 +32,6 @@ resources:
         memoryLimits:
           max: 25Mi
           min: 5Mi
-      description: Use Mia-Platform core API Portal to expose the swagger documentation
-        of your development services in one unique place.
       dockerImage: containers.example.com/some-image:latest
       name: api-portal
       repositoryUrl: https://example.com/repo

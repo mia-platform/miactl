@@ -62,8 +62,8 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		require.NotNil(t, foundApplyReq)
 		require.NotEmpty(t, foundApplyReq.Resources)
 		require.Equal(t, foundResNameToFilePath, map[string]string{
-			"API Portal by miactl test json": "./testdata/validItem1.json",
-			"API Portal by miactl test":      "./testdata/validYaml.yaml",
+			"miactl test json": "./testdata/validItem1.json",
+			"miactl test":      "./testdata/validYaml.yaml",
 		})
 	})
 
@@ -140,18 +140,13 @@ const mockTenantID = "some-tenant-id"
 var mockURI = fmt.Sprintf(applyEndpoint, mockTenantID)
 
 func TestApplyApplyResourceCmd(t *testing.T) {
-	mockResName := "API Portal by miactl test"
+	mockResName := "miactl test"
 	validReqMock := &marketplace.ApplyRequest{
 		Resources: []*marketplace.Item{
 			{
-				"_id":         "6504773582a6722338be0e25",
-				"categoryId":  "devportal",
-				"description": "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
-				"documentation": map[string]interface{}{
-					"type": "externalLink",
-					"url":  "https://docs.example.org/docs/runtime_suite/api-portal/overview",
-				},
-				"imageUrl":      "/v2/files/download/e83a1e48-fca7-4114-a244-1a69c0c4e7b2.png",
+				"_id":           "6504773582a6722338be0e25",
+				"categoryId":    "devportal",
+				"imageUrl":      "some/path/to/image.png",
 				"name":          mockResName,
 				"releaseStage":  "",
 				"repositoryUrl": "https://example.com/repo",
@@ -194,7 +189,6 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 									"min": "5Mi",
 								},
 							},
-							"description":   "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
 							"dockerImage":   "containers.example.com/some-image:latest",
 							"name":          "api-portal",
 							"repositoryUrl": "https://example.com/repo",
@@ -202,7 +196,7 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 						},
 					},
 				},
-				"supportedByImageUrl": "/v2/files/download/83b11dd9-41f6-4920-bb2d-2a809e944851.png",
+				"supportedByImageUrl": "/some/path/to/image.png",
 				"tenantId":            "team-rocket-test",
 				"type":                "plugin",
 			},
@@ -418,6 +412,7 @@ func TestApplyIntegration(t *testing.T) {
 	t.Run("should upload images correctly", func(t *testing.T) {
 		mockPaths := []string{
 			"./testdata/validItemWithImage.json",
+			"./testdata/validItemWithImage2.json",
 		}
 		applyMockResponse := &marketplace.ApplyResponse{
 			Done: true,
@@ -480,10 +475,22 @@ func applyIntegrationMockServer(t *testing.T, statusCode int, applyMockResponse,
 			require.NoError(t, err)
 			require.Contains(t, foundBody, "resources")
 			resources := foundBody["resources"].([]interface{})
+
 			// verify that the keys have been replaced correctly
 			require.NotContains(t, resources[0].(map[string]interface{}), imageKey)
 			require.Contains(t, resources[0].(map[string]interface{}), imageURLKey)
 			require.Equal(t, mockImageURLLocation, resources[0].(map[string]interface{})[imageURLKey].(string))
+
+			// verify that the keys have been replaced correctly
+			require.NotContains(t, resources[1].(map[string]interface{}), imageKey)
+			require.Contains(t, resources[1].(map[string]interface{}), imageURLKey)
+			require.Equal(t, mockImageURLLocation, resources[1].(map[string]interface{})[imageURLKey].(string))
+
+			// the second mock file also has the supportedByImage
+			require.NotContains(t, resources[1].(map[string]interface{}), supportedByImageKey)
+			require.Contains(t, resources[1].(map[string]interface{}), supportedByImageURLKey)
+			require.Equal(t, mockImageURLLocation, resources[1].(map[string]interface{})[imageURLKey].(string))
+
 			applyRequestHandler(t, w, r, statusCode, applyMockResponse)
 		case fmt.Sprintf(uploadImageEndpoint, mockTenantID):
 			uploadImageHandler(t, w, r, statusCode, uploadMockResponse)
