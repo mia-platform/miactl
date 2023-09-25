@@ -57,10 +57,14 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 			"./testdata/validYaml.yaml",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.NoError(t, err)
-		require.NotNil(t, found)
-		require.NotEmpty(t, found.Resources)
+		require.NotNil(t, foundApplyReq)
+		require.NotEmpty(t, foundApplyReq.Resources)
+		require.Equal(t, foundResNameToFilePath, map[string]string{
+			"API Portal by miactl test json": "./testdata/validItem1.json",
+			"API Portal by miactl test":      "./testdata/validYaml.yaml",
+		})
 	})
 
 	t.Run("should return error if file is not valid json", func(t *testing.T) {
@@ -68,9 +72,10 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 			"./testdata/invalidJson1.json",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.ErrorContains(t, err, "errors in file ./testdata/invalidJson1.json")
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if file is not valid yaml", func(t *testing.T) {
@@ -78,9 +83,10 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 			"./testdata/invalidYaml.yaml",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.ErrorContains(t, err, "errors in file ./testdata/invalidYaml.yaml")
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if file is not found", func(t *testing.T) {
@@ -88,9 +94,10 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 			"./I/do/not/exist.json",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.Error(t, err)
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if a file has unknown extensions, but others are valid", func(t *testing.T) {
@@ -100,17 +107,19 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 			"./testdata/validYaml.yaml",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.Error(t, err)
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if resources array is empty", func(t *testing.T) {
 		filePaths := []string{}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.ErrorIs(t, err, errNoValidFilesProvided)
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if two resources have the same name", func(t *testing.T) {
@@ -119,9 +128,10 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 			"./testdata/validYaml.yml",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.ErrorIs(t, err, errDuplicatedResName)
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 }
 
