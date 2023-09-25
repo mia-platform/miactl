@@ -11,7 +11,7 @@ Create a Context for a company on the cloud instance:
 miactl context set paas-company --company-id <your-company-id>
 ```
 
-Create a Context for specific project bin a ompany on the cloud instance:
+Create a Context for specific project in a Company on the cloud instance:
 
 ```sh
 miactl context set paas-project --company-id <your-company-id> --project-id <your-project-id>
