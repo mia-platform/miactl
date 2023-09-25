@@ -112,8 +112,9 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConf
 		return "", err
 	}
 
+	// TODO: introduce a function for this operation (handleResImages)
 	for _, item := range applyReq.Resources {
-		localPath, err := validateAndGetImageLocalPath(item, imageKey, imageURLKey)
+		localPath, err := getAndValidateImageLocalPath(item, imageKey, imageURLKey)
 		if err != nil {
 			return "", err
 		}
@@ -122,7 +123,23 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConf
 		itemFileDir := filepath.Dir(itemFilePath)
 		imageFilePath := path.Join(itemFileDir, localPath)
 
-		imageURL, err := uploadImage(ctx, client, restConfig.CompanyID, imageFilePath)
+		imageFile, err := os.Open(imageFilePath)
+		if err != nil {
+			return "", err
+		}
+
+		contentType, err := readContentType(imageFile)
+		if err != nil {
+			return "", err
+		}
+		if err = validateImageContentType(contentType); err != nil {
+			return "", err
+		}
+
+		// we need to go back to start, as the file needs to be re-read
+		imageFile.Seek(0, 0)
+
+		imageURL, err := uploadImage(ctx, client, restConfig.CompanyID, contentType, imageFile.Name(), imageFile)
 		if err != nil {
 			return "", err
 		}

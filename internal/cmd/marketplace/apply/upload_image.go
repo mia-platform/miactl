@@ -24,8 +24,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -39,10 +37,9 @@ const (
 
 	localPathKey = "localPath"
 
-	jpegExtension = ".jpeg"
-	jpgExtension  = ".jpg"
-	pngExtension  = ".png"
-	gifExtension  = ".gif"
+	jpegMimeType = "image/jpeg"
+	jpgMimeType  = "image/jpg"
+	pngMimeType  = "image/png"
 )
 
 var (
@@ -52,8 +49,8 @@ var (
 	errFileMustBeImage = errors.New("the file must a jpeg, png or gif image")
 )
 
-// validateAndGetImageLocalPath looks for an imageKey in the Item, if found it returns the local path
-func validateAndGetImageLocalPath(item *marketplace.Item, imageKey, imageURLKey string) (string, error) {
+// getAndValidateImageLocalPath looks for an imageKey in the Marketplace item, if found it returns the local path
+func getAndValidateImageLocalPath(item *marketplace.Item, imageKey, imageURLKey string) (string, error) {
 	_, imageURLExists := (*item)[imageURLKey]
 	imageInfo, imageExists := (*item)[imageKey]
 	if imageExists && imageURLExists {
@@ -73,21 +70,16 @@ func validateAndGetImageLocalPath(item *marketplace.Item, imageKey, imageURLKey 
 		if !ok {
 			return "", errImageObjectInvalid
 		}
-		switch filepath.Ext(localPathStr) {
-		case pngExtension, jpegExtension, jpgExtension:
-			return localPathStr, nil
-		default:
-			return "", errFileMustBeImage
-		}
+		return localPathStr, nil
 	}
 
 	return "", nil
 }
 
-// readContentType reads the first 512 bytes of the file and extracts the content type
-func readContentType(file *os.File) (string, error) {
+func readContentType(fileContents io.Reader) (string, error) {
+	// DetectContentType only needs the first 512 bytes
 	headerBytes := make([]byte, 512)
-	_, err := file.Read(headerBytes)
+	_, err := fileContents.Read(headerBytes)
 	if err != nil {
 		return "", err
 	}
@@ -96,39 +88,47 @@ func readContentType(file *os.File) (string, error) {
 	return contentType, nil
 }
 
-// uploadImage uploads an image and returns the URL
-func uploadImage(ctx context.Context, client *client.APIClient, companyID, imagePath string) (string, error) {
+func validateImageContentType(contentType string) error {
+	switch contentType {
+	case pngMimeType, jpgMimeType, jpegMimeType:
+		return nil
+	}
+	return errFileMustBeImage
+}
+
+func buildUploadImageReq(imageMimeType, fileName string, fileContents io.Reader) (string, []byte, error) {
+	var bodyBuffer bytes.Buffer
+	multipartWriter := multipart.NewWriter(&bodyBuffer)
+	formFileWriter, err := createFormFileWithContentType(multipartWriter, multipartFieldName, fileName, imageMimeType)
+	if err != nil {
+		return "", nil, err
+	}
+	if _, err = io.Copy(formFileWriter, fileContents); err != nil {
+		return "", nil, err
+	}
+	multipartWriter.Close()
+
+	reqContentType := multipartWriter.FormDataContentType()
+	bodyBytes := bodyBuffer.Bytes()
+
+	return reqContentType, bodyBytes, nil
+}
+
+// uploadImage uploads the image and returns the URL
+func uploadImage(ctx context.Context, client *client.APIClient, companyID, imageMimeType, fileName string, fileContents io.Reader) (string, error) {
 	if companyID == "" {
 		return "", errCompanyIDNotDefined
 	}
 
-	file, err := os.Open(imagePath)
+	contentType, bodyBytes, err := buildUploadImageReq(imageMimeType, fileName, fileContents)
 	if err != nil {
-		return "", err
+		return "", nil
 	}
-	defer file.Close()
-	contentType, err := readContentType(file)
-	if err != nil {
-		return "", err
-	}
-	file.Seek(0, 0)
-	fmt.Println("detected content type", contentType)
-
-	var bodyBuffer bytes.Buffer
-	var fw io.Writer
-	multipartWriter := multipart.NewWriter(&bodyBuffer)
-	if fw, err = createFormFileWithContentType(multipartWriter, multipartFieldName, filepath.Base(imagePath), contentType); err != nil {
-		return "", err
-	}
-	if _, err = io.Copy(fw, file); err != nil {
-		return "", err
-	}
-	multipartWriter.Close()
 
 	resp, err := client.Post().
-		SetHeader("Content-Type", multipartWriter.FormDataContentType()).
+		SetHeader("Content-Type", contentType).
 		APIPath(fmt.Sprintf(uploadImageEndpoint, companyID)).
-		Body(bodyBuffer.Bytes()).
+		Body(bodyBytes).
 		Do(ctx)
 	if err != nil {
 		return "", err
@@ -138,7 +138,6 @@ func uploadImage(ctx context.Context, client *client.APIClient, companyID, image
 	}
 
 	uploadResp := &marketplace.UploadImageResponse{}
-
 	err = resp.ParseResponse(uploadResp)
 	if err != nil {
 		return "", err

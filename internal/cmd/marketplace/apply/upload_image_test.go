@@ -18,6 +18,7 @@ package marketplace
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -30,7 +31,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestApplyValidateImageURLs(t *testing.T) {
+func TestApplyGetAndValidateImageLocalPath(t *testing.T) {
 	t.Run("should throw error with an item that contains both image and imageURL", func(t *testing.T) {
 		mockItem := &marketplace.Item{
 			imageKey: map[string]interface{}{
@@ -39,7 +40,7 @@ func TestApplyValidateImageURLs(t *testing.T) {
 			imageURLKey: "http://some.url",
 		}
 
-		found, err := validateAndGetImageLocalPath(mockItem, imageKey, imageURLKey)
+		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
 		require.ErrorIs(t, err, errImageURLConflict)
 		require.Zero(t, found)
 	})
@@ -54,7 +55,7 @@ func TestApplyValidateImageURLs(t *testing.T) {
 		err := json.Unmarshal(mockItemJson, mockItem)
 		require.NoError(t, err)
 
-		found, err := validateAndGetImageLocalPath(mockItem, imageKey, imageURLKey)
+		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
 		require.NoError(t, err)
 		require.Equal(t, found, "some/local/path/image.jpg")
 	})
@@ -65,7 +66,7 @@ func TestApplyValidateImageURLs(t *testing.T) {
 			},
 		}
 
-		found, err := validateAndGetImageLocalPath(mockItem, imageKey, imageURLKey)
+		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
 		require.ErrorIs(t, err, errImageObjectInvalid)
 		require.Zero(t, found)
 	})
@@ -74,27 +75,49 @@ func TestApplyValidateImageURLs(t *testing.T) {
 			imageURLKey: "http://some.url",
 		}
 
-		found, err := validateAndGetImageLocalPath(mockItem, imageKey, imageURLKey)
+		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
 		require.NoError(t, err)
-		require.Zero(t, found)
-	})
-	t.Run("should return error if file has unrecognized extension", func(t *testing.T) {
-		mockItem := &marketplace.Item{
-			imageKey: map[string]interface{}{
-				localPathKey: "some/local/path/image.txt",
-			},
-		}
-
-		found, err := validateAndGetImageLocalPath(mockItem, imageKey, imageURLKey)
-		require.ErrorIs(t, err, errFileMustBeImage)
 		require.Zero(t, found)
 	})
 }
 
 const mockImagePath = "./testdata/imageTest.png"
 
+type ErrReader struct {
+	err error
+}
+
+func (er *ErrReader) Read([]byte) (int, error) {
+	return 0, er.err
+}
+
+func TestApplyReadContentType(t *testing.T) {
+	t.Run("should read correct content type", func(t *testing.T) {
+		imageFile, err := os.Open(mockImagePath)
+		require.NoError(t, err)
+		defer imageFile.Close()
+		found, err := readContentType(imageFile)
+		require.Equal(t, "image/png", found)
+	})
+
+	t.Run("should return error if read fails", func(t *testing.T) {
+		mockErr := errors.New("testing error")
+		found, err := readContentType(
+			&ErrReader{
+				err: mockErr,
+			},
+		)
+		require.ErrorIs(t, err, mockErr)
+		require.Zero(t, found)
+	})
+}
+
 func TestApplyUploadImage(t *testing.T) {
 	t.Run("should upload image successfully", func(t *testing.T) {
+		imageFile, err := os.Open(mockImagePath)
+		require.NoError(t, err)
+		defer imageFile.Close()
+
 		mockResp := &marketplace.UploadImageResponse{
 			Location: "https://example.org/image.png",
 		}
@@ -107,27 +130,17 @@ func TestApplyUploadImage(t *testing.T) {
 		client, err := client.APIClientForConfig(clientConfig)
 		require.NoError(t, err)
 
-		found, err := uploadImage(context.Background(), client, mockTenantID, mockImagePath)
+		found, err := uploadImage(context.Background(), client, mockTenantID, "image/png", imageFile.Name(), imageFile)
+
 		require.NoError(t, err)
 		require.Equal(t, "https://example.org/image.png", found)
 	})
 
-	t.Run("should return error if image file does not exist", func(t *testing.T) {
-		mockServer := uploadImageMockServer(t, http.StatusNoContent, nil)
-		defer mockServer.Close()
-		clientConfig := &client.Config{
-			Transport: http.DefaultTransport,
-		}
-		clientConfig.Host = mockServer.URL
-		client, err := client.APIClientForConfig(clientConfig)
-		require.NoError(t, err)
-
-		found, err := uploadImage(context.Background(), client, mockTenantID, "some/path/image.png")
-		require.ErrorIs(t, err, os.ErrNotExist)
-		require.Zero(t, found)
-	})
-
 	t.Run("should return error if companyID is not defined", func(t *testing.T) {
+		imageFile, err := os.Open(mockImagePath)
+		require.NoError(t, err)
+		defer imageFile.Close()
+
 		mockServer := uploadImageMockServer(t, http.StatusNoContent, nil)
 		defer mockServer.Close()
 		clientConfig := &client.Config{
@@ -137,9 +150,37 @@ func TestApplyUploadImage(t *testing.T) {
 		client, err := client.APIClientForConfig(clientConfig)
 		require.NoError(t, err)
 
-		found, err := uploadImage(context.Background(), client, "", mockImagePath)
+		found, err := uploadImage(context.Background(), client, "", "image/png", imageFile.Name(), imageFile)
 		require.ErrorIs(t, err, errCompanyIDNotDefined)
 		require.Zero(t, found)
+	})
+}
+
+func TestValidateImageFile(t *testing.T) {
+	t.Run("should return error if content type is not allowed", func(t *testing.T) {
+		contentType := "application/javascript"
+
+		err := validateImageContentType(contentType)
+		require.ErrorIs(t, err, errFileMustBeImage)
+	})
+
+	t.Run("should not return error if content type is png", func(t *testing.T) {
+		contentType := "image/png"
+
+		err := validateImageContentType(contentType)
+		require.NoError(t, err)
+	})
+	t.Run("should not return error if content type is jpg", func(t *testing.T) {
+		contentType := "image/jpg"
+
+		err := validateImageContentType(contentType)
+		require.NoError(t, err)
+	})
+	t.Run("should not return error if content type is jpeg", func(t *testing.T) {
+		contentType := "image/jpeg"
+
+		err := validateImageContentType(contentType)
+		require.NoError(t, err)
 	})
 }
 
@@ -155,6 +196,7 @@ func uploadImageMockServer(t *testing.T, statusCode int, mockResponse interface{
 		require.NoError(t, err)
 		require.Equal(t, mockImageURI, r.RequestURI)
 		require.Equal(t, http.MethodPost, r.Method)
+		require.Contains(t, r.Header.Get("Content-Type"), "multipart/form-data")
 
 		foundReqFile, _, err := r.FormFile(multipartFieldName)
 		require.NoError(t, err)
