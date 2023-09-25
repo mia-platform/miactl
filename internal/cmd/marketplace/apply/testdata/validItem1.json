@@ -1,7 +1,7 @@
 {
 	"categoryId": "devportal",
 	"imageUrl": "path/to/image.png",
-	"name": "by miactl test json",
+	"name": "miactl test json",
 	"releaseStage": "",
 	"repositoryUrl": "https://example.com/repo",
 	"resources": {
