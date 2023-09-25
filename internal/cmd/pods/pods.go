@@ -158,6 +158,6 @@ func rowForPod(pod resources.Pod) []string {
 		fmt.Sprintf("%d/%d", readyContainers, totalContainers),
 		caser.String(pod.Phase),
 		fmt.Sprint(totalRestart),
-		util.HumanDuration(time.Since(pod.StartTime)),
+		util.HumanDuration(time.Since(pod.Age)),
 	}
 }

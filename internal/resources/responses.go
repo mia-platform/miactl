@@ -120,7 +120,7 @@ type Pod struct {
 	Name      string    `json:"name"`
 	Phase     string    `json:"phase"`
 	Status    string    `json:"status"`
-	StartTime time.Time `json:"startTime"`
+	Age       time.Time `json:"startTime"` //nolint:tagliatelle
 	Component []struct {
 		Name    string `json:"name"`
 		Version string `json:"version"`
