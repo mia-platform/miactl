@@ -115,3 +115,29 @@ type ServiceAccount struct {
 	ClientIDIssuedAt int64  `json:"clientIdIssuedAt"`
 	Company          string `json:"company"`
 }
+
+type Pod struct {
+	Name      string    `json:"name"`
+	Phase     string    `json:"phase"`
+	Status    string    `json:"status"`
+	Age       time.Time `json:"startTime"` //nolint:tagliatelle
+	Component []struct {
+		Name    string `json:"name"`
+		Version string `json:"version"`
+	} `json:"component"`
+	Containers []struct {
+		Name         string `json:"name"`
+		Ready        bool   `json:"ready"`
+		RestartCount int    `json:"restartCount"`
+		Status       string `json:"status"`
+	} `json:"containers"`
+}
+
+type CronJob struct {
+	Name         string    `json:"name"`
+	Active       int       `json:"active"`
+	Suspend      bool      `json:"suspend"`
+	Schedule     string    `json:"schedule"`
+	Age          time.Time `json:"creationTimestamp"` //nolint: tagliatelle
+	LastSchedule time.Time `json:"lastScheduleTime"`  //nolint: tagliatelle
+}

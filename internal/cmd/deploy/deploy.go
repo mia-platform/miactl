@@ -89,7 +89,7 @@ func run(environmentName string, options *clioptions.CLIOptions) error {
 		return fmt.Errorf("error retrieving the pipeline status: %w", err)
 	}
 
-	fmt.Printf("Pipeline ended with %s", status)
+	fmt.Printf("Pipeline ended with %s\n", status)
 	return nil
 }
 
