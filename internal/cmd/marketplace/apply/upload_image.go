@@ -26,6 +26,7 @@ import (
 	"net/textproto"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
@@ -146,11 +147,22 @@ func uploadImage(ctx context.Context, client *client.APIClient, companyID, image
 	return uploadResp.Location, nil
 }
 
-// createFormFileWithContentType is similar to multipart.CreateFormFile, but it also adds a content type to the file
+var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+
+func escapeQuotes(s string) string {
+	return quoteEscaper.Replace(s)
+}
+
+// createFormFileWithContentType reimplements multipart.CreateFormFile(): https://cs.opensource.google/go/go/+/refs/tags/go1.21.1:src/mime/multipart/writer.go;l=140
+// It adds the possibility to set an arbitrary contentType MIME header to the file.
+// The latter would be otherwise defaulted to application/octet-stream, which is is not accepted by the Mia-Platform backend endpoint, because it needs to know the file type.
+// For this reason we need to reimplement the function with this modification, replicating also the Content-Disposition build, until this proposal lands into Go's standard library
+// https://github.com/golang/go/issues/46771
 func createFormFileWithContentType(w *multipart.Writer, fieldname, filename, contentType string) (io.Writer, error) {
 	h := make(textproto.MIMEHeader)
 	h.Set("Content-Disposition",
-		fmt.Sprintf(`form-data; name="%s"; filename="%s"`, fieldname, filename))
+		fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+			escapeQuotes(fieldname), escapeQuotes(filename)))
 	h.Set("Content-Type", contentType)
 	return w.CreatePart(h)
 }
