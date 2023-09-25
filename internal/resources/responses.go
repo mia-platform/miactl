@@ -132,3 +132,12 @@ type Pod struct {
 		Status       string `json:"status"`
 	} `json:"containers"`
 }
+
+type CronJob struct {
+	Name         string    `json:"name"`
+	Active       int       `json:"active"`
+	Suspend      bool      `json:"suspend"`
+	Schedule     string    `json:"schedule"`
+	Age          time.Time `json:"creationTimestamp"` //nolint: tagliatelle
+	LastSchedule time.Time `json:"lastScheduleTime"`  //nolint: tagliatelle
+}
