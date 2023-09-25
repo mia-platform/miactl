@@ -58,10 +58,10 @@ func (i *Item) MarshalItem(encodingFormat string) ([]byte, error) {
 	return encoding.MarshalData(i, encodingFormat, encoding.MarshalOptions{Indent: true})
 }
 
-func (i *Item) DeleteKey(key string) {
+func (i *Item) Del(key string) {
 	delete(*i, key)
 }
 
-func (i *Item) SetKey(key string, val interface{}) {
+func (i *Item) Set(key string, val interface{}) {
 	(*i)[key] = val
 }

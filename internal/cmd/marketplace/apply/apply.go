@@ -147,8 +147,8 @@ func processItemImages(ctx context.Context, client *client.APIClient, restConfig
 			return err
 		}
 
-		item.DeleteKey(imageURLKey)
-		item.SetKey(imageURLKey, imageURL)
+		item.Del(imageKey)
+		item.Set(imageURLKey, imageURL)
 		return nil
 	}
 
