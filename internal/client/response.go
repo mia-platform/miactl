@@ -35,7 +35,7 @@ func (r *ResponseError) Error() string {
 	var out *resources.APIError
 	err := parseBody(r.body, &out)
 	if err != nil {
-		//return fmt.Sprintf("error parsing error response from server: %s", err)
+		// return fmt.Sprintf("error parsing error response from server: %s", err)
 		return string(r.body)
 	}
 
