@@ -185,29 +185,33 @@ func TestValidateImageFile(t *testing.T) {
 	})
 }
 
-func uploadImageMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
+func uploadImageHandler(t *testing.T, w http.ResponseWriter, r *http.Request, statusCode int, mockResponse interface{}) {
 	t.Helper()
+
 	mockImageURI := fmt.Sprintf(uploadImageEndpoint, mockTenantID)
 	imageFile, err := os.Open(mockImagePath)
 	require.NoError(t, err)
 	imageBytes, err := io.ReadAll(imageFile)
 	require.NoError(t, err)
+	require.Equal(t, mockImageURI, r.RequestURI)
+	require.Equal(t, http.MethodPost, r.Method)
+	require.Contains(t, r.Header.Get("Content-Type"), "multipart/form-data")
 
+	foundReqFile, _, err := r.FormFile(multipartFieldName)
+	require.NoError(t, err)
+	foundReqFileBytes, err := io.ReadAll(foundReqFile)
+	require.NoError(t, err)
+	require.Equal(t, imageBytes, foundReqFileBytes)
+
+	w.WriteHeader(statusCode)
+	resBytes, err := json.Marshal(mockResponse)
+	require.NoError(t, err)
+	w.Write(resBytes)
+}
+
+func uploadImageMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
+	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.NoError(t, err)
-		require.Equal(t, mockImageURI, r.RequestURI)
-		require.Equal(t, http.MethodPost, r.Method)
-		require.Contains(t, r.Header.Get("Content-Type"), "multipart/form-data")
-
-		foundReqFile, _, err := r.FormFile(multipartFieldName)
-		require.NoError(t, err)
-		foundReqFileBytes, err := io.ReadAll(foundReqFile)
-		require.NoError(t, err)
-		require.Equal(t, imageBytes, foundReqFileBytes)
-
-		w.WriteHeader(statusCode)
-		resBytes, err := json.Marshal(mockResponse)
-		require.NoError(t, err)
-		w.Write(resBytes)
+		uploadImageHandler(t, w, r, statusCode, mockResponse)
 	}))
 }

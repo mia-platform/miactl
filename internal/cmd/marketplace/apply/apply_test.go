@@ -19,13 +19,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -412,18 +412,90 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 	})
 }
 
+const mockImageURLLocation = "some/fancy/location"
+
+func TestApplyIntegration(t *testing.T) {
+	t.Run("should upload images correctly", func(t *testing.T) {
+		mockPaths := []string{
+			"./testdata/validItemWithImage.json",
+		}
+		applyMockResponse := &marketplace.ApplyResponse{
+			Done: true,
+			Items: []marketplace.ApplyResponseItem{
+				{
+					ItemID:           "id1",
+					Name:             "some name 1",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+				},
+			},
+		}
+		uploadMockResponse := &marketplace.UploadImageResponse{
+			Location: mockImageURLLocation,
+		}
+
+		mockServer := applyIntegrationMockServer(t, http.StatusOK, applyMockResponse, uploadMockResponse)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := applyItemsFromPaths(
+			context.Background(),
+			client,
+			mockTenantID,
+			mockPaths,
+		)
+		require.NoError(t, err)
+		require.Contains(t, found, "id1")
+		require.Contains(t, found, "some name 1")
+	})
+}
+
+func applyRequestHandler(t *testing.T, w http.ResponseWriter, r *http.Request, statusCode int, mockResponse interface{}) {
+	t.Helper()
+	require.Equal(t, mockURI, r.RequestURI)
+	require.Equal(t, http.MethodPost, r.Method)
+
+	w.WriteHeader(statusCode)
+	resBytes, err := json.Marshal(mockResponse)
+	require.NoError(t, err)
+	w.Write(resBytes)
+}
+
+func applyIntegrationMockServer(t *testing.T, statusCode int, applyMockResponse, uploadMockResponse interface{}) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.RequestURI {
+		case fmt.Sprintf(applyEndpoint, mockTenantID):
+			foundBodyBytes, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			foundBody := make(map[string]interface{})
+			err = json.Unmarshal(foundBodyBytes, &foundBody)
+			require.NoError(t, err)
+			require.Contains(t, foundBody, "resources")
+			resources := foundBody["resources"].([]interface{})
+			// verify that the keys have been replaced correctly
+			require.NotContains(t, resources[0].(map[string]interface{}), imageKey)
+			require.Contains(t, resources[0].(map[string]interface{}), imageURLKey)
+			require.Equal(t, mockImageURLLocation, resources[0].(map[string]interface{})[imageURLKey].(string))
+			applyRequestHandler(t, w, r, statusCode, applyMockResponse)
+		case fmt.Sprintf(uploadImageEndpoint, mockTenantID):
+			uploadImageHandler(t, w, r, statusCode, uploadMockResponse)
+		default:
+			require.FailNowf(t, "invalid request URI", "invalid request URI: %s", r.RequestURI)
+		}
+	}))
+}
+
 func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var isReqOk = assert.Equal(t, mockURI, r.RequestURI) && assert.Equal(t, http.MethodPost, r.Method)
-		if !isReqOk {
-			w.WriteHeader(http.StatusNotFound)
-			require.Fail(t, "unsupported call")
-			return
-		}
-		w.WriteHeader(statusCode)
-		resBytes, err := json.Marshal(mockResponse)
-		require.NoError(t, err)
-		w.Write(resBytes)
+		applyRequestHandler(t, w, r, statusCode, mockResponse)
 	}))
 }

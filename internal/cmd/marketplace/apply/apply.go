@@ -86,7 +86,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			outcome, err := applyItemsFromPaths(
 				cmd.Context(),
 				client,
-				restConfig,
+				restConfig.CompanyID,
 				options.MarketplaceResourcePaths,
 			)
 			cobra.CheckErr(err)
@@ -102,7 +102,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConfig *client.Config, filePaths []string) (string, error) {
+func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyID string, filePaths []string) (string, error) {
 	resourceFilesPaths, err := buildFilePathsList(filePaths)
 	if err != nil {
 		return "", err
@@ -113,12 +113,12 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConf
 	}
 
 	for _, item := range applyReq.Resources {
-		if err := processItemImages(ctx, client, restConfig, item, itemNameToFilePath); err != nil {
+		if err := processItemImages(ctx, client, companyID, item, itemNameToFilePath); err != nil {
 			return "", err
 		}
 	}
 
-	outcome, err := applyMarketplaceResource(ctx, client, restConfig.CompanyID, applyReq)
+	outcome, err := applyMarketplaceResource(ctx, client, companyID, applyReq)
 	if err != nil {
 		return "", err
 	}
@@ -128,7 +128,7 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, restConf
 
 // processItemImages looks for image object and uploads the image when needed.
 // it processes image and supportedByImage, changing the object keys with respectively imageUrl and supportedByImageUrl after the upload
-func processItemImages(ctx context.Context, client *client.APIClient, restConfig *client.Config, item *marketplace.Item, itemNameToFilePath map[string]string) error {
+func processItemImages(ctx context.Context, client *client.APIClient, companyID string, item *marketplace.Item, itemNameToFilePath map[string]string) error {
 	processImage := func(objKey, urlKey string) error {
 		localPath, err := getAndValidateImageLocalPath(item, objKey, urlKey)
 		if err != nil {
@@ -142,13 +142,13 @@ func processItemImages(ctx context.Context, client *client.APIClient, restConfig
 		itemFileDir := filepath.Dir(itemFilePath)
 		imageFilePath := path.Join(itemFileDir, localPath)
 
-		imageURL, err := uploadImageFileAndGetURL(ctx, client, restConfig, imageFilePath)
+		imageURL, err := uploadImageFileAndGetURL(ctx, client, companyID, imageFilePath)
 		if err != nil {
 			return err
 		}
 
-		item.Del(imageKey)
-		item.Set(imageURLKey, imageURL)
+		item.Del(objKey)
+		item.Set(urlKey, imageURL)
 		return nil
 	}
 

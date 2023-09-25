@@ -115,7 +115,7 @@ func buildUploadImageReq(imageMimeType, fileName string, fileContents io.Reader)
 	return reqContentType, bodyBytes, nil
 }
 
-func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, restConfig *client.Config, filePath string) (string, error) {
+func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, companyID, filePath string) (string, error) {
 	imageFile, err := os.Open(filePath)
 	if err != nil {
 		return "", err
@@ -134,7 +134,7 @@ func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, res
 		return "", err
 	}
 
-	imageURL, err := uploadSingleFileWithMultipart(ctx, client, restConfig.CompanyID, contentType, imageFile.Name(), imageFile)
+	imageURL, err := uploadSingleFileWithMultipart(ctx, client, companyID, contentType, imageFile.Name(), imageFile)
 	if err != nil {
 		return "", err
 	}

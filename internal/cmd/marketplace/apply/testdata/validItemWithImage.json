@@ -8,7 +8,7 @@
 	"image": {
 		"localPath": "./imageTest.png"
 	},
-	"name": "API Portal by miactl test json",
+	"name": "API Portal by miactl test with image and local path",
 	"releaseStage": "",
 	"repositoryUrl": "https://example.com/repo",
 	"resources": {
