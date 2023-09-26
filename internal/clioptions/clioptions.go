@@ -118,7 +118,7 @@ func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 }
 
 func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
-	cmd.Flags().StringArrayVarP(&o.MarketplaceResourcePaths, "file-path", "f", []string{}, "paths to to a folder of or to a JSON or YAML file defining a Marketplace item")
+	cmd.Flags().StringArrayVarP(&o.MarketplaceResourcePaths, "file-path", "f", []string{}, "paths to JSON/YAML files or folder of files containing a Marketplace item definition")
 	err := cmd.MarkFlagRequired("file-path")
 	if err != nil {
 		// the error is only due to a programming error (missing command), hence panic

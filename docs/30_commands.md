@@ -337,7 +337,6 @@ miactl marketplace apply -f myFantasticGoTemplates
 #### Options
 
 ```
-  -d, --directory string   a path to a directory containing Marketplace resource files
-  -f, --file stringArray   a path to a JSON or YAML file containing a Marketplace resource
+  -f, --file stringArray   paths to JSON/YAML files or folder of files containing a Marketplace item definition
   -h, --help               help for apply
 ```
