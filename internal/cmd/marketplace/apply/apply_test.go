@@ -581,7 +581,7 @@ func applyRequestHandler(t *testing.T, w http.ResponseWriter, r *http.Request, s
 	w.Write(resBytes)
 }
 
-func assertImageKeyIsReplacedWithImageURL(t *testing.T, resource map[string]interface{}, objKey, urlKey, expectedUrl string) {
+func assertImageKeyIsReplacedWithImageURL(t *testing.T, resource map[string]interface{}, objKey, urlKey, expectedURL string) {
 	t.Helper()
 
 	require.NotContains(t, resource, objKey)
