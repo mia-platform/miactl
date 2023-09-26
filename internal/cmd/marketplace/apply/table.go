@@ -83,25 +83,27 @@ func buildFailureTable(items []marketplace.ApplyResponseItem) string {
 }
 
 func buildOutcomeSummaryAsTables(outcome *marketplace.ApplyResponse) string {
-	successfulItems, failedItems := separateSuccessAndFailures(outcome.Items)
-	successfulCount := len(successfulItems)
-	failedCount := len(failedItems)
+    successfulItems, failedItems := separateSuccessAndFailures(outcome.Items)
+    successfulCount := len(successfulItems)
+    failedCount := len(failedItems)
 
-	var outcomeStr string
+    outcomeStr := ""
 
-	if successfulCount > 0 {
-		outcomeStr += fmt.Sprintf("%d of %d items have been successfully applied:\n\n", successfulCount, len(outcome.Items))
-		outcomeStr += buildSuccessTable(successfulItems)
-	}
+    if successfulCount > 0 {
+        outcomeStr += fmt.Sprintf("%d of %d items have been successfully applied:\n\n", successfulCount, len(outcome.Items))
+        outcomeStr += buildSuccessTable(successfulItems)
+    }
 
-	if failedCount > 0 {
-		if successfulCount > 0 {
-			outcomeStr += fmt.Sprintln()
-		}
-		outcomeStr += fmt.Sprintf("%d of %d items have not been applied due to validation errors:\n\n", failedCount, len(outcome.Items))
-		outcomeStr += buildFailureTable(failedItems)
-	}
-	return outcomeStr
+    if failedCount > 0 && successfulCount > 0 {
+        outcomeStr += "\n"
+    }
+
+    if failedCount > 0 {
+        outcomeStr += fmt.Sprintf("%d of %d items have not been applied due to validation errors:\n\n", failedCount, len(outcome.Items))
+        outcomeStr += buildFailureTable(failedItems)
+    }
+
+    return outcomeStr
 }
 
 func separateSuccessAndFailures(items []marketplace.ApplyResponseItem) ([]marketplace.ApplyResponseItem, []marketplace.ApplyResponseItem) {
