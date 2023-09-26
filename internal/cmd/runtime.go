@@ -17,7 +17,7 @@ package cmd
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	cronjobs "github.com/mia-platform/miactl/internal/cmd/cronjobs/pods"
+	"github.com/mia-platform/miactl/internal/cmd/cronjobs"
 	"github.com/mia-platform/miactl/internal/cmd/environments"
 	"github.com/mia-platform/miactl/internal/cmd/pods"
 	"github.com/spf13/cobra"
