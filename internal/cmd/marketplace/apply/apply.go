@@ -61,8 +61,7 @@ miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/my
 # Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
 miactl marketplace apply -f myFantasticGoTemplates`
 
-	// applyEndpoint has to be `Sprintf`ed with the companyID
-	applyEndpoint = "/api/backend/marketplace/tenants/%s/resources"
+	applyEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources"
 
 	imageKey    = "image"
 	imageURLKey = "imageUrl"
@@ -268,7 +267,7 @@ func applyMarketplaceResource(ctx context.Context, client *client.APIClient, com
 	}
 
 	resp, err := client.Post().
-		APIPath(fmt.Sprintf(applyEndpoint, companyID)).
+		APIPath(fmt.Sprintf(applyEndpointTemplate, companyID)).
 		Body(bodyBytes).
 		Do(ctx)
 	if err != nil {

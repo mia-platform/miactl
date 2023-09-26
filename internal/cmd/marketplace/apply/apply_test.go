@@ -138,14 +138,13 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 
 const mockTenantID = "some-tenant-id"
 
-var mockURI = fmt.Sprintf(applyEndpoint, mockTenantID)
+var mockURI = fmt.Sprintf(applyEndpointTemplate, mockTenantID)
 
 func TestApplyApplyResourceCmd(t *testing.T) {
 	mockResName := "miactl test"
 	validReqMock := &marketplace.ApplyRequest{
 		Resources: []*marketplace.Item{
 			{
-				"_id":           "6504773582a6722338be0e25",
 				"categoryId":    "devportal",
 				"imageUrl":      "some/path/to/image.png",
 				"name":          mockResName,
@@ -481,7 +480,7 @@ func applyIntegrationMockServer(t *testing.T, statusCode int, applyMockResponse,
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.RequestURI {
-		case fmt.Sprintf(applyEndpoint, mockTenantID):
+		case fmt.Sprintf(applyEndpointTemplate, mockTenantID):
 			foundBodyBytes, err := io.ReadAll(r.Body)
 			require.NoError(t, err)
 			foundBody := make(map[string]interface{})
@@ -516,7 +515,7 @@ func applyIntegrationMockServer(t *testing.T, statusCode int, applyMockResponse,
 			require.Equal(t, mockImageURLLocation, resources[3].(map[string]interface{})[imageURLKey].(string))
 
 			applyRequestHandler(t, w, r, statusCode, applyMockResponse)
-		case fmt.Sprintf(uploadImageEndpoint, mockTenantID):
+		case fmt.Sprintf(uploadImageEndpointTemplate, mockTenantID):
 			uploadImageHandler(t, w, r, statusCode, uploadMockResponse)
 		default:
 			require.FailNowf(t, "invalid request URI", "invalid request URI: %s", r.RequestURI)

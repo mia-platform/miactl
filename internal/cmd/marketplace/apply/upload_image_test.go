@@ -55,7 +55,7 @@ image:
 		}
 
 		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
-		require.ErrorIs(t, err, errImageURLConflict)
+		require.ErrorIs(t, err, errImageObjKeysConflict)
 		require.Zero(t, found)
 	})
 
@@ -203,7 +203,7 @@ func TestValidateImageFile(t *testing.T) {
 func uploadImageHandler(t *testing.T, w http.ResponseWriter, r *http.Request, statusCode int, mockResponse interface{}) {
 	t.Helper()
 
-	mockImageURI := fmt.Sprintf(uploadImageEndpoint, mockTenantID)
+	mockImageURI := fmt.Sprintf(uploadImageEndpointTemplate, mockTenantID)
 	imageFile, err := os.Open(mockImagePath)
 	require.NoError(t, err)
 	imageBytes, err := io.ReadAll(imageFile)

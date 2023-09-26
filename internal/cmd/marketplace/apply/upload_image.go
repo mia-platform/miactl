@@ -32,9 +32,8 @@ import (
 )
 
 const (
-	// uploadImageEndpoint has to be `Sprintf`ed with the companyID
-	uploadImageEndpoint = "/api/backend/marketplace/tenants/%s/files"
-	multipartFieldName  = "marketplace_image"
+	uploadImageEndpointTemplate = "/api/backend/marketplace/tenants/%s/files"
+	multipartFieldName          = "marketplace_image"
 
 	localPathKey = "localPath"
 
@@ -44,18 +43,17 @@ const (
 )
 
 var (
-	errImageURLConflict   = errors.New(`both "image" and "imageUrl" found in the item, only one is admitted`)
-	errImageObjectInvalid = errors.New("the image object is not valid")
+	errImageObjKeysConflict = errors.New(`only one of the image keys is admitted, found both`)
+	errImageObjectInvalid   = errors.New("the image object is not valid")
 
-	errFileMustBeImage = errors.New("the file must a jpeg, png or gif image")
+	errFileMustBeImage = errors.New("the file must a jpeg or png image")
 )
 
-// getAndValidateImageLocalPath looks for an imageKey in the Marketplace item, if found it returns the local path
 func getAndValidateImageLocalPath(item *marketplace.Item, imageKey, imageURLKey string) (string, error) {
 	_, imageURLExists := (*item)[imageURLKey]
 	imageInfo, imageExists := (*item)[imageKey]
 	if imageExists && imageURLExists {
-		return "", errImageURLConflict
+		return "", fmt.Errorf("%w: %s; %s", errImageObjKeysConflict, imageKey, imageURLKey)
 	}
 
 	if imageExists {
@@ -156,7 +154,7 @@ func uploadSingleFileWithMultipart(ctx context.Context, client *client.APIClient
 
 	resp, err := client.Post().
 		SetHeader("Content-Type", contentType).
-		APIPath(fmt.Sprintf(uploadImageEndpoint, companyID)).
+		APIPath(fmt.Sprintf(uploadImageEndpointTemplate, companyID)).
 		Body(bodyBytes).
 		Do(ctx)
 	if err != nil {
