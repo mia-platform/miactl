@@ -67,7 +67,9 @@ func TestUnmarshalData(t *testing.T) {
 
 func TestMarshalData(t *testing.T) {
 	data := TestStruct{"Bob", 24}
-	faultyData := FaultyTestStruct{"Bob", 24, func() {}}
+	faultyData := FaultyTestStruct{"Bob", 24, func() {
+		// noop
+	}}
 	tests := []struct {
 		input    interface{}
 		encoding string
