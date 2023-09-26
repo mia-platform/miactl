@@ -137,8 +137,7 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyI
 	return buildOutcomeSummaryAsTables(outcome), nil
 }
 
-// concatPathIfRelative concatenates the current dir of basePath only if  filePath is relative, otherwise if filePath is absolute it returns it
-func concatPathIfRelative(basePath, filePath string) string {
+func concatPathDirToFilePathIfRelative(basePath, filePath string) string {
 	if filepath.IsAbs(filePath) {
 		return filePath
 	}
@@ -159,7 +158,7 @@ func processItemImages(ctx context.Context, client *client.APIClient, companyID 
 		}
 		itemName := (*item)["name"].(string)
 		itemFilePath := itemNameToFilePath[itemName]
-		imageFilePath := concatPathIfRelative(itemFilePath, localPath)
+		imageFilePath := concatPathDirToFilePathIfRelative(itemFilePath, localPath)
 
 		imageURL, err := uploadImageFileAndGetURL(ctx, client, companyID, imageFilePath)
 		if err != nil {

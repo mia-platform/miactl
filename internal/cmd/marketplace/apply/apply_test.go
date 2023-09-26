@@ -456,11 +456,11 @@ func TestApplyIntegration(t *testing.T) {
 
 func TestApplyConcatPathIfRelative(t *testing.T) {
 	t.Run("should concat relative paths", func(t *testing.T) {
-		found := concatPathIfRelative("/some/path/to/file.json", "./image.png")
+		found := concatPathDirToFilePathIfRelative("/some/path/to/file.json", "./image.png")
 		require.Equal(t, "/some/path/to/image.png", found)
 	})
 	t.Run("should return an abs path", func(t *testing.T) {
-		found := concatPathIfRelative("/some/path/to/file.json", "/some/absolute/path/image.png")
+		found := concatPathDirToFilePathIfRelative("/some/path/to/file.json", "/some/absolute/path/image.png")
 		require.Equal(t, "/some/absolute/path/image.png", found)
 	})
 }
