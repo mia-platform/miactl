@@ -298,14 +298,29 @@ Create or update Marketplace items
 
 Create or update one or more Marketplace items.
 
-You can either specify: - one or more files, with the flag -f - one or more directories, with the flag -d
+The flag -f accepts either files or directories. In case of directories, it explores them recursively.
+
 Supported formats are JSON (.json files) and YAML (.yaml or .yml files).
 
+The file can contain an image object with the following format:
+"image": {
+	"localPath": "./someImage.png"
+}
+The localPath can be absolute or relative to the file location.
+The image will be uploaded along with the marketplace item.
+Before being applied, the "image" key will be replaced with the "imageUrl" referring to the uploaded image.
+You can retrieve the updated item with the "get" command.
+
+You can also specify the "supportedByImage" in a similar fashion.
+
+Be aware that the presence of both "image" and "imageUrl" and of both "supportedByImage" and "supportedByImageUrl" is illegal.
+
 ```
-miactl marketplace apply { { -f file-path }... | { -d directory-path }... } [flags]
+miactl marketplace apply { -f file-path }... } [flags]
 ```
 
 #### Examples
+
 
 ```
 
@@ -316,7 +331,7 @@ miactl marketplace apply -f myFantasticGoTemplate.json
 miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFantasticNodeTemplate.yml
 
 # Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
-miactl marketplace apply -d myFantasticGoTemplates
+miactl marketplace apply -f myFantasticGoTemplates
 ```
 
 #### Options
