@@ -49,7 +49,7 @@ You can retrieve the updated item with the "get" command.
 
 You can also specify the "supportedByImage" in a similar fashion.
 
-Be aware that the presence of both "image" and "imageUrl" and of both "supportedByImage" and "supportedByImageUrl" is illegal.`
+Be aware that the presence of both "image" and "imageUrl" and/or of both "supportedByImage" and "supportedByImageUrl" is illegal.`
 
 	applyExample = `
 # Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Marketplace
