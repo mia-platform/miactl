@@ -42,34 +42,34 @@ func TestUnsupportedEncodingError(t *testing.T) {
 
 func TestUnmarshalData(t *testing.T) {
 	tests := []struct {
-		data     []byte
-		encoding string
-		want     TestStruct
-		wantErr  bool
+		data    []byte
+		want    TestStruct
+		wantErr bool
 	}{
-		{[]byte(`{"name": "Alice", "value": 42}`), JSON, TestStruct{"Alice", 42}, false},
-		{[]byte("name: Alice\nvalue: 42"), YAML, TestStruct{"Alice", 42}, false},
-		{[]byte(`{"name": "Alice", "value": 42}`), "txt", TestStruct{}, true},
+		{[]byte(`{"name": "Alice", "value": 42}`), TestStruct{"Alice", 42}, false},
+		{[]byte("name: Alice\nvalue: 42"), TestStruct{"Alice", 42}, false},
 	}
 
 	for _, test := range tests {
 		var got TestStruct
-		err := UnmarshalData(test.data, test.encoding, &got)
+		err := UnmarshalData(test.data, &got)
 
 		if (err != nil) != test.wantErr {
-			t.Errorf("UnmarshalData(%v, %v) returned error %v; wantErr %v", test.data, test.encoding, err, test.wantErr)
+			t.Errorf("UnmarshalData(%+v) returned error %+v; wantErr %+v", test.data, err, test.wantErr)
 			continue
 		}
 
 		if !reflect.DeepEqual(got, test.want) {
-			t.Errorf("UnmarshalData(%v, %v) = %v; want %v", test.data, test.encoding, got, test.want)
+			t.Errorf("UnmarshalData(%+v) = %+v; want %+v", test.data, got, test.want)
 		}
 	}
 }
 
 func TestMarshalData(t *testing.T) {
 	data := TestStruct{"Bob", 24}
-	faultyData := FaultyTestStruct{"Bob", 24, func() {}}
+	faultyData := FaultyTestStruct{"Bob", 24, func() {
+		// noop
+	}}
 	tests := []struct {
 		input    interface{}
 		encoding string

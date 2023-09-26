@@ -110,7 +110,7 @@ func printEnvironments(client *client.APIClient, companyID, projectID string) er
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
-	table.SetHeader([]string{"Name", "Enironment ID", "Production", "Cluster", "Kubernetes Namespace"})
+	table.SetHeader([]string{"Name", "Environment ID", "Production", "Cluster", "Kubernetes Namespace"})
 
 	clustersCache := make(map[string]string, 0)
 	for _, env := range environments {

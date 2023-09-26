@@ -67,8 +67,7 @@ func (r *Request) SetHeader(key, value string) *Request {
 		r.headers = http.Header{}
 	}
 
-	r.headers.Del(key)
-	r.headers.Add(key, value)
+	r.headers.Set(key, value)
 	return r
 }
 

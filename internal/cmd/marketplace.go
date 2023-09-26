@@ -18,13 +18,14 @@ package cmd
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/marketplace"
+	marketplace_apply "github.com/mia-platform/miactl/internal/cmd/marketplace/apply"
 	"github.com/spf13/cobra"
 )
 
 func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "marketplace",
-		Short: "View and manage marketplace items",
+		Short: "View and manage Marketplace items",
 	}
 
 	// add cmd flags
@@ -37,6 +38,7 @@ func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd.AddCommand(marketplace.ListCmd(options))
 	cmd.AddCommand(marketplace.GetCmd(options))
 	cmd.AddCommand(marketplace.DeleteCmd(options))
+	cmd.AddCommand(marketplace_apply.ApplyCmd(options))
 
 	return cmd
 }

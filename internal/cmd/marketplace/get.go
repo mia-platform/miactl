@@ -21,21 +21,20 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/spf13/cobra"
 )
 
 const (
-	getMarketplaceEndpoint        = "/api/backend/marketplace/%s"
-	JSON                   string = "json"
-	YAML                   string = "yaml"
+	getMarketplaceEndpoint = "/api/backend/marketplace/%s"
 )
 
 // GetCmd return a new cobra command for getting a single marketplace resource
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get [resource-id]",
-		Short: "Get marketplace item",
-		Long:  `Get a single marketplace item by its ID`,
+		Use:   "get resource-id",
+		Short: "Get Marketplace item",
+		Long:  `Get a single Marketplace item by its ID`,
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
@@ -62,7 +61,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*Item, error) {
+func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*marketplace.Item, error) {
 	if len(resourceID) == 0 {
 		return nil, fmt.Errorf("missing resource id, please provide one")
 	}
@@ -80,7 +79,7 @@ func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*Item,
 		return nil, err
 	}
 
-	var marketplaceItem *Item
+	var marketplaceItem *marketplace.Item
 	if err := resp.ParseResponse(&marketplaceItem); err != nil {
 		return nil, fmt.Errorf("error parsing response body: %w", err)
 	}
@@ -99,7 +98,7 @@ func getMarketplaceResource(client *client.APIClient, resourceID string, outputF
 		return err
 	}
 
-	data, err := marketplaceItem.Marshal(outputFormat)
+	data, err := marketplaceItem.MarshalItem(outputFormat)
 	if err != nil {
 		return err
 	}

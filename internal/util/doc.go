@@ -13,23 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package marketplace
-
-import "github.com/mia-platform/miactl/internal/encoding"
-
-func Unmarshal(data []byte, encodingFormat string) (Item, error) {
-	var r Item
-
-	if err := encoding.UnmarshalData(data, encodingFormat, &r); err != nil {
-		return Item{}, err
-	}
-	return r, nil
-}
-
-func (r *Item) Marshal(encodingFormat string) ([]byte, error) {
-	return encoding.MarshalData(r, encodingFormat, encoding.MarshalOptions{Indent: true})
-}
-
-// we use a map[string]interface{} to represent the item
-// this will allow us to avoid to change the code in case of a change in the resource structure
-type Item map[string]interface{}
+// util package contains utility functions to use in other packages
+package util

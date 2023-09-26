@@ -27,6 +27,10 @@ import (
 const (
 	JSON = "json"
 	YAML = "yaml"
+
+	YamlExtension = ".yaml"
+	YmlExtension  = ".yml"
+	JSONExtension = ".json"
 )
 
 var ErrMarshal = errors.New("error while marshalling data")
@@ -43,21 +47,13 @@ func (e UnsupportedEncodingError) Error() string {
 	return fmt.Sprintf("unsupported encoding: %s", e.Encoding)
 }
 
-var unmarshalFuncs = map[string]func([]byte, interface{}) error{
-	JSON: json.Unmarshal,
-	YAML: yaml.Unmarshal,
-}
-
 var marshalFuncs = map[string]func(interface{}) ([]byte, error){
 	JSON: json.Marshal,
 	YAML: yaml.Marshal,
 }
 
-func UnmarshalData(data []byte, encoding string, out interface{}) error {
-	if unmarshal, ok := unmarshalFuncs[encoding]; ok {
-		return unmarshal(data, out)
-	}
-	return UnsupportedEncodingError{Encoding: encoding}
+func UnmarshalData(data []byte, out interface{}) error {
+	return yaml.Unmarshal(data, out)
 }
 
 func MarshalData(input interface{}, encoding string, options MarshalOptions) ([]byte, error) {
