@@ -5,13 +5,13 @@
 You can have one or more context locally for interacting with one or more installation fo Mia-Platform Console. Below
 you can find some examples on how to create multiple contexts and then selecting one of them.
 
-Create a Context for a company on the cloud instance:
+Create a Context for a Company on the cloud instance:
 
 ```sh
 miactl context set paas-company --company-id <your-company-id>
 ```
 
-Create a Context for specific project in a Company on the cloud instance:
+Create a Context for specific Project in a Company on the cloud instance:
 
 ```sh
 miactl context set paas-project --company-id <your-company-id> --project-id <your-project-id>
@@ -64,7 +64,7 @@ Additionally, if your context doesn’t contain the Project ID, you can select i
 miactl deploy development --project-id <your-project-id> --revision main
 ```
 
-You can customize the way your project is deployed:
+You can customize the way your Project is deployed:
 
 ```sh
 miactl deploy development --no-semver --revision tags/v1.0.0

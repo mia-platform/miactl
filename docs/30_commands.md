@@ -180,7 +180,7 @@ Available flags for the command:
 
 ### environment list
 
-The `runtime environment list` subcommand allows you to see all the environment associated to a given project.
+The `runtime environment list` subcommand allows you to see all the environment associated to a given Project.
 
 Usage:
 
@@ -194,8 +194,8 @@ Available flags for the command:
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired company
-- `--project-id`, to set the ID of the desired project
+- `--company-id`, to set the ID of the desired Company
+- `--project-id`, to set the ID of the desired Project
 
 ### pod list
 
@@ -214,13 +214,13 @@ Available flags for the command:
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired company
-- `--project-id`, to set the ID of the desired project
+- `--company-id`, to set the ID of the desired Company
+- `--project-id`, to set the ID of the desired Project
 
 ### cronjob list
 
 The `runtime cronjob list` subcommand allows you to see all cronjobs that are running for the environment associated
-to a given project.
+to a given Project.
 
 Usage:
 
@@ -234,8 +234,8 @@ Available flags for the command:
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired company
-- `--project-id`, to set the ID of the desired project
+- `--company-id`, to set the ID of the desired Company
+- `--project-id`, to set the ID of the desired Project
 
 ## marketplace
 
@@ -246,7 +246,7 @@ All the subcommands inherit the following flags:
 ```
       --auth-name string               the name of the miactl auth to use
       --certificate-authority string   path to a cert file for the certificate authority for the selected endpoint
-      --company-id string              the ID of the company
+      --company-id string              the ID of the Company
   -c, --config string                  path to the config file default to $HOME/miactl/config
       --context string                 the name of the miactl context to use
       --endpoint string                the address and port of the Mia-Platform Console server
@@ -307,7 +307,7 @@ The file can contain an image object with the following format:
 	"localPath": "./someImage.png"
 }
 The localPath can be absolute or relative to the file location.
-The image will be uploaded along with the marketplace item.
+The image will be uploaded along with the Marketplace item.
 Before being applied, the "image" key will be replaced with the "imageUrl" referring to the uploaded image.
 You can retrieve the updated item with the "get" command.
 
