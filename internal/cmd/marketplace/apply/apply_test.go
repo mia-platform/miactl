@@ -19,26 +19,27 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestApplyBuildPathsFromDir(t *testing.T) {
 	t.Run("should read all files in dir retrieving paths", func(t *testing.T) {
-		dirPath := "./testdata/withoutErrors"
+		dirPath := "./testdata/subdir"
 
 		found, err := buildFilePathsList([]string{dirPath})
 		require.NoError(t, err)
-		require.Contains(t, found, "testdata/withoutErrors/validItem1.json")
-		require.Contains(t, found, "testdata/withoutErrors/validYaml.yaml")
-		require.Contains(t, found, "testdata/withoutErrors/validYaml.yml")
-		require.Len(t, found, 3)
+		require.Contains(t, found, "testdata/subdir/validItem1.json")
+		require.Contains(t, found, "testdata/subdir/validYaml.yaml")
+		require.Contains(t, found, "testdata/subdir/validYaml.yml")
+		require.Contains(t, found, "testdata/subdir/validItemWithImage.json")
+		require.Len(t, found, 4)
 	})
 
 	t.Run("should return error due to file with bad extension", func(t *testing.T) {
@@ -50,17 +51,21 @@ func TestApplyBuildPathsFromDir(t *testing.T) {
 	})
 }
 
-func TestApplyBuildResourcesList(t *testing.T) {
+func TestApplyBuildApplyRequest(t *testing.T) {
 	t.Run("should read file contents parsing them to json", func(t *testing.T) {
 		filePaths := []string{
 			"./testdata/validItem1.json",
 			"./testdata/validYaml.yaml",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.NoError(t, err)
-		require.NotNil(t, found)
-		require.NotEmpty(t, found.Resources)
+		require.NotNil(t, foundApplyReq)
+		require.NotEmpty(t, foundApplyReq.Resources)
+		require.Equal(t, foundResNameToFilePath, map[string]string{
+			"miactl test json": "./testdata/validItem1.json",
+			"miactl test":      "./testdata/validYaml.yaml",
+		})
 	})
 
 	t.Run("should return error if file is not valid json", func(t *testing.T) {
@@ -68,9 +73,10 @@ func TestApplyBuildResourcesList(t *testing.T) {
 			"./testdata/invalidJson1.json",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.ErrorContains(t, err, "errors in file ./testdata/invalidJson1.json")
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if file is not valid yaml", func(t *testing.T) {
@@ -78,9 +84,10 @@ func TestApplyBuildResourcesList(t *testing.T) {
 			"./testdata/invalidYaml.yaml",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.ErrorContains(t, err, "errors in file ./testdata/invalidYaml.yaml")
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if file is not found", func(t *testing.T) {
@@ -88,9 +95,10 @@ func TestApplyBuildResourcesList(t *testing.T) {
 			"./I/do/not/exist.json",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.Error(t, err)
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if a file has unknown extensions, but others are valid", func(t *testing.T) {
@@ -100,17 +108,19 @@ func TestApplyBuildResourcesList(t *testing.T) {
 			"./testdata/validYaml.yaml",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.Error(t, err)
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if resources array is empty", func(t *testing.T) {
 		filePaths := []string{}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.ErrorIs(t, err, errNoValidFilesProvided)
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if two resources have the same name", func(t *testing.T) {
@@ -119,29 +129,24 @@ func TestApplyBuildResourcesList(t *testing.T) {
 			"./testdata/validYaml.yml",
 		}
 
-		found, err := buildApplyRequest(filePaths)
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.ErrorIs(t, err, errDuplicatedResName)
-		require.Nil(t, found)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
 	})
 }
 
 const mockTenantID = "some-tenant-id"
 
-var mockURI = fmt.Sprintf(applyEndpoint, mockTenantID)
+var mockURI = fmt.Sprintf(applyEndpointTemplate, mockTenantID)
 
 func TestApplyApplyResourceCmd(t *testing.T) {
-	mockResName := "API Portal by miactl test"
+	mockResName := "miactl test"
 	validReqMock := &marketplace.ApplyRequest{
-		Resources: []marketplace.Item{
+		Resources: []*marketplace.Item{
 			{
-				"_id":         "6504773582a6722338be0e25",
-				"categoryId":  "devportal",
-				"description": "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
-				"documentation": map[string]interface{}{
-					"type": "externalLink",
-					"url":  "https://docs.example.org/docs/runtime_suite/api-portal/overview",
-				},
-				"imageUrl":      "/v2/files/download/e83a1e48-fca7-4114-a244-1a69c0c4e7b2.png",
+				"categoryId":    "devportal",
+				"imageUrl":      "some/path/to/image.png",
 				"name":          mockResName,
 				"releaseStage":  "",
 				"repositoryUrl": "https://example.com/repo",
@@ -184,7 +189,6 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 									"min": "5Mi",
 								},
 							},
-							"description":   "Use Mia-Platform core API Portal to expose the swagger documentation of your development services in one unique place.",
 							"dockerImage":   "containers.example.com/some-image:latest",
 							"name":          "api-portal",
 							"repositoryUrl": "https://example.com/repo",
@@ -192,7 +196,7 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 						},
 					},
 				},
-				"supportedByImageUrl": "/v2/files/download/83b11dd9-41f6-4920-bb2d-2a809e944851.png",
+				"supportedByImageUrl": "/some/path/to/image.png",
 				"tenantId":            "team-rocket-test",
 				"type":                "plugin",
 			},
@@ -232,12 +236,12 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 		require.Equal(t, found, mockResponse)
 	})
 	t.Run("should return err if response is a http error", func(t *testing.T) {
-		mockResponse := map[string]interface{}{
+		mockErrorResponse := map[string]interface{}{
 			"message":    "You are not allowed to perform the request!",
 			"statusCode": http.StatusForbidden,
 			"error":      "Forbidden",
 		}
-		server := applyMockServer(t, http.StatusForbidden, mockResponse)
+		server := applyMockServer(t, http.StatusForbidden, mockErrorResponse)
 		defer server.Close()
 		clientConfig := &client.Config{
 			Transport: http.DefaultTransport,
@@ -402,18 +406,259 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 	})
 }
 
+const mockImageURLLocation = "some/fancy/location"
+
+func TestApplyIntegration(t *testing.T) {
+	t.Run("should upload images correctly", func(t *testing.T) {
+		mockUploadImageStatusCode := http.StatusOK
+		mockApplyItemStatusCode := http.StatusOK
+
+		mockPaths := []string{
+			"./testdata/validItemWithImage.json",
+			"./testdata/validItemWithImage2.json",
+			"./testdata/yamlWithImage.yml",
+			"./testdata/subdir/validItemWithImage.json",
+		}
+		applyMockResponse := &marketplace.ApplyResponse{
+			Done: true,
+			Items: []marketplace.ApplyResponseItem{
+				{
+					ItemID:           "id1",
+					Name:             "some name 1",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+				},
+			},
+		}
+		uploadMockResponse := &marketplace.UploadImageResponse{
+			Location: mockImageURLLocation,
+		}
+
+		mockServer := applyIntegrationMockServer(t,
+			mockUploadImageStatusCode,
+			mockApplyItemStatusCode,
+			uploadMockResponse,
+			applyMockResponse,
+		)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := applyItemsFromPaths(
+			context.Background(),
+			client,
+			mockTenantID,
+			mockPaths,
+		)
+		require.NoError(t, err)
+		require.Contains(t, found, "id1")
+		require.Contains(t, found, "some name 1")
+	})
+
+	t.Run("should return the correct error message if image upload fails", func(t *testing.T) {
+		mockUploadImageStatusCode := http.StatusBadRequest
+		mockApplyItemStatusCode := http.StatusOK
+
+		mockPaths := []string{
+			"./testdata/validItemWithImage.json",
+			"./testdata/validItemWithImage2.json",
+			"./testdata/yamlWithImage.yml",
+			"./testdata/subdir/validItemWithImage.json",
+		}
+		applyMockResponse := &marketplace.ApplyResponse{
+			Done: true,
+			Items: []marketplace.ApplyResponseItem{
+				{
+					ItemID:           "id1",
+					Name:             "some name 1",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+				},
+			},
+		}
+		mockErrorMsg := "upload image: some mock error message"
+		uploadMockErrorResponse := map[string]interface{}{
+			"error":      "upload image: some mock error",
+			"message":    mockErrorMsg,
+			"statusCode": mockUploadImageStatusCode,
+		}
+		mockServer := applyIntegrationMockServer(t,
+			mockUploadImageStatusCode,
+			mockApplyItemStatusCode,
+			uploadMockErrorResponse,
+			applyMockResponse,
+		)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := applyItemsFromPaths(
+			context.Background(),
+			client,
+			mockTenantID,
+			mockPaths,
+		)
+		require.EqualError(t, err, mockErrorMsg)
+		require.Zero(t, found)
+	})
+
+	t.Run("should return the correct error message if apply item fails", func(t *testing.T) {
+		mockUploadImageStatusCode := http.StatusOK
+		mockApplyItemStatusCode := http.StatusBadRequest
+
+		mockPaths := []string{
+			"./testdata/validItemWithImage.json",
+			"./testdata/validItemWithImage2.json",
+			"./testdata/yamlWithImage.yml",
+			"./testdata/subdir/validItemWithImage.json",
+		}
+		mockErrorMsg := "apply item: some mock error message"
+		applyMockErrorResponse := map[string]interface{}{
+			"error":      "apply item: some mock error",
+			"message":    mockErrorMsg,
+			"statusCode": mockUploadImageStatusCode,
+		}
+		uploadMockResponse := &marketplace.UploadImageResponse{
+			Location: mockImageURLLocation,
+		}
+
+		mockServer := applyIntegrationMockServer(t,
+			mockUploadImageStatusCode,
+			mockApplyItemStatusCode,
+			uploadMockResponse,
+			applyMockErrorResponse,
+		)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := applyItemsFromPaths(
+			context.Background(),
+			client,
+			mockTenantID,
+			mockPaths,
+		)
+		require.EqualError(t, err, mockErrorMsg)
+		require.Zero(t, found)
+	})
+}
+
+func TestApplyConcatPathIfRelative(t *testing.T) {
+	t.Run("should concat relative paths", func(t *testing.T) {
+		found := concatPathDirToFilePathIfRelative("/some/path/to/file.json", "./image.png")
+		require.Equal(t, "/some/path/to/image.png", found)
+	})
+	t.Run("should return an abs path", func(t *testing.T) {
+		found := concatPathDirToFilePathIfRelative("/some/path/to/file.json", "/some/absolute/path/image.png")
+		require.Equal(t, "/some/absolute/path/image.png", found)
+	})
+}
+
+func applyRequestHandler(t *testing.T, w http.ResponseWriter, r *http.Request, statusCode int, mockResponse interface{}) {
+	t.Helper()
+	require.Equal(t, mockURI, r.RequestURI)
+	require.Equal(t, http.MethodPost, r.Method)
+
+	w.WriteHeader(statusCode)
+	resBytes, err := json.Marshal(mockResponse)
+	require.NoError(t, err)
+	w.Write(resBytes)
+}
+
+func assertImageKeyIsReplacedWithImageURL(t *testing.T, resource map[string]interface{}, objKey, urlKey string) {
+	t.Helper()
+
+	require.NotContains(t, resource, objKey)
+	require.Contains(t, resource, urlKey)
+	require.Equal(t, mockImageURLLocation, resource[urlKey].(string))
+}
+
+func applyIntegrationMockServer(
+	t *testing.T,
+	uploadImageStatusCode, applyItemStatusCode int,
+	uploadMockResponse, applyMockResponse interface{},
+) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.RequestURI {
+		case fmt.Sprintf(applyEndpointTemplate, mockTenantID):
+			if applyItemStatusCode != http.StatusOK {
+				applyRequestHandler(t, w, r, applyItemStatusCode, applyMockResponse)
+				break
+			}
+			foundBodyBytes, err := io.ReadAll(r.Body)
+			require.NoError(t, err)
+			foundBody := make(map[string]interface{})
+			err = json.Unmarshal(foundBodyBytes, &foundBody)
+			require.NoError(t, err)
+			require.Contains(t, foundBody, "resources")
+			resources := foundBody["resources"].([]interface{})
+
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[0].(map[string]interface{}),
+				imageKey,
+				imageURLKey,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[1].(map[string]interface{}),
+				imageKey,
+				imageURLKey,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[1].(map[string]interface{}),
+				supportedByImageKey,
+				supportedByImageURLKey,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[2].(map[string]interface{}),
+				imageKey,
+				imageURLKey,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[2].(map[string]interface{}),
+				supportedByImageKey,
+				supportedByImageURLKey,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[3].(map[string]interface{}),
+				imageKey,
+				imageURLKey,
+			)
+
+			applyRequestHandler(t, w, r, applyItemStatusCode, applyMockResponse)
+		case fmt.Sprintf(uploadImageEndpointTemplate, mockTenantID):
+			uploadImageHandler(t, w, r, uploadImageStatusCode, uploadMockResponse)
+		default:
+			require.FailNowf(t, "invalid request URI", "invalid request URI: %s", r.RequestURI)
+		}
+	}))
+}
+
 func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var isReqOk = assert.Equal(t, mockURI, r.RequestURI) && assert.Equal(t, http.MethodPost, r.Method)
-		if !isReqOk {
-			w.WriteHeader(http.StatusNotFound)
-			require.Fail(t, "unsupported call")
-			return
-		}
-		w.WriteHeader(statusCode)
-		resBytes, err := json.Marshal(mockResponse)
-		require.NoError(t, err)
-		w.Write(resBytes)
+		applyRequestHandler(t, w, r, statusCode, mockResponse)
 	}))
 }

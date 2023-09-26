@@ -43,9 +43,25 @@ type ApplyResponseItemValidationError struct {
 }
 
 type ApplyRequest struct {
-	Resources []Item `json:"resources"`
+	Resources []*Item `json:"resources"`
+}
+
+type UploadImageResponse struct {
+	ID       string `json:"string"` //nolint: tagliatelle
+	Name     string `json:"name"`
+	File     string `json:"file"`
+	Size     int64  `json:"size"`
+	Location string `json:"location"`
 }
 
 func (i *Item) MarshalItem(encodingFormat string) ([]byte, error) {
 	return encoding.MarshalData(i, encodingFormat, encoding.MarshalOptions{Indent: true})
+}
+
+func (i *Item) Del(key string) {
+	delete(*i, key)
+}
+
+func (i *Item) Set(key string, val interface{}) {
+	(*i)[key] = val
 }
