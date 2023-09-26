@@ -132,7 +132,7 @@ func concatPathIfRelative(basePath, filePath string) string {
 		return filePath
 	}
 	itemFileDir := filepath.Dir(basePath)
-	return path.Join(itemFileDir, filePath)
+	return filepath.Join(itemFileDir, filePath)
 }
 
 // processItemImages looks for image object and uploads the image when needed.
