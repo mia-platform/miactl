@@ -63,7 +63,7 @@ var (
 	errCompanyIDNotDefined = errors.New("companyID must be defined")
 
 	errResWithoutName       = errors.New(`the required field "name" was not found in the resource`)
-	errNoValidFilesProvided = errors.New("no valid files were provided, see errors above")
+	errNoValidFilesProvided = errors.New("no valid files were provided")
 
 	errResNameNotAString = errors.New(`the field "name" must be a string`)
 	errInvalidExtension  = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
