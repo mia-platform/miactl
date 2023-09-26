@@ -236,12 +236,12 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 		require.Equal(t, found, mockResponse)
 	})
 	t.Run("should return err if response is a http error", func(t *testing.T) {
-		mockResponse := map[string]interface{}{
+		mockErrorResponse := map[string]interface{}{
 			"message":    "You are not allowed to perform the request!",
 			"statusCode": http.StatusForbidden,
 			"error":      "Forbidden",
 		}
-		server := applyMockServer(t, http.StatusForbidden, mockResponse)
+		server := applyMockServer(t, http.StatusForbidden, mockErrorResponse)
 		defer server.Close()
 		clientConfig := &client.Config{
 			Transport: http.DefaultTransport,
@@ -410,6 +410,9 @@ const mockImageURLLocation = "some/fancy/location"
 
 func TestApplyIntegration(t *testing.T) {
 	t.Run("should upload images correctly", func(t *testing.T) {
+		mockUploadImageStatusCode := http.StatusOK
+		mockApplyItemStatusCode := http.StatusOK
+
 		mockPaths := []string{
 			"./testdata/validItemWithImage.json",
 			"./testdata/validItemWithImage2.json",
@@ -433,7 +436,12 @@ func TestApplyIntegration(t *testing.T) {
 			Location: mockImageURLLocation,
 		}
 
-		mockServer := applyIntegrationMockServer(t, http.StatusOK, applyMockResponse, uploadMockResponse)
+		mockServer := applyIntegrationMockServer(t,
+			mockUploadImageStatusCode,
+			mockApplyItemStatusCode,
+			uploadMockResponse,
+			applyMockResponse,
+		)
 		defer mockServer.Close()
 		clientConfig := &client.Config{
 			Transport: http.DefaultTransport,
@@ -451,6 +459,103 @@ func TestApplyIntegration(t *testing.T) {
 		require.NoError(t, err)
 		require.Contains(t, found, "id1")
 		require.Contains(t, found, "some name 1")
+	})
+
+	t.Run("should return the correct error message if image upload fails", func(t *testing.T) {
+		mockUploadImageStatusCode := http.StatusBadRequest
+		mockApplyItemStatusCode := http.StatusOK
+
+		mockPaths := []string{
+			"./testdata/validItemWithImage.json",
+			"./testdata/validItemWithImage2.json",
+			"./testdata/yamlWithImage.yml",
+			"./testdata/subdir/validItemWithImage.json",
+		}
+		applyMockResponse := &marketplace.ApplyResponse{
+			Done: true,
+			Items: []marketplace.ApplyResponseItem{
+				{
+					ItemID:           "id1",
+					Name:             "some name 1",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+				},
+			},
+		}
+		mockErrorMsg := "upload image: some mock error message"
+		uploadMockErrorResponse := map[string]interface{}{
+			"error":      "upload image: some mock error",
+			"message":    mockErrorMsg,
+			"statusCode": mockUploadImageStatusCode,
+		}
+		mockServer := applyIntegrationMockServer(t,
+			mockUploadImageStatusCode,
+			mockApplyItemStatusCode,
+			uploadMockErrorResponse,
+			applyMockResponse,
+		)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := applyItemsFromPaths(
+			context.Background(),
+			client,
+			mockTenantID,
+			mockPaths,
+		)
+		require.EqualError(t, err, mockErrorMsg)
+		require.Zero(t, found)
+	})
+
+	t.Run("should return the correct error message if apply item fails", func(t *testing.T) {
+		mockUploadImageStatusCode := http.StatusOK
+		mockApplyItemStatusCode := http.StatusBadRequest
+
+		mockPaths := []string{
+			"./testdata/validItemWithImage.json",
+			"./testdata/validItemWithImage2.json",
+			"./testdata/yamlWithImage.yml",
+			"./testdata/subdir/validItemWithImage.json",
+		}
+		mockErrorMsg := "apply item: some mock error message"
+		applyMockErrorResponse := map[string]interface{}{
+			"error":      "apply item: some mock error",
+			"message":    mockErrorMsg,
+			"statusCode": mockUploadImageStatusCode,
+		}
+		uploadMockResponse := &marketplace.UploadImageResponse{
+			Location: mockImageURLLocation,
+		}
+
+		mockServer := applyIntegrationMockServer(t,
+			mockUploadImageStatusCode,
+			mockApplyItemStatusCode,
+			uploadMockResponse,
+			applyMockErrorResponse,
+		)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := applyItemsFromPaths(
+			context.Background(),
+			client,
+			mockTenantID,
+			mockPaths,
+		)
+		require.EqualError(t, err, mockErrorMsg)
+		require.Zero(t, found)
 	})
 }
 
@@ -476,11 +581,27 @@ func applyRequestHandler(t *testing.T, w http.ResponseWriter, r *http.Request, s
 	w.Write(resBytes)
 }
 
-func applyIntegrationMockServer(t *testing.T, statusCode int, applyMockResponse, uploadMockResponse interface{}) *httptest.Server {
+func assertImageKeyIsReplacedWithImageURL(t *testing.T, resource map[string]interface{}, objKey, urlKey, expectedUrl string) {
+	t.Helper()
+
+	require.NotContains(t, resource, objKey)
+	require.Contains(t, resource, urlKey)
+	require.Equal(t, mockImageURLLocation, resource[urlKey].(string))
+}
+
+func applyIntegrationMockServer(
+	t *testing.T,
+	uploadImageStatusCode, applyItemStatusCode int,
+	uploadMockResponse, applyMockResponse interface{},
+) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.RequestURI {
 		case fmt.Sprintf(applyEndpointTemplate, mockTenantID):
+			if applyItemStatusCode != http.StatusOK {
+				applyRequestHandler(t, w, r, applyItemStatusCode, applyMockResponse)
+				break
+			}
 			foundBodyBytes, err := io.ReadAll(r.Body)
 			require.NoError(t, err)
 			foundBody := make(map[string]interface{})
@@ -489,34 +610,52 @@ func applyIntegrationMockServer(t *testing.T, statusCode int, applyMockResponse,
 			require.Contains(t, foundBody, "resources")
 			resources := foundBody["resources"].([]interface{})
 
-			// verify that the keys have been replaced correctly
-			require.NotContains(t, resources[0].(map[string]interface{}), imageKey)
-			require.Contains(t, resources[0].(map[string]interface{}), imageURLKey)
-			require.Equal(t, mockImageURLLocation, resources[0].(map[string]interface{})[imageURLKey].(string))
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[0].(map[string]interface{}),
+				imageKey,
+				imageURLKey,
+				mockImageURLLocation,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[1].(map[string]interface{}),
+				imageKey,
+				imageURLKey,
+				mockImageURLLocation,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[1].(map[string]interface{}),
+				supportedByImageKey,
+				supportedByImageURLKey,
+				mockImageURLLocation,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[2].(map[string]interface{}),
+				imageKey,
+				imageURLKey,
+				mockImageURLLocation,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[2].(map[string]interface{}),
+				supportedByImageKey,
+				supportedByImageURLKey,
+				mockImageURLLocation,
+			)
+			assertImageKeyIsReplacedWithImageURL(
+				t,
+				resources[3].(map[string]interface{}),
+				imageKey,
+				imageURLKey,
+				mockImageURLLocation,
+			)
 
-			// verify that the keys have been replaced correctly
-			require.NotContains(t, resources[1].(map[string]interface{}), imageKey)
-			require.Contains(t, resources[1].(map[string]interface{}), imageURLKey)
-			require.Equal(t, mockImageURLLocation, resources[1].(map[string]interface{})[imageURLKey].(string))
-
-			// the second mock file also has the supportedByImage
-			require.NotContains(t, resources[1].(map[string]interface{}), supportedByImageKey)
-			require.Contains(t, resources[1].(map[string]interface{}), supportedByImageURLKey)
-			require.Equal(t, mockImageURLLocation, resources[1].(map[string]interface{})[imageURLKey].(string))
-
-			// yaml mock with image
-			require.NotContains(t, resources[2].(map[string]interface{}), supportedByImageKey)
-			require.Contains(t, resources[2].(map[string]interface{}), supportedByImageURLKey)
-			require.Equal(t, mockImageURLLocation, resources[2].(map[string]interface{})[imageURLKey].(string))
-
-			// item with path relative to outer dir
-			require.NotContains(t, resources[3].(map[string]interface{}), supportedByImageKey)
-			require.Contains(t, resources[3].(map[string]interface{}), supportedByImageURLKey)
-			require.Equal(t, mockImageURLLocation, resources[3].(map[string]interface{})[imageURLKey].(string))
-
-			applyRequestHandler(t, w, r, statusCode, applyMockResponse)
+			applyRequestHandler(t, w, r, applyItemStatusCode, applyMockResponse)
 		case fmt.Sprintf(uploadImageEndpointTemplate, mockTenantID):
-			uploadImageHandler(t, w, r, statusCode, uploadMockResponse)
+			uploadImageHandler(t, w, r, uploadImageStatusCode, uploadMockResponse)
 		default:
 			require.FailNowf(t, "invalid request URI", "invalid request URI: %s", r.RequestURI)
 		}
