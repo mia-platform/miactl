@@ -581,7 +581,7 @@ func applyRequestHandler(t *testing.T, w http.ResponseWriter, r *http.Request, s
 	w.Write(resBytes)
 }
 
-func assertImageKeyIsReplacedWithImageURL(t *testing.T, resource map[string]interface{}, objKey, urlKey) {
+func assertImageKeyIsReplacedWithImageURL(t *testing.T, resource map[string]interface{}, objKey, urlKey string) {
 	t.Helper()
 
 	require.NotContains(t, resource, objKey)
@@ -615,42 +615,36 @@ func applyIntegrationMockServer(
 				resources[0].(map[string]interface{}),
 				imageKey,
 				imageURLKey,
-				mockImageURLLocation,
 			)
 			assertImageKeyIsReplacedWithImageURL(
 				t,
 				resources[1].(map[string]interface{}),
 				imageKey,
 				imageURLKey,
-				mockImageURLLocation,
 			)
 			assertImageKeyIsReplacedWithImageURL(
 				t,
 				resources[1].(map[string]interface{}),
 				supportedByImageKey,
 				supportedByImageURLKey,
-				mockImageURLLocation,
 			)
 			assertImageKeyIsReplacedWithImageURL(
 				t,
 				resources[2].(map[string]interface{}),
 				imageKey,
 				imageURLKey,
-				mockImageURLLocation,
 			)
 			assertImageKeyIsReplacedWithImageURL(
 				t,
 				resources[2].(map[string]interface{}),
 				supportedByImageKey,
 				supportedByImageURLKey,
-				mockImageURLLocation,
 			)
 			assertImageKeyIsReplacedWithImageURL(
 				t,
 				resources[3].(map[string]interface{}),
 				imageKey,
 				imageURLKey,
-				mockImageURLLocation,
 			)
 
 			applyRequestHandler(t, w, r, applyItemStatusCode, applyMockResponse)
