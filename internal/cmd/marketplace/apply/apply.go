@@ -210,16 +210,14 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string
 		if err != nil {
 			return nil, nil, err
 		}
-		var fileEncoding string
-		switch filepath.Ext(filePath) {
-		case encoding.YamlExtension, encoding.YmlExtension, encoding.JSONExtension:
-			fileEncoding = encoding.YAML
+		switch filepath.Ext(filepath.Ext(filePath)) {
+		case encoding.YmlExtension, encoding.YamlExtension, encoding.JSONExtension:
+			break
 		default:
 			return nil, nil, fmt.Errorf("%w: %s", errInvalidExtension, filePath)
 		}
-
 		marketplaceItem := &marketplace.Item{}
-		err = encoding.UnmarshalData(content, fileEncoding, marketplaceItem)
+		err = encoding.UnmarshalData(content, marketplaceItem)
 		if err != nil {
 			return nil, nil, fmt.Errorf("errors in file %s: %w", filePath, err)
 		}
