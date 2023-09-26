@@ -311,7 +311,7 @@ The image will be uploaded along with the Marketplace item.
 Before being applied, the "image" key will be replaced with the "imageUrl" referring to the uploaded image.
 You can retrieve the updated item with the "get" command.
 
-You can also specify the "supportedByImage" in a similar fashion.
+You can also specify the "supportedByImage" in a similar way.
 
 Be aware that the presence of both "image" and "imageUrl" and/or of both "supportedByImage" and "supportedByImageUrl" is illegal.
 
