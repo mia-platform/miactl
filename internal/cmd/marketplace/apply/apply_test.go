@@ -413,6 +413,7 @@ func TestApplyIntegration(t *testing.T) {
 		mockPaths := []string{
 			"./testdata/validItemWithImage.json",
 			"./testdata/validItemWithImage2.json",
+			"./testdata/yamlWithImage.yml",
 		}
 		applyMockResponse := &marketplace.ApplyResponse{
 			Done: true,
@@ -490,6 +491,11 @@ func applyIntegrationMockServer(t *testing.T, statusCode int, applyMockResponse,
 			require.NotContains(t, resources[1].(map[string]interface{}), supportedByImageKey)
 			require.Contains(t, resources[1].(map[string]interface{}), supportedByImageURLKey)
 			require.Equal(t, mockImageURLLocation, resources[1].(map[string]interface{})[imageURLKey].(string))
+
+			// yaml mock with image
+			require.NotContains(t, resources[2].(map[string]interface{}), supportedByImageKey)
+			require.Contains(t, resources[2].(map[string]interface{}), supportedByImageURLKey)
+			require.Equal(t, mockImageURLLocation, resources[2].(map[string]interface{})[imageURLKey].(string))
 
 			applyRequestHandler(t, w, r, statusCode, applyMockResponse)
 		case fmt.Sprintf(uploadImageEndpoint, mockTenantID):

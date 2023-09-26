@@ -59,17 +59,23 @@ func getAndValidateImageLocalPath(item *marketplace.Item, imageKey, imageURLKey 
 	}
 
 	if imageExists {
-		imageInfoObj, ok := imageInfo.(map[string]interface{})
-		if !ok {
-			return "", errImageObjectInvalid
+		var imageInfoObj map[string]interface{}
+		switch imageInfo.(type) {
+		case map[string]interface{}:
+			imageInfoObj = imageInfo.(map[string]interface{})
+		case marketplace.Item:
+			imageInfoObj = imageInfo.(marketplace.Item)
+		default:
+			return "", fmt.Errorf("%w: image is not an object", errImageObjectInvalid)
 		}
+
 		localPath, ok := imageInfoObj[localPathKey]
 		if !ok {
-			return "", errImageObjectInvalid
+			return "", fmt.Errorf("%w: localPath key not found", errImageObjectInvalid)
 		}
 		localPathStr, ok := localPath.(string)
 		if !ok {
-			return "", errImageObjectInvalid
+			return "", fmt.Errorf("%w: localPath is not string", errImageObjectInvalid)
 		}
 		return localPathStr, nil
 	}

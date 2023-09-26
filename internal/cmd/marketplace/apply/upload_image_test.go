@@ -29,7 +29,24 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
+
+func TestApplyGetAndValidateImageLocalPathYaml(t *testing.T) {
+	t.Run("should return local path if element contains image - YAML", func(t *testing.T) {
+		mockItemYAML := []byte(`---
+image:
+  localPath: ./someImage.png
+`)
+		mockItem := &marketplace.Item{}
+		err := yaml.Unmarshal(mockItemYAML, mockItem)
+		require.NoError(t, err)
+
+		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
+		require.NoError(t, err)
+		require.Equal(t, found, "./someImage.png")
+	})
+}
 
 func TestApplyGetAndValidateImageLocalPath(t *testing.T) {
 	t.Run("should throw error with an item that contains both image and imageURL", func(t *testing.T) {
@@ -59,6 +76,7 @@ func TestApplyGetAndValidateImageLocalPath(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, found, "some/local/path/image.jpg")
 	})
+
 	t.Run("should return error if image object is not valid", func(t *testing.T) {
 		mockItem := &marketplace.Item{
 			imageKey: map[string]interface{}{
