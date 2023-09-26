@@ -126,6 +126,15 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyI
 	return buildOutcomeSummaryAsTables(outcome), nil
 }
 
+// concatPathIfRelative concatenates the current dir of basePath only if  filePath is relative, otherwise if filePath is absolute it returns it
+func concatPathIfRelative(basePath, filePath string) string {
+	if filepath.IsAbs(filePath) {
+		return filePath
+	}
+	itemFileDir := filepath.Dir(basePath)
+	return path.Join(itemFileDir, filePath)
+}
+
 // processItemImages looks for image object and uploads the image when needed.
 // it processes image and supportedByImage, changing the object keys with respectively imageUrl and supportedByImageUrl after the upload
 func processItemImages(ctx context.Context, client *client.APIClient, companyID string, item *marketplace.Item, itemNameToFilePath map[string]string) error {
@@ -139,8 +148,7 @@ func processItemImages(ctx context.Context, client *client.APIClient, companyID 
 		}
 		itemName := (*item)["name"].(string)
 		itemFilePath := itemNameToFilePath[itemName]
-		itemFileDir := filepath.Dir(itemFilePath)
-		imageFilePath := path.Join(itemFileDir, localPath)
+		imageFilePath := concatPathIfRelative(itemFilePath, localPath)
 
 		imageURL, err := uploadImageFileAndGetURL(ctx, client, companyID, imageFilePath)
 		if err != nil {
