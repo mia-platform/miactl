@@ -59,14 +59,8 @@ func getAndValidateImageLocalPath(item *marketplace.Item, imageKey, imageURLKey 
 	}
 
 	if imageExists {
-		var imageInfoObj map[string]interface{}
-		// HACK: since the yaml.v3 resulting interface is different from the json one, we need to make this type distinction
-		switch v := imageInfo.(type) {
-		case map[string]interface{}:
-			imageInfoObj = v
-		case marketplace.Item:
-			imageInfoObj = v
-		default:
+		imageInfoObj, ok := imageInfo.(marketplace.Item)
+		if !ok {
 			return "", fmt.Errorf("%w: image is not an object", errImageObjectInvalid)
 		}
 

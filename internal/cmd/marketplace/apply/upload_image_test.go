@@ -32,7 +32,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func TestApplyGetAndValidateImageLocalPathYaml(t *testing.T) {
+func TestApplyGetAndValidateImageLocalPath(t *testing.T) {
 	t.Run("should return local path if element contains image - YAML", func(t *testing.T) {
 		mockItemYAML := []byte(`---
 image:
@@ -46,9 +46,6 @@ image:
 		require.NoError(t, err)
 		require.Equal(t, found, "./someImage.png")
 	})
-}
-
-func TestApplyGetAndValidateImageLocalPath(t *testing.T) {
 	t.Run("should throw error with an item that contains both image and imageURL", func(t *testing.T) {
 		mockItem := &marketplace.Item{
 			imageKey: map[string]interface{}{
@@ -69,7 +66,7 @@ func TestApplyGetAndValidateImageLocalPath(t *testing.T) {
 			}
 		}`)
 		mockItem := &marketplace.Item{}
-		err := json.Unmarshal(mockItemJSON, mockItem)
+		err := yaml.Unmarshal(mockItemJSON, mockItem)
 		require.NoError(t, err)
 
 		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
