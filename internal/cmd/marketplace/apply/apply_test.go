@@ -31,14 +31,15 @@ import (
 
 func TestApplyBuildPathsFromDir(t *testing.T) {
 	t.Run("should read all files in dir retrieving paths", func(t *testing.T) {
-		dirPath := "./testdata/withoutErrors"
+		dirPath := "./testdata/subdir"
 
 		found, err := buildFilePathsList([]string{dirPath})
 		require.NoError(t, err)
-		require.Contains(t, found, "testdata/withoutErrors/validItem1.json")
-		require.Contains(t, found, "testdata/withoutErrors/validYaml.yaml")
-		require.Contains(t, found, "testdata/withoutErrors/validYaml.yml")
-		require.Len(t, found, 3)
+		require.Contains(t, found, "testdata/subdir/validItem1.json")
+		require.Contains(t, found, "testdata/subdir/validYaml.yaml")
+		require.Contains(t, found, "testdata/subdir/validYaml.yml")
+		require.Contains(t, found, "testdata/subdir/validItemWithImage.json")
+		require.Len(t, found, 4)
 	})
 
 	t.Run("should return error due to file with bad extension", func(t *testing.T) {
@@ -414,6 +415,7 @@ func TestApplyIntegration(t *testing.T) {
 			"./testdata/validItemWithImage.json",
 			"./testdata/validItemWithImage2.json",
 			"./testdata/yamlWithImage.yml",
+			"./testdata/subdir/validItemWithImage.json",
 		}
 		applyMockResponse := &marketplace.ApplyResponse{
 			Done: true,
@@ -507,6 +509,11 @@ func applyIntegrationMockServer(t *testing.T, statusCode int, applyMockResponse,
 			require.NotContains(t, resources[2].(map[string]interface{}), supportedByImageKey)
 			require.Contains(t, resources[2].(map[string]interface{}), supportedByImageURLKey)
 			require.Equal(t, mockImageURLLocation, resources[2].(map[string]interface{})[imageURLKey].(string))
+
+			// item with path relative to outer dir
+			require.NotContains(t, resources[3].(map[string]interface{}), supportedByImageKey)
+			require.Contains(t, resources[3].(map[string]interface{}), supportedByImageURLKey)
+			require.Equal(t, mockImageURLLocation, resources[3].(map[string]interface{})[imageURLKey].(string))
 
 			applyRequestHandler(t, w, r, statusCode, applyMockResponse)
 		case fmt.Sprintf(uploadImageEndpoint, mockTenantID):
