@@ -19,6 +19,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/cronjobs"
 	"github.com/mia-platform/miactl/internal/cmd/environments"
+	"github.com/mia-platform/miactl/internal/cmd/jobs"
 	"github.com/mia-platform/miactl/internal/cmd/pods"
 	"github.com/spf13/cobra"
 )
@@ -46,6 +47,7 @@ the resources generated, like Pods, Cronjobs and logs.
 		environments.EnvironmentCmd(o),
 		pods.PodCmd(o),
 		cronjobs.CronjobCmd(o),
+		jobs.CronjobCmd(o),
 	)
 
 	return cmd
