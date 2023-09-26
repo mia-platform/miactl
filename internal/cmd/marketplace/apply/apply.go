@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
-	"path"
 	"path/filepath"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -37,7 +36,20 @@ const (
 
 The flag -f accepts either files or directories. In case of directories, it explores them recursively.
 
-Supported formats are JSON (.json files) and YAML (.yaml or .yml files).`
+Supported formats are JSON (.json files) and YAML (.yaml or .yml files).
+
+The file can contain an image object with the following format:
+"image": {
+	"localPath": "./someImage.png"
+}
+The localPath can be absolute or relative to the file location.
+The image will be uploaded along with the marketplace item.
+Before being applied, the "image" key will be replaced with the "imageUrl" referring to the uploaded image.
+You can retrieve the updated item with the "get" command.
+
+You can also specify the "supportedByImage" in a similar fashion.
+
+Be aware that the presence of both "image" and "imageUrl" and of both "supportedByImage" and "supportedByImageUrl" is illegal.`
 
 	applyExample = `
 # Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Marketplace
