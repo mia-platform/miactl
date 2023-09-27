@@ -45,9 +45,9 @@ the resources generated, like Pods, Cronjobs and logs.
 	// add sub commands
 	cmd.AddCommand(
 		environments.EnvironmentCmd(o),
-		pods.PodCmd(o),
-		cronjobs.CronjobCmd(o),
-		jobs.CronjobCmd(o),
+		pods.Command(o),
+		cronjobs.Command(o),
+		jobs.Command(o),
 	)
 
 	return cmd

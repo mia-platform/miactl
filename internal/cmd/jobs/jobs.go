@@ -33,7 +33,7 @@ const (
 	listEndpointTemplate = "/api/projects/%s/environments/%s/jobs/describe/"
 )
 
-func CronjobCmd(o *clioptions.CLIOptions) *cobra.Command {
+func Command(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "job",
 		Short: "Manage Mia-Platform Console project runtime job resources",

@@ -36,7 +36,7 @@ const (
 	listEndpointTemplate = "/api/projects/%s/environments/%s/pods/describe/"
 )
 
-func PodCmd(o *clioptions.CLIOptions) *cobra.Command {
+func Command(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "pod",
 		Short: "Manage Mia-Platform Console project runtime pod resources",
