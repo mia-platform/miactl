@@ -313,7 +313,7 @@ You can retrieve the updated item with the "get" command.
 
 You can also specify the "supportedByImage" in a similar way.
 
-Be aware that the presence of both "image" and "imageUrl" and/or of both "supportedByImage" and "supportedByImageUrl" is illegal.
+Be aware that the presence of both "image" and "imageUrl" and/or of both "supportedByImage" and "supportedByImageUrl" is ambiguous and raises an error .
 
 ```
 miactl marketplace apply { -f file-path }... } [flags]
