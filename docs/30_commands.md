@@ -254,8 +254,8 @@ Available flags for the command:
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired company
-- `--project-id`, to set the ID of the desired project
+- `--company-id`, to set the ID of the desired Company
+- `--project-id`, to set the ID of the desired Project
 
 ## marketplace
 
