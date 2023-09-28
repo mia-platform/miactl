@@ -87,6 +87,7 @@ func listMarketplaceItems(client *client.APIClient, companyID string) error {
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
+	table.SetAutoWrapText(false)
 	table.SetHeader([]string{"ID", "Name", "Type"})
 	for _, marketplaceItem := range marketplaceItems {
 		table.Append([]string{
