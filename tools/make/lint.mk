@@ -33,7 +33,7 @@ lint-deps:
 lint: golangci-lint
 golangci-lint: $(GOLANGCI_PATH)
 	$(info Running golangci-lint with .golangci.yaml config file...)
-	$(GOLANGCI_PATH) run --out-format=$(GOLANGCI_LINT_MODE) --config=.golangci.yaml --build-tags=conformance,integration
+	$(GOLANGCI_PATH) run --out-format=$(GOLANGCI_LINT_MODE) --config=.golangci.yaml
 
 lint-deps: $(GOLANGCI_PATH)
 $(GOLANGCI_PATH): $(TOOLS_DIR)/GOLANGCI_LINT_VERSION

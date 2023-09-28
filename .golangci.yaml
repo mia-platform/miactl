@@ -1,7 +1,10 @@
 run:
   deadline: 10m
   skip-dirs:
-  - "internal/jws"
+  - internal/jws
+  build-tags:
+  - conformance
+  - integration
 
 linters:
   enable:
