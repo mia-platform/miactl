@@ -141,3 +141,13 @@ type CronJob struct {
 	Age          time.Time `json:"creationTimestamp"` //nolint: tagliatelle
 	LastSchedule time.Time `json:"lastScheduleTime"`  //nolint: tagliatelle
 }
+
+type Job struct {
+	Name           string    `json:"name"`
+	Active         int       `json:"active"`
+	Failed         int       `json:"failed"`
+	Succeeded      int       `json:"succeeded"`
+	Age            time.Time `json:"creationTimestamp"` //nolint: tagliatelle
+	StartTime      time.Time `json:"startTime"`
+	CompletionTime time.Time `json:"completionTime"`
+}

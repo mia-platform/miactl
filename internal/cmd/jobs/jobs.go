@@ -13,13 +13,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pods
+package jobs
 
 import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -28,21 +27,19 @@ import (
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 const (
-	listEndpointTemplate = "/api/projects/%s/environments/%s/pods/describe/"
+	listEndpointTemplate = "/api/projects/%s/environments/%s/jobs/describe/"
 )
 
 func Command(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "pod",
-		Short: "Manage Mia-Platform Console project runtime pod resources",
-		Long: `Manage Mia-Platform Console project runtime pod resources.
+		Use:   "job",
+		Short: "Manage Mia-Platform Console project runtime job resources",
+		Long: `Manage Mia-Platform Console project runtime job resources.
 
-A project on Mia-Platform Console once deployed can have one or more pod resources associcated with one or more
+A project on Mia-Platform Console once deployed can have one or more job resources associcated with one or more
 of its environments.
 `,
 	}
@@ -58,22 +55,22 @@ of its environments.
 func listCmd(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list ENVIRONMENT",
-		Short: "List all pods for a project in an environment",
-		Long:  "List all pods for a project in an environment.",
+		Short: "List all jobs for a project in an environment",
+		Long:  "List all jobs for a project in an environment.",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := o.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return printPodsList(client, restConfig.ProjectID, args[0])
+			return printJobsList(client, restConfig.ProjectID, args[0])
 		},
 	}
 
 	return cmd
 }
 
-func printPodsList(client *client.APIClient, projectID, environment string) error {
+func printJobsList(client *client.APIClient, projectID, environment string) error {
 	if projectID == "" {
 		return fmt.Errorf("missing project id, please set one with the flag or context")
 	}
@@ -90,14 +87,14 @@ func printPodsList(client *client.APIClient, projectID, environment string) erro
 		return err
 	}
 
-	pods := make([]resources.Pod, 0)
-	err = resp.ParseResponse(&pods)
+	jobs := make([]resources.Job, 0)
+	err = resp.ParseResponse(&jobs)
 	if err != nil {
 		return err
 	}
 
-	if len(pods) == 0 {
-		fmt.Printf("No pods found for %s environment\n", environment)
+	if len(jobs) == 0 {
+		fmt.Printf("No jobs found for %s environment\n", environment)
 		return nil
 	}
 
@@ -107,57 +104,30 @@ func printPodsList(client *client.APIClient, projectID, environment string) erro
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
-	table.SetHeader([]string{"Status", "Name", "Application", "Ready", "Phase", "Restart", "Age"})
+	table.SetHeader([]string{"Name", "Finished Pods", "Duration", "Age"})
 
 	if err != nil {
 		return err
 	}
 
-	for _, pod := range pods {
-		table.Append(rowForPod(pod))
+	for _, job := range jobs {
+		table.Append(rowForJob(job))
 	}
 
 	table.Render()
 	return nil
 }
 
-func rowForPod(pod resources.Pod) []string {
-	totalRestart := 0
-	totalContainers := 0
-	readyContainers := 0
-	for _, container := range pod.Containers {
-		totalRestart += container.RestartCount
-		totalContainers++
-		if container.Ready {
-			readyContainers++
-		}
+func rowForJob(job resources.Job) []string {
+	duration := "-"
+	if !job.CompletionTime.IsZero() {
+		duration = util.HumanDuration(job.CompletionTime.Sub(job.StartTime))
 	}
 
-	components := make([]string, 0)
-	for _, component := range pod.Component {
-		if len(component.Name) == 0 {
-			continue
-		}
-
-		nameComponents := []string{component.Name}
-		if len(component.Version) > 0 {
-			nameComponents = append(nameComponents, component.Version)
-		}
-		components = append(components, strings.Join(nameComponents, ":"))
-	}
-
-	if len(components) == 0 {
-		components = append(components, "-")
-	}
-
-	caser := cases.Title(language.English)
 	return []string{
-		caser.String(pod.Status),
-		pod.Name,
-		strings.Join(components, ", "),
-		fmt.Sprintf("%d/%d", readyContainers, totalContainers),
-		caser.String(pod.Phase),
-		fmt.Sprint(totalRestart),
-		util.HumanDuration(time.Since(pod.Age)),
+		job.Name,
+		fmt.Sprintf("%d/%d", job.Succeeded, (job.Active + job.Failed + job.Succeeded)),
+		duration,
+		util.HumanDuration(time.Since(job.Age)),
 	}
 }
