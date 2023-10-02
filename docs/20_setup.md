@@ -2,7 +2,7 @@
 
 ## Installation
 
-`miactl` can be installed in different ways, you can choose to one that better fits your needs and the operating system you are using:
+`miactl` can be installed in different ways, you can choose the one that better fits your needs and the operating system you are using:
 
 - [Setup](#setup)
 	- [Installation](#installation)
