@@ -104,7 +104,7 @@ func testServer(t *testing.T) *httptest.Server {
 				Suspend:      true,
 				Active:       0,
 				Schedule:     "* * * * *",
-				Age:          time.Now().Add(time.Hour * 24),
+				Age:          time.Now().Add(-time.Hour * 24),
 				LastSchedule: time.Now(),
 			}
 			data, err := resources.EncodeResourceToJSON([]resources.CronJob{cronjob})
