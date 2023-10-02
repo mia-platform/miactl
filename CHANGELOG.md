@@ -21,6 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - marketplace get command
 - environment list command
 - pod list command
+- cronjob list command
+- job list command
+- version command
 
 ## [0.7.0] - 2023-06-26
 
