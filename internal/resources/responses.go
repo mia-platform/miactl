@@ -151,3 +151,11 @@ type Job struct {
 	StartTime      time.Time `json:"startTime"`
 	CompletionTime time.Time `json:"completionTime"`
 }
+
+type Deployment struct {
+	Name      string    `json:"name"`
+	Available int       `json:"available"`
+	Ready     int       `json:"ready"`
+	Replicas  int       `json:"replicas"`
+	Age       time.Time `json:"creationTimestamp"` //nolint: tagliatelle
+}
