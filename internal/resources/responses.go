@@ -159,3 +159,18 @@ type Deployment struct {
 	Replicas  int       `json:"replicas"`
 	Age       time.Time `json:"creationTimestamp"` //nolint: tagliatelle
 }
+
+type Service struct {
+	Name      string    `json:"name"`
+	Type      string    `json:"type"`
+	ClusterIP string    `json:"clusterIP"` //nolint: tagliatelle
+	Ports     []Port    `json:"ports"`
+	Age       time.Time `json:"creationTimestamp"` //nolint: tagliatelle
+}
+
+type Port struct {
+	Name       string `json:"name"`
+	Port       int    `json:"port"`
+	Protocol   string `json:"protocol"`
+	TargetPort string `json:"targetPort"`
+}

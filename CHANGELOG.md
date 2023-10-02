@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - cronjob list command
 - job list command
 - deployment list command
+- service list command
 - version command
 
 ## [0.7.0] - 2023-06-26

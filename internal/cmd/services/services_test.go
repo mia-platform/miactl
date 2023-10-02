@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package deployments
+package services
 
 import (
 	"fmt"
@@ -28,17 +28,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestPrintDeploymentsList(t *testing.T) {
+func TestPrintServicesList(t *testing.T) {
 	testCases := map[string]struct {
 		testServer *httptest.Server
 		projectID  string
 		err        bool
 	}{
-		"list deployment with success": {
+		"list service with success": {
 			testServer: testServer(t),
 			projectID:  "found",
 		},
-		"list deployment with empty response": {
+		"list service with empty response": {
 			testServer: testServer(t),
 			projectID:  "empty",
 		},
@@ -59,7 +59,7 @@ func TestPrintDeploymentsList(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printDeploymentsList(client, testCase.projectID, "env-id")
+			err = printServicesList(client, testCase.projectID, "env-id")
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
@@ -69,34 +69,49 @@ func TestPrintDeploymentsList(t *testing.T) {
 	}
 }
 
-func TestRowForDeployment(t *testing.T) {
+func TestRowForService(t *testing.T) {
 	testCases := map[string]struct {
-		deployment  resources.Deployment
+		service     resources.Service
 		expectedRow []string
 	}{
-		"basic deployment": {
-			deployment: resources.Deployment{
-				Name:      "deployment-name",
-				Ready:     1,
-				Replicas:  1,
-				Available: 1,
-				Age:       time.Now().Add(-time.Hour * 24),
+		"basic service": {
+			service: resources.Service{
+				Name:      "service-name",
+				Type:      "ClusterIP",
+				ClusterIP: "127.0.0.1",
+				Ports: []resources.Port{
+					{
+						Name:       "port-name",
+						Port:       8000,
+						Protocol:   "TCP",
+						TargetPort: "8000",
+					},
+				},
+				Age: time.Now().Add(-time.Hour * 24),
 			},
-			expectedRow: []string{"deployment-name", "1/1", "1", "1", "24h"},
+			expectedRow: []string{"service-name", "ClusterIP", "127.0.0.1", "8000/TCP", "24h"},
 		},
-		"missing ready and available": {
-			deployment: resources.Deployment{
-				Name:     "deployment-name",
-				Replicas: 0,
-				Age:      time.Now().Add(-time.Hour * 24),
+		"missing cluster ip": {
+			service: resources.Service{
+				Name: "service-name",
+				Type: "ClusterIP",
+				Ports: []resources.Port{
+					{
+						Name:       "port-name",
+						Port:       8000,
+						Protocol:   "TCP",
+						TargetPort: "8000",
+					},
+				},
+				Age: time.Now().Add(-time.Hour * 24),
 			},
-			expectedRow: []string{"deployment-name", "0/0", "0", "0", "24h"},
+			expectedRow: []string{"service-name", "ClusterIP", "<none>", "8000/TCP", "24h"},
 		},
 	}
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForDeployment(testCase.deployment))
+			assert.Equal(t, testCase.expectedRow, rowForService(testCase.service))
 		})
 	}
 }
@@ -106,14 +121,21 @@ func testServer(t *testing.T) *httptest.Server {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "found", "env-id"):
-			deployment := resources.Deployment{
-				Name:      "deployment-name",
-				Ready:     1,
-				Replicas:  1,
-				Available: 1,
-				Age:       time.Now().Add(-time.Hour * 24),
+			service := resources.Service{
+				Name:      "service-name",
+				Type:      "ClusterIP",
+				ClusterIP: "127.0.0.1",
+				Ports: []resources.Port{
+					{
+						Name:       "port-name",
+						Port:       8000,
+						Protocol:   "TCP",
+						TargetPort: "8000",
+					},
+				},
+				Age: time.Now().Add(-time.Hour * 24),
 			}
-			data, err := resources.EncodeResourceToJSON([]resources.Deployment{deployment})
+			data, err := resources.EncodeResourceToJSON([]resources.Service{service})
 			require.NoError(t, err)
 			w.WriteHeader(http.StatusOK)
 			w.Write(data)
