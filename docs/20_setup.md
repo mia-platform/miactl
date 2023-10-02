@@ -99,7 +99,7 @@ Once WSL is installed, to open a Linux bash terminal, press Start+R, enter `bash
 
 #### Install `miactl`
 
-You can now install miactl with any of the methods explained above for Linux, we suggest the [binary installation](#binary-download) since it's the most straightforward.
+You can now install `miactl  with any of the methods explained above for Linux, we suggest the [binary installation](#binary-download) since it's the most straightforward.
 
 #### Setup a service account
 
