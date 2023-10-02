@@ -8,6 +8,11 @@ repos:
     entry: make lint
     language: system
     pass_filenames: false
+  - id: run-tests
+    name: Run make test
+    entry: make test
+    language: system
+    pass_filenames: false
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.4.0
   hooks:
@@ -19,3 +24,13 @@ repos:
     name: Check that executable files have shebangs
   - id: check-shebang-scripts-are-executable
     name: Check that files with shebangs are executable
+  - id: end-of-file-fixer
+    name: Makes sure files end in a newline and only a newline
+  - id: trailing-whitespace
+    name: Trims trailing whitespace
+    args: [--markdown-linebreak-ext=md] # add exception for markdown linebreaks
+- repo: https://github.com/gitleaks/gitleaks
+  rev: v8.18.0
+  hooks:
+  - id: gitleaks
+    name: Protect and discover secrets using Gitleaks
