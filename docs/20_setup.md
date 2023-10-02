@@ -32,13 +32,6 @@ brew install mia-platform/tap/miactl
 
 #### Go
 
-:::warning
-
-`miactl` is not currently directly compatible with Windows, even if you have Go installed, you can however use it with WSL;
-please follow the instructions in the [dedicated section](#windows).
-
-:::
-
 If you have [Golang] installed with a version >= 1.13 in your system and you have the `$GOPATH`env set, you can
 install `miactl` like this:
 
