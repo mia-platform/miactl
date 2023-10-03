@@ -74,7 +74,7 @@ var (
 	errCompanyIDNotDefined = errors.New("companyID must be defined")
 
 	errResWithoutName       = errors.New(`the required field "name" was not found in the resource`)
-	errResWithoutitemID     = errors.New(`the required field "itemId" was not found in the resource`)
+	errResWithoutItemID     = errors.New(`the required field "itemId" was not found in the resource`)
 	errNoValidFilesProvided = errors.New("no valid files were provided")
 
 	errResNameNotAString   = errors.New(`the field "name" must be a string`)
@@ -262,7 +262,7 @@ func validateItemName(marketplaceItem *marketplace.Item, filePath string) (strin
 func validateItemHumanReadableID(marketplaceItem *marketplace.Item, filePath string) (string, error) {
 	itemID, ok := (*marketplaceItem)["itemId"]
 	if !ok {
-		return "", fmt.Errorf("%w: %s", errResWithoutitemID, filePath)
+		return "", fmt.Errorf("%w: %s", errResWithoutItemID, filePath)
 	}
 	itemIDStr, ok := itemID.(string)
 	if !ok {
