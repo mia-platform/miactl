@@ -74,11 +74,13 @@ var (
 	errCompanyIDNotDefined = errors.New("companyID must be defined")
 
 	errResWithoutName       = errors.New(`the required field "name" was not found in the resource`)
+	errResWithoutItemID     = errors.New(`the required field "itemId" was not found in the resource`)
 	errNoValidFilesProvided = errors.New("no valid files were provided")
 
-	errResNameNotAString = errors.New(`the field "name" must be a string`)
-	errInvalidExtension  = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
-	errDuplicatedResName = errors.New("some resources have duplicated name field")
+	errResNameNotAString   = errors.New(`the field "name" must be a string`)
+	errResItemIDNotAString = errors.New(`the field "itemId" must be a string`)
+	errInvalidExtension    = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
+	errDuplicatedResItemID = errors.New("some resources have duplicated itemId field")
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
@@ -118,13 +120,13 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyI
 	if err != nil {
 		return "", err
 	}
-	applyReq, itemNameToFilePath, err := buildApplyRequest(resourceFilesPaths)
+	applyReq, itemIDToFilePathMap, err := buildApplyRequest(resourceFilesPaths)
 	if err != nil {
 		return "", err
 	}
 
 	for _, item := range applyReq.Resources {
-		if err := processItemImages(ctx, client, companyID, item, itemNameToFilePath); err != nil {
+		if err := processItemImages(ctx, client, companyID, item, itemIDToFilePathMap); err != nil {
 			return "", err
 		}
 	}
@@ -147,7 +149,7 @@ func concatPathDirToFilePathIfRelative(basePath, filePath string) string {
 
 // processItemImages looks for image object and uploads the image when needed.
 // it processes image and supportedByImage, changing the object keys with respectively imageUrl and supportedByImageUrl after the upload
-func processItemImages(ctx context.Context, client *client.APIClient, companyID string, item *marketplace.Item, itemNameToFilePath map[string]string) error {
+func processItemImages(ctx context.Context, client *client.APIClient, companyID string, item *marketplace.Item, itemIDToFilePathMap map[string]string) error {
 	processImage := func(objKey, urlKey string) error {
 		localPath, err := getAndValidateImageLocalPath(item, objKey, urlKey)
 		if err != nil {
@@ -156,8 +158,8 @@ func processItemImages(ctx context.Context, client *client.APIClient, companyID 
 		if localPath == "" {
 			return nil
 		}
-		itemName := (*item)["name"].(string)
-		itemFilePath := itemNameToFilePath[itemName]
+		itemID := item.Get("itemId").(string)
+		itemFilePath := itemIDToFilePathMap[itemID]
 		imageFilePath := concatPathDirToFilePathIfRelative(itemFilePath, localPath)
 
 		imageURL, err := uploadImageFileAndGetURL(ctx, client, companyID, imageFilePath)
@@ -204,7 +206,7 @@ func buildFilePathsList(paths []string) ([]string, error) {
 
 func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string]string, error) {
 	resources := []*marketplace.Item{}
-	resNameToFilePath := map[string]string{}
+	resItemIDToFilePath := map[string]string{}
 	for _, filePath := range pathList {
 		content, err := os.ReadFile(filePath)
 		if err != nil {
@@ -222,23 +224,27 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string
 			return nil, nil, fmt.Errorf("errors in file %s: %w", filePath, err)
 		}
 
-		itemNameStr, err := validateItemName(marketplaceItem, filePath)
+		_, err = validateItemName(marketplaceItem, filePath)
 		if err != nil {
 			return nil, nil, err
 		}
-		if _, alreadyExists := resNameToFilePath[itemNameStr]; alreadyExists {
-			return nil, nil, fmt.Errorf("%w: %s", errDuplicatedResName, itemNameStr)
+		itemID, err := validateItemHumanReadableID(marketplaceItem, filePath)
+		if err != nil {
+			return nil, nil, err
+		}
+		if _, alreadyExists := resItemIDToFilePath[itemID]; alreadyExists {
+			return nil, nil, fmt.Errorf("%w: %s", errDuplicatedResItemID, itemID)
 		}
 
 		resources = append(resources, marketplaceItem)
-		resNameToFilePath[itemNameStr] = filePath
+		resItemIDToFilePath[itemID] = filePath
 	}
 	if len(resources) == 0 {
 		return nil, nil, errNoValidFilesProvided
 	}
 	return &marketplace.ApplyRequest{
 		Resources: resources,
-	}, resNameToFilePath, nil
+	}, resItemIDToFilePath, nil
 }
 
 func validateItemName(marketplaceItem *marketplace.Item, filePath string) (string, error) {
@@ -251,6 +257,18 @@ func validateItemName(marketplaceItem *marketplace.Item, filePath string) (strin
 		return "", fmt.Errorf("%w: %s", errResNameNotAString, filePath)
 	}
 	return itemNameStr, nil
+}
+
+func validateItemHumanReadableID(marketplaceItem *marketplace.Item, filePath string) (string, error) {
+	itemID, ok := (*marketplaceItem)["itemId"]
+	if !ok {
+		return "", fmt.Errorf("%w: %s", errResWithoutItemID, filePath)
+	}
+	itemIDStr, ok := itemID.(string)
+	if !ok {
+		return "", fmt.Errorf("%w: %s", errResItemIDNotAString, filePath)
+	}
+	return itemIDStr, nil
 }
 
 func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *marketplace.ApplyRequest) (*marketplace.ApplyResponse, error) {

@@ -44,7 +44,7 @@ func buildTable(headers []string, items []marketplace.ApplyResponseItem, columnT
 }
 
 func buildSuccessTable(items []marketplace.ApplyResponseItem) string {
-	headers := []string{"Item ID", "Name", "Status"}
+	headers := []string{"ID", "Name", "Status"}
 	columnTransform := func(item marketplace.ApplyResponseItem) []string {
 		var status string
 		switch {

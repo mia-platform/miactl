@@ -5,6 +5,7 @@
 		"localPath": "./imageTest.png"
 	},
 	"name": "miactl second element with image",
+	"itemId": "miactl-second-element-with-image",
 	"releaseStage": "",
 	"repositoryUrl": "https://example.com/repo",
 	"resources": {

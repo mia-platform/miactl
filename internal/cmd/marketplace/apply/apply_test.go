@@ -63,8 +63,8 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		require.NotNil(t, foundApplyReq)
 		require.NotEmpty(t, foundApplyReq.Resources)
 		require.Equal(t, foundResNameToFilePath, map[string]string{
-			"miactl test json": "./testdata/validItem1.json",
-			"miactl test":      "./testdata/validYaml.yaml",
+			"miactl-test-json": "./testdata/validItem1.json",
+			"miactl-test":      "./testdata/validYaml.yaml",
 		})
 	})
 
@@ -109,7 +109,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.Error(t, err)
+		require.ErrorIs(t, err, errInvalidExtension)
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
@@ -123,14 +123,14 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		require.Nil(t, foundResNameToFilePath)
 	})
 
-	t.Run("should return error if two resources have the same name", func(t *testing.T) {
+	t.Run("should return error if two resources have the same itemId", func(t *testing.T) {
 		filePaths := []string{
 			"./testdata/validYaml.yaml",
 			"./testdata/validYaml.yml",
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.ErrorIs(t, err, errDuplicatedResName)
+		require.ErrorIs(t, err, errDuplicatedResItemID)
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
