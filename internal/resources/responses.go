@@ -174,3 +174,12 @@ type Port struct {
 	Protocol   string `json:"protocol"`
 	TargetPort string `json:"targetPort"`
 }
+
+type RuntimeEvent struct {
+	Type      string    `json:"type"`
+	Object    string    `json:"subObjectPath"` //nolint: tagliatelle
+	Message   string    `json:"message"`
+	Reason    string    `json:"reason"`
+	FirstSeen time.Time `json:"firstSeen"`
+	LastSeen  time.Time `json:"lastSeen"`
+}
