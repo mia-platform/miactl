@@ -158,8 +158,8 @@ func processItemImages(ctx context.Context, client *client.APIClient, companyID 
 		if localPath == "" {
 			return nil
 		}
-		itemName := (*item)["itemId"].(string)
-		itemFilePath := itemIDToFilePathMap[itemName]
+		itemID := item.Get("itemId").(string)
+		itemFilePath := itemIDToFilePathMap[itemID]
 		imageFilePath := concatPathDirToFilePathIfRelative(itemFilePath, localPath)
 
 		imageURL, err := uploadImageFileAndGetURL(ctx, client, companyID, imageFilePath)

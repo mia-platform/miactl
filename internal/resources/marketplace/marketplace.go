@@ -65,3 +65,7 @@ func (i *Item) Del(key string) {
 func (i *Item) Set(key string, val interface{}) {
 	(*i)[key] = val
 }
+
+func (i *Item) Get(key string) interface{} {
+	return (*i)[key]
+}
