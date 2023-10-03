@@ -1,6 +1,7 @@
 ---
 categoryId: devportal
 name: miactl test yaml with image
+itemId: miactl-test-yaml-with-image
 image:
   localPath: ./imageTest.png
 releaseStage: ""

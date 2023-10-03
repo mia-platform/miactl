@@ -5,6 +5,7 @@
 		"localPath": "./imageTest.png"
 	},
 	"name": "miactl test with image and local path",
+	"itemId": "miactl-test-with-image-and-local-path",
 	"releaseStage": "",
 	"repositoryUrl": "https://example.com/repo",
 	"resources": {

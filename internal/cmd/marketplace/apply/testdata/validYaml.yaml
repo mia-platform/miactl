@@ -3,6 +3,7 @@ categoryId: devportal
 description: Some description
 imageUrl: "/some/path/to/image.png"
 name: miactl test
+itemId: miactl-test
 releaseStage: ""
 repositoryUrl: https://example.com/repo
 resources:
