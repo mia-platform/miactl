@@ -109,7 +109,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.Error(t, err)
+		require.ErrorIs(t, err, errInvalidExtension)
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
