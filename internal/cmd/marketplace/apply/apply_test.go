@@ -130,7 +130,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.ErrorIs(t, err, errDuplicatedResItemId)
+		require.ErrorIs(t, err, errDuplicatedResItemID)
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
