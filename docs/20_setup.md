@@ -78,7 +78,8 @@ docker run ghr.io/mia-platform/miactl@0.7.0 miactl
 
 ### Windows
 
-`miactl` is not directly compatible with Windows, even if you have Go installed: compilation on this OS is not possible due to current technical restrictions.
+`miactl` is not directly compatible with Windows, even if you have Go installed: 
+compilation on this OS is not possible due to current technical restrictions.
 
 However, it is still possible to use `miactl` with Windows Subsystem for Linux (WSL), as explained here below.
 
@@ -90,11 +91,13 @@ Once WSL is installed, to open a Linux bash terminal, press Start+R, enter `bash
 
 #### Install `miactl`
 
-You can now install `miactl` with any of the methods explained above for Linux, we suggest the [binary installation](#binary-download) since it's the most straightforward.
+You can now install miactl with any of the methods explained above for Linux, 
+we suggest the [binary installation](#binary-download) since it's the most straightforward.
 
 #### Setup a service account
 
-Due to some technical restriction, it is not possible to login with a browser when using WSL. For this reason, we need to [setup a service account](/development_suite/identity-and-access-management/manage-service-accounts.md#service-account-authentication).
+Due to some technical restriction, it is not possible to login with a browser when using WSL.
+For this reason, we need to [setup a service account](/development_suite/identity-and-access-management/manage-service-accounts.md#service-account-authentication).
 
 Once you have created it, you need to use the [`miactl context auth` command](./30_commands.md#auth) to setup authentication.
 
