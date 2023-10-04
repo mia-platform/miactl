@@ -17,6 +17,7 @@ on:
 
 env:
   GO_VERSION: 1.21.1
+  GORELEASER_VERSION: v1.21.2
 
 jobs:
   codeql:
@@ -33,6 +34,11 @@ jobs:
       with:
         go-version: ${{ env.GO_VERSION }}
         cache: false
+    - name: Setup Goreleaser
+      uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
+      with:
+        version: ${{ env.GORELEASER_VERSION }}
+        install-only: true
     - name: Initialize CodeQL
       uses: github/codeql-action/init@ddccb873888234080b77e9bc2d4764d5ccaaccf9 # v2.21.9
       with:
