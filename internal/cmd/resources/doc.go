@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// jobs package contains subcommands and functions for managing jobs
-package jobs
+// resources package contains subcommands and functions for managing runtime resources
+package resources

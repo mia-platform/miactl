@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package services
+package resources
 
 import (
 	"fmt"
@@ -30,22 +30,26 @@ import (
 
 func TestPrintServicesList(t *testing.T) {
 	testCases := map[string]struct {
-		testServer *httptest.Server
-		projectID  string
-		err        bool
+		testServer   *httptest.Server
+		resourceType string
+		projectID    string
+		err          bool
 	}{
-		"list service with success": {
-			testServer: testServer(t),
-			projectID:  "found",
+		"list services with success": {
+			testServer:   testServer(t),
+			projectID:    "found",
+			resourceType: ServicesResourceType,
 		},
-		"list service with empty response": {
-			testServer: testServer(t),
-			projectID:  "empty",
+		"list deployments with empty response": {
+			testServer:   testServer(t),
+			projectID:    "empty",
+			resourceType: DeploymentResourceType,
 		},
 		"failed request": {
-			testServer: testServer(t),
-			projectID:  "fail",
-			err:        true,
+			testServer:   testServer(t),
+			projectID:    "fail",
+			err:          true,
+			resourceType: PodsResourceType,
 		},
 	}
 
@@ -59,7 +63,7 @@ func TestPrintServicesList(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printServicesList(client, testCase.projectID, "env-id")
+			err = printList(client, testCase.projectID, testCase.resourceType, "env-id")
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
@@ -69,58 +73,11 @@ func TestPrintServicesList(t *testing.T) {
 	}
 }
 
-func TestRowForService(t *testing.T) {
-	testCases := map[string]struct {
-		service     resources.Service
-		expectedRow []string
-	}{
-		"basic service": {
-			service: resources.Service{
-				Name:      "service-name",
-				Type:      "ClusterIP",
-				ClusterIP: "127.0.0.1",
-				Ports: []resources.Port{
-					{
-						Name:       "port-name",
-						Port:       8000,
-						Protocol:   "TCP",
-						TargetPort: "8000",
-					},
-				},
-				Age: time.Now().Add(-time.Hour * 24),
-			},
-			expectedRow: []string{"service-name", "ClusterIP", "127.0.0.1", "8000/TCP", "24h"},
-		},
-		"missing cluster ip": {
-			service: resources.Service{
-				Name: "service-name",
-				Type: "ClusterIP",
-				Ports: []resources.Port{
-					{
-						Name:       "port-name",
-						Port:       8000,
-						Protocol:   "TCP",
-						TargetPort: "8000",
-					},
-				},
-				Age: time.Now().Add(-time.Hour * 24),
-			},
-			expectedRow: []string{"service-name", "ClusterIP", "<none>", "8000/TCP", "24h"},
-		},
-	}
-
-	for name, testCase := range testCases {
-		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForService(testCase.service))
-		})
-	}
-}
-
 func testServer(t *testing.T) *httptest.Server {
 	t.Helper()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "found", "env-id"):
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "found", "env-id", ServicesResourceType):
 			service := resources.Service{
 				Name:      "service-name",
 				Type:      "ClusterIP",
@@ -139,11 +96,11 @@ func testServer(t *testing.T) *httptest.Server {
 			require.NoError(t, err)
 			w.WriteHeader(http.StatusOK)
 			w.Write(data)
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "fail", "env-id"):
-			w.WriteHeader(http.StatusNotFound)
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "empty", "env-id"):
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "empty", "env-id", DeploymentsResourceType):
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("[]"))
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "fail", "env-id", PodsResourceType):
+			w.WriteHeader(http.StatusNotFound)
 		default:
 			w.WriteHeader(http.StatusNotFound)
 			assert.Failf(t, "unexpected http call", "received call with method: %s uri %s", r.Method, r.RequestURI)

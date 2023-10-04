@@ -13,58 +13,104 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package pods
+package resources
 
 import (
-	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 
-	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestPrintPodsList(t *testing.T) {
+func TestRowForCronJob(t *testing.T) {
 	testCases := map[string]struct {
-		testServer *httptest.Server
-		projectID  string
-		err        bool
+		cronjob     resources.CronJob
+		expectedRow []string
 	}{
-		"list pod with success": {
-			testServer: testServer(t),
-			projectID:  "found",
-		},
-		"list pod with empty response": {
-			testServer: testServer(t),
-			projectID:  "empty",
-		},
-		"failed request": {
-			testServer: testServer(t),
-			projectID:  "fail",
-			err:        true,
+		"basic cronjob": {
+			cronjob: resources.CronJob{
+				Name:         "cronjob-name",
+				Suspend:      true,
+				Active:       0,
+				Schedule:     "* * * * *",
+				Age:          time.Now().Add(-time.Hour * 24),
+				LastSchedule: time.Now(),
+			},
+			expectedRow: []string{"cronjob-name", "* * * * *", "true", "0", "0s", "24h"},
 		},
 	}
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			server := testCase.testServer
-			defer server.Close()
+			assert.Equal(t, testCase.expectedRow, rowForCronJob(testCase.cronjob))
+		})
+	}
+}
 
-			client, err := client.APIClientForConfig(&client.Config{
-				Host: server.URL,
-			})
-			require.NoError(t, err)
+func TestRowForDeployment(t *testing.T) {
+	testCases := map[string]struct {
+		deployment  resources.Deployment
+		expectedRow []string
+	}{
+		"basic deployment": {
+			deployment: resources.Deployment{
+				Name:      "deployment-name",
+				Ready:     1,
+				Replicas:  1,
+				Available: 1,
+				Age:       time.Now().Add(-time.Hour * 24),
+			},
+			expectedRow: []string{"deployment-name", "1/1", "1", "1", "24h"},
+		},
+		"missing ready and available": {
+			deployment: resources.Deployment{
+				Name:     "deployment-name",
+				Replicas: 0,
+				Age:      time.Now().Add(-time.Hour * 24),
+			},
+			expectedRow: []string{"deployment-name", "0/0", "0", "0", "24h"},
+		},
+	}
 
-			err = printPodsList(client, testCase.projectID, "env-id")
-			if testCase.err {
-				assert.Error(t, err)
-			} else {
-				assert.NoError(t, err)
-			}
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, testCase.expectedRow, rowForDeployment(testCase.deployment))
+		})
+	}
+}
+
+func TestRowForJob(t *testing.T) {
+	testCases := map[string]struct {
+		job         resources.Job
+		expectedRow []string
+	}{
+		"basic job": {
+			job: resources.Job{
+				Name:           "job-name",
+				Active:         0,
+				Succeeded:      1,
+				Failed:         0,
+				Age:            time.Now().Add(-time.Hour * 24),
+				StartTime:      time.Now().Add(-time.Second * 60),
+				CompletionTime: time.Now(),
+			},
+			expectedRow: []string{"job-name", "1/1", "60s", "24h"},
+		},
+		"failed job": {
+			job: resources.Job{
+				Name:      "job-name",
+				Failed:    1,
+				Age:       time.Now().Add(-time.Hour * 24),
+				StartTime: time.Now().Add(-time.Second * 60),
+			},
+			expectedRow: []string{"job-name", "0/1", "-", "24h"},
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, testCase.expectedRow, rowForJob(testCase.job))
 		})
 	}
 }
@@ -179,49 +225,49 @@ func TestRowForPod(t *testing.T) {
 	}
 }
 
-func testServer(t *testing.T) *httptest.Server {
-	t.Helper()
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "found", "env-id"):
-			pod := resources.Pod{
-				Name:   "pod-name",
-				Phase:  "running",
-				Status: "ok",
-				Age:    time.Now(),
-				Component: []struct {
-					Name    string `json:"name"`
-					Version string `json:"version"`
-				}{
-					{Name: "component", Version: "version"},
-				},
-				Containers: []struct {
-					Name         string `json:"name"`
-					Ready        bool   `json:"ready"`
-					RestartCount int    `json:"restartCount"`
-					Status       string `json:"status"`
-				}{
+func TestRowForService(t *testing.T) {
+	testCases := map[string]struct {
+		service     resources.Service
+		expectedRow []string
+	}{
+		"basic service": {
+			service: resources.Service{
+				Name:      "service-name",
+				Type:      "ClusterIP",
+				ClusterIP: "127.0.0.1",
+				Ports: []resources.Port{
 					{
-						Name:         "container-name",
-						Ready:        true,
-						RestartCount: 0,
-						Status:       "running",
+						Name:       "port-name",
+						Port:       8000,
+						Protocol:   "TCP",
+						TargetPort: "8000",
 					},
 				},
-			}
-			data, err := resources.EncodeResourceToJSON([]resources.Pod{pod})
-			require.NoError(t, err)
-			w.WriteHeader(http.StatusOK)
-			w.Write(data)
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "fail", "env-id"):
-			w.WriteHeader(http.StatusNotFound)
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listEndpointTemplate, "empty", "env-id"):
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("[]"))
-		default:
-			w.WriteHeader(http.StatusNotFound)
-			assert.Failf(t, "unexpected http call", "received call with method: %s uri %s", r.Method, r.RequestURI)
-		}
-	}))
-	return server
+				Age: time.Now().Add(-time.Hour * 24),
+			},
+			expectedRow: []string{"service-name", "ClusterIP", "127.0.0.1", "8000/TCP", "24h"},
+		},
+		"missing cluster ip": {
+			service: resources.Service{
+				Name: "service-name",
+				Type: "ClusterIP",
+				Ports: []resources.Port{
+					{
+						Name:       "port-name",
+						Port:       8000,
+						Protocol:   "TCP",
+						TargetPort: "8000",
+					},
+				},
+				Age: time.Now().Add(-time.Hour * 24),
+			},
+			expectedRow: []string{"service-name", "ClusterIP", "<none>", "8000/TCP", "24h"},
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, testCase.expectedRow, rowForService(testCase.service))
+		})
+	}
 }
