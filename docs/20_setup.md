@@ -4,21 +4,12 @@
 
 `miactl` can be installed in different ways, you can choose the one that better fits your needs and the operating system you are using:
 
-- [Setup](#setup)
-	- [Installation](#installation)
-		- [Linux and MacOs](#linux-and-macos)
-			- [Homebrew](#homebrew)
-			- [Go](#go)
-			- [Binary Download](#binary-download)
-			- [Docker](#docker)
-		- [Windows](#windows)
-			- [Installation of WSL](#installation-of-wsl)
-			- [Install `miactl`](#install-miactl)
-			- [Setup a service account](#setup-a-service-account)
-	- [Shell Autocompletion](#shell-autocompletion)
-		- [`bash`](#bash)
-		- [`zsh`](#zsh)
-		- [`fish`](#fish)
+- [Linux and MacOs](#linux-and-macos)
+  - [Homebrew](#homebrew)
+  - [Go](#go)
+  - [Binary Download](#binary-download)
+  - [Docker](#docker)
+- [Windows (with WSL)](#windows)
 
 ### Linux and MacOs
 
@@ -93,7 +84,7 @@ However, it is still possible to use `miactl` with Windows Subsystem for Linux (
 
 #### Installation of WSL
 
-If you don't have WSL on your system, follow the [official guide](https://learn.microsoft.com/en-us/windows/wsl/install) to get it.
+If you don't have WSL on your system, follow the [official guide] to get it.
 
 Once WSL is installed, to open a Linux bash terminal, press Start+R, enter `bash` in the text box and press OK.
 
@@ -169,3 +160,4 @@ enable the autocompletion.
 [`bash-completion`]: https://github.com/scop/bash-completion "Programmable completion functions for bash"
 [`oh-my-zsh`]: https://ohmyz.sh "Oh My Zsh is a delightful, open source, community-driven
 	framework for managing your Zsh configuration"
+[official guide]:(https://learn.microsoft.com/en-us/windows/wsl/install)
