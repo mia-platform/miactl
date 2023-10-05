@@ -63,7 +63,7 @@ func buildSuccessTable(items []marketplace.ApplyResponseItem) string {
 }
 
 func buildFailureTable(items []marketplace.ApplyResponseItem) string {
-	headers := []string{"Item ID", "Name", "Validation Errors"}
+	headers := []string{"ID", "Name", "Validation Errors"}
 	columnTransform := func(item marketplace.ApplyResponseItem) []string {
 		var validationErrorsStr string
 		validationErrors := item.ValidationErrors
