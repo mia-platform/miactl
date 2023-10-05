@@ -52,6 +52,8 @@ type CLIOptions struct {
 	OutputPath         string
 
 	MarketplaceResourcePaths []string
+
+	FromCronJob string
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -124,6 +126,10 @@ func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 		// the error is only due to a programming error (missing command), hence panic
 		panic(err)
 	}
+}
+
+func (o *CLIOptions) AddCreateJobFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.FromCronJob, "from", "", "", "The name of the cronjob to create a Job from")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {

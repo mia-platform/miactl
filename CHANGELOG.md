@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - marketplace get command
 - environment list command
 - runtime list resources command
+- runtime create job command
 - events command
 - version command
 

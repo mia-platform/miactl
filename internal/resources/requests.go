@@ -60,3 +60,8 @@ type DeployProjectRequest struct {
 	Type        string `json:"deployType"`              //nolint: tagliatelle
 	ForceDeploy bool   `json:"forceDeplpuWhenNoSemver"` //nolint: tagliatelle
 }
+
+type CreateJobRequest struct {
+	From         string `json:"from"`
+	ResourceName string `json:"resourceName"`
+}
