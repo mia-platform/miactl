@@ -17,13 +17,9 @@ package cmd
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/cronjobs"
-	"github.com/mia-platform/miactl/internal/cmd/deployments"
 	"github.com/mia-platform/miactl/internal/cmd/environments"
 	"github.com/mia-platform/miactl/internal/cmd/events"
-	"github.com/mia-platform/miactl/internal/cmd/jobs"
-	"github.com/mia-platform/miactl/internal/cmd/pods"
-	"github.com/mia-platform/miactl/internal/cmd/services"
+	runtimeresources "github.com/mia-platform/miactl/internal/cmd/resources"
 	"github.com/spf13/cobra"
 )
 
@@ -47,12 +43,8 @@ the resources generated, like Pods, Cronjobs and logs.
 
 	// add sub commands
 	cmd.AddCommand(
+		runtimeresources.ListCommand(o),
 		environments.EnvironmentCmd(o),
-		pods.Command(o),
-		cronjobs.Command(o),
-		jobs.Command(o),
-		deployments.Command(o),
-		services.Command(o),
 		events.Command(o),
 	)
 

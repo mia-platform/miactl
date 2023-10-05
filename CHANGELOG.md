@@ -20,11 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - marketplace list command
 - marketplace get command
 - environment list command
-- pod list command
-- cronjob list command
-- job list command
-- deployment list command
-- service list command
+- runtime list resources command
 - events command
 - version command
 
