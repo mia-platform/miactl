@@ -109,6 +109,10 @@ type PipelineStatus struct {
 	Status string `json:"status"`
 }
 
+type CreateJob struct {
+	JobName string `json:"jobName"`
+}
+
 type ServiceAccount struct {
 	ClientID         string `json:"clientId"`
 	ClientSecret     string `json:"clientSecret"`

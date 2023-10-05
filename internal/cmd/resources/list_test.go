@@ -36,37 +36,37 @@ func TestPrintServicesList(t *testing.T) {
 		err          bool
 	}{
 		"list services with success": {
-			testServer:   testServer(t),
+			testServer:   listResourceTestServer(t),
 			projectID:    "found",
 			resourceType: ServicesResourceType,
 		},
 		"list deployments with success": {
-			testServer:   testServer(t),
+			testServer:   listResourceTestServer(t),
 			projectID:    "found",
 			resourceType: DeploymentsResourceType,
 		},
 		"list pods with success": {
-			testServer:   testServer(t),
+			testServer:   listResourceTestServer(t),
 			projectID:    "found",
 			resourceType: PodsResourceType,
 		},
 		"list cronjobs with success": {
-			testServer:   testServer(t),
+			testServer:   listResourceTestServer(t),
 			projectID:    "found",
 			resourceType: CronJobsResourceType,
 		},
 		"list jobs with success": {
-			testServer:   testServer(t),
+			testServer:   listResourceTestServer(t),
 			projectID:    "found",
 			resourceType: JobsResourceType,
 		},
 		"list deployments with empty response": {
-			testServer:   testServer(t),
+			testServer:   listResourceTestServer(t),
 			projectID:    "empty",
 			resourceType: DeploymentResourceType,
 		},
 		"failed request": {
-			testServer:   testServer(t),
+			testServer:   listResourceTestServer(t),
 			projectID:    "fail",
 			err:          true,
 			resourceType: PodsResourceType,
@@ -93,7 +93,7 @@ func TestPrintServicesList(t *testing.T) {
 	}
 }
 
-func testServer(t *testing.T) *httptest.Server {
+func listResourceTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
