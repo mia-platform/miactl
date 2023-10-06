@@ -63,11 +63,13 @@ miactl marketplace apply -f myFantasticGoTemplates`
 
 	applyEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources"
 
-	imageKey    = "image"
-	imageURLKey = "imageUrl"
+	imageAssetType = "imageAssetType"
+	imageKey       = "image"
+	imageURLKey    = "imageUrl"
 
-	supportedByImageKey    = "supportedByImage"
-	supportedByImageURLKey = "supportedByImageUrl"
+	supportedByImageAssetType = "supportedByImageAssetType"
+	supportedByImageKey       = "supportedByImage"
+	supportedByImageURLKey    = "supportedByImageUrl"
 )
 
 var (
@@ -149,9 +151,18 @@ func concatPathDirToFilePathIfRelative(basePath, filePath string) string {
 
 // processItemImages looks for image object and uploads the image when needed.
 // it processes image and supportedByImage, changing the object keys with respectively imageUrl and supportedByImageUrl after the upload
-func processItemImages(ctx context.Context, client *client.APIClient, companyID string, item *marketplace.Item, itemIDToFilePathMap map[string]string) error {
-	processImage := func(objKey, urlKey string) error {
+func processItemImages(
+	ctx context.Context,
+	client *client.APIClient,
+	companyID string,
+	item *marketplace.Item,
+	itemIDToFilePathMap map[string]string,
+) error {
+	processImage := func(objKey, urlKey string, assetType string) error {
 		localPath, err := getAndValidateImageLocalPath(item, objKey, urlKey)
+		if assetType != imageAssetType && assetType != supportedByImageAssetType {
+			return fmt.Errorf("unknown asset type %s", assetType)
+		}
 		if err != nil {
 			return err
 		}
@@ -162,7 +173,14 @@ func processItemImages(ctx context.Context, client *client.APIClient, companyID 
 		itemFilePath := itemIDToFilePathMap[itemID]
 		imageFilePath := concatPathDirToFilePathIfRelative(itemFilePath, localPath)
 
-		imageURL, err := uploadImageFileAndGetURL(ctx, client, companyID, imageFilePath)
+		imageURL, err := uploadImageFileAndGetURL(
+			ctx,
+			client,
+			companyID,
+			imageFilePath,
+			assetType,
+			itemID,
+		)
 		if err != nil {
 			return err
 		}
@@ -172,10 +190,10 @@ func processItemImages(ctx context.Context, client *client.APIClient, companyID 
 		return nil
 	}
 
-	if err := processImage(imageKey, imageURLKey); err != nil {
+	if err := processImage(imageKey, imageURLKey, imageAssetType); err != nil {
 		return err
 	}
-	err := processImage(supportedByImageKey, supportedByImageURLKey)
+	err := processImage(supportedByImageKey, supportedByImageURLKey, supportedByImageAssetType)
 	return err
 }
 
@@ -271,7 +289,12 @@ func validateItemHumanReadableID(marketplaceItem *marketplace.Item, filePath str
 	return itemIDStr, nil
 }
 
-func applyMarketplaceResource(ctx context.Context, client *client.APIClient, companyID string, request *marketplace.ApplyRequest) (*marketplace.ApplyResponse, error) {
+func applyMarketplaceResource(
+	ctx context.Context,
+	client *client.APIClient,
+	companyID string,
+	request *marketplace.ApplyRequest,
+) (*marketplace.ApplyResponse, error) {
 	if companyID == "" {
 		return nil, errCompanyIDNotDefined
 	}

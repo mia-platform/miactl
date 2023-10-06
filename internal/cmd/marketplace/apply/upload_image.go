@@ -96,7 +96,14 @@ func validateImageContentType(contentType string) error {
 	return errFileMustBeImage
 }
 
-func buildUploadImageReq(imageMimeType, fileName string, fileContents io.Reader) (string, []byte, error) {
+func buildUploadImageReq(
+	imageMimeType,
+	fileName string,
+	fileContents io.Reader,
+	itemID string,
+	assetType string,
+	companyID string,
+) (string, []byte, error) {
 	var bodyBuffer bytes.Buffer
 	multipartWriter := multipart.NewWriter(&bodyBuffer)
 	formFileWriter, err := createFormFileWithContentType(multipartWriter, multipartFieldName, fileName, imageMimeType)
@@ -104,6 +111,27 @@ func buildUploadImageReq(imageMimeType, fileName string, fileContents io.Reader)
 		return "", nil, err
 	}
 	if _, err = io.Copy(formFileWriter, fileContents); err != nil {
+		return "", nil, err
+	}
+	itemIDWriter, err := multipartWriter.CreateFormField("itemId")
+	if err != nil {
+		return "", nil, err
+	}
+	if _, err = itemIDWriter.Write([]byte(itemID)); err != nil {
+		return "", nil, err
+	}
+	assetTypeWriter, err := multipartWriter.CreateFormField("assetType")
+	if err != nil {
+		return "", nil, err
+	}
+	if _, err = assetTypeWriter.Write([]byte(assetType)); err != nil {
+		return "", nil, err
+	}
+	tenantIDWriter, err := multipartWriter.CreateFormField("tenantId")
+	if err != nil {
+		return "", nil, err
+	}
+	if _, err = tenantIDWriter.Write([]byte(companyID)); err != nil {
 		return "", nil, err
 	}
 	multipartWriter.Close()
@@ -114,7 +142,14 @@ func buildUploadImageReq(imageMimeType, fileName string, fileContents io.Reader)
 	return reqContentType, bodyBytes, nil
 }
 
-func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, companyID, filePath string) (string, error) {
+func uploadImageFileAndGetURL(
+	ctx context.Context,
+	client *client.APIClient,
+	companyID,
+	filePath string,
+	assetType string,
+	itemID string,
+) (string, error) {
 	imageFile, err := os.Open(filePath)
 	if err != nil {
 		return "", err
@@ -133,7 +168,7 @@ func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, com
 		return "", err
 	}
 
-	imageURL, err := uploadSingleFileWithMultipart(ctx, client, companyID, contentType, imageFile.Name(), imageFile)
+	imageURL, err := uploadSingleFileWithMultipart(ctx, client, companyID, contentType, imageFile.Name(), imageFile, itemID, assetType)
 	if err != nil {
 		return "", err
 	}
@@ -142,12 +177,28 @@ func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, com
 
 // uploadSingleFileWithMultipart uploads the given Reader as a single multipart file
 // the part will also be given a filename and a contentType
-func uploadSingleFileWithMultipart(ctx context.Context, client *client.APIClient, companyID, fileMimeType, fileName string, fileContents io.Reader) (string, error) {
+func uploadSingleFileWithMultipart(
+	ctx context.Context,
+	client *client.APIClient,
+	companyID,
+	fileMimeType,
+	fileName string,
+	fileContents io.Reader,
+	itemID string,
+	assetType string,
+) (string, error) {
 	if companyID == "" {
 		return "", errCompanyIDNotDefined
 	}
 
-	contentType, bodyBytes, err := buildUploadImageReq(fileMimeType, fileName, fileContents)
+	contentType, bodyBytes, err := buildUploadImageReq(
+		fileMimeType,
+		fileName,
+		fileContents,
+		itemID,
+		assetType,
+		companyID,
+	)
 	if err != nil {
 		return "", nil
 	}
