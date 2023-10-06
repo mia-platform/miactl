@@ -44,6 +44,7 @@ the resources generated, like Pods, Cronjobs and logs.
 	// add sub commands
 	cmd.AddCommand(
 		runtimeresources.ListCommand(o),
+		runtimeresources.CreateCommand(o),
 		environments.EnvironmentCmd(o),
 		events.Command(o),
 	)
