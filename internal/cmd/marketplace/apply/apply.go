@@ -89,7 +89,7 @@ var (
 func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "apply { -f file-path }... }",
-		Short:   "Create or update Marketplace items",
+		Short:   "Create or update Marketplace items - beta",
 		Long:    applyLong,
 		Example: applyExample,
 		RunE: func(cmd *cobra.Command, args []string) error {

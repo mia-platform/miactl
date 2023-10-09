@@ -33,7 +33,7 @@ const (
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:        "delete resource-id",
-		Short:      "Delete Marketplace item",
+		Short:      "Delete Marketplace item - beta",
 		Long:       "Delete a single Marketplace item by its ID",
 		Args:       cobra.ExactArgs(1),
 		SuggestFor: []string{"rm"},
