@@ -16,6 +16,7 @@
 package resources
 
 import (
+	"encoding/json"
 	"time"
 
 	"golang.org/x/oauth2"
@@ -186,4 +187,46 @@ type RuntimeEvent struct {
 	Reason    string    `json:"reason"`
 	FirstSeen time.Time `json:"firstSeen"`
 	LastSeen  time.Time `json:"lastSeen"`
+}
+
+func (re *RuntimeEvent) UnmarshalJSON(data []byte) error {
+	type shadowEvent struct {
+		Type          string `json:"type"`
+		SubObjectPath string `json:"subObjectPath"`
+		Message       string `json:"message"`
+		Reason        string `json:"reason"`
+		FirstSeen     string `json:"firstSeen"`
+		LastSeen      string `json:"lastSeen"`
+	}
+
+	parseTime := func(timeString string) (time.Time, error) {
+		if len(timeString) == 0 {
+			return time.Time{}, nil
+		}
+		return time.Parse(time.RFC3339, timeString)
+	}
+
+	var se shadowEvent
+	if err := json.Unmarshal(data, &se); err != nil {
+		return err
+	}
+
+	re.Type = se.Type
+	re.Object = se.SubObjectPath
+	re.Message = se.Message
+	re.Reason = se.Reason
+
+	firstSeen, err := parseTime(se.FirstSeen)
+	if err != nil {
+		return err
+	}
+
+	lastSeen, err := parseTime(se.LastSeen)
+	if err != nil {
+		return err
+	}
+
+	re.FirstSeen = firstSeen
+	re.LastSeen = lastSeen
+	return nil
 }
