@@ -96,50 +96,88 @@ func validateImageContentType(contentType string) error {
 	return errFileMustBeImage
 }
 
+func appendFileToRequest(
+	multipartWriter *multipart.Writer,
+	fieldName,
+	fileName,
+	mimeType string,
+	fileContents io.Reader,
+) error {
+	formFileWriter, err := createFormFileWithContentType(multipartWriter, fieldName, fileName, mimeType)
+	if err != nil {
+		return err
+	}
+
+	if _, err = io.Copy(formFileWriter, fileContents); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeMetadataFields(
+	multipartWriter *multipart.Writer,
+	itemID,
+	assetType,
+	companyID string,
+) error {
+	if err := writeFormField(multipartWriter, "itemId", itemID); err != nil {
+		return err
+	}
+
+	if err := writeFormField(multipartWriter, "assetType", assetType); err != nil {
+		return err
+	}
+
+	err := writeFormField(multipartWriter, "tenantId", companyID)
+
+	return err
+}
+
 func buildUploadImageReq(
 	imageMimeType,
 	fileName string,
 	fileContents io.Reader,
-	itemID string,
-	assetType string,
+	itemID,
+	assetType,
 	companyID string,
 ) (string, []byte, error) {
 	var bodyBuffer bytes.Buffer
 	multipartWriter := multipart.NewWriter(&bodyBuffer)
-	formFileWriter, err := createFormFileWithContentType(multipartWriter, multipartFieldName, fileName, imageMimeType)
-	if err != nil {
+
+	if err := appendFileToRequest(multipartWriter, multipartFieldName, fileName, imageMimeType, fileContents); err != nil {
 		return "", nil, err
 	}
-	if _, err = io.Copy(formFileWriter, fileContents); err != nil {
+
+	if err := writeMetadataFields(multipartWriter, itemID, assetType, companyID); err != nil {
 		return "", nil, err
 	}
-	itemIDWriter, err := multipartWriter.CreateFormField("itemId")
-	if err != nil {
+
+	if err := multipartWriter.Close(); err != nil {
 		return "", nil, err
 	}
-	if _, err = itemIDWriter.Write([]byte(itemID)); err != nil {
-		return "", nil, err
-	}
-	assetTypeWriter, err := multipartWriter.CreateFormField("assetType")
-	if err != nil {
-		return "", nil, err
-	}
-	if _, err = assetTypeWriter.Write([]byte(assetType)); err != nil {
-		return "", nil, err
-	}
-	tenantIDWriter, err := multipartWriter.CreateFormField("tenantId")
-	if err != nil {
-		return "", nil, err
-	}
-	if _, err = tenantIDWriter.Write([]byte(companyID)); err != nil {
-		return "", nil, err
-	}
-	multipartWriter.Close()
 
 	reqContentType := multipartWriter.FormDataContentType()
 	bodyBytes := bodyBuffer.Bytes()
 
 	return reqContentType, bodyBytes, nil
+}
+
+func writeFormField(
+	multipartWriter *multipart.Writer,
+	fieldName,
+	fieldValue string,
+) error {
+	fieldWriter, err := multipartWriter.CreateFormField(fieldName)
+	if err != nil {
+		return err
+	}
+
+	if _, err = fieldWriter.Write([]byte(fieldValue)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func uploadImageFileAndGetURL(
