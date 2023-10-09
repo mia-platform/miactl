@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -51,8 +52,9 @@ func TestDeploy(t *testing.T) {
 			server := testCase.server
 			defer server.Close()
 			options := &clioptions.CLIOptions{
-				Endpoint:  server.URL,
-				ProjectID: testCase.projectID,
+				Endpoint:     server.URL,
+				ProjectID:    testCase.projectID,
+				MiactlConfig: filepath.Join(t.TempDir(), "nofile"),
 			}
 			err := run("environmentName", options)
 			if testCase.expectErr {
