@@ -115,6 +115,23 @@ func appendFileToRequest(
 	return nil
 }
 
+func writeFormField(
+	multipartWriter *multipart.Writer,
+	fieldName,
+	fieldValue string,
+) error {
+	fieldWriter, err := multipartWriter.CreateFormField(fieldName)
+	if err != nil {
+		return err
+	}
+
+	if _, err = fieldWriter.Write([]byte(fieldValue)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func writeMetadataFields(
 	multipartWriter *multipart.Writer,
 	itemID,
@@ -163,23 +180,6 @@ func buildUploadImageReq(
 	return reqContentType, bodyBytes, nil
 }
 
-func writeFormField(
-	multipartWriter *multipart.Writer,
-	fieldName,
-	fieldValue string,
-) error {
-	fieldWriter, err := multipartWriter.CreateFormField(fieldName)
-	if err != nil {
-		return err
-	}
-
-	if _, err = fieldWriter.Write([]byte(fieldValue)); err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func uploadImageFileAndGetURL(
 	ctx context.Context,
 	client *client.APIClient,
@@ -206,7 +206,16 @@ func uploadImageFileAndGetURL(
 		return "", err
 	}
 
-	imageURL, err := uploadSingleFileWithMultipart(ctx, client, companyID, contentType, imageFile.Name(), imageFile, itemID, assetType)
+	imageURL, err := uploadSingleFileWithMultipart(
+		ctx,
+		client,
+		companyID,
+		contentType,
+		imageFile.Name(),
+		imageFile,
+		itemID,
+		assetType,
+	)
 	if err != nil {
 		return "", err
 	}
