@@ -83,6 +83,7 @@ var (
 	errResItemIDNotAString = errors.New(`the field "itemId" must be a string`)
 	errInvalidExtension    = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 	errDuplicatedResItemID = errors.New("some resources have duplicated itemId field")
+	errUnknownAssetType    = errors.New("unknown asset type")
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
@@ -161,7 +162,7 @@ func processItemImages(
 	processImage := func(objKey, urlKey string, assetType string) error {
 		localPath, err := getAndValidateImageLocalPath(item, objKey, urlKey)
 		if assetType != imageAssetType && assetType != supportedByImageAssetType {
-			return fmt.Errorf("unknown asset type %s", assetType)
+			return fmt.Errorf("%w: %s", errUnknownAssetType, assetType)
 		}
 		if err != nil {
 			return err
