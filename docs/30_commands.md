@@ -275,6 +275,8 @@ Available flags for the command:
 
 View and manage Marketplace items
 
+**WARNING: This command is a beta and may not be stable. Use at your own risk.**
+
 All the subcommands inherit the following flags:
 
 ```
@@ -296,6 +298,8 @@ List Marketplace items
 
 List the Marketplace items that the current user can access.
 
+**WARNING: This command is a beta and may not be stable. Use at your own risk.**
+
 ```
 miactl marketplace list [flags]
 ```
@@ -307,6 +311,8 @@ Get a Marketplace item
 #### Synopsis
 
 Get a single Marketplace item by its ID
+
+**WARNING: This command is a beta and may not be stable. Use at your own risk.**
 
 ```
 miactl marketplace get resource-id [flags]
@@ -320,6 +326,8 @@ Delete a Marketplace item
 
 Delete a single Marketplace item by its ID
 
+**WARNING: This command is a beta and may not be stable. Use at your own risk.**
+
 ```
 miactl marketplace delete resource-id [flags]
 ```
@@ -331,6 +339,8 @@ Create or update Marketplace items
 #### Synopsis
 
 Create or update one or more Marketplace items.
+
+**WARNING: This command is a beta and may not be stable. Use at your own risk.**
 
 The flag -f accepts either files or directories. In case of directories, it explores them recursively.
 

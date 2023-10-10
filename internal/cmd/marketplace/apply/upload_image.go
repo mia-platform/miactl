@@ -96,17 +96,83 @@ func validateImageContentType(contentType string) error {
 	return errFileMustBeImage
 }
 
-func buildUploadImageReq(imageMimeType, fileName string, fileContents io.Reader) (string, []byte, error) {
+func appendFileToRequest(
+	multipartWriter *multipart.Writer,
+	fieldName,
+	fileName,
+	mimeType string,
+	fileContents io.Reader,
+) error {
+	formFileWriter, err := createFormFileWithContentType(multipartWriter, fieldName, fileName, mimeType)
+	if err != nil {
+		return err
+	}
+
+	if _, err = io.Copy(formFileWriter, fileContents); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeFormField(
+	multipartWriter *multipart.Writer,
+	fieldName,
+	fieldValue string,
+) error {
+	fieldWriter, err := multipartWriter.CreateFormField(fieldName)
+	if err != nil {
+		return err
+	}
+
+	if _, err = fieldWriter.Write([]byte(fieldValue)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func writeMetadataFields(
+	multipartWriter *multipart.Writer,
+	itemID,
+	assetType,
+	companyID string,
+) error {
+	if err := writeFormField(multipartWriter, "itemId", itemID); err != nil {
+		return err
+	}
+
+	if err := writeFormField(multipartWriter, "assetType", assetType); err != nil {
+		return err
+	}
+
+	err := writeFormField(multipartWriter, "tenantId", companyID)
+
+	return err
+}
+
+func buildUploadImageReq(
+	imageMimeType,
+	fileName string,
+	fileContents io.Reader,
+	itemID,
+	assetType,
+	companyID string,
+) (string, []byte, error) {
 	var bodyBuffer bytes.Buffer
 	multipartWriter := multipart.NewWriter(&bodyBuffer)
-	formFileWriter, err := createFormFileWithContentType(multipartWriter, multipartFieldName, fileName, imageMimeType)
-	if err != nil {
+
+	if err := appendFileToRequest(multipartWriter, multipartFieldName, fileName, imageMimeType, fileContents); err != nil {
 		return "", nil, err
 	}
-	if _, err = io.Copy(formFileWriter, fileContents); err != nil {
+
+	if err := writeMetadataFields(multipartWriter, itemID, assetType, companyID); err != nil {
 		return "", nil, err
 	}
-	multipartWriter.Close()
+
+	if err := multipartWriter.Close(); err != nil {
+		return "", nil, err
+	}
 
 	reqContentType := multipartWriter.FormDataContentType()
 	bodyBytes := bodyBuffer.Bytes()
@@ -114,7 +180,14 @@ func buildUploadImageReq(imageMimeType, fileName string, fileContents io.Reader)
 	return reqContentType, bodyBytes, nil
 }
 
-func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, companyID, filePath string) (string, error) {
+func uploadImageFileAndGetURL(
+	ctx context.Context,
+	client *client.APIClient,
+	companyID,
+	filePath string,
+	assetType string,
+	itemID string,
+) (string, error) {
 	imageFile, err := os.Open(filePath)
 	if err != nil {
 		return "", err
@@ -133,7 +206,16 @@ func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, com
 		return "", err
 	}
 
-	imageURL, err := uploadSingleFileWithMultipart(ctx, client, companyID, contentType, imageFile.Name(), imageFile)
+	imageURL, err := uploadSingleFileWithMultipart(
+		ctx,
+		client,
+		companyID,
+		contentType,
+		imageFile.Name(),
+		imageFile,
+		itemID,
+		assetType,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -142,12 +224,28 @@ func uploadImageFileAndGetURL(ctx context.Context, client *client.APIClient, com
 
 // uploadSingleFileWithMultipart uploads the given Reader as a single multipart file
 // the part will also be given a filename and a contentType
-func uploadSingleFileWithMultipart(ctx context.Context, client *client.APIClient, companyID, fileMimeType, fileName string, fileContents io.Reader) (string, error) {
+func uploadSingleFileWithMultipart(
+	ctx context.Context,
+	client *client.APIClient,
+	companyID,
+	fileMimeType,
+	fileName string,
+	fileContents io.Reader,
+	itemID string,
+	assetType string,
+) (string, error) {
 	if companyID == "" {
 		return "", errCompanyIDNotDefined
 	}
 
-	contentType, bodyBytes, err := buildUploadImageReq(fileMimeType, fileName, fileContents)
+	contentType, bodyBytes, err := buildUploadImageReq(
+		fileMimeType,
+		fileName,
+		fileContents,
+		itemID,
+		assetType,
+		companyID,
+	)
 	if err != nil {
 		return "", nil
 	}

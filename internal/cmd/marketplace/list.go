@@ -35,7 +35,7 @@ const (
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
-		Short: "List marketplace items",
+		Short: "List marketplace items - beta",
 		Long:  `List the Marketplace items that the current user can access.`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
