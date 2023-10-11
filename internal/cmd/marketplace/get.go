@@ -52,7 +52,10 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 				return err
 			}
 
-			return getMarketplaceResource(client, id, outputFormat)
+			err = getMarketplaceResource(client, id, outputFormat)
+			cobra.CheckErr(err)
+
+			return nil
 		},
 	}
 

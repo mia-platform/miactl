@@ -18,7 +18,7 @@ package marketplace
 import (
 	"context"
 	"fmt"
-	"os"
+	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -37,12 +37,16 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   "list",
 		Short: "List marketplace items - beta",
 		Long:  `List the Marketplace items that the current user can access.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return listMarketplaceItems(client, restConfig.CompanyID)
+
+			list, err := buildMarketplaceItemsList(client, restConfig.CompanyID)
+			cobra.CheckErr(err)
+
+			fmt.Println(list)
 		},
 	}
 }
@@ -74,29 +78,31 @@ func getMarketplaceItemsByCompanyID(client *client.APIClient, companyID string) 
 	return marketplaceItems, nil
 }
 
-// listMarketplaceItems retrieves the marketplace items belonging to the current context
-func listMarketplaceItems(client *client.APIClient, companyID string) error {
+// buildMarketplaceItemsList retrieves the marketplace items belonging to the current context
+// and returns a string with a human-readable list
+func buildMarketplaceItemsList(client *client.APIClient, companyID string) (string, error) {
 	marketplaceItems, err := getMarketplaceItemsByCompanyID(client, companyID)
 	if err != nil {
-		return err
+		return "", err
 	}
-
-	table := tablewriter.NewWriter(os.Stdout)
+	strBuilder := &strings.Builder{}
+	table := tablewriter.NewWriter(strBuilder)
 	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
-	table.SetAutoWrapText(false)
-	table.SetHeader([]string{"ID", "Name", "Type"})
+	table.SetAutoWrapText(true)
+	table.SetHeader([]string{"ID", "Item ID", "Name", "Type"})
 	for _, marketplaceItem := range marketplaceItems {
 		table.Append([]string{
 			marketplaceItem.ID,
+			marketplaceItem.ItemID,
 			marketplaceItem.Name,
 			marketplaceItem.Type,
 		})
 	}
-
 	table.Render()
-	return nil
+
+	return strBuilder.String(), nil
 }

@@ -99,10 +99,15 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
+			companyID := restConfig.CompanyID
+			if len(companyID) == 0 {
+				return fmt.Errorf("missing company id, please set one with the flag or context")
+			}
+
 			outcome, err := applyItemsFromPaths(
 				cmd.Context(),
 				client,
-				restConfig.CompanyID,
+				companyID,
 				options.MarketplaceResourcePaths,
 			)
 			cobra.CheckErr(err)
