@@ -84,6 +84,8 @@ var (
 	errInvalidExtension    = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 	errDuplicatedResItemID = errors.New("some resources have duplicated itemId field")
 	errUnknownAssetType    = errors.New("unknown asset type")
+
+	errUploadingImage = errors.New("error while uploading image")
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
@@ -126,22 +128,22 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyID string, filePaths []string) (string, error) {
 	resourceFilesPaths, err := buildFilePathsList(filePaths)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error building files list: %s", err)
 	}
 	applyReq, itemIDToFilePathMap, err := buildApplyRequest(resourceFilesPaths)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error preparing apply request: %s", err)
 	}
 
 	for _, item := range applyReq.Resources {
 		if err := processItemImages(ctx, client, companyID, item, itemIDToFilePathMap); err != nil {
-			return "", err
+			return "", fmt.Errorf("error processing images: %s", err)
 		}
 	}
 
 	outcome, err := applyMarketplaceResource(ctx, client, companyID, applyReq)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("error applying resources: %s", err)
 	}
 
 	return buildOutcomeSummaryAsTables(outcome), nil
@@ -188,7 +190,7 @@ func processItemImages(
 			itemID,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("%w: %s: %s", errUploadingImage, imageFilePath, err)
 		}
 
 		item.Del(objKey)

@@ -74,6 +74,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
+		
 		require.ErrorContains(t, err, "errors in file ./testdata/invalidJson1.json")
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
