@@ -49,7 +49,7 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 				return fmt.Errorf("missing company id, please set one with the flag or context")
 			}
 
-			err = deleteMarketplaceResource(client, restConfig.CompanyID, resourceID)
+			err = deleteMarketplaceResource(client, companyID, resourceID)
 			cobra.CheckErr(err)
 
 			return nil
