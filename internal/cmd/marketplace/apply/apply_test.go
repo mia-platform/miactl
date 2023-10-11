@@ -74,7 +74,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		
+
 		require.ErrorContains(t, err, "errors in file ./testdata/invalidJson1.json")
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
@@ -511,7 +511,7 @@ func TestApplyIntegration(t *testing.T) {
 			mockTenantID,
 			mockPaths,
 		)
-		require.EqualError(t, err, mockErrorMsg)
+		require.ErrorContains(t, err, mockErrorMsg)
 		require.Zero(t, found)
 	})
 
@@ -555,7 +555,7 @@ func TestApplyIntegration(t *testing.T) {
 			mockTenantID,
 			mockPaths,
 		)
-		require.EqualError(t, err, mockErrorMsg)
+		require.ErrorContains(t, err, mockErrorMsg)
 		require.Zero(t, found)
 	})
 }

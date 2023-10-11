@@ -85,7 +85,11 @@ var (
 	errDuplicatedResItemID = errors.New("some resources have duplicated itemId field")
 	errUnknownAssetType    = errors.New("unknown asset type")
 
-	errUploadingImage = errors.New("error while uploading image")
+	errUploadingImage    = errors.New("error while uploading image")
+	errBuildingFilesList = errors.New("error processing files")
+	errBuildingApplyReq  = errors.New("error preparing apply request")
+	errProcessingImages  = errors.New("error processing images")
+	errApplyingResources = errors.New("error applying items")
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
@@ -128,22 +132,22 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyID string, filePaths []string) (string, error) {
 	resourceFilesPaths, err := buildFilePathsList(filePaths)
 	if err != nil {
-		return "", fmt.Errorf("error building files list: %s", err)
+		return "", fmt.Errorf("%w: %s", errBuildingFilesList, err)
 	}
 	applyReq, itemIDToFilePathMap, err := buildApplyRequest(resourceFilesPaths)
 	if err != nil {
-		return "", fmt.Errorf("error preparing apply request: %s", err)
+		return "", fmt.Errorf("%w: %s", errBuildingApplyReq, err)
 	}
 
 	for _, item := range applyReq.Resources {
 		if err := processItemImages(ctx, client, companyID, item, itemIDToFilePathMap); err != nil {
-			return "", fmt.Errorf("error processing images: %s", err)
+			return "", fmt.Errorf("%w: %s", errProcessingImages, err)
 		}
 	}
 
 	outcome, err := applyMarketplaceResource(ctx, client, companyID, applyReq)
 	if err != nil {
-		return "", fmt.Errorf("error applying resources: %s", err)
+		return "", fmt.Errorf("%w: %s", errApplyingResources, err)
 	}
 
 	return buildOutcomeSummaryAsTables(outcome), nil
