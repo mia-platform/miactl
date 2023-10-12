@@ -84,6 +84,12 @@ var (
 	errInvalidExtension    = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 	errDuplicatedResItemID = errors.New("some resources have duplicated itemId field")
 	errUnknownAssetType    = errors.New("unknown asset type")
+
+	errUploadingImage    = errors.New("error while uploading image")
+	errBuildingFilesList = errors.New("error processing files")
+	errBuildingApplyReq  = errors.New("error preparing apply request")
+	errProcessingImages  = errors.New("error processing images")
+	errApplyingResources = errors.New("error applying items")
 )
 
 // ApplyCmd returns a new cobra command for adding or updating marketplace resources
@@ -99,10 +105,15 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
+			companyID := restConfig.CompanyID
+			if len(companyID) == 0 {
+				return fmt.Errorf("missing company id, please set one with the flag or context")
+			}
+
 			outcome, err := applyItemsFromPaths(
 				cmd.Context(),
 				client,
-				restConfig.CompanyID,
+				companyID,
 				options.MarketplaceResourcePaths,
 			)
 			cobra.CheckErr(err)
@@ -121,22 +132,22 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyID string, filePaths []string) (string, error) {
 	resourceFilesPaths, err := buildFilePathsList(filePaths)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%w: %s", errBuildingFilesList, err)
 	}
 	applyReq, itemIDToFilePathMap, err := buildApplyRequest(resourceFilesPaths)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%w: %s", errBuildingApplyReq, err)
 	}
 
 	for _, item := range applyReq.Resources {
 		if err := processItemImages(ctx, client, companyID, item, itemIDToFilePathMap); err != nil {
-			return "", err
+			return "", fmt.Errorf("%w: %s", errProcessingImages, err)
 		}
 	}
 
 	outcome, err := applyMarketplaceResource(ctx, client, companyID, applyReq)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("%w: %s", errApplyingResources, err)
 	}
 
 	return buildOutcomeSummaryAsTables(outcome), nil
@@ -183,7 +194,7 @@ func processItemImages(
 			itemID,
 		)
 		if err != nil {
-			return err
+			return fmt.Errorf("%w: %s: %s", errUploadingImage, imageFilePath, err)
 		}
 
 		item.Del(objKey)

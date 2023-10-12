@@ -26,6 +26,28 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+const mockResponseBody = `[
+	{
+		"_id": "43774c07d09ac6996ecfb3ef",
+		"name": "Space Travel Service",
+		"itemId": "space-travel-service",
+		"description": "This service provides a REST API to book your next journey to space!",
+		"type": "plugin",
+		"imageUrl": "/v2/files/download/space.png",
+		"supportedByImageUrl": "/v2/files/download/23b12dd9-43a6-4920-cb2d-2a809d946851.png",
+		"supportedBy": "My-Company",
+		"category": {
+			"id": "auth",
+			"label": "Core Plugins - Travel"
+		},
+		"repositoryUrl": "https://git.com/plugins/core/space-travel-service",
+		"documentation": {
+			"type": "externalLink",
+			"url": "https://docs.my-company.eu/docs/space-travel-service/overview"
+		}
+	}
+]`
+
 func TestNewGetCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
@@ -34,18 +56,24 @@ func TestNewGetCmd(t *testing.T) {
 	})
 }
 
-func TestListMarketplaceItems(t *testing.T) {
+func TestBuildMarketplaceItemsList(t *testing.T) {
 	testCases := map[string]struct {
-		server       *httptest.Server
-		clientConfig *client.Config
-		companiesURI string
-		err          bool
+		server           *httptest.Server
+		clientConfig     *client.Config
+		companiesURI     string
+		err              bool
+		expectedContains []string
 	}{
 		"valid get response": {
 			server:       mockServer(t, true),
 			companiesURI: listMarketplaceEndpoint,
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
+			},
+			err: false,
+			expectedContains: []string{
+				"ID", "ITEM ID", "NAME", "TYPE",
+				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin",
 			},
 		},
 		"invalid body response": {
@@ -64,11 +92,16 @@ func TestListMarketplaceItems(t *testing.T) {
 			testCase.clientConfig.Host = testCase.server.URL
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
-			err = listMarketplaceItems(client, "my-company")
+			found, err := buildMarketplaceItemsList(client, "my-company")
 			if testCase.err {
 				assert.Error(t, err)
+				assert.Zero(t, found)
 			} else {
 				assert.NoError(t, err)
+				assert.NotZero(t, found)
+				for _, expected := range testCase.expectedContains {
+					assert.Contains(t, found, expected)
+				}
 			}
 		})
 	}
@@ -76,26 +109,7 @@ func TestListMarketplaceItems(t *testing.T) {
 
 func mockServer(t *testing.T, validResponse bool) *httptest.Server {
 	t.Helper()
-	validBodyString := `[
-	{
-		"_id": "43774c07d09ac6996ecfb3ef",
-		"name": "Space Travel Service",
-		"description": "This service provides a REST API to book your next journey to space!",
-		"type": "plugin",
-		"imageUrl": "/v2/files/download/space.png",
-		"supportedByImageUrl": "/v2/files/download/23b12dd9-43a6-4920-cb2d-2a809d946851.png",
-		"supportedBy": "My-Company",
-		"category": {
-			"id": "auth",
-			"label": "Core Plugins - Travel"
-		},
-		"repositoryUrl": "https://git.com/plugins/core/space-travel-service",
-		"documentation": {
-			"type": "externalLink",
-			"url": "https://docs.my-company.eu/docs/space-travel-service/overview"
-		}
-	}
-]`
+
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.RequestURI != listMarketplaceEndpoint && r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
@@ -104,9 +118,9 @@ func mockServer(t *testing.T, validResponse bool) *httptest.Server {
 		}
 		w.WriteHeader(http.StatusOK)
 		if validResponse {
-			w.Write([]byte(validBodyString))
+			w.Write([]byte(mockResponseBody))
 			return
 		}
-		w.Write([]byte("invalid json"))
+		w.Write([]byte(`{"message": "invalid json"}`))
 	}))
 }

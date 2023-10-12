@@ -57,6 +57,7 @@ type Company struct {
 
 type MarketplaceItem struct {
 	ID          string `json:"_id"` //nolint:tagliatelle
+	ItemID      string `json:"itemId"`
 	Name        string `json:"name"`
 	Type        string `json:"type"`
 	SupportedBy string `json:"supportedBy"`
