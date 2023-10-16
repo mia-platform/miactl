@@ -328,7 +328,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 			Done: false,
 			Items: []marketplace.ApplyResponseItem{
 				{
-					ItemID:   "some-item-id-;;1",
+					ItemID:   "some-item-id-1",
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
