@@ -28,8 +28,8 @@ type ApplyResponse struct {
 }
 
 type ApplyResponseItem struct {
+	ID     string `json:"_id,omitempty"` //nolint: tagliatelle
 	ItemID string `json:"itemId,omitempty"`
-	Name   string `json:"name,omitempty"`
 
 	Done     bool `json:"done"`
 	Inserted bool `json:"inserted"`
@@ -47,7 +47,7 @@ type ApplyRequest struct {
 }
 
 type UploadImageResponse struct {
-	ID       string `json:"string"` //nolint: tagliatelle
+	ID       string `json:"_id"` //nolint: tagliatelle
 	Name     string `json:"name"`
 	File     string `json:"file"`
 	Size     int64  `json:"size"`

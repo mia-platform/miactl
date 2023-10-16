@@ -142,13 +142,14 @@ const mockTenantID = "some-tenant-id"
 var mockURI = fmt.Sprintf(applyEndpointTemplate, mockTenantID)
 
 func TestApplyApplyResourceCmd(t *testing.T) {
-	mockResName := "miactl test"
+	mockItemId := "some-item-id"
 	validReqMock := &marketplace.ApplyRequest{
 		Resources: []*marketplace.Item{
 			{
 				"categoryId":    "devportal",
 				"imageUrl":      "some/path/to/image.png",
-				"name":          mockResName,
+				"name":          "some name",
+				"itemId":        mockItemId,
 				"releaseStage":  "",
 				"repositoryUrl": "https://example.com/repo",
 				"resources": map[string]interface{}{
@@ -209,8 +210,8 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 			Done: true,
 			Items: []marketplace.ApplyResponseItem{
 				{
-					ItemID:   "some-id",
-					Name:     mockResName,
+					ID:       "id1",
+					ItemID:   "some-item-id",
 					Done:     true,
 					Inserted: true,
 					Updated:  false,
@@ -269,32 +270,32 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 			Done: false,
 			Items: []marketplace.ApplyResponseItem{
 				{
-					ItemID:           "id1",
-					Name:             "some name 1",
+					ID:               "id1",
+					ItemID:           "item-id-1",
 					Done:             true,
 					Inserted:         false,
 					Updated:          true,
 					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
-					ItemID:           "id2",
-					Name:             "some name 2",
+					ID:               "id2",
+					ItemID:           "item-id-2",
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,
 					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
-					ItemID:           "id3",
-					Name:             "some name 3",
+					ID:               "id3",
+					ItemID:           "item-id-3",
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,
 					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
-					ItemID:   "id4",
-					Name:     "some name 4",
+					ID:       "id4",
+					ItemID:   "item-id-4",
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
@@ -309,10 +310,17 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		found := buildOutcomeSummaryAsTables(mockOutcome)
 		require.Contains(t, found, "3 of 4 items have been successfully applied:")
 		require.Contains(t, found, "id1")
+		require.Contains(t, found, "item-id-1")
 		require.Contains(t, found, "id2")
+		require.Contains(t, found, "item-id-2")
 		require.Contains(t, found, "id3")
+		require.Contains(t, found, "item-id-3")
 		require.Contains(t, found, "1 of 4 items have not been applied due to validation errors:")
+		require.Contains(t, found, "id4")
+		require.Contains(t, found, "item-id-4")
 		require.Contains(t, found, "some validation error")
+		require.Contains(t, found, "ID")
+		require.Contains(t, found, "ITEM ID")
 	})
 
 	t.Run("should show validation errors only when input does not contain successful applies", func(t *testing.T) {
@@ -320,8 +328,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 			Done: false,
 			Items: []marketplace.ApplyResponseItem{
 				{
-					ItemID:   "id3",
-					Name:     "some name 3",
+					ItemID:   "some-item-id-;;1",
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
@@ -332,8 +339,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					},
 				},
 				{
-					ItemID:   "id4",
-					Name:     "some name 4",
+					ItemID:   "some-item-id-2",
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
@@ -347,8 +353,8 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					},
 				},
 				{
-					ItemID:   "id4",
-					Name:     "some name 4",
+					ID:       "id3",
+					ItemID:   "some-item-id-3",
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
@@ -366,31 +372,38 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		require.Contains(t, found, "some validation error")
 		require.Contains(t, found, "some other validation error")
 		require.Contains(t, found, "some other very very long validation error")
+		require.Contains(t, found, "N/A")
+		require.Contains(t, found, "id3")
+		require.Contains(t, found, "some-item-id-3")
+		require.Contains(t, found, "some-item-id-2")
+		require.Contains(t, found, "some-item-id-1")
+		require.Contains(t, found, "ID")
+		require.Contains(t, found, "ITEM ID")
 	})
 
-	t.Run("should match snapshot with valid files only", func(t *testing.T) {
+	t.Run("should match with valid files only", func(t *testing.T) {
 		mockOutcome := &marketplace.ApplyResponse{
 			Done: false,
 			Items: []marketplace.ApplyResponseItem{
 				{
-					ItemID:           "id1",
-					Name:             "some name 1",
+					ID:               "id1",
+					ItemID:           "some-item-id-1",
 					Done:             true,
 					Inserted:         false,
 					Updated:          true,
 					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
-					ItemID:           "id2",
-					Name:             "some name 2",
+					ID:               "id2",
+					ItemID:           "some-item-id-2",
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,
 					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
 				},
 				{
-					ItemID:           "id3",
-					Name:             "some name 3",
+					ID:               "id3",
+					ItemID:           "some-item-id-3",
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,
@@ -401,8 +414,13 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		found := buildOutcomeSummaryAsTables(mockOutcome)
 		require.Contains(t, found, "3 of 3 items have been successfully applied:")
 		require.Contains(t, found, "id1")
+		require.Contains(t, found, "some-item-id-1")
 		require.Contains(t, found, "id2")
+		require.Contains(t, found, "some-item-id-2")
 		require.Contains(t, found, "id3")
+		require.Contains(t, found, "some-item-id-3")
+		require.Contains(t, found, "ID")
+		require.Contains(t, found, "ITEM ID")
 		require.NotContains(t, found, "items have not been applied due to validation errors:")
 	})
 }
@@ -424,8 +442,8 @@ func TestApplyIntegration(t *testing.T) {
 			Done: true,
 			Items: []marketplace.ApplyResponseItem{
 				{
-					ItemID:           "id1",
-					Name:             "some name 1",
+					ID:               "id1",
+					ItemID:           "item-id-1",
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,
@@ -458,8 +476,8 @@ func TestApplyIntegration(t *testing.T) {
 			mockPaths,
 		)
 		require.NoError(t, err)
+		require.Contains(t, found, "item-id-1")
 		require.Contains(t, found, "id1")
-		require.Contains(t, found, "some name 1")
 	})
 
 	t.Run("should return the correct error message if image upload fails", func(t *testing.T) {
@@ -476,8 +494,7 @@ func TestApplyIntegration(t *testing.T) {
 			Done: true,
 			Items: []marketplace.ApplyResponseItem{
 				{
-					ItemID:           "id1",
-					Name:             "some name 1",
+					ItemID:           "item-id-1",
 					Done:             true,
 					Inserted:         true,
 					Updated:          false,

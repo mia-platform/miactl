@@ -44,7 +44,7 @@ func buildTable(headers []string, items []marketplace.ApplyResponseItem, columnT
 }
 
 func buildSuccessTable(items []marketplace.ApplyResponseItem) string {
-	headers := []string{"ID", "Name", "Status"}
+	headers := []string{"ID", "Item ID", "Status"}
 	columnTransform := func(item marketplace.ApplyResponseItem) []string {
 		var status string
 		switch {
@@ -56,14 +56,14 @@ func buildSuccessTable(items []marketplace.ApplyResponseItem) string {
 			// should never happen, but just in case:
 			status = "UNKNOWN"
 		}
-		return []string{item.ItemID, item.Name, status}
+		return []string{item.ID, item.ItemID, status}
 	}
 
 	return buildTable(headers, items, columnTransform)
 }
 
 func buildFailureTable(items []marketplace.ApplyResponseItem) string {
-	headers := []string{"ID", "Name", "Validation Errors"}
+	headers := []string{"ID", "Item ID", "Validation Errors"}
 	columnTransform := func(item marketplace.ApplyResponseItem) []string {
 		var validationErrorsStr string
 		validationErrors := item.ValidationErrors
@@ -76,7 +76,11 @@ func buildFailureTable(items []marketplace.ApplyResponseItem) string {
 		if validationErrorsStr == "" {
 			validationErrorsStr = "-"
 		}
-		return []string{item.ItemID, item.Name, validationErrorsStr}
+		id := "N/A"
+		if item.ID != "" {
+			id = item.ID
+		}
+		return []string{id, item.ItemID, validationErrorsStr}
 	}
 
 	return buildTable(headers, items, columnTransform)
