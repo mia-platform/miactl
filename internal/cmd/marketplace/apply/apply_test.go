@@ -142,14 +142,14 @@ const mockTenantID = "some-tenant-id"
 var mockURI = fmt.Sprintf(applyEndpointTemplate, mockTenantID)
 
 func TestApplyApplyResourceCmd(t *testing.T) {
-	mockItemId := "some-item-id"
+	mockItemID := "some-item-id"
 	validReqMock := &marketplace.ApplyRequest{
 		Resources: []*marketplace.Item{
 			{
 				"categoryId":    "devportal",
 				"imageUrl":      "some/path/to/image.png",
 				"name":          "some name",
-				"itemId":        mockItemId,
+				"itemId":        mockItemID,
 				"releaseStage":  "",
 				"repositoryUrl": "https://example.com/repo",
 				"resources": map[string]interface{}{
