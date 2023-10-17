@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Updated
+
+- marketplace apply command: item id in output data
+
 ## [0.8.0] - 2023-10-10
 
 ### Changed
