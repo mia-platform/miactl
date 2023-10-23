@@ -33,7 +33,7 @@ const (
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get resource-id",
-		Short: "Get Marketplace item - beta",
+		Short: "Get Marketplace item",
 		Long:  `Get a single Marketplace item by its ID`,
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
