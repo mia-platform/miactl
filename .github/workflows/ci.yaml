@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         show-progress: false
     - name: Setup Golang
@@ -63,7 +63,7 @@ jobs:
       ENVTEST_K8S_VERSION: ${{matrix.k8s_version}}
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         show-progress: false
     - name: Setup Golang
@@ -83,7 +83,7 @@ jobs:
     if: github.event_name != 'push'
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         show-progress: false
     - name: Setup Golang
@@ -107,7 +107,7 @@ jobs:
     if: github.event_name == 'push'
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         show-progress: false
         fetch-depth: 0
@@ -141,7 +141,7 @@ jobs:
     - publish-release
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608 # v4.1.0
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
       with:
         show-progress: false
     - name: Download Binaries
