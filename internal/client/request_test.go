@@ -16,8 +16,11 @@
 package client
 
 import (
+	"bytes"
+	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
 
@@ -27,9 +30,8 @@ import (
 
 func TestNewRequest(t *testing.T) {
 	testURL, err := url.Parse("http://host")
-	if err != nil {
-		require.NoError(t, err)
-	}
+	require.NoError(t, err)
+
 	testContentType := "text/html"
 	testCases := map[string]struct {
 		client               *APIClient
@@ -39,7 +41,7 @@ func TestNewRequest(t *testing.T) {
 			client:               newAPIClient(testURL, contentConfig{AcceptContentTypes: testContentType}, http.DefaultClient),
 			expectedAcceptHeader: testContentType,
 		},
-		"without contetn type": {
+		"without content type": {
 			client:               newAPIClient(testURL, contentConfig{ContentType: testContentType}, http.DefaultClient),
 			expectedAcceptHeader: fmt.Sprintf("%s, */*", testContentType),
 		},
@@ -47,11 +49,46 @@ func TestNewRequest(t *testing.T) {
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
-			APIClient := NewRequest(testCase.client)
-			actualAcceptHeader := APIClient.headers.Get("accept")
+			request := NewRequest(testCase.client)
+			actualAcceptHeader := request.headers.Get("accept")
 			assert.Equal(t, testCase.expectedAcceptHeader, actualAcceptHeader)
 		})
 	}
+}
+
+func TestStreamRequest(t *testing.T) {
+	expectedBody := "expected body"
+
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		flusher, ok := w.(http.Flusher)
+		if !ok {
+			panic("need flusher!")
+		}
+		w.Header().Set("Transfer-Encoding", "chunked")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(expectedBody))
+		flusher.Flush()
+	}))
+	defer testServer.Close()
+
+	s := testAPIServer(t, testServer)
+	readCloser, err := s.Get().APIPath("path/to/stream/thing").Stream(context.Background())
+	require.NoError(t, err)
+
+	defer readCloser.Close()
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(readCloser)
+	resultBody := buf.String()
+
+	assert.Equal(t, expectedBody, resultBody)
+}
+
+func testAPIServer(t *testing.T, server *httptest.Server) *APIClient {
+	t.Helper()
+
+	baseURL, err := url.Parse(server.URL)
+	require.NoError(t, err)
+	return newAPIClient(baseURL, contentConfig{}, server.Client())
 }
 
 func TestSetParams(t *testing.T) {
