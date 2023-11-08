@@ -14,7 +14,7 @@ on:
     - examples/**
 
 env:
-  GO_VERSION: 1.21.1
+  GO_VERSION: 1.21.3
   GORELEASER_VERSION: v1.21.2
   GO_CACHE: true
 jobs:

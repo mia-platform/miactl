@@ -7,10 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Updated
+### Changed
 
 - marketplace apply command: item id in output data
 - removed beta warning for marketplace commands
+- update go version to 1.21.3
+- update uuid to v1.4.0
+- update oauth2 to v0.13.0
+- update exp to v0.0.0-20231006140011-7918f672742d
+- update cobra to v1.8.0
+- update sync to v0.5.0
+- update text to v0.14.0
 
 ## [0.8.0] - 2023-10-10
 
