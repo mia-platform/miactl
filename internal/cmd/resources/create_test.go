@@ -29,18 +29,33 @@ import (
 
 func TestCreateJob(t *testing.T) {
 	testCases := map[string]struct {
-		testServer *httptest.Server
-		projectID  string
-		err        bool
+		testServer  *httptest.Server
+		projectID   string
+		environment string
+		err         bool
 	}{
 		"create job end with success": {
-			testServer: createJobTestServer(t),
-			projectID:  "success",
+			testServer:  createJobTestServer(t),
+			projectID:   "success",
+			environment: "env-id",
 		},
 		"create job end with error": {
-			testServer: createJobTestServer(t),
-			projectID:  "fail",
-			err:        true,
+			testServer:  createJobTestServer(t),
+			projectID:   "fail",
+			environment: "env-id",
+			err:         true,
+		},
+		"fail if no project id": {
+			testServer:  createJobTestServer(t),
+			projectID:   "",
+			environment: "env-id",
+			err:         true,
+		},
+		"fail if environment": {
+			testServer:  createJobTestServer(t),
+			projectID:   "success",
+			environment: "",
+			err:         true,
 		},
 	}
 
@@ -54,7 +69,7 @@ func TestCreateJob(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = createJob(client, testCase.projectID, "env-id", "cronjob-name")
+			err = createJob(client, testCase.projectID, testCase.environment, "cronjob-name")
 			if testCase.err {
 				require.Error(t, err)
 			} else {

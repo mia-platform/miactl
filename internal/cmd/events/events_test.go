@@ -30,22 +30,38 @@ import (
 
 func TestPrintEventsList(t *testing.T) {
 	testCases := map[string]struct {
-		testServer *httptest.Server
-		projectID  string
-		err        bool
+		testServer  *httptest.Server
+		projectID   string
+		environment string
+		err         bool
 	}{
 		"list event with success": {
-			testServer: testServer(t),
-			projectID:  "found",
+			testServer:  testServer(t),
+			projectID:   "found",
+			environment: "env-id",
 		},
 		"list event with empty response": {
-			testServer: testServer(t),
-			projectID:  "empty",
+			testServer:  testServer(t),
+			projectID:   "empty",
+			environment: "env-id",
 		},
 		"failed request": {
-			testServer: testServer(t),
-			projectID:  "fail",
-			err:        true,
+			testServer:  testServer(t),
+			projectID:   "fail",
+			environment: "env-id",
+			err:         true,
+		},
+		"fail if no project id": {
+			testServer:  testServer(t),
+			projectID:   "",
+			environment: "env-id",
+			err:         true,
+		},
+		"fail if no environment id": {
+			testServer:  testServer(t),
+			projectID:   "found",
+			environment: "",
+			err:         true,
 		},
 	}
 
@@ -59,7 +75,7 @@ func TestPrintEventsList(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printEventsList(client, testCase.projectID, "env-id", "resource")
+			err = printEventsList(client, testCase.projectID, testCase.environment, "resource")
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
