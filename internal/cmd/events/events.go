@@ -35,16 +35,16 @@ const (
 
 func Command(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "events ENVIRONMENT RESOURCE-NAME",
+		Use:   "events RESOURCE-NAME",
 		Short: "Show events related to a runtime resource in a Mia-Platform Console project environment",
 		Long:  "Show events related to a runtime resource in a Mia-Platform Console project environment.",
-		Args:  cobra.ExactArgs(2),
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := o.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return printEventsList(client, restConfig.ProjectID, args[0], args[1])
+			return printEventsList(client, restConfig.ProjectID, restConfig.Environment, args[1])
 		},
 	}
 	return cmd
@@ -54,6 +54,11 @@ func printEventsList(client *client.APIClient, projectID, environment, resourceN
 	if projectID == "" {
 		return fmt.Errorf("missing project id, please set one with the flag or context")
 	}
+
+	if environment == "" {
+		return fmt.Errorf("missing environment, please set one with the flag or context")
+	}
+
 	resp, err := client.
 		Get().
 		APIPath(fmt.Sprintf(eventsEndpointTemplate, projectID, environment, resourceName)).

@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - marketplace apply command: item id in output data
 - removed beta warning for marketplace commands
+- the environment filter is now passed as flag and not as parameter for runtime commands
 - update go version to 1.21.3
 - update uuid to v1.4.0
 - update oauth2 to v0.13.0

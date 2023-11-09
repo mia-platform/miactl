@@ -52,6 +52,7 @@ func (cr *ConfigReader) ClientConfig(locator *ConfigPathLocator) (*client.Config
 		AuthCacheReadWriter: NewAuthReadWriter(locator, context, authConfig),
 		CompanyID:           context.CompanyID,
 		ProjectID:           context.ProjectID,
+		Environment:         context.Environment,
 	}
 
 	if found {
@@ -81,6 +82,7 @@ func (cr *ConfigReader) getContext() (*api.ContextConfig, error) {
 			InsecureSkipTLSVerify: cr.overrides.InsecureSkipTLSVerify,
 			CompanyID:             cr.overrides.CompanyID,
 			ProjectID:             cr.overrides.ProjectID,
+			Environment:           cr.overrides.Environment,
 		}
 		_ = mergo.Merge(mergedContext, overrides, mergo.WithOverride)
 	}

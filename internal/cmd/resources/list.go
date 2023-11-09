@@ -63,13 +63,13 @@ var resourcesAvailable = []string{
 
 func ListCommand(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "list RESOURCE-TYPE ENVIRONMENT",
+		Use:   "list RESOURCE-TYPE",
 		Short: "List Mia-Platform Console runtime resources",
 		Long: `List Mia-Platform Console runtime resources.
 
 A project on Mia-Platform Console once deployed can have one or more resource of different kinds associcated with one
 or more of its environments.`,
-		Args: cobra.ExactArgs(2),
+		Args: cobra.ExactArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return resourcesCompletions(args, toComplete), cobra.ShellCompDirectiveNoFileComp
 		},
@@ -78,9 +78,11 @@ or more of its environments.`,
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return printList(client, restConfig.ProjectID, args[0], args[1])
+			return printList(client, restConfig.ProjectID, args[0], restConfig.Environment)
 		},
 	}
+
+	o.AddEnvironmentFlags(cmd.Flags())
 
 	return cmd
 }
@@ -103,6 +105,10 @@ func resourcesCompletions(args []string, toComplete string) []string {
 func printList(client *client.APIClient, projectID, resourceType, environment string) error {
 	if projectID == "" {
 		return fmt.Errorf("missing project id, please set one with the flag or context")
+	}
+
+	if environment == "" {
+		return fmt.Errorf("missing environment, please set one with the flag or context")
 	}
 
 	if !slices.Contains(resourcesAvailable, resourceType) {

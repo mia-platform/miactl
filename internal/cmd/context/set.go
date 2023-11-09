@@ -51,6 +51,7 @@ func SetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	options.AddConnectionFlags(flags)
 	options.AddCompanyFlags(flags)
 	options.AddProjectFlags(flags)
+	options.AddEnvironmentFlags(flags)
 	options.AddAuthFlags(flags)
 
 	return cmd
@@ -72,6 +73,7 @@ func setContext(contextName string, opts *clioptions.CLIOptions) (bool, error) {
 		ProjectID:             opts.ProjectID,
 		InsecureSkipTLSVerify: opts.Insecure,
 		AuthName:              opts.Auth,
+		Environment:           opts.Environment,
 	}
 
 	contextConfig, found := config.Contexts[contextName]

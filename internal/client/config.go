@@ -50,6 +50,9 @@ type Config struct {
 	// ProjectID contains the project id that can be used for filtering requests
 	ProjectID string
 
+	// Environment contains the environment scope that can be used for filtering requests
+	Environment string
+
 	// The maximum length of time to wait before giving up on a server request. A value of zero means no timeout.
 	Timeout time.Duration
 }
