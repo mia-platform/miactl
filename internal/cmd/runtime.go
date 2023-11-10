@@ -19,6 +19,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/environments"
 	"github.com/mia-platform/miactl/internal/cmd/events"
+	"github.com/mia-platform/miactl/internal/cmd/logs"
 	runtimeresources "github.com/mia-platform/miactl/internal/cmd/resources"
 	"github.com/spf13/cobra"
 )
@@ -47,6 +48,7 @@ the resources generated, like Pods, Cronjobs and logs.
 		runtimeresources.CreateCommand(o),
 		environments.EnvironmentCmd(o),
 		events.Command(o),
+		logs.Command(o),
 	)
 
 	return cmd

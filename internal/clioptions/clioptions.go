@@ -55,6 +55,8 @@ type CLIOptions struct {
 	MarketplaceResourcePaths []string
 
 	FromCronJob string
+
+	FollowLogs bool
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -134,7 +136,11 @@ func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 }
 
 func (o *CLIOptions) AddCreateJobFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.FromCronJob, "from", "", "", "The name of the cronjob to create a Job from")
+	flags.StringVar(&o.FromCronJob, "from", "", "name of the cronjob to create a Job from")
+}
+
+func (o *CLIOptions) AddLogsFlags(flags *pflag.FlagSet) {
+	flags.BoolVarP(&o.FollowLogs, "follow", "f", false, "specify if the logs should be streamed")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
