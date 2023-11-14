@@ -7,14 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- runtime log command
+
 ### Changed
 
 - marketplace apply command: item id in output data
 - removed beta warning for marketplace commands
+- the environment filter is now passed as flag and not as parameter for runtime commands
 - update go version to 1.21.3
 - update uuid to v1.4.0
-- update oauth2 to v0.13.0
-- update exp to v0.0.0-20231006140011-7918f672742d
+- update oauth2 to v0.14.0
+- update exp to v0.0.0-20231108232855-2478ac86f678
 - update cobra to v1.8.0
 - update sync to v0.5.0
 - update text to v0.14.0

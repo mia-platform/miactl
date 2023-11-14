@@ -28,6 +28,7 @@ type ContextConfig struct {
 	CompanyID             string `yaml:"company-id,omitempty"`               //nolint:tagliatelle
 	ProjectID             string `yaml:"project-id,omitempty"`               //nolint:tagliatelle
 	AuthName              string `yaml:"credential,omitempty"`               //nolint:tagliatelle
+	Environment           string `yaml:"environment,omitempty"`
 }
 
 type AuthConfig struct {

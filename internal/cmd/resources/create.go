@@ -38,6 +38,7 @@ func CreateCommand(options *clioptions.CLIOptions) *cobra.Command {
 	}
 
 	// add cmd flags
+	options.AddEnvironmentFlags(cmd.Flags())
 
 	// add sub commands
 	cmd.AddCommand(
@@ -49,16 +50,15 @@ func CreateCommand(options *clioptions.CLIOptions) *cobra.Command {
 
 func jobCommand(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "job ENVIRONMENT",
+		Use:   "job",
 		Short: "Create a job from a cronjob in the selected environment and project",
 		Long:  "Create a job from a cronjob in the selected environment and project",
-		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return createJob(client, restConfig.ProjectID, args[0], options.FromCronJob)
+			return createJob(client, restConfig.ProjectID, restConfig.Environment, options.FromCronJob)
 		},
 	}
 
@@ -75,6 +75,10 @@ func jobCommand(options *clioptions.CLIOptions) *cobra.Command {
 func createJob(client *client.APIClient, projectID, environment, cronjobName string) error {
 	if projectID == "" {
 		return fmt.Errorf("missing project id, please set one with the flag or context")
+	}
+
+	if environment == "" {
+		return fmt.Errorf("missing environment, please set one with the flag or context")
 	}
 
 	requestBody := &resources.CreateJobRequest{

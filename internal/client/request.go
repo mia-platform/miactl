@@ -164,6 +164,7 @@ func (r *Request) preflightCheck() error {
 func (r *Request) Do(ctx context.Context) (*Response, error) {
 	var response *Response
 	err := r.request(ctx, func(req *http.Request, res *http.Response) {
+		defer res.Body.Close()
 		response = parseRequestAndResponse(req, res)
 	})
 
@@ -172,6 +173,28 @@ func (r *Request) Do(ctx context.Context) (*Response, error) {
 	}
 
 	return response, nil
+}
+
+// Stream return directly the buffer of the response for streaming it
+func (r *Request) Stream(ctx context.Context) (io.ReadCloser, error) {
+	var response *http.Response
+	var request *http.Request
+	err := r.request(ctx, func(req *http.Request, res *http.Response) {
+		response = res
+		request = req
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if (response.StatusCode >= http.StatusOK) && (response.StatusCode < http.StatusMultipleChoices) {
+		return response.Body, nil
+	}
+
+	defer response.Body.Close()
+	parsedResponse := parseRequestAndResponse(request, response)
+	return nil, parsedResponse.Error()
 }
 
 func (r *Request) request(ctx context.Context, fn func(*http.Request, *http.Response)) error {
@@ -187,7 +210,6 @@ func (r *Request) request(ctx context.Context, fn func(*http.Request, *http.Resp
 	response, err := r.restClient.client.Do(httpRequest)
 	func() {
 		if response != nil {
-			defer response.Body.Close()
 			fn(httpRequest, response)
 		}
 	}()

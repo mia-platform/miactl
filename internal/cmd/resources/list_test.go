@@ -33,41 +33,63 @@ func TestPrintServicesList(t *testing.T) {
 		testServer   *httptest.Server
 		resourceType string
 		projectID    string
+		environment  string
 		err          bool
 	}{
 		"list services with success": {
 			testServer:   listResourceTestServer(t),
 			projectID:    "found",
+			environment:  "env-id",
 			resourceType: ServicesResourceType,
 		},
 		"list deployments with success": {
 			testServer:   listResourceTestServer(t),
 			projectID:    "found",
+			environment:  "env-id",
 			resourceType: DeploymentsResourceType,
 		},
 		"list pods with success": {
 			testServer:   listResourceTestServer(t),
 			projectID:    "found",
+			environment:  "env-id",
 			resourceType: PodsResourceType,
 		},
 		"list cronjobs with success": {
 			testServer:   listResourceTestServer(t),
 			projectID:    "found",
+			environment:  "env-id",
 			resourceType: CronJobsResourceType,
 		},
 		"list jobs with success": {
 			testServer:   listResourceTestServer(t),
 			projectID:    "found",
+			environment:  "env-id",
 			resourceType: JobsResourceType,
 		},
 		"list deployments with empty response": {
 			testServer:   listResourceTestServer(t),
 			projectID:    "empty",
+			environment:  "env-id",
 			resourceType: DeploymentResourceType,
 		},
 		"failed request": {
 			testServer:   listResourceTestServer(t),
 			projectID:    "fail",
+			environment:  "env-id",
+			err:          true,
+			resourceType: PodsResourceType,
+		},
+		"fail if no project -id": {
+			testServer:   listResourceTestServer(t),
+			projectID:    "",
+			environment:  "env-id",
+			err:          true,
+			resourceType: PodsResourceType,
+		},
+		"fail if no environment": {
+			testServer:   listResourceTestServer(t),
+			projectID:    "found",
+			environment:  "",
 			err:          true,
 			resourceType: PodsResourceType,
 		},
@@ -83,7 +105,7 @@ func TestPrintServicesList(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printList(client, testCase.projectID, testCase.resourceType, "env-id")
+			err = printList(client, testCase.projectID, testCase.resourceType, testCase.environment)
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

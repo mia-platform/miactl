@@ -35,10 +35,11 @@ type CLIOptions struct {
 	Insecure bool
 	CAFile   string
 
-	Context   string
-	Auth      string
-	ProjectID string
-	CompanyID string
+	Context     string
+	Auth        string
+	ProjectID   string
+	CompanyID   string
+	Environment string
 
 	Revision   string
 	DeployType string
@@ -54,6 +55,8 @@ type CLIOptions struct {
 	MarketplaceResourcePaths []string
 
 	FromCronJob string
+
+	FollowLogs bool
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -98,6 +101,10 @@ func (o *CLIOptions) AddCompanyFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.CompanyID, "company-id", "", "the ID of the company")
 }
 
+func (o *CLIOptions) AddEnvironmentFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.Environment, "environment", "", "the environment scope for the command")
+}
+
 func (o *CLIOptions) AddDeployFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Revision, "revision", "HEAD", "revision of the commit to deploy")
 	flags.StringVar(&o.DeployType, "deploy-type", "smart_deploy", "deploy type")
@@ -129,7 +136,11 @@ func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 }
 
 func (o *CLIOptions) AddCreateJobFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.FromCronJob, "from", "", "", "The name of the cronjob to create a Job from")
+	flags.StringVar(&o.FromCronJob, "from", "", "name of the cronjob to create a Job from")
+}
+
+func (o *CLIOptions) AddLogsFlags(flags *pflag.FlagSet) {
+	flags.BoolVarP(&o.FollowLogs, "follow", "f", false, "specify if the logs should be streamed")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
@@ -145,6 +156,7 @@ func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
 	overrides.Endpoint = o.Endpoint
 	overrides.CompanyID = o.CompanyID
 	overrides.ProjectID = o.ProjectID
+	overrides.Environment = o.Environment
 	overrides.Context = o.Context
 	overrides.AuthName = o.Auth
 	overrides.CertificateAuthority = o.CAFile

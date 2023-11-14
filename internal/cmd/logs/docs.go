@@ -13,15 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cliconfig
-
-type ConfigOverrides struct {
-	Endpoint              string
-	CertificateAuthority  string
-	InsecureSkipTLSVerify bool
-	CompanyID             string
-	ProjectID             string
-	Context               string
-	AuthName              string
-	Environment           string
-}
+// logs package contains subcommands and functions for displaying resources logs
+package logs
