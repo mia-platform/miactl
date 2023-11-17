@@ -16,8 +16,10 @@
 package marketplace
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -27,8 +29,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const (
-	listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions"
+const listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions"
+
+var (
+	ErrItemVersionNotFound = errors.New("an item with the specified itemID wasn't found")
+	ErrGenericItemVersion  = errors.New("server error while fetching item version")
 )
 
 // ListVersionCmd return a new cobra command for listing marketplace item versions
@@ -46,7 +51,7 @@ The command will output a table with the release notes of each specific version.
 
 			releases, err := getItemVersions(
 				client,
-				options.CompanyID,
+				restConfig.CompanyID,
 				options.MarketplaceItemID,
 			)
 			cobra.CheckErr(err)
@@ -63,13 +68,35 @@ The command will output a table with the release notes of each specific version.
 	return cmd
 }
 
-func getItemVersions(client *client.APIClient, companyID, itemID string) ([]marketplace.Release, error) {
-	return nil, errors.New("not implemented")
+func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]marketplace.Release, error) {
+	resp, err := client.
+		Get().
+		APIPath(
+			fmt.Sprintf(listItemVersionsEndpointTemplate, companyID, itemID),
+		).
+		Do(context.Background())
+
+	if err != nil {
+		return nil, fmt.Errorf("error executing request: %w", err)
+	}
+
+	switch resp.StatusCode() {
+	case http.StatusOK:
+		releases := &[]marketplace.Release{}
+		err = resp.ParseResponse(releases)
+		if err != nil {
+			return nil, fmt.Errorf("error parsing response body: %w", err)
+		}
+		return releases, nil
+	case http.StatusNotFound:
+		return nil, ErrItemVersionNotFound
+	}
+	return nil, ErrGenericItemVersion
 }
 
 // buildMarketplaceItemsList retrieves the marketplace items belonging to the current context
 // and returns a string with a human-readable list
-func buildItemVersionList(releases []marketplace.Release) (string, error) {
+func buildItemVersionList(releases *[]marketplace.Release) (string, error) {
 	strBuilder := &strings.Builder{}
 	table := tablewriter.NewWriter(strBuilder)
 	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
@@ -79,7 +106,7 @@ func buildItemVersionList(releases []marketplace.Release) (string, error) {
 	table.SetRowSeparator("")
 	table.SetAutoWrapText(true)
 	table.SetHeader([]string{"Version", "Name", "Description"})
-	for _, release := range releases {
+	for _, release := range *releases {
 		table.Append([]string{
 			release.Version,
 			release.Name,

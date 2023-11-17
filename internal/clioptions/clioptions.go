@@ -137,7 +137,7 @@ func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 }
 
 func (o *CLIOptions) AddMarketplaceGetItemVersionsFlags(cmd *cobra.Command) {
-	cmd.Flags().StringP("item-id", "i", "", "The itemId of the item")
+	cmd.Flags().StringVarP(&o.MarketplaceItemID, "item-id", "i", "", "The itemId of the item")
 	err := cmd.MarkFlagRequired("item-id")
 	if err != nil {
 		// the error is only due to a programming error (missing command), hence panic
