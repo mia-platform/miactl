@@ -154,7 +154,6 @@ func TestGetItemVersions(t *testing.T) {
 				require.Equal(t, &testCase.expected, found)
 			}
 		})
-
 	}
 }
 
@@ -180,8 +179,7 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
-			found, err := buildItemVersionList(&testCase.releases)
-			assert.NoError(t, err)
+			found := buildItemVersionList(&testCase.releases)
 			assert.NotZero(t, found)
 			for _, expected := range testCase.expectedContains {
 				assert.Contains(t, found, expected)

@@ -56,10 +56,9 @@ The command will output a table with the release notes of each specific version.
 			)
 			cobra.CheckErr(err)
 
-			list, err := buildItemVersionList(releases)
-			cobra.CheckErr(err)
+			table := buildItemVersionList(releases)
 
-			fmt.Println(list)
+			fmt.Println(table)
 		},
 	}
 
@@ -96,7 +95,7 @@ func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]mar
 
 // buildMarketplaceItemsList retrieves the marketplace items belonging to the current context
 // and returns a string with a human-readable list
-func buildItemVersionList(releases *[]marketplace.Release) (string, error) {
+func buildItemVersionList(releases *[]marketplace.Release) string {
 	strBuilder := &strings.Builder{}
 	table := tablewriter.NewWriter(strBuilder)
 	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
@@ -115,5 +114,5 @@ func buildItemVersionList(releases *[]marketplace.Release) (string, error) {
 	}
 	table.Render()
 
-	return strBuilder.String(), nil
+	return strBuilder.String()
 }
