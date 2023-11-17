@@ -34,6 +34,7 @@ const listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/re
 var (
 	ErrItemVersionNotFound = errors.New("an item with the specified itemID wasn't found")
 	ErrGenericItemVersion  = errors.New("server error while fetching item version")
+	ErrMissingCompanyID    = errors.New("companyID is required")
 )
 
 // ListVersionCmd return a new cobra command for listing marketplace item versions
@@ -68,6 +69,9 @@ The command will output a table with the release notes of each specific version.
 }
 
 func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]marketplace.Release, error) {
+	if companyID == "" {
+		return nil, ErrMissingCompanyID
+	}
 	resp, err := client.
 		Get().
 		APIPath(
@@ -103,13 +107,18 @@ func buildItemVersionList(releases *[]marketplace.Release) string {
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
-	table.SetAutoWrapText(true)
+	table.SetAutoWrapText(false)
 	table.SetHeader([]string{"Version", "Name", "Description"})
+
 	for _, release := range *releases {
+		description := "-"
+		if release.Description != "" {
+			description = release.Description
+		}
 		table.Append([]string{
 			release.Version,
 			release.Name,
-			release.Description,
+			description,
 		})
 	}
 	table.Render()

@@ -118,6 +118,12 @@ func TestGetItemVersions(t *testing.T) {
 			expected:    nil,
 			expectedErr: ErrGenericItemVersion,
 		},
+		{
+			testName:    "should return error on missing companyID",
+			companyID:   "",
+			itemID:      "some-item",
+			expectedErr: ErrMissingCompanyID,
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -162,7 +168,7 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 		releases         []marketplace.Release
 		expectedContains []string
 	}{
-		"valid get response": {
+		"should show all fields": {
 			releases: []marketplace.Release{
 				{
 					Version:     "1.0.0",
@@ -172,7 +178,19 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 			},
 			expectedContains: []string{
 				"VERSION", "NAME", "DESCRIPTION",
-				"1.0.0", "Some Awesome Service", "The Awesome Service allows",
+				"1.0.0", "Some Awesome Service", "The Awesome Service allows to do some amazing stuff.",
+			},
+		},
+		"should show - on empty description": {
+			releases: []marketplace.Release{
+				{
+					Version: "1.0.0",
+					Name:    "Some Awesome Service",
+				},
+			},
+			expectedContains: []string{
+				"VERSION", "NAME", "DESCRIPTION",
+				"1.0.0", "Some Awesome Service", "-",
 			},
 		},
 	}
