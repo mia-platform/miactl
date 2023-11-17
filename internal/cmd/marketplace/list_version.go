@@ -43,7 +43,7 @@ func ListVersionCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   "list-versions",
 		Short: "List versions of a Marketplace item",
 		Long: `List the currently available versions of a Marketplace item.
-The command will output a table with the release notes of each specific version.`,
+The command will output a table with each version of the item.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
