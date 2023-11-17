@@ -378,6 +378,12 @@ Be aware that the presence of both "image" and "imageUrl" and/or of both "suppor
 miactl marketplace apply { -f file-path }... } [flags]
 ```
 
+### list-versions
+
+List all the available versions of a specific Marketplace item,
+
+The flag `--item-id` or `-i` accepts the `itemId` of the Item.
+
 #### Examples
 
 
