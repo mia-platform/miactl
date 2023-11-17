@@ -53,6 +53,7 @@ type CLIOptions struct {
 	OutputPath         string
 
 	MarketplaceResourcePaths []string
+	MarketplaceItemID        string
 
 	FromCronJob string
 
@@ -129,6 +130,15 @@ func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 	cmd.Flags().StringArrayVarP(&o.MarketplaceResourcePaths, "file-path", "f", []string{}, "paths to JSON/YAML files or folder of files containing a Marketplace item definition")
 	err := cmd.MarkFlagRequired("file-path")
+	if err != nil {
+		// the error is only due to a programming error (missing command), hence panic
+		panic(err)
+	}
+}
+
+func (o *CLIOptions) AddMarketplaceGetItemVersionsFlags(cmd *cobra.Command) {
+	cmd.Flags().StringP("item-id", "i", "", "The itemId of the item")
+	err := cmd.MarkFlagRequired("item-id")
 	if err != nil {
 		// the error is only due to a programming error (missing command), hence panic
 		panic(err)

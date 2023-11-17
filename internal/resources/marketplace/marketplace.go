@@ -54,6 +54,12 @@ type UploadImageResponse struct {
 	Location string `json:"location"`
 }
 
+type Release struct {
+	Version     string `json:"version"`
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
 func (i *Item) MarshalItem(encodingFormat string) ([]byte, error) {
 	return encoding.MarshalData(i, encodingFormat, encoding.MarshalOptions{Indent: true})
 }
