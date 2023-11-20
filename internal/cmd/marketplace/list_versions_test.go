@@ -105,7 +105,7 @@ func TestGetItemVersions(t *testing.T) {
 				"error": "Not Found",
 			},
 			expected:    nil,
-			expectedErr: ErrItemVersionNotFound,
+			expectedErr: ErrItemNotFound,
 		},
 		{
 			testName:   "should return generic error if item is not found",
@@ -116,7 +116,7 @@ func TestGetItemVersions(t *testing.T) {
 				"error": "Internal Server Error",
 			},
 			expected:    nil,
-			expectedErr: ErrGenericItemVersion,
+			expectedErr: ErrGenericServerError,
 		},
 		{
 			testName:    "should return error on missing companyID",

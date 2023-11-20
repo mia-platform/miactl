@@ -32,9 +32,9 @@ import (
 const listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions"
 
 var (
-	ErrItemVersionNotFound = errors.New("an item with the specified itemID wasn't found")
-	ErrGenericItemVersion  = errors.New("server error while fetching item version")
-	ErrMissingCompanyID    = errors.New("companyID is required")
+	ErrItemNotFound       = errors.New("item not found")
+	ErrGenericServerError = errors.New("server error while fetching item versions")
+	ErrMissingCompanyID   = errors.New("companyID is required")
 )
 
 // ListVersionCmd return a new cobra command for listing marketplace item versions
@@ -92,9 +92,9 @@ func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]mar
 		}
 		return releases, nil
 	case http.StatusNotFound:
-		return nil, ErrItemVersionNotFound
+		return nil, fmt.Errorf("%w: %s", ErrItemNotFound, itemID)
 	}
-	return nil, ErrGenericItemVersion
+	return nil, ErrGenericServerError
 }
 
 // buildMarketplaceItemsList retrieves the marketplace items belonging to the current context
