@@ -380,7 +380,7 @@ miactl marketplace apply { -f file-path }... } [flags]
 
 ### list-versions
 
-List all the available versions of a specific Marketplace item,
+List all the available versions of a specific Marketplace item.
 
 The flag `--item-id` or `-i` accepts the `itemId` of the Item.
 

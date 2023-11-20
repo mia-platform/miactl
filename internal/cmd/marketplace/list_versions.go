@@ -97,8 +97,6 @@ func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]mar
 	return nil, ErrGenericServerError
 }
 
-// buildMarketplaceItemsList retrieves the marketplace items belonging to the current context
-// and returns a string with a human-readable list
 func buildItemVersionList(releases *[]marketplace.Release) string {
 	strBuilder := &strings.Builder{}
 	table := tablewriter.NewWriter(strBuilder)
