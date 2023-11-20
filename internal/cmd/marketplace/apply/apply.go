@@ -242,12 +242,11 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string
 		if err != nil {
 			return nil, nil, err
 		}
-		switch filepath.Ext(filepath.Ext(filePath)) {
-		case encoding.YmlExtension, encoding.YamlExtension, encoding.JSONExtension:
-			break
-		default:
-			return nil, nil, fmt.Errorf("%w: %s", errInvalidExtension, filePath)
+
+		if !isSupportedExtension(filepath.Ext(filePath)) {
+			continue
 		}
+
 		marketplaceItem := &marketplace.Item{}
 		err = encoding.UnmarshalData(content, marketplaceItem)
 		if err != nil {
@@ -275,6 +274,14 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string
 	return &marketplace.ApplyRequest{
 		Resources: resources,
 	}, resItemIDToFilePath, nil
+}
+
+func isSupportedExtension(ext string) bool {
+	switch ext {
+	case encoding.YmlExtension, encoding.YamlExtension, encoding.JSONExtension:
+		return true
+	}
+	return false
 }
 
 func validateItemName(marketplaceItem *marketplace.Item, filePath string) (string, error) {
