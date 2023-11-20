@@ -63,7 +63,12 @@ The command will output a table with each version of the item.`,
 		},
 	}
 
-	options.AddMarketplaceGetItemVersionsFlags(cmd)
+	flagName := options.AddMarketplaceGetItemVersionsFlags(cmd)
+	err := cmd.MarkFlagRequired(flagName)
+	if err != nil {
+		// the error is only due to a programming error (missing command flag), hence panic
+		panic(err)
+	}
 
 	return cmd
 }

@@ -136,13 +136,10 @@ func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 	}
 }
 
-func (o *CLIOptions) AddMarketplaceGetItemVersionsFlags(cmd *cobra.Command) {
-	cmd.Flags().StringVarP(&o.MarketplaceItemID, "item-id", "i", "", "The itemId of the item")
-	err := cmd.MarkFlagRequired("item-id")
-	if err != nil {
-		// the error is only due to a programming error (missing command), hence panic
-		panic(err)
-	}
+func (o *CLIOptions) AddMarketplaceGetItemVersionsFlags(cmd *cobra.Command) string {
+	flagName := "item-id"
+	cmd.Flags().StringVarP(&o.MarketplaceItemID, flagName, "i", "", "The itemId of the item")
+	return flagName
 }
 
 func (o *CLIOptions) AddCreateJobFlags(flags *pflag.FlagSet) {
