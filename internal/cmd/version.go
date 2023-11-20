@@ -37,8 +37,8 @@ func VersionCmd(_ *clioptions.CLIOptions) *cobra.Command {
 	// Version subcommand
 	cmd := &cobra.Command{
 		Use:   "version",
-		Short: "Show mlp version",
-		Long:  "Show mlp version",
+		Short: "Show miactl version",
+		Long:  "Show miactl version",
 		Run: func(cmd *cobra.Command, args []string) {
 			fmt.Println(versionOutput)
 		},
