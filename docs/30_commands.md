@@ -378,12 +378,6 @@ Be aware that the presence of both "image" and "imageUrl" and/or of both "suppor
 miactl marketplace apply { -f file-path }... } [flags]
 ```
 
-### list-versions
-
-List all the available versions of a specific Marketplace item.
-
-The flag `--item-id` or `-i` accepts the `itemId` of the Item.
-
 #### Examples
 
 
@@ -404,4 +398,16 @@ miactl marketplace apply -f myFantasticGoTemplates
 ```
   -f, --file stringArray   paths to JSON/YAML files or folder of files containing a Marketplace item definition
   -h, --help               help for apply
+```
+
+### list-versions
+
+List all the available versions of a specific Marketplace item.
+
+#### Synopsis
+
+The flag `--item-id` or `-i` accepts the `itemId` of the Item.
+
+```
+miactl marketplace list-versions -i some-item
 ```
