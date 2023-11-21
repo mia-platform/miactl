@@ -67,6 +67,8 @@ miactl marketplace apply -f myFantasticGoTemplates`
 	imageKey       = "image"
 	imageURLKey    = "imageUrl"
 
+	itemIDKey = "itemId"
+
 	supportedByImageAssetType = "supportedByImageAssetType"
 	supportedByImageKey       = "supportedByImage"
 	supportedByImageURLKey    = "supportedByImageUrl"
@@ -79,8 +81,10 @@ var (
 	errResWithoutItemID     = errors.New(`the required field "itemId" was not found in the resource`)
 	errNoValidFilesProvided = errors.New("no valid files were provided")
 
-	errResNameNotAString   = errors.New(`the field "name" must be a string`)
-	errResItemIDNotAString = errors.New(`the field "itemId" must be a string`)
+	errResNameNotAString     = errors.New(`the field "name" must be a string`)
+	errResItemIDNotAString   = errors.New(`the field "itemId" must be a string`)
+	errVersionNameNotAString = errors.New(`the field "version.name" must be a string`)
+
 	errInvalidExtension    = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 	errDuplicatedResItemID = errors.New("some resources have duplicated itemId field")
 	errUnknownAssetType    = errors.New("unknown asset type")
@@ -134,13 +138,14 @@ func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyI
 	if err != nil {
 		return "", fmt.Errorf("%w: %s", errBuildingFilesList, err)
 	}
-	applyReq, itemIDToFilePathMap, err := buildApplyRequest(resourceFilesPaths)
+
+	applyReq, identifierToFilePathMap, err := buildApplyRequest(resourceFilesPaths)
 	if err != nil {
 		return "", fmt.Errorf("%w: %s", errBuildingApplyReq, err)
 	}
 
 	for _, item := range applyReq.Resources {
-		if err := processItemImages(ctx, client, companyID, item, itemIDToFilePathMap); err != nil {
+		if err := processItemImages(ctx, client, companyID, item, identifierToFilePathMap); err != nil {
 			return "", fmt.Errorf("%w: %s", errProcessingImages, err)
 		}
 	}
@@ -170,8 +175,8 @@ func processItemImages(
 	item *marketplace.Item,
 	itemIDToFilePathMap map[string]string,
 ) error {
-	processImage := func(objKey, urlKey string, assetType string) error {
-		localPath, err := getAndValidateImageLocalPath(item, objKey, urlKey)
+	processImage := func(imageObjKey, urlKey string, assetType string) error {
+		localPath, err := getAndValidateImageLocalPath(item, imageObjKey, urlKey)
 		if assetType != imageAssetType && assetType != supportedByImageAssetType {
 			return fmt.Errorf("%w: %s", errUnknownAssetType, assetType)
 		}
@@ -181,8 +186,12 @@ func processItemImages(
 		if localPath == "" {
 			return nil
 		}
-		itemID := item.Get("itemId").(string)
-		itemFilePath := itemIDToFilePathMap[itemID]
+		itemID := item.Get(itemIDKey).(string)
+		identifier, err := buildItemIdentifier(item)
+		if err != nil {
+			return err
+		}
+		itemFilePath := itemIDToFilePathMap[identifier]
 		imageFilePath := concatPathDirToFilePathIfRelative(itemFilePath, localPath)
 
 		imageURL, err := uploadImageFileAndGetURL(
@@ -197,7 +206,7 @@ func processItemImages(
 			return fmt.Errorf("%w: %s: %s", errUploadingImage, imageFilePath, err)
 		}
 
-		item.Del(objKey)
+		item.Del(imageObjKey)
 		item.Set(urlKey, imageURL)
 		return nil
 	}
@@ -236,7 +245,8 @@ func buildFilePathsList(paths []string) ([]string, error) {
 
 func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string]string, error) {
 	resources := []*marketplace.Item{}
-	resItemIDToFilePath := map[string]string{}
+	// the identifier is the concatenation of itemID and, if present, version.name
+	resIdentifierToFilePath := map[string]string{}
 	for _, filePath := range pathList {
 		content, err := os.ReadFile(filePath)
 		if err != nil {
@@ -262,19 +272,44 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string
 		if err != nil {
 			return nil, nil, err
 		}
-		if _, alreadyExists := resItemIDToFilePath[itemID]; alreadyExists {
+
+		resIdentifier, err := buildItemIdentifier(marketplaceItem)
+		if err != nil {
+			return nil, nil, err
+		}
+
+		if _, alreadyExists := resIdentifierToFilePath[resIdentifier]; alreadyExists {
 			return nil, nil, fmt.Errorf("%w: %s", errDuplicatedResItemID, itemID)
 		}
 
 		resources = append(resources, marketplaceItem)
-		resItemIDToFilePath[itemID] = filePath
+
+		resIdentifierToFilePath[resIdentifier] = filePath
 	}
 	if len(resources) == 0 {
 		return nil, nil, errNoValidFilesProvided
 	}
 	return &marketplace.ApplyRequest{
 		Resources: resources,
-	}, resItemIDToFilePath, nil
+	}, resIdentifierToFilePath, nil
+}
+
+func buildItemIdentifier(item *marketplace.Item) (string, error) {
+	itemID, ok := item.Get(itemIDKey).(string)
+	if !ok {
+		return "", errResItemIDNotAString
+	}
+
+	var versionName string
+	version, ok := item.Get("version").(marketplace.Item)
+	if ok && version != nil {
+		versionName, ok = version["name"].(string)
+		if !ok {
+			return "", errVersionNameNotAString
+		}
+	}
+
+	return itemID + versionName, nil
 }
 
 func validateItemName(marketplaceItem *marketplace.Item, filePath string) (string, error) {
@@ -290,7 +325,7 @@ func validateItemName(marketplaceItem *marketplace.Item, filePath string) (strin
 }
 
 func validateItemHumanReadableID(marketplaceItem *marketplace.Item, filePath string) (string, error) {
-	itemID, ok := (*marketplaceItem)["itemId"]
+	itemID, ok := (*marketplaceItem)[itemIDKey]
 	if !ok {
 		return "", fmt.Errorf("%w: %s", errResWithoutItemID, filePath)
 	}

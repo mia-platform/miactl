@@ -26,7 +26,9 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
 
 func TestApplyBuildPathsFromDir(t *testing.T) {
@@ -460,6 +462,44 @@ func TestApplyIntegration(t *testing.T) {
 			mockApplyItemStatusCode,
 			uploadMockResponse,
 			applyMockResponse,
+			func(resources []interface{}) {
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[0].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[1].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[1].(map[string]interface{}),
+					supportedByImageKey,
+					supportedByImageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[2].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[2].(map[string]interface{}),
+					supportedByImageKey,
+					supportedByImageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[3].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+			},
 		)
 		defer mockServer.Close()
 		clientConfig := &client.Config{
@@ -480,7 +520,91 @@ func TestApplyIntegration(t *testing.T) {
 		require.Contains(t, found, "id1")
 	})
 
-	t.Run("should return the correct error message if image upload fails", func(t *testing.T) {
+	t.Run("should upload images correctly - from items with same ids and different versions", func(t *testing.T) {
+		mockUploadImageStatusCode := http.StatusOK
+		mockApplyItemStatusCode := http.StatusOK
+
+		mockPaths := []string{
+			"./testdata/validItemWithImage.json",
+			"./testdata/validItemWithVersion.json",
+		}
+		applyMockResponse := &marketplace.ApplyResponse{
+			Done: true,
+			Items: []marketplace.ApplyResponseItem{
+				{
+					ID:               "id1",
+					ItemID:           "miactl-test-with-image-and-local-path",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+				},
+				{
+					ID:               "id1",
+					ItemID:           "miactl-test-with-image-and-local-path",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+				},
+			},
+		}
+		uploadMockResponse := &marketplace.UploadImageResponse{
+			Location: mockImageURLLocation,
+		}
+
+		mockServer := applyIntegrationMockServer(t,
+			mockUploadImageStatusCode,
+			mockApplyItemStatusCode,
+			uploadMockResponse,
+			applyMockResponse,
+			func(resources []interface{}) {
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[0].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+				version, ok := resources[0].(map[string]interface{})["version"]
+				assert.False(t, ok)
+				assert.Nil(t, version)
+
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[1].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+
+				version, ok = resources[1].(map[string]interface{})["version"].(map[string]interface{})
+				assert.True(t, ok)
+				assert.NotNil(t, version)
+
+				versionName, ok := version.(map[string]interface{})["name"].(string)
+				assert.True(t, ok)
+				assert.Equal(t, "1.0.0", versionName)
+			},
+		)
+		defer mockServer.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = mockServer.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		found, err := applyItemsFromPaths(
+			context.Background(),
+			client,
+			mockTenantID,
+			mockPaths,
+		)
+		require.NoError(t, err)
+		require.Contains(t, found, "miactl-test-with-image-and-local-path")
+		require.Contains(t, found, "id1")
+	})
+
+	t.Run("should return the error message returned from server if image upload fails", func(t *testing.T) {
 		mockUploadImageStatusCode := http.StatusBadRequest
 		mockApplyItemStatusCode := http.StatusOK
 
@@ -513,6 +637,7 @@ func TestApplyIntegration(t *testing.T) {
 			mockApplyItemStatusCode,
 			uploadMockErrorResponse,
 			applyMockResponse,
+			nil,
 		)
 		defer mockServer.Close()
 		clientConfig := &client.Config{
@@ -532,7 +657,7 @@ func TestApplyIntegration(t *testing.T) {
 		require.Zero(t, found)
 	})
 
-	t.Run("should return the correct error message if apply item fails", func(t *testing.T) {
+	t.Run("should return the error message returned from server if apply item fails", func(t *testing.T) {
 		mockUploadImageStatusCode := http.StatusOK
 		mockApplyItemStatusCode := http.StatusBadRequest
 
@@ -557,6 +682,44 @@ func TestApplyIntegration(t *testing.T) {
 			mockApplyItemStatusCode,
 			uploadMockResponse,
 			applyMockErrorResponse,
+			func(resources []interface{}) {
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[0].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[1].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[1].(map[string]interface{}),
+					supportedByImageKey,
+					supportedByImageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[2].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[2].(map[string]interface{}),
+					supportedByImageKey,
+					supportedByImageURLKey,
+				)
+				assertImageKeyIsReplacedWithImageURL(
+					t,
+					resources[3].(map[string]interface{}),
+					imageKey,
+					imageURLKey,
+				)
+			},
 		)
 		defer mockServer.Close()
 		clientConfig := &client.Config{
@@ -590,6 +753,7 @@ func TestApplyConcatPathIfRelative(t *testing.T) {
 
 func applyRequestHandler(t *testing.T, w http.ResponseWriter, r *http.Request, statusCode int, mockResponse interface{}) {
 	t.Helper()
+
 	require.Equal(t, mockURI, r.RequestURI)
 	require.Equal(t, http.MethodPost, r.Method)
 
@@ -611,6 +775,7 @@ func applyIntegrationMockServer(
 	t *testing.T,
 	uploadImageStatusCode, applyItemStatusCode int,
 	uploadMockResponse, applyMockResponse interface{},
+	assertResourcesFn func(resources []interface{}),
 ) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -628,50 +793,206 @@ func applyIntegrationMockServer(
 			require.Contains(t, foundBody, "resources")
 			resources := foundBody["resources"].([]interface{})
 
-			assertImageKeyIsReplacedWithImageURL(
-				t,
-				resources[0].(map[string]interface{}),
-				imageKey,
-				imageURLKey,
-			)
-			assertImageKeyIsReplacedWithImageURL(
-				t,
-				resources[1].(map[string]interface{}),
-				imageKey,
-				imageURLKey,
-			)
-			assertImageKeyIsReplacedWithImageURL(
-				t,
-				resources[1].(map[string]interface{}),
-				supportedByImageKey,
-				supportedByImageURLKey,
-			)
-			assertImageKeyIsReplacedWithImageURL(
-				t,
-				resources[2].(map[string]interface{}),
-				imageKey,
-				imageURLKey,
-			)
-			assertImageKeyIsReplacedWithImageURL(
-				t,
-				resources[2].(map[string]interface{}),
-				supportedByImageKey,
-				supportedByImageURLKey,
-			)
-			assertImageKeyIsReplacedWithImageURL(
-				t,
-				resources[3].(map[string]interface{}),
-				imageKey,
-				imageURLKey,
-			)
+			if assertResourcesFn != nil {
+				assertResourcesFn(resources)
+			}
 
 			applyRequestHandler(t, w, r, applyItemStatusCode, applyMockResponse)
 		case fmt.Sprintf(uploadImageEndpointTemplate, mockTenantID):
 			uploadImageHandler(t, w, r, uploadImageStatusCode, uploadMockResponse)
+			err := r.ParseMultipartForm(10 * 10000)
+			require.NoError(t, err)
+			mf := r.MultipartForm
+			require.NotNil(t, mf.Value)
+
 		default:
 			require.FailNowf(t, "invalid request URI", "invalid request URI: %s", r.RequestURI)
 		}
 	}))
+}
+
+func TestProcessItemImages(t *testing.T) {
+	testCases := []struct {
+		testName string
+
+		itemJSON                 string
+		itemVersionToFilePathMap map[string]string
+
+		expectedErr  error
+		expectedItem *marketplace.Item
+	}{
+		{
+			testName: "should upload file correctly - without version",
+
+			itemJSON: `{
+				"itemId": "some-id",
+				"image": {
+					"localPath": "./testdata/imageTest.png"
+				}
+			}`,
+			expectedItem: &marketplace.Item{
+				"itemId":    "some-id",
+				imageURLKey: mockImageURLLocation,
+			},
+			itemVersionToFilePathMap: map[string]string{
+				"itemId": "./testdata/imageTest.png",
+			},
+		},
+		{
+			testName: "should upload file correctly - with version",
+
+			itemJSON: `{
+				"itemId": "some-id",
+				"image": {
+					"localPath": "./testdata/imageTest.png"
+				},
+				"version": {
+					"name": "1.0.0",
+					"releaseNotes": "some release note"
+				}
+			}`,
+			expectedItem: &marketplace.Item{
+				"itemId":    "some-id",
+				imageURLKey: mockImageURLLocation,
+				"version": marketplace.Item{
+					"name":         "1.0.0",
+					"releaseNotes": "some release note",
+				},
+			},
+			itemVersionToFilePathMap: map[string]string{
+				"itemId": "./testdata/imageTest.png",
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		applyMockResponse := &marketplace.ApplyResponse{
+			Done: true,
+			Items: []marketplace.ApplyResponseItem{
+				{
+					ID:               "id1",
+					ItemID:           "some-id",
+					Done:             true,
+					Inserted:         true,
+					Updated:          false,
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+				},
+			},
+		}
+		uploadMockResponse := &marketplace.UploadImageResponse{
+			Location: mockImageURLLocation,
+		}
+
+		server := applyIntegrationMockServer(t,
+			http.StatusOK,
+			http.StatusOK,
+			uploadMockResponse,
+			applyMockResponse,
+			nil,
+		)
+		defer server.Close()
+		clientConfig := &client.Config{
+			Transport: http.DefaultTransport,
+		}
+		clientConfig.Host = server.URL
+		client, err := client.APIClientForConfig(clientConfig)
+		require.NoError(t, err)
+
+		mockItem := &marketplace.Item{}
+		err = yaml.Unmarshal([]byte(testCase.itemJSON), mockItem)
+		require.NoError(t, err)
+
+		err = processItemImages(
+			context.Background(),
+			client,
+			mockTenantID,
+			mockItem,
+			testCase.itemVersionToFilePathMap,
+		)
+
+		if testCase.expectedErr != nil {
+			require.ErrorIs(t, err, testCase.expectedErr)
+			continue
+		}
+
+		require.NoError(t, err)
+
+		// the item is changed in-place, so they should be equal
+		require.Equal(t, testCase.expectedItem, mockItem)
+	}
+}
+
+func TestBuildIdentifier(t *testing.T) {
+	testCases := []struct {
+		testName    string
+		itemJSON    string
+		expected    string
+		expectedErr error
+	}{
+		{
+			"should replace only itemID when version is not provided",
+			`{
+				"itemId": "some-id"
+			}`,
+			"some-id",
+			nil,
+		},
+		{
+			"should return error if itemID is not a string",
+			`{
+				"itemId": 5
+			}`,
+			"",
+			errResItemIDNotAString,
+		},
+		{
+			"should return error if name is not defined",
+			`{
+				"itemId":  "some-other-id",
+				"version": {}
+			}`,
+			"",
+			errVersionNameNotAString,
+		},
+		{
+			"should return error if name is not a string",
+			`{
+				"itemId": "some-id",
+				"version": {
+					"name": 1
+				}
+			}`,
+			"",
+			errVersionNameNotAString,
+		},
+		{
+			"should return itemID concatenated with version name when version name is present",
+			`{
+				"itemId": "some-id",
+				"version": {
+					"name": "1.0.0"
+				}
+			}`,
+			"some-id1.0.0",
+			nil,
+		},
+	}
+
+	for _, tt := range testCases {
+		t.Run(tt.testName, func(t *testing.T) {
+			parsedItem := &marketplace.Item{}
+			err := yaml.Unmarshal([]byte(tt.itemJSON), parsedItem)
+			require.NoError(t, err)
+
+			found, err := buildItemIdentifier(parsedItem)
+			if tt.expectedErr != nil {
+				require.Zero(t, found)
+				require.ErrorIs(t, err, tt.expectedErr)
+				return
+			}
+			require.Equal(t, tt.expected, found)
+		})
+	}
 }
 
 func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
