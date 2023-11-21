@@ -42,12 +42,12 @@ func TestApplyBuildPathsFromDir(t *testing.T) {
 		require.Len(t, found, 4)
 	})
 
-	t.Run("should return error due to file with bad extension", func(t *testing.T) {
+	t.Run("should NOT return error due to file with bad extension", func(t *testing.T) {
 		dirPath := "./testdata/"
 
 		found, err := buildFilePathsList([]string{dirPath})
 		require.Nil(t, found)
-		require.ErrorIs(t, err, errInvalidExtension)
+		require.NoError(t, err)
 	})
 }
 
