@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- marketplace apply: add version to multipart request metadata if present in the item
+
 ### Fixed
 
 - help text of version command
+- marketplace apply: consider both itemId and version for duplicate check
 
 ## [0.9.0] - 2023-11-15
 
