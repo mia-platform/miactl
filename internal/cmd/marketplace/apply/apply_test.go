@@ -105,7 +105,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		require.Nil(t, foundResNameToFilePath)
 	})
 
-	t.Run("should return error if a file has unknown extensions, but others are valid", func(t *testing.T) {
+	t.Run("should ignore a file it it has unknown extensions, and should parse only valid files", func(t *testing.T) {
 		filePaths := []string{
 			"./testdata/someFileNotYamlNotJson.txt",
 			"./testdata/validItem1.json",
@@ -113,13 +113,28 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.ErrorIs(t, err, errInvalidExtension)
-		require.Nil(t, foundApplyReq)
-		require.Nil(t, foundResNameToFilePath)
+		require.NoError(t, err)
+		require.NotNil(t, foundApplyReq)
+		require.Len(t, foundApplyReq.Resources, 2)
+		require.Equal(t, foundResNameToFilePath, map[string]string{
+			"miactl-test-json": "./testdata/validItem1.json",
+			"miactl-test":      "./testdata/validYaml.yaml",
+		})
 	})
 
 	t.Run("should return error if resources array is empty", func(t *testing.T) {
 		filePaths := []string{}
+
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
+		require.ErrorIs(t, err, errNoValidFilesProvided)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
+	})
+
+	t.Run("should return error if resources are all with invalid file extension", func(t *testing.T) {
+		filePaths := []string{
+			"./testdata/someFileNotYamlNotJson.txt",
+		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 		require.ErrorIs(t, err, errNoValidFilesProvided)
