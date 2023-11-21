@@ -84,9 +84,9 @@ var (
 	errResNameNotAString   = errors.New(`the field "name" must be a string`)
 	errResItemIDNotAString = errors.New(`the field "itemId" must be a string`)
 
-	errInvalidExtension    = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
-	errDuplicatedResItemID = errors.New("some resources have duplicated itemId field")
-	errUnknownAssetType    = errors.New("unknown asset type")
+	errInvalidExtension        = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
+	errDuplicatedResIdentifier = errors.New("some resources have duplicated itemId-version tuple")
+	errUnknownAssetType        = errors.New("unknown asset type")
 
 	errUploadingImage    = errors.New("error while uploading image")
 	errBuildingFilesList = errors.New("error processing files")
@@ -283,7 +283,7 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string
 		}
 
 		if _, alreadyExists := resIdentifierToFilePath[resIdentifier]; alreadyExists {
-			return nil, nil, fmt.Errorf("%w: %s", errDuplicatedResItemID, itemID)
+			return nil, nil, fmt.Errorf("%w: %s", errDuplicatedResIdentifier, itemID)
 		}
 
 		resources = append(resources, marketplaceItem)

@@ -127,14 +127,26 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		require.Nil(t, foundResNameToFilePath)
 	})
 
-	t.Run("should return error if two resources have the same itemId", func(t *testing.T) {
+	t.Run("should return error if two resources have the same itemId - both without version", func(t *testing.T) {
 		filePaths := []string{
 			"./testdata/validYaml.yaml",
 			"./testdata/validYaml.yml",
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.ErrorIs(t, err, errDuplicatedResItemID)
+		require.ErrorIs(t, err, errDuplicatedResIdentifier)
+		require.Nil(t, foundApplyReq)
+		require.Nil(t, foundResNameToFilePath)
+	})
+
+	t.Run("should return error if two resources have the same itemId and same version name", func(t *testing.T) {
+		filePaths := []string{
+			"./testdata/validItemWithVersion.json",
+			"./testdata/validItemWithSameVersion.json",
+		}
+
+		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
+		require.ErrorIs(t, err, errDuplicatedResIdentifier)
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
@@ -830,7 +842,7 @@ func applyIntegrationMockServer(
 		case fmt.Sprintf(uploadImageEndpointTemplate, mockTenantID):
 			uploadImageHandler(t, w, r, uploadImageStatusCode, uploadMockResponse)
 			if assertImageUploadBody != nil {
-				err := r.ParseMultipartForm(10 * 10000)
+				err := r.ParseMultipartForm(5 * 10000)
 				require.NoError(t, err)
 				mf := r.MultipartForm
 				require.NotNil(t, mf.Value)
