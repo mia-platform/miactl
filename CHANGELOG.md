@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- feat: add command `miactl marketplace list-versions`
+
 ### Fixed
 
 - help text of version command
