@@ -57,7 +57,7 @@ The command will output a table with each version of the item.`,
 			)
 			cobra.CheckErr(err)
 
-			table := buildItemVersionList(releases)
+			table := buildItemVersionListTable(releases)
 
 			fmt.Println(table)
 		},
@@ -102,7 +102,7 @@ func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]mar
 	return nil, ErrGenericServerError
 }
 
-func buildItemVersionList(releases *[]marketplace.Release) string {
+func buildItemVersionListTable(releases *[]marketplace.Release) string {
 	strBuilder := &strings.Builder{}
 	table := tablewriter.NewWriter(strBuilder)
 	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})

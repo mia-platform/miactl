@@ -197,7 +197,7 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
-			found := buildItemVersionList(&testCase.releases)
+			found := buildItemVersionListTable(&testCase.releases)
 			assert.NotZero(t, found)
 			for _, expected := range testCase.expectedContains {
 				assert.Contains(t, found, expected)
