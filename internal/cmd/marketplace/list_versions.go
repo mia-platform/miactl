@@ -41,9 +41,11 @@ var (
 func ListVersionCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list-versions",
-		Short: "List versions of a Marketplace item",
+		Short: "List versions of a Marketplace item (ALPHA)",
 		Long: `List the currently available versions of a Marketplace item.
-The command will output a table with each version of the item.`,
+The command will output a table with each version of the item.
+
+This command is in ALPHA state. This means that it can be subject to breaking changes in the next versions of miactl.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)

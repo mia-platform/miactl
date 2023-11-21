@@ -400,7 +400,13 @@ miactl marketplace apply -f myFantasticGoTemplates
   -h, --help               help for apply
 ```
 
-### list-versions
+### list-versions (ALPHA)
+
+:::warning
+
+This command is in ALPHA state. This means that it can be subject to breaking changes in the next versions of miactl.
+
+:::
 
 List all the available versions of a specific Marketplace item.
 
