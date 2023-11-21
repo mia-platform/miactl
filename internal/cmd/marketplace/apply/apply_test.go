@@ -608,7 +608,7 @@ func TestApplyIntegration(t *testing.T) {
 					require.Equal(t, "imageTest2.png", mf.File[multipartFieldName][0].Filename)
 				}
 
-				uploadImageCallIdx += 1
+				uploadImageCallIdx++
 			},
 		)
 		defer mockServer.Close()
