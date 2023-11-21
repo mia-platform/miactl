@@ -39,6 +39,7 @@ func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd.AddCommand(marketplace.GetCmd(options))
 	cmd.AddCommand(marketplace.DeleteCmd(options))
 	cmd.AddCommand(marketplace_apply.ApplyCmd(options))
+	cmd.AddCommand(marketplace.ListVersionCmd(options))
 
 	return cmd
 }
