@@ -8,7 +8,7 @@
 	"itemId": "miactl-test-with-image-and-local-path",
 	"version": {
 		"name": "1.0.0",
-		"releaseNotes": "henlo"
+		"releaseNotes": "a new release"
 	},
 	"releaseStage": "",
 	"repositoryUrl": "https://example.com/repo",
