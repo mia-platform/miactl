@@ -81,9 +81,8 @@ var (
 	errResWithoutItemID     = errors.New(`the required field "itemId" was not found in the resource`)
 	errNoValidFilesProvided = errors.New("no valid files were provided")
 
-	errResNameNotAString     = errors.New(`the field "name" must be a string`)
-	errResItemIDNotAString   = errors.New(`the field "itemId" must be a string`)
-	errVersionNameNotAString = errors.New(`the field "version.name" must be a string`)
+	errResNameNotAString   = errors.New(`the field "name" must be a string`)
+	errResItemIDNotAString = errors.New(`the field "itemId" must be a string`)
 
 	errInvalidExtension    = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 	errDuplicatedResItemID = errors.New("some resources have duplicated itemId field")
@@ -194,6 +193,10 @@ func processItemImages(
 		itemFilePath := itemIDToFilePathMap[identifier]
 		imageFilePath := concatPathDirToFilePathIfRelative(itemFilePath, localPath)
 
+		versionName, err := item.GetVersionName()
+		if err != nil {
+			return err
+		}
 		imageURL, err := uploadImageFileAndGetURL(
 			ctx,
 			client,
@@ -201,6 +204,7 @@ func processItemImages(
 			imageFilePath,
 			assetType,
 			itemID,
+			versionName,
 		)
 		if err != nil {
 			return fmt.Errorf("%w: %s: %s", errUploadingImage, imageFilePath, err)
@@ -300,13 +304,9 @@ func buildItemIdentifier(item *marketplace.Item) (string, error) {
 		return "", errResItemIDNotAString
 	}
 
-	var versionName string
-	version, ok := item.Get("version").(marketplace.Item)
-	if ok && version != nil {
-		versionName, ok = version["name"].(string)
-		if !ok {
-			return "", errVersionNameNotAString
-		}
+	versionName, err := item.GetVersionName()
+	if err != nil {
+		return "", err
 	}
 
 	return itemID + versionName, nil

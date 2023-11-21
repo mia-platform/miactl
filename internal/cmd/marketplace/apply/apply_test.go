@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -500,6 +501,7 @@ func TestApplyIntegration(t *testing.T) {
 					imageURLKey,
 				)
 			},
+			nil,
 		)
 		defer mockServer.Close()
 		clientConfig := &client.Config{
@@ -553,6 +555,7 @@ func TestApplyIntegration(t *testing.T) {
 			Location: mockImageURLLocation,
 		}
 
+		uploadImageCallIdx := 0
 		mockServer := applyIntegrationMockServer(t,
 			mockUploadImageStatusCode,
 			mockApplyItemStatusCode,
@@ -583,6 +586,29 @@ func TestApplyIntegration(t *testing.T) {
 				versionName, ok := version.(map[string]interface{})["name"].(string)
 				assert.True(t, ok)
 				assert.Equal(t, "1.0.0", versionName)
+			},
+			func(mf *multipart.Form) {
+				t.Helper()
+
+				require.LessOrEqual(t, uploadImageCallIdx, 1, "too many calls to upload image endpoint")
+				if uploadImageCallIdx == 0 {
+					require.Equal(t, "miactl-test-with-image-and-local-path", mf.Value["itemId"][0])
+					require.Equal(t, imageAssetType, mf.Value["assetType"][0])
+					require.Equal(t, mockTenantID, mf.Value["tenantId"][0])
+					require.Nil(t, mf.Value["version"])
+
+					require.Equal(t, "imageTest.png", mf.File[multipartFieldName][0].Filename)
+				}
+				if uploadImageCallIdx == 1 {
+					require.Equal(t, "miactl-test-with-image-and-local-path", mf.Value["itemId"][0])
+					require.Equal(t, imageAssetType, mf.Value["assetType"][0])
+					require.Equal(t, mockTenantID, mf.Value["tenantId"][0])
+					require.Equal(t, "1.0.0", mf.Value["version"][0])
+
+					require.Equal(t, "imageTest2.png", mf.File[multipartFieldName][0].Filename)
+				}
+
+				uploadImageCallIdx += 1
 			},
 		)
 		defer mockServer.Close()
@@ -637,6 +663,7 @@ func TestApplyIntegration(t *testing.T) {
 			mockApplyItemStatusCode,
 			uploadMockErrorResponse,
 			applyMockResponse,
+			nil,
 			nil,
 		)
 		defer mockServer.Close()
@@ -720,6 +747,7 @@ func TestApplyIntegration(t *testing.T) {
 					imageURLKey,
 				)
 			},
+			nil,
 		)
 		defer mockServer.Close()
 		clientConfig := &client.Config{
@@ -776,6 +804,7 @@ func applyIntegrationMockServer(
 	uploadImageStatusCode, applyItemStatusCode int,
 	uploadMockResponse, applyMockResponse interface{},
 	assertResourcesFn func(resources []interface{}),
+	assertImageUploadBody func(mf *multipart.Form),
 ) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -800,10 +829,13 @@ func applyIntegrationMockServer(
 			applyRequestHandler(t, w, r, applyItemStatusCode, applyMockResponse)
 		case fmt.Sprintf(uploadImageEndpointTemplate, mockTenantID):
 			uploadImageHandler(t, w, r, uploadImageStatusCode, uploadMockResponse)
-			err := r.ParseMultipartForm(10 * 10000)
-			require.NoError(t, err)
-			mf := r.MultipartForm
-			require.NotNil(t, mf.Value)
+			if assertImageUploadBody != nil {
+				err := r.ParseMultipartForm(10 * 10000)
+				require.NoError(t, err)
+				mf := r.MultipartForm
+				require.NotNil(t, mf.Value)
+				assertImageUploadBody(mf)
+			}
 
 		default:
 			require.FailNowf(t, "invalid request URI", "invalid request URI: %s", r.RequestURI)
@@ -889,6 +921,7 @@ func TestProcessItemImages(t *testing.T) {
 			uploadMockResponse,
 			applyMockResponse,
 			nil,
+			nil,
 		)
 		defer server.Close()
 		clientConfig := &client.Config{
@@ -952,7 +985,7 @@ func TestBuildIdentifier(t *testing.T) {
 				"version": {}
 			}`,
 			"",
-			errVersionNameNotAString,
+			marketplace.ErrVersionNameNotAString,
 		},
 		{
 			"should return error if name is not a string",
@@ -963,7 +996,7 @@ func TestBuildIdentifier(t *testing.T) {
 				}
 			}`,
 			"",
-			errVersionNameNotAString,
+			marketplace.ErrVersionNameNotAString,
 		},
 		{
 			"should return itemID concatenated with version name when version name is present",

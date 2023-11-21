@@ -15,7 +15,13 @@
 
 package marketplace
 
-import "github.com/mia-platform/miactl/internal/encoding"
+import (
+	"errors"
+
+	"github.com/mia-platform/miactl/internal/encoding"
+)
+
+var ErrVersionNameNotAString = errors.New(`the field "version.name" must be a string`)
 
 // Item is a Marketplace item
 // we use a map[string]interface{} to represent the item
@@ -68,4 +74,15 @@ func (i *Item) Set(key string, val interface{}) {
 
 func (i *Item) Get(key string) interface{} {
 	return (*i)[key]
+}
+
+func (i *Item) GetVersionName() (versionName string, err error) {
+	version, ok := i.Get("version").(Item)
+	if ok && version != nil {
+		versionName, ok = version["name"].(string)
+		if !ok {
+			return "", ErrVersionNameNotAString
+		}
+	}
+	return
 }

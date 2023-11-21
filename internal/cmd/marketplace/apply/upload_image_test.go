@@ -155,6 +155,7 @@ func TestApplyUploadImage(t *testing.T) {
 			imageFile,
 			"someItemId",
 			"someAssetType",
+			"",
 		)
 
 		require.NoError(t, err)
@@ -184,6 +185,7 @@ func TestApplyUploadImage(t *testing.T) {
 			imageFile,
 			"someItemId",
 			"someAssetType",
+			"",
 		)
 		require.ErrorIs(t, err, errCompanyIDNotDefined)
 		require.Zero(t, found)

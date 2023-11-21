@@ -134,9 +134,7 @@ func writeFormField(
 
 func writeMetadataFields(
 	multipartWriter *multipart.Writer,
-	itemID,
-	assetType,
-	companyID string,
+	itemID, assetType, companyID, versionName string,
 ) error {
 	if err := writeFormField(multipartWriter, "itemId", itemID); err != nil {
 		return err
@@ -146,18 +144,23 @@ func writeMetadataFields(
 		return err
 	}
 
-	err := writeFormField(multipartWriter, "tenantId", companyID)
+	if err := writeFormField(multipartWriter, "tenantId", companyID); err != nil {
+		return err
+	}
 
-	return err
+	if versionName != "" {
+		if err := writeFormField(multipartWriter, "version", versionName); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func buildUploadImageReq(
-	imageMimeType,
-	fileName string,
+	imageMimeType, fileName string,
 	fileContents io.Reader,
-	itemID,
-	assetType,
-	companyID string,
+	itemID, assetType, companyID, versionName string,
 ) (string, []byte, error) {
 	var bodyBuffer bytes.Buffer
 	multipartWriter := multipart.NewWriter(&bodyBuffer)
@@ -166,7 +169,7 @@ func buildUploadImageReq(
 		return "", nil, err
 	}
 
-	if err := writeMetadataFields(multipartWriter, itemID, assetType, companyID); err != nil {
+	if err := writeMetadataFields(multipartWriter, itemID, assetType, companyID, versionName); err != nil {
 		return "", nil, err
 	}
 
@@ -183,10 +186,7 @@ func buildUploadImageReq(
 func uploadImageFileAndGetURL(
 	ctx context.Context,
 	client *client.APIClient,
-	companyID,
-	filePath string,
-	assetType string,
-	itemID string,
+	companyID, filePath, assetType, itemID, versionName string,
 ) (string, error) {
 	imageFile, err := os.Open(filePath)
 	if err != nil {
@@ -215,6 +215,7 @@ func uploadImageFileAndGetURL(
 		imageFile,
 		itemID,
 		assetType,
+		versionName,
 	)
 	if err != nil {
 		return "", err
@@ -231,8 +232,7 @@ func uploadSingleFileWithMultipart(
 	fileMimeType,
 	fileName string,
 	fileContents io.Reader,
-	itemID string,
-	assetType string,
+	itemID, assetType, versionName string,
 ) (string, error) {
 	if companyID == "" {
 		return "", errCompanyIDNotDefined
@@ -245,6 +245,7 @@ func uploadSingleFileWithMultipart(
 		itemID,
 		assetType,
 		companyID,
+		versionName,
 	)
 	if err != nil {
 		return "", nil
