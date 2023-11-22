@@ -9,11 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- feat: add command `miactl marketplace list-versions`
+- marketplace apply: add version to multipart request metadata if present in the item
+- add command `miactl marketplace list-versions`
 
 ### Fixed
 
 - help text of version command
+- marketplace apply: consider both itemId and version for duplicate check
 - marketplace apply: silently ignore files with invalid extension rather than throwing error
 
 ## [0.9.0] - 2023-11-15
