@@ -84,7 +84,6 @@ var (
 	errResNameNotAString   = errors.New(`the field "name" must be a string`)
 	errResItemIDNotAString = errors.New(`the field "itemId" must be a string`)
 
-	errInvalidExtension        = errors.New("file has an invalid extension. Valid extensions are `.json`, `.yaml` and `.yml`")
 	errDuplicatedResIdentifier = errors.New("some resources have duplicated itemId-version tuple")
 	errUnknownAssetType        = errors.New("unknown asset type")
 
@@ -235,8 +234,6 @@ func buildFilePathsList(paths []string) ([]string, error) {
 			switch filepath.Ext(path) {
 			case encoding.YmlExtension, encoding.YamlExtension, encoding.JSONExtension:
 				filePaths = append(filePaths, path)
-			default:
-				return fmt.Errorf("%w: %s", errInvalidExtension, path)
 			}
 			return nil
 		})
