@@ -50,6 +50,13 @@ func deleteByIDMockServer(t *testing.T, statusCode int) *httptest.Server {
 		)
 		require.Equal(t, http.MethodDelete, r.Method)
 		w.WriteHeader(statusCode)
+		if statusCode != http.StatusNoContent {
+			w.Write([]byte(`
+			{
+				"message": "some error message"
+			}
+			`))
+		}
 	}))
 }
 
@@ -66,6 +73,13 @@ func deleteByItemIDAndVersionMockServer(t *testing.T,
 		)
 		require.Equal(t, http.MethodDelete, r.Method)
 		w.WriteHeader(statusCode)
+		if statusCode != http.StatusNoContent {
+			w.Write([]byte(`
+			{
+				"message": "some error message"
+			}
+			`))
+		}
 		*callsCount++
 	}))
 }
