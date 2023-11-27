@@ -32,7 +32,6 @@ import (
 const listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions"
 
 var (
-	ErrItemNotFound       = errors.New("item not found")
 	ErrGenericServerError = errors.New("server error while fetching item versions")
 	ErrMissingCompanyID   = errors.New("companyID is required")
 )
@@ -99,7 +98,7 @@ func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]mar
 		}
 		return releases, nil
 	case http.StatusNotFound:
-		return nil, fmt.Errorf("%w: %s", ErrItemNotFound, itemID)
+		return nil, fmt.Errorf("%w: %s", marketplace.ErrItemNotFound, itemID)
 	}
 	return nil, ErrGenericServerError
 }
