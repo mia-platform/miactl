@@ -42,7 +42,7 @@ var (
 // DeleteCmd return a new cobra command for deleting a single marketplace resource
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete { -i item-id -v version } | --object-id object-id",
+		Use:   "delete { -i item-id -v version } | --object-id object-id [flags]...",
 		Short: "Delete a Marketplace item",
 		Long: `Delete a single Marketplace item
 

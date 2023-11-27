@@ -343,10 +343,17 @@ Delete a Marketplace item
 
 #### Synopsis
 
-Delete a single Marketplace item by its ID
+Delete a single Marketplace item
+
+You need to specify either:
+- the itemId and the version, respectively  (recommended)
+- the ObjectID of the item with the flag object-id
+
+Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
+Otherwise, it is preferable to pass the tuple itemId-version.
 
 ```
-miactl marketplace delete resource-id [flags]
+miactl marketplace delete --item-id some-item --version '1.0.0'
 ```
 
 ### apply
