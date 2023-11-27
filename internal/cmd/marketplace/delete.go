@@ -26,16 +26,19 @@ import (
 )
 
 const (
-	deleteMarketplaceEndpoint = "/api/backend/marketplace/tenants/%s/resources/%s"
+	deleteMarketplaceEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s"
 )
 
 // DeleteCmd return a new cobra command for deleting a single marketplace resource
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:        "delete resource-id",
-		Short:      "Delete Marketplace item",
-		Long:       "Delete a single Marketplace item by its ID",
-		Args:       cobra.ExactArgs(1),
+		Use:   "delete ",
+		Short: "Delete Marketplace item",
+		Long: `Delete a single Marketplace item by its ID
+You need to specify either:
+- the itemId and the version with the respective flags
+- the ObjectID of the item with the flag object-id
+`,
 		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
@@ -43,26 +46,34 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			resourceID := args[0]
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {
 				return fmt.Errorf("missing company id, please set one with the flag or context")
 			}
 
-			err = deleteMarketplaceResource(client, companyID, resourceID)
+			err = deleteItemByObjectID(client, companyID, options.MarketplaceItemObjectID)
 			cobra.CheckErr(err)
 
 			return nil
 		},
 	}
 
+	itemIDFlagName := options.AddMarketplaceItemItemIDFlag(cmd.Flags())
+	versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
+	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
+
+	cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
+	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, itemIDFlagName)
+	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, versionFlagName)
+	cmd.MarkFlagsOneRequired(itemObjectIDFlagName, itemIDFlagName, versionFlagName)
+
 	return cmd
 }
 
-func deleteMarketplaceResource(client *client.APIClient, companyID string, resourceID string) error {
+func deleteItemByObjectID(client *client.APIClient, companyID string, objectID string) error {
 	resp, err := client.
 		Delete().
-		APIPath(fmt.Sprintf(deleteMarketplaceEndpoint, companyID, resourceID)).
+		APIPath(fmt.Sprintf(deleteMarketplaceEndpointTemplate, companyID, objectID)).
 		Do(context.Background())
 
 	if err != nil {

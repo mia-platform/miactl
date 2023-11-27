@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	mockDeleteResourceID = "resource-id"
-	mockDeleteCompanyID  = "company-id"
+	mockDeleteObjectID  = "object-id"
+	mockDeleteCompanyID = "company-id"
 )
 
 func TestDeleteResourceCmd(t *testing.T) {
@@ -43,7 +43,7 @@ func TestDeleteResourceCmd(t *testing.T) {
 func deleteByIDMockServer(t *testing.T, statusCode int) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != fmt.Sprintf(deleteMarketplaceEndpoint, mockDeleteCompanyID, mockDeleteResourceID) && r.Method != http.MethodDelete {
+		if r.RequestURI != fmt.Sprintf(deleteMarketplaceEndpointTemplate, mockDeleteCompanyID, mockDeleteObjectID) && r.Method != http.MethodDelete {
 			w.WriteHeader(http.StatusNotFound)
 			require.Fail(t, "unsupported call")
 			return
@@ -52,7 +52,7 @@ func deleteByIDMockServer(t *testing.T, statusCode int) *httptest.Server {
 	}))
 }
 
-func TestDeleteResourceById(t *testing.T) {
+func TestDeleteItemByObjectId(t *testing.T) {
 	testCases := map[string]struct {
 		server       *httptest.Server
 		clientConfig *client.Config
@@ -101,7 +101,7 @@ func TestDeleteResourceById(t *testing.T) {
 			testCase.clientConfig.Host = testCase.server.URL
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
-			err = deleteMarketplaceResource(client, mockDeleteCompanyID, mockDeleteResourceID)
+			err = deleteItemByObjectID(client, mockDeleteCompanyID, mockDeleteObjectID)
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

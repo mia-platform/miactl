@@ -55,7 +55,7 @@ This command is in ALPHA state. This means that it can be subject to breaking ch
 			releases, err := getItemVersions(
 				client,
 				restConfig.CompanyID,
-				options.MarketplaceItemID,
+				options.MarketplaceItemItemID,
 			)
 			cobra.CheckErr(err)
 
@@ -65,7 +65,7 @@ This command is in ALPHA state. This means that it can be subject to breaking ch
 		},
 	}
 
-	flagName := options.AddMarketplaceGetItemVersionsFlags(cmd)
+	flagName := options.AddMarketplaceItemItemIDFlag(cmd.Flags())
 	err := cmd.MarkFlagRequired(flagName)
 	if err != nil {
 		// the error is only due to a programming error (missing command flag), hence panic
