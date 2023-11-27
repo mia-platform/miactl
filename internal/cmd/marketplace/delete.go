@@ -28,8 +28,8 @@ import (
 )
 
 const (
-	// deleteMarketplaceEndpointTemplate formatting template for item deletion by objectID backend endpoint; specify tenantID, objectID
-	deleteMarketplaceEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s"
+	// deleteItemEndpointTemplate formatting template for item deletion by objectID backend endpoint; specify tenantID, objectID
+	deleteItemEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s"
 	// deleteItemByTupleEndpointTemplate formatting template for item deletion by the tuple itemID versionID endpoint; specify companyID, itemID, version
 	deleteItemByTupleEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions/%s"
 )
@@ -42,12 +42,16 @@ var (
 // DeleteCmd return a new cobra command for deleting a single marketplace resource
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete ",
-		Short: "Delete Marketplace item",
-		Long: `Delete a single Marketplace item by its ID
+		Use:   "delete { -i item-id -v version } | --object-id object-id",
+		Short: "Delete a Marketplace item",
+		Long: `Delete a single Marketplace item
+
 You need to specify either:
-- the itemId and the version with the respective flags
+- the itemId and the version, respectively  (recommended)
 - the ObjectID of the item with the flag object-id
+
+Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
+Otherwise, it is preferable to pass the tuple itemId-version.
 `,
 		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -98,7 +102,7 @@ You need to specify either:
 func deleteItemByObjectID(ctx context.Context, client *client.APIClient, companyID, objectID string) error {
 	resp, err := client.
 		Delete().
-		APIPath(fmt.Sprintf(deleteMarketplaceEndpointTemplate, companyID, objectID)).
+		APIPath(fmt.Sprintf(deleteItemEndpointTemplate, companyID, objectID)).
 		Do(ctx)
 
 	if err != nil {

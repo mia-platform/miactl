@@ -45,7 +45,7 @@ func deleteByIDMockServer(t *testing.T, statusCode int) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		require.Equal(t,
-			fmt.Sprintf(deleteMarketplaceEndpointTemplate, mockDeleteCompanyID, mockDeleteObjectID),
+			fmt.Sprintf(deleteItemEndpointTemplate, mockDeleteCompanyID, mockDeleteObjectID),
 			r.RequestURI,
 		)
 		require.Equal(t, http.MethodDelete, r.Method)

@@ -18,6 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - marketplace apply: consider both itemId and version for duplicate check
 - marketplace apply: silently ignore files with invalid extension rather than throwing error
 
+### Updated
+
+- modified `miactl marketplace delete` command to accept either the `objectId` or a `itemId`-`version` tuple that identifies the item to be deleted.
+
+### BREAKING
+
+- `miactl marketplace delete` does not accept anymore the id as argument, it should be provided to the flag `--object-id`
+
 ## [0.9.0] - 2023-11-15
 
 ### Added
