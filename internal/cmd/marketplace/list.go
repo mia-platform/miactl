@@ -93,8 +93,7 @@ func buildMarketplaceItemsList(client *client.APIClient, companyID string) (stri
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
 	table.SetAutoWrapText(true)
-	//TODO: OBJECT ID
-	table.SetHeader([]string{"ID", "Item ID", "Name", "Type"})
+	table.SetHeader([]string{"Object ID", "Item ID", "Name", "Type"})
 	for _, marketplaceItem := range marketplaceItems {
 		table.Append([]string{
 			marketplaceItem.ID,
