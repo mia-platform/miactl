@@ -105,7 +105,7 @@ func TestGetItemVersions(t *testing.T) {
 				"error": "Not Found",
 			},
 			expected:    nil,
-			expectedErr: ErrItemNotFound,
+			expectedErr: marketplace.ErrItemNotFound,
 		},
 		{
 			testName:   "should return generic error if item is not found",

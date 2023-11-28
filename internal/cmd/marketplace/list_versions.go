@@ -32,7 +32,6 @@ import (
 const listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions"
 
 var (
-	ErrItemNotFound       = errors.New("item not found")
 	ErrGenericServerError = errors.New("server error while fetching item versions")
 	ErrMissingCompanyID   = errors.New("companyID is required")
 )
@@ -65,7 +64,7 @@ This command is in ALPHA state. This means that it can be subject to breaking ch
 		},
 	}
 
-	flagName := options.AddMarketplaceGetItemVersionsFlags(cmd)
+	flagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
 	err := cmd.MarkFlagRequired(flagName)
 	if err != nil {
 		// the error is only due to a programming error (missing command flag), hence panic
@@ -99,7 +98,7 @@ func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]mar
 		}
 		return releases, nil
 	case http.StatusNotFound:
-		return nil, fmt.Errorf("%w: %s", ErrItemNotFound, itemID)
+		return nil, fmt.Errorf("%w: %s", marketplace.ErrItemNotFound, itemID)
 	}
 	return nil, ErrGenericServerError
 }

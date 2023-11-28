@@ -53,7 +53,12 @@ type CLIOptions struct {
 	OutputPath         string
 
 	MarketplaceResourcePaths []string
-	MarketplaceItemID        string
+	// MarketplaceItemID is the itemId field of a Marketplace item
+	MarketplaceItemID string
+	// MarketplaceItemVersion is the version field of a Marketplace item
+	MarketplaceItemVersion string
+	// MarketplaceItemObjectID is the _id of a Marketplace item
+	MarketplaceItemObjectID string
 
 	FromCronJob string
 
@@ -136,10 +141,22 @@ func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 	}
 }
 
-func (o *CLIOptions) AddMarketplaceGetItemVersionsFlags(cmd *cobra.Command) string {
-	flagName := "item-id"
-	cmd.Flags().StringVarP(&o.MarketplaceItemID, flagName, "i", "", "The itemId of the item")
-	return flagName
+func (o *CLIOptions) AddMarketplaceItemIDFlag(flags *pflag.FlagSet) (flagName string) {
+	flagName = "item-id"
+	flags.StringVarP(&o.MarketplaceItemID, flagName, "i", "", "The itemId of the Marketplace item")
+	return
+}
+
+func (o *CLIOptions) AddMarketplaceItemObjectIDFlag(flags *pflag.FlagSet) (flagName string) {
+	flagName = "object-id"
+	flags.StringVar(&o.MarketplaceItemObjectID, flagName, "", "The _id of the Marketplace item")
+	return
+}
+
+func (o *CLIOptions) AddMarketplaceVersionFlag(flags *pflag.FlagSet) (flagName string) {
+	flagName = "version"
+	flags.StringVarP(&o.MarketplaceItemVersion, flagName, "v", "", "The version of the Marketplace item")
+	return
 }
 
 func (o *CLIOptions) AddCreateJobFlags(flags *pflag.FlagSet) {

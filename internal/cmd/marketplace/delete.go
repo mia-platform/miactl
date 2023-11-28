@@ -17,25 +17,42 @@ package marketplace
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/spf13/cobra"
 )
 
 const (
-	deleteMarketplaceEndpoint = "/api/backend/marketplace/tenants/%s/resources/%s"
+	// deleteItemEndpointTemplate formatting template for item deletion by objectID backend endpoint; specify tenantID, objectID
+	deleteItemEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s"
+	// deleteItemByTupleEndpointTemplate formatting template for item deletion by the tuple itemID versionID endpoint; specify companyID, itemID, version
+	deleteItemByTupleEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions/%s"
+)
+
+var (
+	errServerDeleteItem     = errors.New("server error while deleting item")
+	errUnexpectedDeleteItem = errors.New("unexpected response while deleting item")
 )
 
 // DeleteCmd return a new cobra command for deleting a single marketplace resource
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:        "delete resource-id",
-		Short:      "Delete Marketplace item",
-		Long:       "Delete a single Marketplace item by its ID",
-		Args:       cobra.ExactArgs(1),
+		Use:   "delete { -i item-id -v version } | --object-id object-id [flags]...",
+		Short: "Delete a Marketplace item",
+		Long: `Delete a single Marketplace item
+
+You need to specify either:
+- the itemId and the version, respectively  (recommended)
+- the ObjectID of the item with the flag object-id
+
+Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
+Otherwise, it is preferable to pass the tuple itemId-version.
+`,
 		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
@@ -43,41 +60,82 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			resourceID := args[0]
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {
 				return fmt.Errorf("missing company id, please set one with the flag or context")
 			}
 
-			err = deleteMarketplaceResource(client, companyID, resourceID)
-			cobra.CheckErr(err)
+			if options.MarketplaceItemObjectID != "" {
+				err = deleteItemByObjectID(cmd.Context(), client, companyID, options.MarketplaceItemObjectID)
+				cobra.CheckErr(err)
+				return nil
+			}
 
-			return nil
+			if options.MarketplaceItemVersion != "" && options.MarketplaceItemID != "" {
+				err = deleteItemByItemIDAndVersion(
+					cmd.Context(),
+					client,
+					companyID,
+					options.MarketplaceItemID,
+					options.MarketplaceItemVersion,
+				)
+				cobra.CheckErr(err)
+				return nil
+			}
+
+			return errors.New("invalid input parameters")
 		},
 	}
+
+	itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
+	versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
+	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
+
+	cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
+	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, itemIDFlagName)
+	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, versionFlagName)
+	cmd.MarkFlagsOneRequired(itemObjectIDFlagName, itemIDFlagName, versionFlagName)
 
 	return cmd
 }
 
-func deleteMarketplaceResource(client *client.APIClient, companyID string, resourceID string) error {
+func deleteItemByObjectID(ctx context.Context, client *client.APIClient, companyID, objectID string) error {
 	resp, err := client.
 		Delete().
-		APIPath(fmt.Sprintf(deleteMarketplaceEndpoint, companyID, resourceID)).
-		Do(context.Background())
+		APIPath(fmt.Sprintf(deleteItemEndpointTemplate, companyID, objectID)).
+		Do(ctx)
 
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
+	return checkDeleteResponseErrors(resp)
+}
+
+func deleteItemByItemIDAndVersion(ctx context.Context, client *client.APIClient, companyID, itemID, version string) error {
+	resp, err := client.
+		Delete().
+		APIPath(fmt.Sprintf(deleteItemByTupleEndpointTemplate, companyID, itemID, version)).
+		Do(ctx)
+
+	if err != nil {
+		return fmt.Errorf("error executing request: %w", err)
+	}
+
+	return checkDeleteResponseErrors(resp)
+}
+
+func checkDeleteResponseErrors(resp *client.Response) error {
 	switch resp.StatusCode() {
 	case http.StatusNoContent:
-		fmt.Println("resource deleted successfully")
+		fmt.Println("item deleted successfully")
 		return nil
 	case http.StatusNotFound:
-		return fmt.Errorf("resource not found")
-	case http.StatusInternalServerError:
-		return fmt.Errorf("error while deleting resource")
+		return marketplace.ErrItemNotFound
 	default:
-		return fmt.Errorf("unexpected server response: %d", resp.StatusCode())
+		if resp.StatusCode() >= http.StatusInternalServerError {
+			return errServerDeleteItem
+		}
+		return fmt.Errorf("%w: %d", errUnexpectedDeleteItem, resp.StatusCode())
 	}
 }

@@ -21,7 +21,10 @@ import (
 	"github.com/mia-platform/miactl/internal/encoding"
 )
 
-var ErrVersionNameNotAString = errors.New(`the field "version.name" must be a string`)
+var (
+	ErrItemNotFound          = errors.New("item not found")
+	ErrVersionNameNotAString = errors.New(`the field "version.name" must be a string`)
+)
 
 // Item is a Marketplace item
 // we use a map[string]interface{} to represent the item
