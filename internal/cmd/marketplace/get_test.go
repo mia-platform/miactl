@@ -16,7 +16,6 @@
 package marketplace
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -30,7 +29,10 @@ import (
 )
 
 const (
-	mockObjectID        = "resource-id"
+	mockObjectID        = "object-id"
+	mockCompanyID       = "some-company-id"
+	mockItemID          = "some-item-id"
+	mockVersion         = "1.0.0"
 	validBodyJSONString = `{
 		"_id":"1234567890abcdefg",
 		"name":"RocketScience 101: Hello Universe Example",
@@ -93,6 +95,7 @@ func getItemByIDMockServer(t *testing.T, validResponse bool, statusCode int) *ht
 
 		w.WriteHeader(statusCode)
 		if statusCode == http.StatusNotFound || statusCode == http.StatusInternalServerError {
+			w.Write([]byte(`{"message":"some error"}`))
 			return
 		}
 		if validResponse {
@@ -107,12 +110,14 @@ func getItemByTupleMockServer(
 	t *testing.T,
 	validResponse bool,
 	statusCode int,
-	itemID, version string,
+	calledCount *int,
 ) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		*calledCount++
 		require.Equal(t,
-			fmt.Sprintf(getItemByItemIDAndVersionEndpointTemplate, mockObjectID, itemID, version),
+			fmt.Sprintf(
+				getItemByItemIDAndVersionEndpointTemplate, mockCompanyID, mockItemID, mockVersion),
 			r.RequestURI,
 		)
 		require.Equal(t, http.MethodGet, r.Method)
@@ -125,7 +130,7 @@ func getItemByTupleMockServer(
 			w.Write([]byte(validBodyJSONString))
 			return
 		}
-		w.Write([]byte("invalid json"))
+		w.Write([]byte("invalid response"))
 	}))
 }
 
@@ -135,9 +140,9 @@ func TestGetItemEncodedByObjectId(t *testing.T) {
 	}
 
 	testCases := map[string]struct {
-		server       *httptest.Server
-		outputFormat string
-		expectedErr  error
+		server        *httptest.Server
+		outputFormat  string
+		isExpectedErr bool
 	}{
 		"valid get response - json": {
 			server:       getItemByIDMockServer(t, true, http.StatusOK),
@@ -148,20 +153,20 @@ func TestGetItemEncodedByObjectId(t *testing.T) {
 			outputFormat: encoding.YAML,
 		},
 		"invalid body response": {
-			server:       getItemByIDMockServer(t, false, http.StatusOK),
-			expectedErr:  errors.New("some error"),
-			outputFormat: encoding.JSON,
+			server:        getItemByIDMockServer(t, false, http.StatusOK),
+			isExpectedErr: true,
+			outputFormat:  encoding.JSON,
 		},
 		"resource not found": {
 			server: getItemByIDMockServer(t, true, http.StatusNotFound),
 
-			expectedErr:  errors.New("some error"),
-			outputFormat: encoding.JSON,
+			isExpectedErr: true,
+			outputFormat:  encoding.JSON,
 		},
 		"internal server error": {
-			server:       getItemByIDMockServer(t, true, http.StatusInternalServerError),
-			outputFormat: encoding.JSON,
-			expectedErr:  errors.New("some error"),
+			server:        getItemByIDMockServer(t, true, http.StatusInternalServerError),
+			outputFormat:  encoding.JSON,
+			isExpectedErr: true,
 		},
 	}
 
@@ -176,11 +181,145 @@ func TestGetItemEncodedByObjectId(t *testing.T) {
 				mockObjectID,
 				"",
 				"",
+				"",
 				testCase.outputFormat,
 			)
-			if testCase.expectedErr != nil {
+			if testCase.isExpectedErr {
 				require.Zero(t, found)
-				require.ErrorIs(t, testCase.expectedErr, err)
+				require.Error(t, err)
+			} else {
+				if testCase.outputFormat == encoding.JSON {
+					require.JSONEq(t, validBodyJSONString, found)
+				} else {
+					foundMap := map[string]interface{}{}
+					err := yaml.Unmarshal([]byte(found), &foundMap)
+					require.NoError(t, err)
+
+					expectedMap := map[string]interface{}{}
+					err = yaml.Unmarshal([]byte(found), &expectedMap)
+					require.NoError(t, err)
+
+					require.Equal(t, expectedMap, foundMap)
+				}
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestGetItemEncodedByTuple(t *testing.T) {
+	clientConfig := &client.Config{
+		Transport: http.DefaultTransport,
+	}
+
+	testCases := map[string]struct {
+		invalidResponse bool
+		statusCode      int
+
+		outputFormat string
+		companyID    string
+		itemID       string
+		version      string
+
+		expectError         bool
+		expectedCalledCount int
+	}{
+		"valid get response - json": {
+			outputFormat:        encoding.JSON,
+			statusCode:          http.StatusOK,
+			expectedCalledCount: 1,
+
+			companyID: mockCompanyID,
+			itemID:    mockItemID,
+			version:   mockVersion,
+		},
+		"valid get response - yaml": {
+			statusCode:          http.StatusOK,
+			outputFormat:        encoding.YAML,
+			expectedCalledCount: 1,
+
+			companyID: mockCompanyID,
+			itemID:    mockItemID,
+			version:   mockVersion,
+		},
+		"invalid body response": {
+			statusCode:          http.StatusOK,
+			expectError:         true,
+			invalidResponse:     true,
+			outputFormat:        encoding.JSON,
+			expectedCalledCount: 1,
+
+			companyID: mockCompanyID,
+			itemID:    mockItemID,
+			version:   mockVersion,
+		},
+		"resource not found": {
+			statusCode:          http.StatusNotFound,
+			expectError:         true,
+			outputFormat:        encoding.JSON,
+			expectedCalledCount: 1,
+
+			companyID: mockCompanyID,
+			itemID:    mockItemID,
+			version:   mockVersion,
+		},
+
+		"internal server error": {
+			statusCode:          http.StatusInternalServerError,
+			outputFormat:        encoding.JSON,
+			expectError:         true,
+			expectedCalledCount: 1,
+
+			companyID: mockCompanyID,
+			itemID:    mockItemID,
+			version:   mockVersion,
+		},
+		"should throw error and not call endpoint with missing company id": {
+			statusCode:   http.StatusOK,
+			outputFormat: encoding.JSON,
+
+			expectError:         true,
+			expectedCalledCount: 0,
+
+			companyID: "",
+			itemID:    mockItemID,
+			version:   mockVersion,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			calledCount := new(int)
+			*calledCount = 0
+			server := getItemByTupleMockServer(
+				t,
+				!testCase.invalidResponse,
+				testCase.statusCode,
+				calledCount,
+			)
+			defer server.Close()
+			clientConfig.Host = server.URL
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+			found, err := getItemEncodedWithFormat(
+				client,
+				"",
+				testCase.companyID,
+				testCase.itemID,
+				testCase.version,
+				testCase.outputFormat,
+			)
+
+			require.Equal(
+				t,
+				testCase.expectedCalledCount,
+				*calledCount,
+				"unexpected number of calls to endpoint",
+			)
+
+			if testCase.expectError {
+				require.Zero(t, found)
+				require.Error(t, err)
 			} else {
 				if testCase.outputFormat == encoding.JSON {
 					require.JSONEq(t, validBodyJSONString, found)
