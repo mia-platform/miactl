@@ -81,40 +81,17 @@ The companyID must be passed via the flag company-id when not set in the context
 
 	return cmd
 }
-
 func getItemByObjectID(client *client.APIClient, objectID string) (*marketplace.Item, error) {
-	resp, err := client.
-		Get().
-		APIPath(fmt.Sprintf(getItemByObjectIDEndpointTemplate, objectID)).
-		Do(context.Background())
-
-	if err != nil {
-		return nil, fmt.Errorf("error executing request: %w", err)
-	}
-
-	if err := resp.Error(); err != nil {
-		return nil, err
-	}
-
-	var marketplaceItem *marketplace.Item
-	if err := resp.ParseResponse(&marketplaceItem); err != nil {
-		return nil, fmt.Errorf("error parsing response body: %w", err)
-	}
-
-	if marketplaceItem == nil {
-		return nil, fmt.Errorf("no marketplace item returned in the response")
-	}
-
-	return marketplaceItem, nil
+	return performGetItemRequest(client, fmt.Sprintf(getItemByObjectIDEndpointTemplate, objectID))
 }
 
 func getItemByItemIDAndVersion(client *client.APIClient, companyID, itemID, version string) (*marketplace.Item, error) {
-	resp, err := client.
-		Get().
-		APIPath(
-			fmt.Sprintf(getItemByItemIDAndVersionEndpointTemplate, companyID, itemID, version),
-		).
-		Do(context.Background())
+	endpoint := fmt.Sprintf(getItemByItemIDAndVersionEndpointTemplate, companyID, itemID, version)
+	return performGetItemRequest(client, endpoint)
+}
+
+func performGetItemRequest(client *client.APIClient, endpoint string) (*marketplace.Item, error) {
+	resp, err := client.Get().APIPath(endpoint).Do(context.Background())
 
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
