@@ -61,6 +61,14 @@ var resourcesAvailable = []string{
 	ServicesResourceType,
 }
 
+var autocompletableResources = []string{
+	CronJobsResourceType,
+	DeploymentsResourceType,
+	JobsResourceType,
+	PodsResourceType,
+	ServicesResourceType,
+}
+
 func ListCommand(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list RESOURCE-TYPE",
@@ -93,7 +101,7 @@ func resourcesCompletions(args []string, toComplete string) []string {
 		return resources
 	}
 
-	for _, resource := range resourcesAvailable {
+	for _, resource := range autocompletableResources {
 		if strings.HasPrefix(resource, toComplete) {
 			resources = append(resources, resource)
 		}
