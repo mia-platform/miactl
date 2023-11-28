@@ -37,7 +37,17 @@ func Command(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "logs resource-query",
 		Short: "Show logs related to a runtime resource using a regex query",
-		Long:  "Show logs related to a runtime resource using a regex query.",
+		Long: `Show logs related to a runtime resource using a regex query.
+
+You can write any regex compatible with RE2 excluding -C. The regex than will
+be used to filter down the list of pods available in the current context and
+then the logs of all their containers will be displayed.`,
+
+		Example: `# Get all logs for pods that begin with api-gateway
+miactl runtime logs api-gateway
+
+# Get all logs for pods named exactly job-name
+miactl runtime logs "^job-name$"`,
 
 		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {

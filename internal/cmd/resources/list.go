@@ -95,8 +95,8 @@ func ListCommand(o *clioptions.CLIOptions) *cobra.Command {
 		Short: "List Mia-Platform Console runtime resources",
 		Long: `List Mia-Platform Console runtime resources.
 
-A project on Mia-Platform Console once deployed can have one or more resource of different kinds associcated with one
-or more of its environments.
+A project on Mia-Platform Console once deployed can have one or more resource
+of different kinds associcated with one or more of its environments.
 
 Use "miactl runtime api-resources" for a complete list of currently supported resources.`,
 		Args: cobra.ExactArgs(1),

@@ -297,7 +297,11 @@ Available flags for the command:
 
 ### logs
 
-The `runtime logs` subcommand allows you to fetch or stream logs for a given regex of services
+The `runtime logs` subcommand allows you to fetch or stream logs of running pods in the current context using a
+regex query.
+
+You can write any regex compatible with RE2 excluding -C. The regex than will be used to filter down the list of
+pods available in the current context and then the logs of all their containers will be displayed.
 
 Usage:
 
