@@ -61,14 +61,44 @@ var resourcesAvailable = []string{
 	ServicesResourceType,
 }
 
+var autocompletableResources = []string{
+	CronJobsResourceType,
+	DeploymentsResourceType,
+	JobsResourceType,
+	PodsResourceType,
+	ServicesResourceType,
+}
+
+func APIResourcesCommand(_ *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "api-resources",
+		Short: "List Mia-Platform Console supported runtime resources",
+		Long:  "List Mia-Platform Console supported runtime resources.",
+
+		Run: func(cmd *cobra.Command, args []string) {
+			writer := cmd.OutOrStdout()
+			fmt.Fprint(writer, "NAME")
+			fmt.Fprintln(writer)
+			for _, resource := range autocompletableResources {
+				fmt.Fprint(writer, resource)
+				fmt.Fprintln(writer)
+			}
+		},
+	}
+
+	return cmd
+}
+
 func ListCommand(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list RESOURCE-TYPE",
 		Short: "List Mia-Platform Console runtime resources",
 		Long: `List Mia-Platform Console runtime resources.
 
-A project on Mia-Platform Console once deployed can have one or more resource of different kinds associcated with one
-or more of its environments.`,
+A project on Mia-Platform Console once deployed can have one or more resource
+of different kinds associcated with one or more of its environments.
+
+Use "miactl runtime api-resources" for a complete list of currently supported resources.`,
 		Args: cobra.ExactArgs(1),
 		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return resourcesCompletions(args, toComplete), cobra.ShellCompDirectiveNoFileComp
@@ -80,6 +110,11 @@ or more of its environments.`,
 			cobra.CheckErr(err)
 			return printList(client, restConfig.ProjectID, args[0], restConfig.Environment)
 		},
+		Example: `# List all pods in current context
+miactl runtime list pods
+
+# List all service in 'development' environment
+miactl runtime list services --environment development`,
 	}
 
 	o.AddEnvironmentFlags(cmd.Flags())
@@ -93,7 +128,7 @@ func resourcesCompletions(args []string, toComplete string) []string {
 		return resources
 	}
 
-	for _, resource := range resourcesAvailable {
+	for _, resource := range autocompletableResources {
 		if strings.HasPrefix(resource, toComplete) {
 			resources = append(resources, resource)
 		}
