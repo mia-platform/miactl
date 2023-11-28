@@ -71,12 +71,12 @@ Otherwise, it is preferable to pass the tuple itemId-version.
 				return nil
 			}
 
-			if options.MarketplaceItemVersion != "" && options.MarketplaceItemItemID != "" {
+			if options.MarketplaceItemVersion != "" && options.MarketplaceItemID != "" {
 				err = deleteItemByItemIDAndVersion(
 					cmd.Context(),
 					client,
 					companyID,
-					options.MarketplaceItemItemID,
+					options.MarketplaceItemID,
 					options.MarketplaceItemVersion,
 				)
 				cobra.CheckErr(err)
@@ -87,7 +87,7 @@ Otherwise, it is preferable to pass the tuple itemId-version.
 		},
 	}
 
-	itemIDFlagName := options.AddMarketplaceItemItemIDFlag(cmd.Flags())
+	itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
 	versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
 	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
 

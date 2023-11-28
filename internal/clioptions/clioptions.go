@@ -53,8 +53,8 @@ type CLIOptions struct {
 	OutputPath         string
 
 	MarketplaceResourcePaths []string
-	// MarketplaceItemItemID is the itemId field of a Marketplace item
-	MarketplaceItemItemID string
+	// MarketplaceItemID is the itemId field of a Marketplace item
+	MarketplaceItemID string
 	// MarketplaceItemVersion is the version field of a Marketplace item
 	MarketplaceItemVersion string
 	// MarketplaceItemObjectID is the _id of a Marketplace item
@@ -141,9 +141,9 @@ func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 	}
 }
 
-func (o *CLIOptions) AddMarketplaceItemItemIDFlag(flags *pflag.FlagSet) (flagName string) {
+func (o *CLIOptions) AddMarketplaceItemIDFlag(flags *pflag.FlagSet) (flagName string) {
 	flagName = "item-id"
-	flags.StringVarP(&o.MarketplaceItemItemID, flagName, "i", "", "The itemId of the Marketplace item")
+	flags.StringVarP(&o.MarketplaceItemID, flagName, "i", "", "The itemId of the Marketplace item")
 	return
 }
 
