@@ -21,7 +21,7 @@ jobs:
       with:
         show-progress: false
     - name: Dependency Review
-      uses: actions/dependency-review-action@6c5ccdad469c9f8a2996bfecaec55a631a347034 # v3.1.0
+      uses: actions/dependency-review-action@01bc87099ba56df1e897b6874784491ea6309bc4 # v3.1.4
       with:
         fail-on-scope: runtime,development,unknown
         comment-summary-in-pr: on-failure

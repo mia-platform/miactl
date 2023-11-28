@@ -16,8 +16,8 @@ on:
   - cron: 0 5 * * 1 # Run every monday at 5 UTC
 
 env:
-  GO_VERSION: 1.21.3
-  GORELEASER_VERSION: v1.21.2
+  GO_VERSION: 1.21.4
+  GORELEASER_VERSION: v1.22.1
 
 jobs:
   codeql:
@@ -40,10 +40,10 @@ jobs:
         version: ${{ env.GORELEASER_VERSION }}
         install-only: true
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@74483a38d39275f33fcff5f35b679b5ca4a26a99 # v2.22.5
+      uses: github/codeql-action/init@407ffafae6a767df3e0230c3df91b6443ae8df75 # v2.22.8
       with:
         languages: go
     - name: Run Build
       run: make build
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@74483a38d39275f33fcff5f35b679b5ca4a26a99 # v2.22.5
+      uses: github/codeql-action/analyze@407ffafae6a767df3e0230c3df91b6443ae8df75 # v2.22.8

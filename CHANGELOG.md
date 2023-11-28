@@ -12,11 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - marketplace apply: add version to multipart request metadata if present in the item
 - add command `miactl marketplace list-versions`
 
-### Fixed
+### Changed
 
 - help text of version command
 - marketplace apply: consider both itemId and version for duplicate check
 - marketplace apply: silently ignore files with invalid extension rather than throwing error
+- update go version to 1.21.4
+- update oauth2 to v0.15.0
+- update exp to v0.0.0-20231127185646-65229373498e
 
 ### Updated
 
