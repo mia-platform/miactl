@@ -52,8 +52,6 @@ You need to specify either:
 
 Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
 Otherwise, it is preferable to pass the tuple companyId-itemId-version.
-
-The companyID must be passed via the flag company-id when not set in the context.
 `,
 		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, args []string) error {

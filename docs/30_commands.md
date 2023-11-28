@@ -339,6 +339,7 @@ You need to specify either:
 
 Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
 Otherwise, it is preferable to pass the tuple companyId-itemId-version.
+
 ```bash
 miactl marketplace get { --item-id item-id --version version } | --object-id object-id [FLAGS]...
 ```
@@ -357,8 +358,6 @@ You need to specify either:
 
 Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
 Otherwise, it is preferable to pass the tuple companyId-itemId-version.
-
-The companyID must be passed via the flag company-id when not set in the context.
 
 ```
 miactl marketplace delete { --item-id item-id --version version } | --object-id object-id [flags]...
