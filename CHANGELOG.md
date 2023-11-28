@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Updated
 
 - modified `miactl marketplace delete` command to accept either the `objectId` or a `companyId`-`itemId`-`version` tuple that identifies the item to be deleted.
-- modified `miactl marketplace get` command to accept either the `objectId` or a `companyId`-`itemId`-`version` tuple that identifies the item to be deleted.
+- modified `miactl marketplace get` command to accept either the `objectId` or a `companyId`-`itemId`-`version` tuple that identifies the item to be retrieved.
 
 ### BREAKING
 
