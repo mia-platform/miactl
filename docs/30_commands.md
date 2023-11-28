@@ -334,7 +334,7 @@ Get a Marketplace item
 Get a single Marketplace item
 
 You need to specify either:
-- the itemId and the version, via the respective flags (recommended)
+- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 - the ObjectID of the item with the flag object-id
 
 Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
@@ -355,7 +355,7 @@ Delete a Marketplace item
 Delete a single Marketplace item
 
 You need to specify either:
-- the itemId and the version, via the respective flags (recommended)
+- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 - the ObjectID of the item with the flag object-id
 
 Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
