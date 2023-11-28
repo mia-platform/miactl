@@ -263,7 +263,6 @@ func TestGetItemEncodedByTuple(t *testing.T) {
 			itemID:    mockItemID,
 			version:   mockVersion,
 		},
-
 		"internal server error": {
 			statusCode:          http.StatusInternalServerError,
 			outputFormat:        encoding.JSON,
