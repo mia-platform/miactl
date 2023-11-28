@@ -331,10 +331,19 @@ Get a Marketplace item
 
 #### Synopsis
 
-Get a single Marketplace item by its ID
+Get a single Marketplace item
 
-```
-miactl marketplace get resource-id [flags]
+You need to specify either:
+- the itemId and the version, via the respective flags (recommended)
+- the ObjectID of the item with the flag object-id
+
+Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
+Otherwise, it is preferable to pass the tuple companyId-itemId-version.
+
+The companyID must be passed via the flag company-id when not set in the context.
+
+```bash
+miactl marketplace get { --item-id item-id --version version } | --object-id object-id [FLAGS]...
 ```
 
 ### delete
@@ -346,14 +355,16 @@ Delete a Marketplace item
 Delete a single Marketplace item
 
 You need to specify either:
-- the itemId and the version, respectively  (recommended)
+- the itemId and the version, via the respective flags (recommended)
 - the ObjectID of the item with the flag object-id
 
 Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
-Otherwise, it is preferable to pass the tuple itemId-version.
+Otherwise, it is preferable to pass the tuple companyId-itemId-version.
+
+The companyID must be passed via the flag company-id when not set in the context.
 
 ```
-miactl marketplace delete --item-id some-item --version '1.0.0'
+miactl marketplace delete { --item-id item-id --version version } | --object-id object-id [flags]...
 ```
 
 ### apply

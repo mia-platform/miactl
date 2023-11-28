@@ -23,6 +23,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/resources"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
@@ -53,7 +54,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 func getMarketplaceItemsByCompanyID(client *client.APIClient, companyID string) ([]*resources.MarketplaceItem, error) {
 	if len(companyID) == 0 {
-		return nil, fmt.Errorf("missing company id, please set one with the flag or context")
+		return nil, marketplace.ErrMissingCompanyID
 	}
 
 	resp, err := client.

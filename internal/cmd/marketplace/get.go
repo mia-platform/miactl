@@ -39,10 +39,13 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Long: `Get a single Marketplace item
 
 You need to specify either:
-- the itemId and the version, respectively  (recommended)
+- the itemId and the version, via the respective flags (recommended)
 - the ObjectID of the item with the flag object-id
+
 Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
-Otherwise, it is preferable to pass the tuple itemId-version.
+Otherwise, it is preferable to pass the tuple companyId-itemId-version.
+
+The companyID must be passed via the flag company-id when not set in the context.
 `,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
