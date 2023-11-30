@@ -18,6 +18,7 @@ builds:
   - -w
   - -X {{ .Env.VERSION_MODULE_NAME }}.Version={{ .Version }}
   - -X {{ .Env.VERSION_MODULE_NAME }}.BuildDate={{ .Date }}
+  - -X github.com/mia-platform/miactl/internal/util.BuildAlpha={{ .Env.BUILD_ALPHA }}
   goos:
   - linux
   - darwin

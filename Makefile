@@ -109,3 +109,9 @@ ci: test-coverage
 # ci: test-integration-coverage
 
 ### Put your custom import, define or goals under here ###
+
+BUILD_ALPHA?=false
+
+.PHONY: build-alpha
+build-alpha:
+	BUILD_ALPHA=true $(MAKE) build
