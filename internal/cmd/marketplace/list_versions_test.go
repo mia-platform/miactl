@@ -122,7 +122,7 @@ func TestGetItemVersions(t *testing.T) {
 			testName:    "should return error on missing companyID",
 			companyID:   "",
 			itemID:      "some-item",
-			expectedErr: ErrMissingCompanyID,
+			expectedErr: marketplace.ErrMissingCompanyID,
 		},
 	}
 

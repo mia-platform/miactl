@@ -109,7 +109,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {
-				return fmt.Errorf("missing company id, please set one with the flag or context")
+				return marketplace.ErrMissingCompanyID
 			}
 
 			outcome, err := applyItemsFromPaths(

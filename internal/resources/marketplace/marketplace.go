@@ -24,6 +24,7 @@ import (
 var (
 	ErrItemNotFound          = errors.New("item not found")
 	ErrVersionNameNotAString = errors.New(`the field "version.name" must be a string`)
+	ErrMissingCompanyID      = errors.New("missing company id, please set one with the flag company-id or in the context")
 )
 
 // Item is a Marketplace item
@@ -69,7 +70,7 @@ type Release struct {
 	Description string `json:"description"`
 }
 
-func (i *Item) MarshalItem(encodingFormat string) ([]byte, error) {
+func (i *Item) Marshal(encodingFormat string) ([]byte, error) {
 	return encoding.MarshalData(i, encodingFormat, encoding.MarshalOptions{Indent: true})
 }
 

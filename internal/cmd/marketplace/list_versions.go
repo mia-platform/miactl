@@ -33,7 +33,6 @@ const listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/re
 
 var (
 	ErrGenericServerError = errors.New("server error while fetching item versions")
-	ErrMissingCompanyID   = errors.New("companyID is required")
 )
 
 // ListVersionCmd return a new cobra command for listing marketplace item versions
@@ -76,7 +75,7 @@ This command is in ALPHA state. This means that it can be subject to breaking ch
 
 func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]marketplace.Release, error) {
 	if companyID == "" {
-		return nil, ErrMissingCompanyID
+		return nil, marketplace.ErrMissingCompanyID
 	}
 	resp, err := client.
 		Get().

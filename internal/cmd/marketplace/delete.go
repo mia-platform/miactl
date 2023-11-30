@@ -42,16 +42,16 @@ var (
 // DeleteCmd return a new cobra command for deleting a single marketplace resource
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete { -i item-id -v version } | --object-id object-id [flags]...",
+		Use:   "delete { --item-id item-id --version version } | --object-id object-id [flags]...",
 		Short: "Delete a Marketplace item",
 		Long: `Delete a single Marketplace item
 
 You need to specify either:
-- the itemId and the version, respectively  (recommended)
+- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 - the ObjectID of the item with the flag object-id
 
 Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
-Otherwise, it is preferable to pass the tuple itemId-version.
+Otherwise, it is preferable to pass the tuple companyId-itemId-version.
 `,
 		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -62,7 +62,7 @@ Otherwise, it is preferable to pass the tuple itemId-version.
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {
-				return fmt.Errorf("missing company id, please set one with the flag or context")
+				return marketplace.ErrMissingCompanyID
 			}
 
 			if options.MarketplaceItemObjectID != "" {

@@ -63,6 +63,9 @@ type CLIOptions struct {
 	FromCronJob string
 
 	FollowLogs bool
+
+	// OutputFormat describes the output format of some commands. Can be json or yaml.
+	OutputFormat string
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -165,6 +168,10 @@ func (o *CLIOptions) AddCreateJobFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddLogsFlags(flags *pflag.FlagSet) {
 	flags.BoolVarP(&o.FollowLogs, "follow", "f", false, "specify if the logs should be streamed")
+}
+
+func (o *CLIOptions) AddOutputFormatFlag(flags *pflag.FlagSet, defaultVal string) {
+	flags.StringVarP(&o.OutputFormat, "output", "o", defaultVal, "Output format. Allowed values: json, yaml")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {

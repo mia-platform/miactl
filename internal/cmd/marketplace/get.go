@@ -21,58 +21,75 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/spf13/cobra"
 )
 
 const (
-	getMarketplaceEndpoint = "/api/backend/marketplace/%s"
+	getItemByObjectIDEndpointTemplate         = "/api/backend/marketplace/%s"
+	getItemByItemIDAndVersionEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions/%s"
 )
 
 // GetCmd return a new cobra command for getting a single marketplace resource
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "get resource-id",
+		Use:   "get { --item-id item-id --version version } | --object-id object-id [FLAGS]...",
 		Short: "Get Marketplace item",
-		Long:  `Get a single Marketplace item by its ID`,
-		Args:  cobra.MaximumNArgs(1),
+		Long: `Get a single Marketplace item
+
+You need to specify either:
+- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
+- the ObjectID of the item with the flag object-id
+
+Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
+Otherwise, it is preferable to pass the tuple companyId-itemId-version.
+`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			var id string
-			if len(args) > 0 {
-				id = args[0]
-			}
-
-			outputFormat, err := cmd.Flags().GetString("output")
-			if err != nil {
-				return err
-			}
-
-			err = getMarketplaceResource(client, id, outputFormat)
+			serializedItem, err := getItemEncodedWithFormat(
+				client,
+				options.MarketplaceItemObjectID,
+				restConfig.CompanyID,
+				options.MarketplaceItemID,
+				options.MarketplaceItemVersion,
+				options.OutputFormat,
+			)
 			cobra.CheckErr(err)
 
+			fmt.Println(serializedItem)
 			return nil
 		},
 	}
 
-	cmd.Flags().StringP("output", "o", "json", "Output format. Allowed values: json, yaml")
+	options.AddOutputFormatFlag(cmd.Flags(), encoding.JSON)
+
+	itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
+	versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
+	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
+
+	cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
+	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, itemIDFlagName)
+	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, versionFlagName)
+	cmd.MarkFlagsOneRequired(itemObjectIDFlagName, itemIDFlagName, versionFlagName)
 
 	return cmd
 }
+func getItemByObjectID(client *client.APIClient, objectID string) (*marketplace.Item, error) {
+	return performGetItemRequest(client, fmt.Sprintf(getItemByObjectIDEndpointTemplate, objectID))
+}
 
-func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*marketplace.Item, error) {
-	if len(resourceID) == 0 {
-		return nil, fmt.Errorf("missing resource id, please provide one")
-	}
+func getItemByItemIDAndVersion(client *client.APIClient, companyID, itemID, version string) (*marketplace.Item, error) {
+	endpoint := fmt.Sprintf(getItemByItemIDAndVersionEndpointTemplate, companyID, itemID, version)
+	return performGetItemRequest(client, endpoint)
+}
 
-	resp, err := client.
-		Get().
-		APIPath(fmt.Sprintf(getMarketplaceEndpoint, resourceID)).
-		Do(context.Background())
+func performGetItemRequest(client *client.APIClient, endpoint string) (*marketplace.Item, error) {
+	resp, err := client.Get().APIPath(endpoint).Do(context.Background())
 
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
@@ -94,19 +111,26 @@ func getMarketplaceItemByID(client *client.APIClient, resourceID string) (*marke
 	return marketplaceItem, nil
 }
 
-// getMarketplaceResource retrieves the marketplace items for a given resource ID
-func getMarketplaceResource(client *client.APIClient, resourceID string, outputFormat string) error {
-	marketplaceItem, err := getMarketplaceItemByID(client, resourceID)
+// getItemEncodedWithFormat retrieves the marketplace item corresponding to the specified identifier, serialized with the specified outputFormat
+func getItemEncodedWithFormat(client *client.APIClient, objectID, companyID, itemID, version, outputFormat string) (string, error) {
+	var item *marketplace.Item
+	var err error
+	if objectID != "" {
+		item, err = getItemByObjectID(client, objectID)
+	} else {
+		if companyID == "" {
+			return "", marketplace.ErrMissingCompanyID
+		}
+		item, err = getItemByItemIDAndVersion(client, companyID, itemID, version)
+	}
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	data, err := marketplaceItem.MarshalItem(outputFormat)
+	data, err := item.Marshal(outputFormat)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	fmt.Println(string(data))
-
-	return nil
+	return string(data), nil
 }
