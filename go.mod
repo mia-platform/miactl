@@ -4,6 +4,7 @@ go 1.21.4
 
 require (
 	dario.cat/mergo v1.0.0
+	github.com/go-logr/logr v1.3.0
 	github.com/google/uuid v1.4.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.8.0
