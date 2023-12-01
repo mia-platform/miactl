@@ -19,6 +19,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/marketplace"
 	marketplace_apply "github.com/mia-platform/miactl/internal/cmd/marketplace/apply"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +40,11 @@ func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd.AddCommand(marketplace.GetCmd(options))
 	cmd.AddCommand(marketplace.DeleteCmd(options))
 	cmd.AddCommand(marketplace_apply.ApplyCmd(options))
-	cmd.AddCommand(marketplace.ListVersionCmd(options))
+
+	// ALPHA commands
+	if util.AlphaCommandsEnabled() {
+		cmd.AddCommand(marketplace.ListVersionCmd(options))
+	}
 
 	return cmd
 }
