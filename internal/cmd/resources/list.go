@@ -108,7 +108,7 @@ Use "miactl runtime api-resources" for a complete list of currently supported re
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return printList(client, restConfig.ProjectID, args[0], restConfig.Environment)
+			return printList(cmd.Context(), client, restConfig.ProjectID, args[0], restConfig.Environment)
 		},
 		Example: `# List all pods in current context
 miactl runtime list pods
@@ -137,7 +137,7 @@ func resourcesCompletions(args []string, toComplete string) []string {
 	return resources
 }
 
-func printList(client *client.APIClient, projectID, resourceType, environment string) error {
+func printList(ctx context.Context, client *client.APIClient, projectID, resourceType, environment string) error {
 	if projectID == "" {
 		return fmt.Errorf("missing project id, please set one with the flag or context")
 	}
@@ -157,7 +157,7 @@ func printList(client *client.APIClient, projectID, resourceType, environment st
 	resp, err := client.
 		Get().
 		APIPath(fmt.Sprintf(listEndpointTemplate, projectID, environment, resourceType)).
-		Do(context.Background())
+		Do(ctx)
 
 	if err != nil {
 		return err

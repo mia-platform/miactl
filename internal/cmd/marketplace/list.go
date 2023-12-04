@@ -44,7 +44,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			list, err := buildMarketplaceItemsList(client, restConfig.CompanyID)
+			list, err := buildMarketplaceItemsList(cmd.Context(), client, restConfig.CompanyID)
 			cobra.CheckErr(err)
 
 			fmt.Println(list)
@@ -52,7 +52,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	}
 }
 
-func getMarketplaceItemsByCompanyID(client *client.APIClient, companyID string) ([]*resources.MarketplaceItem, error) {
+func getMarketplaceItemsByCompanyID(ctx context.Context, client *client.APIClient, companyID string) ([]*resources.MarketplaceItem, error) {
 	if len(companyID) == 0 {
 		return nil, marketplace.ErrMissingCompanyID
 	}
@@ -61,7 +61,7 @@ func getMarketplaceItemsByCompanyID(client *client.APIClient, companyID string) 
 		Get().
 		SetParam("tenantId", companyID).
 		APIPath(listMarketplaceEndpoint).
-		Do(context.Background())
+		Do(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
@@ -81,8 +81,8 @@ func getMarketplaceItemsByCompanyID(client *client.APIClient, companyID string) 
 
 // buildMarketplaceItemsList retrieves the marketplace items belonging to the current context
 // and returns a string with a human-readable list
-func buildMarketplaceItemsList(client *client.APIClient, companyID string) (string, error) {
-	marketplaceItems, err := getMarketplaceItemsByCompanyID(client, companyID)
+func buildMarketplaceItemsList(ctx context.Context, client *client.APIClient, companyID string) (string, error) {
+	marketplaceItems, err := getMarketplaceItemsByCompanyID(ctx, client, companyID)
 	if err != nil {
 		return "", err
 	}

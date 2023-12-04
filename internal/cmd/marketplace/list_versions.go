@@ -51,6 +51,7 @@ This command is in ALPHA state. This means that it can be subject to breaking ch
 			cobra.CheckErr(err)
 
 			releases, err := getItemVersions(
+				cmd.Context(),
 				client,
 				restConfig.CompanyID,
 				options.MarketplaceItemID,
@@ -73,7 +74,7 @@ This command is in ALPHA state. This means that it can be subject to breaking ch
 	return cmd
 }
 
-func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]marketplace.Release, error) {
+func getItemVersions(ctx context.Context, client *client.APIClient, companyID, itemID string) (*[]marketplace.Release, error) {
 	if companyID == "" {
 		return nil, marketplace.ErrMissingCompanyID
 	}
@@ -82,7 +83,7 @@ func getItemVersions(client *client.APIClient, companyID, itemID string) (*[]mar
 		APIPath(
 			fmt.Sprintf(listItemVersionsEndpointTemplate, companyID, itemID),
 		).
-		Do(context.Background())
+		Do(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)

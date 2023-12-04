@@ -16,8 +16,13 @@
 package cmd
 
 import (
+	"context"
+	"os"
+
+	"github.com/go-logr/logr"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/deploy"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -32,6 +37,9 @@ func NewRootCommand() *cobra.Command {
 
 	// initialize clioptions and setup during initialization
 	options := clioptions.NewCLIOptions()
+
+	logger := util.NewLogger(os.Stderr)
+	rootCmd.SetContext(logr.NewContext(context.Background(), logger))
 
 	// add cmd flags
 	options.AddGlobalFlags(rootCmd.PersistentFlags())

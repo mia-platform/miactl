@@ -16,12 +16,16 @@
 package transport
 
 import (
+	"fmt"
 	"net/http"
 
+	"github.com/go-logr/logr"
 	"github.com/mia-platform/miactl/internal/netutil"
 )
 
 func roundTripperWrappersForConfig(config *Config, roundTripper http.RoundTripper) http.RoundTripper {
+	// roundTripper = NewDebugRoundTripper(roundTripper)
+
 	if len(config.UserAgent) > 0 {
 		roundTripper = NewUserAgentRoundTripper(config.UserAgent, roundTripper)
 	}
@@ -31,6 +35,21 @@ func roundTripperWrappersForConfig(config *Config, roundTripper http.RoundTrippe
 		roundTripper = config.AuthorizeWrapper(roundTripper)
 	}
 	return roundTripper
+}
+
+type debugRoundTripper struct {
+	next http.RoundTripper
+}
+
+func NewDebugRoundTripper(next http.RoundTripper) http.RoundTripper {
+	return &debugRoundTripper{next: next}
+}
+
+func (rt *debugRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	clonedReq := netutil.CloneRequest(req)
+
+	fmt.Println(logr.FromContextOrDiscard(req.Context()))
+	return rt.next.RoundTrip(clonedReq)
 }
 
 type userAgentRoundTripper struct {

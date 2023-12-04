@@ -16,6 +16,7 @@
 package company
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -64,7 +65,7 @@ func TestListCompanies(t *testing.T) {
 			testCase.clientConfig.Host = testCase.server.URL
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
-			err = listCompanies(client)
+			err = listCompanies(context.TODO(), client)
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

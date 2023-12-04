@@ -58,7 +58,7 @@ func jobCommand(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return createJob(client, restConfig.ProjectID, restConfig.Environment, options.FromCronJob)
+			return createJob(cmd.Context(), client, restConfig.ProjectID, restConfig.Environment, options.FromCronJob)
 		},
 	}
 
@@ -72,7 +72,7 @@ func jobCommand(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func createJob(client *client.APIClient, projectID, environment, cronjobName string) error {
+func createJob(ctx context.Context, client *client.APIClient, projectID, environment, cronjobName string) error {
 	if projectID == "" {
 		return fmt.Errorf("missing project id, please set one with the flag or context")
 	}
@@ -95,7 +95,7 @@ func createJob(client *client.APIClient, projectID, environment, cronjobName str
 		Post().
 		APIPath(fmt.Sprintf(createJobTemplate, projectID, environment)).
 		Body(bodyBytes).
-		Do(context.Background())
+		Do(ctx)
 
 	if err != nil {
 		return err

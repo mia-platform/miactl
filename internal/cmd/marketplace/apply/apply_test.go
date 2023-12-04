@@ -258,7 +258,7 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyMarketplaceResource(
-			context.Background(),
+			context.TODO(),
 			client,
 			mockTenantID,
 			validReqMock,
@@ -283,7 +283,7 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyMarketplaceResource(
-			context.Background(),
+			context.TODO(),
 			client,
 			mockTenantID,
 			validReqMock,
@@ -539,7 +539,7 @@ func TestApplyIntegration(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyItemsFromPaths(
-			context.Background(),
+			context.TODO(),
 			client,
 			mockTenantID,
 			mockPaths,
@@ -647,7 +647,7 @@ func TestApplyIntegration(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyItemsFromPaths(
-			context.Background(),
+			context.TODO(),
 			client,
 			mockTenantID,
 			mockPaths,
@@ -702,7 +702,7 @@ func TestApplyIntegration(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyItemsFromPaths(
-			context.Background(),
+			context.TODO(),
 			client,
 			mockTenantID,
 			mockPaths,
@@ -785,7 +785,7 @@ func TestApplyIntegration(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyItemsFromPaths(
-			context.Background(),
+			context.TODO(),
 			client,
 			mockTenantID,
 			mockPaths,
@@ -963,7 +963,7 @@ func TestProcessItemImages(t *testing.T) {
 		require.NoError(t, err)
 
 		err = processItemImages(
-			context.Background(),
+			context.TODO(),
 			client,
 			mockTenantID,
 			mockItem,

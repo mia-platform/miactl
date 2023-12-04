@@ -16,6 +16,7 @@
 package events
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -75,7 +76,7 @@ func TestPrintEventsList(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printEventsList(client, testCase.projectID, testCase.environment, "resource")
+			err = printEventsList(context.TODO(), client, testCase.projectID, testCase.environment, "resource")
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

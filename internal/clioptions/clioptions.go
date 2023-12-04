@@ -23,13 +23,13 @@ import (
 
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
 
 type CLIOptions struct {
 	MiactlConfig string
-	Verbose      bool
 
 	Endpoint string
 	Insecure bool
@@ -77,7 +77,7 @@ func (o *CLIOptions) AddGlobalFlags(flags *pflag.FlagSet) {
 	locator := cliconfig.NewConfigPathLocator()
 	configFilePathDescription := fmt.Sprintf("path to the config file default to %s", locator.DefaultConfigPath())
 	flags.StringVarP(&o.MiactlConfig, "config", "c", "", configFilePathDescription)
-	flags.BoolVar(&o.Verbose, "verbose", false, "increase the verbosity of the cli output")
+	flags.IntVarP(&util.LogLevel, "verbose", "v", 0, "increase the verbosity of the cli output")
 }
 
 func (o *CLIOptions) AddConnectionFlags(flags *pflag.FlagSet) {

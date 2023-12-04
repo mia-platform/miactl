@@ -16,6 +16,7 @@
 package deploy
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -56,7 +57,7 @@ func TestDeploy(t *testing.T) {
 				ProjectID:    testCase.projectID,
 				MiactlConfig: filepath.Join(t.TempDir(), "nofile"),
 			}
-			err := run("environmentName", options)
+			err := run(context.TODO(), "environmentName", options)
 			if testCase.expectErr {
 				require.Error(t, err)
 				return

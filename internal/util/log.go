@@ -24,11 +24,12 @@ import (
 
 var _ logr.LogSink = &stdSink{}
 
+var LogLevel int
+
 type stdSink struct {
-	name         string
-	currentLevel int
-	writer       io.Writer
-	callDepth    int
+	name      string
+	writer    io.Writer
+	callDepth int
 }
 
 func (sink *stdSink) Init(info logr.RuntimeInfo) {
@@ -37,25 +38,23 @@ func (sink *stdSink) Init(info logr.RuntimeInfo) {
 
 func (sink *stdSink) WithName(name string) logr.LogSink {
 	return &stdSink{
-		name:         fmt.Sprintf("%s.%s", sink.name, name),
-		currentLevel: sink.currentLevel,
-		writer:       sink.writer,
-		callDepth:    sink.callDepth,
+		name:      fmt.Sprintf("%s.%s", sink.name, name),
+		writer:    sink.writer,
+		callDepth: sink.callDepth,
 	}
 }
 
 func (sink *stdSink) WithValues(_ ...any) logr.LogSink {
 	// TODO: actually get and use the values
 	return &stdSink{
-		name:         sink.name,
-		currentLevel: sink.currentLevel,
-		writer:       sink.writer,
-		callDepth:    sink.callDepth,
+		name:      sink.name,
+		writer:    sink.writer,
+		callDepth: sink.callDepth,
 	}
 }
 
 func (sink *stdSink) Enabled(level int) bool {
-	return sink.currentLevel >= level
+	return LogLevel >= level
 }
 
 func (sink *stdSink) Error(err error, msg string, kvs ...any) {
@@ -69,11 +68,10 @@ func (sink *stdSink) Info(_ int, msg string, _ ...any) {
 	fmt.Fprintln(sink.writer)
 }
 
-func NewLogger(w io.Writer, logLevel int) logr.Logger {
+func NewLogger(w io.Writer) logr.Logger {
 	sink := &stdSink{
-		name:         "miactl",
-		currentLevel: logLevel,
-		writer:       w,
+		name:   "miactl",
+		writer: w,
 	}
 
 	return logr.New(sink)

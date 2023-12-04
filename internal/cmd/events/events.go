@@ -44,13 +44,13 @@ func Command(o *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return printEventsList(client, restConfig.ProjectID, restConfig.Environment, args[1])
+			return printEventsList(cmd.Context(), client, restConfig.ProjectID, restConfig.Environment, args[1])
 		},
 	}
 	return cmd
 }
 
-func printEventsList(client *client.APIClient, projectID, environment, resourceName string) error {
+func printEventsList(ctx context.Context, client *client.APIClient, projectID, environment, resourceName string) error {
 	if projectID == "" {
 		return fmt.Errorf("missing project id, please set one with the flag or context")
 	}
@@ -62,7 +62,7 @@ func printEventsList(client *client.APIClient, projectID, environment, resourceN
 	resp, err := client.
 		Get().
 		APIPath(fmt.Sprintf(eventsEndpointTemplate, projectID, environment, resourceName)).
-		Do(context.Background())
+		Do(ctx)
 
 	if err != nil {
 		return err

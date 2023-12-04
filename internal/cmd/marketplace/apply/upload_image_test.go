@@ -147,7 +147,7 @@ func TestApplyUploadImage(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := uploadSingleFileWithMultipart(
-			context.Background(),
+			context.TODO(),
 			client,
 			mockTenantID,
 			"image/png",
@@ -177,7 +177,7 @@ func TestApplyUploadImage(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := uploadSingleFileWithMultipart(
-			context.Background(),
+			context.TODO(),
 			client,
 			"",
 			"image/png",
