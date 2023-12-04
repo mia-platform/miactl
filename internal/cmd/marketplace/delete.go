@@ -24,6 +24,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -32,6 +33,23 @@ const (
 	deleteItemEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s"
 	// deleteItemByTupleEndpointTemplate formatting template for item deletion by the tuple itemID versionID endpoint; specify companyID, itemID, version
 	deleteItemByTupleEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions/%s"
+
+	cmdDeleteAlphaLong = `Delete a single Marketplace item
+
+	You need to specify either:
+	- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
+	- the ObjectID of the item with the flag object-id
+
+	Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
+	Otherwise, it is preferable to pass the tuple companyId-itemId-version.
+	`
+	cmdDeleteStableLong = `Delete a single Marketplace item
+
+	You need to specify the ObjectID of the item with the flag object-id.
+	`
+
+	cmdDeleteAlphaUse  = "delete { --item-id item-id --version version } | --object-id object-id [flags]..."
+	cmdDeleteStableUse = "delete --object-id object-id [flags]..."
 )
 
 var (
@@ -41,18 +59,19 @@ var (
 
 // DeleteCmd return a new cobra command for deleting a single marketplace resource
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
+	var long, use string
+	if util.AlphaCommandsEnabled() {
+		long = cmdDeleteAlphaLong
+		use = cmdDeleteAlphaUse
+	} else {
+		long = cmdDeleteStableLong
+		use = cmdDeleteStableUse
+	}
+
 	cmd := &cobra.Command{
-		Use:   "delete { --item-id item-id --version version } | --object-id object-id [flags]...",
-		Short: "Delete a Marketplace item",
-		Long: `Delete a single Marketplace item
-
-You need to specify either:
-- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
-- the ObjectID of the item with the flag object-id
-
-Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
-Otherwise, it is preferable to pass the tuple companyId-itemId-version.
-`,
+		Use:        use,
+		Short:      "Delete a Marketplace item",
+		Long:       long,
 		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
@@ -87,14 +106,19 @@ Otherwise, it is preferable to pass the tuple companyId-itemId-version.
 		},
 	}
 
-	itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
-	versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
 	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
 
-	cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
-	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, itemIDFlagName)
-	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, versionFlagName)
-	cmd.MarkFlagsOneRequired(itemObjectIDFlagName, itemIDFlagName, versionFlagName)
+	if util.AlphaCommandsEnabled() {
+		itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
+		versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
+
+		cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
+		cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, itemIDFlagName)
+		cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, versionFlagName)
+		cmd.MarkFlagsOneRequired(itemObjectIDFlagName, itemIDFlagName, versionFlagName)
+	} else {
+		cmd.MarkFlagsOneRequired(itemObjectIDFlagName)
+	}
 
 	return cmd
 }

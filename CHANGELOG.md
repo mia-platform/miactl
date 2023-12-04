@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - marketplace apply: add version to multipart request metadata if present in the item
 - add command `miactl marketplace list-versions`
+- mark as alpha the features:
+  - `marketplace list-versions`
+  - `marketplace get` with `--itemId` and `--version` flags
+  - `marketplace delete` with `--itemId` and `--version` flags
 
 ### Changed
 
