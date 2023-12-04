@@ -24,7 +24,9 @@ import (
 )
 
 func roundTripperWrappersForConfig(config *Config, roundTripper http.RoundTripper) http.RoundTripper {
-	// roundTripper = NewDebugRoundTripper(roundTripper)
+	if config.Verbose {
+		roundTripper = NewDebugRoundTripper(roundTripper)
+	}
 
 	if len(config.UserAgent) > 0 {
 		roundTripper = NewUserAgentRoundTripper(config.UserAgent, roundTripper)
@@ -47,6 +49,10 @@ func NewDebugRoundTripper(next http.RoundTripper) http.RoundTripper {
 
 func (rt *debugRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	clonedReq := netutil.CloneRequest(req)
+	_, err := logr.FromContext(req.Context())
+	if err != nil {
+		return rt.next.RoundTrip(clonedReq)
+	}
 
 	fmt.Println(logr.FromContextOrDiscard(req.Context()))
 	return rt.next.RoundTrip(clonedReq)

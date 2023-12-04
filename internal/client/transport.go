@@ -19,6 +19,7 @@ import (
 	"net/http"
 
 	"github.com/mia-platform/miactl/internal/transport"
+	"github.com/mia-platform/miactl/internal/util"
 	"golang.org/x/oauth2"
 )
 
@@ -59,6 +60,7 @@ func transportForConfig(config *Config) (http.RoundTripper, error) {
 			Insecure: config.Insecure,
 			CAFile:   config.CAFile,
 		},
+		Verbose: util.LogLevel >= 5,
 	}
 
 	if authProvider != nil {

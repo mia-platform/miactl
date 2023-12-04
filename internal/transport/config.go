@@ -25,6 +25,8 @@ type Config struct {
 	TLSConfig
 	// AuthorizeWrapper will add authorization header to the wrapped RoundTripper
 	AuthorizeWrapper AuthorizeWrapperFunc
+	// Verbose will add logging function to the call via a wrapper RoundTripper
+	Verbose bool
 }
 
 // TLSConfig contains settings to enable transport layer security
