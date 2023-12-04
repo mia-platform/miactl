@@ -18,6 +18,8 @@ package transport
 import (
 	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/mia-platform/miactl/internal/netutil"
@@ -49,13 +51,61 @@ func NewDebugRoundTripper(next http.RoundTripper) http.RoundTripper {
 
 func (rt *debugRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	clonedReq := netutil.CloneRequest(req)
-	_, err := logr.FromContext(req.Context())
-	if err != nil {
-		return rt.next.RoundTrip(clonedReq)
+	logger := logr.FromContextOrDiscard(req.Context())
+
+	logger.V(6).Info(fmt.Sprintf("%s, %s", req.Method, req.URL.String()))
+	logger.V(7).Info("Request Headers:")
+	for headerKey, headerValues := range req.Header {
+		for _, value := range headerValues {
+			maskedValue := maskSensibleHeaderValue(headerKey, value)
+			logger.V(7).Info(fmt.Sprintf("\t%s: %s", headerKey, maskedValue))
+		}
 	}
 
-	fmt.Println(logr.FromContextOrDiscard(req.Context()))
-	return rt.next.RoundTrip(clonedReq)
+	requestStartTime := time.Now()
+	response, err := rt.next.RoundTrip(clonedReq)
+	requestEndTime := time.Since(requestStartTime)
+	logger.V(6).Info(fmt.Sprintf("Response Status: %s in %d milliseconds", response.Status, requestEndTime.Milliseconds()))
+	logger.V(7).Info("Response Headers:")
+	for headerKey, headerValues := range response.Header {
+		for _, value := range headerValues {
+			maskedValue := maskSensibleHeaderValue(headerKey, value)
+			logger.V(7).Info(fmt.Sprintf("\t%s: %s", headerKey, maskedValue))
+		}
+	}
+	return response, err
+}
+
+func maskSensibleHeaderValue(headerKey string, value string) string {
+	// mask value only if the header is "Authorization"
+	if !strings.EqualFold(headerKey, "Authorization") {
+		return value
+	}
+
+	// don't do anything if the value is empty
+	if len(value) == 0 {
+		return ""
+	}
+
+	var authType string
+	if i := strings.Index(value, " "); i > 0 {
+		authType = value[0:i]
+	} else {
+		authType = value
+	}
+
+	switch strings.ToLower(authType) {
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#authentication_schemes
+	case "basic", "bearer", "digest", "negotiate":
+		return "REDACTED"
+	default:
+		if len(value) > len(authType)+1 {
+			value = authType + " REDACTED"
+		} else {
+			value = authType
+		}
+		return value
+	}
 }
 
 type userAgentRoundTripper struct {

@@ -64,7 +64,7 @@ func (sink *stdSink) Error(err error, msg string, kvs ...any) {
 }
 
 func (sink *stdSink) Info(_ int, msg string, _ ...any) {
-	fmt.Fprintf(sink.writer, "%s %s", sink.name, msg)
+	fmt.Fprintf(sink.writer, "%s: %s", sink.name, msg)
 	fmt.Fprintln(sink.writer)
 }
 
