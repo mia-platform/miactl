@@ -70,6 +70,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 
 			serializedItem, err := getItemEncodedWithFormat(
+				cmd.Context(),
 				client,
 				options.MarketplaceItemObjectID,
 				restConfig.CompanyID,
@@ -102,17 +103,17 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 	return cmd
 }
-func getItemByObjectID(client *client.APIClient, objectID string) (*marketplace.Item, error) {
-	return performGetItemRequest(client, fmt.Sprintf(getItemByObjectIDEndpointTemplate, objectID))
+func getItemByObjectID(ctx context.Context, client *client.APIClient, objectID string) (*marketplace.Item, error) {
+	return performGetItemRequest(ctx, client, fmt.Sprintf(getItemByObjectIDEndpointTemplate, objectID))
 }
 
-func getItemByItemIDAndVersion(client *client.APIClient, companyID, itemID, version string) (*marketplace.Item, error) {
+func getItemByItemIDAndVersion(ctx context.Context, client *client.APIClient, companyID, itemID, version string) (*marketplace.Item, error) {
 	endpoint := fmt.Sprintf(getItemByItemIDAndVersionEndpointTemplate, companyID, itemID, version)
-	return performGetItemRequest(client, endpoint)
+	return performGetItemRequest(ctx, client, endpoint)
 }
 
-func performGetItemRequest(client *client.APIClient, endpoint string) (*marketplace.Item, error) {
-	resp, err := client.Get().APIPath(endpoint).Do(context.Background())
+func performGetItemRequest(ctx context.Context, client *client.APIClient, endpoint string) (*marketplace.Item, error) {
+	resp, err := client.Get().APIPath(endpoint).Do(ctx)
 
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
@@ -135,16 +136,16 @@ func performGetItemRequest(client *client.APIClient, endpoint string) (*marketpl
 }
 
 // getItemEncodedWithFormat retrieves the marketplace item corresponding to the specified identifier, serialized with the specified outputFormat
-func getItemEncodedWithFormat(client *client.APIClient, objectID, companyID, itemID, version, outputFormat string) (string, error) {
+func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, objectID, companyID, itemID, version, outputFormat string) (string, error) {
 	var item *marketplace.Item
 	var err error
 	if objectID != "" {
-		item, err = getItemByObjectID(client, objectID)
+		item, err = getItemByObjectID(ctx, client, objectID)
 	} else {
 		if companyID == "" {
 			return "", marketplace.ErrMissingCompanyID
 		}
-		item, err = getItemByItemIDAndVersion(client, companyID, itemID, version)
+		item, err = getItemByItemIDAndVersion(ctx, client, companyID, itemID, version)
 	}
 	if err != nil {
 		return "", err

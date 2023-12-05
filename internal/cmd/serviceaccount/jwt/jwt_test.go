@@ -17,6 +17,7 @@ package jwt
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -77,7 +78,7 @@ func TestCreateServiceAccount(t *testing.T) {
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			response, err := createJWTServiceAccount(client, "foo", testCase.companyID, testCase.role)
+			response, err := createJWTServiceAccount(context.TODO(), client, "foo", testCase.companyID, testCase.role)
 			if testCase.expectErr {
 				assert.Error(t, err)
 				assert.Nil(t, response)

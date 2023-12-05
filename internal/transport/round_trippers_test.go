@@ -16,9 +16,16 @@
 package transport
 
 import (
+	"bytes"
+	"context"
+	"fmt"
 	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
+	"github.com/go-logr/logr"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -30,7 +37,13 @@ type testRoundTripper struct {
 
 func (rt *testRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
 	rt.Request = req
-	return nil, rt.Err
+	return &http.Response{
+		Status:     "OK",
+		StatusCode: http.StatusOK,
+		Header: map[string][]string{
+			"X-Test-Header": {"test value"},
+		},
+	}, rt.Err
 }
 
 func TestUserAgentRoundTripper(t *testing.T) {
@@ -77,6 +90,10 @@ func TestRoundTripperWrapping(t *testing.T) {
 			config:       &Config{},
 			expectedType: baseTransport,
 		},
+		"verbose": {
+			config:       &Config{Verbose: true},
+			expectedType: &debugRoundTripper{},
+		},
 		"user agent": {
 			config:       &Config{UserAgent: "foo"},
 			expectedType: &userAgentRoundTripper{},
@@ -94,12 +111,138 @@ func TestRoundTripperWrapping(t *testing.T) {
 			},
 			expectedType: &testAuthTripper{},
 		},
+		"all config, return auth wrapper": {
+			config: &Config{
+				UserAgent:        "foo",
+				Verbose:          true,
+				AuthorizeWrapper: func(rt http.RoundTripper) http.RoundTripper { return &testAuthTripper{} },
+			},
+			expectedType: &testAuthTripper{},
+		},
 	}
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
 			wrappedTransform := roundTripperWrappersForConfig(testCase.config, baseTransport)
 			assert.IsType(t, testCase.expectedType, wrappedTransform)
+		})
+	}
+}
+
+func TestRedactSensibleHeaders(t *testing.T) {
+	testCases := []struct {
+		key      string
+		value    string
+		expected string
+	}{
+		{
+			key:      "NoSensible",
+			value:    "test",
+			expected: "test",
+		},
+		{
+			key:      "Authorization",
+			value:    "Basic test",
+			expected: "Basic REDACTED",
+		},
+		{
+			key:      "authorization",
+			value:    "Bearer token",
+			expected: "Bearer REDACTED",
+		},
+		{
+			key:      "authorization",
+			value:    "test",
+			expected: "REDACTED",
+		},
+		{
+			key:      "authorization",
+			value:    "digest",
+			expected: "digest",
+		},
+		{
+			key:      "authorization",
+			value:    "",
+			expected: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		maskedValue := maskSensibleHeaderValue(testCase.key, testCase.value)
+		assert.Equal(t, testCase.expected, maskedValue)
+	}
+}
+
+func TestDebugRoundTripper(t *testing.T) {
+	t.Parallel()
+
+	testURL := "https://127.0.0.1:8080/a/request/url/"
+	request := httptest.NewRequest(http.MethodGet, testURL, nil)
+	request.Header = map[string][]string{
+		"Authorization": {"Bearer token"},
+		"X-Test-Header": {"test value"},
+	}
+
+	// test without logger must not break anything
+	rt := &testRoundTripper{}
+	NewDebugRoundTripper(rt).RoundTrip(request) //nolint: bodyclose
+
+	testCases := map[string]struct {
+		logLevel            int
+		expectedOutputLines []string
+	}{
+		"Logger with level 5": {
+			logLevel:            5,
+			expectedOutputLines: []string{},
+		},
+		"Logger with level 6": {
+			logLevel: 6,
+			expectedOutputLines: []string{
+				fmt.Sprintf("%s, %s", request.Method, request.URL.String()),
+				"Response Status: OK in 0 milliseconds",
+			},
+		},
+		"Logger with level 7": {
+			logLevel: 7,
+			expectedOutputLines: []string{
+				fmt.Sprintf("%s, %s", request.Method, request.URL.String()),
+				"Response Status: OK in 0 milliseconds",
+				"Response Headers:",
+				"Authorization: Bearer REDACTED",
+				"Response Headers:",
+			},
+		},
+		"Logger with level 10": {
+			logLevel: 10,
+			expectedOutputLines: []string{
+				fmt.Sprintf("%s, %s", request.Method, request.URL.String()),
+				"Response Status: OK in 0 milliseconds",
+				"Response Headers:",
+				"Authorization: Bearer REDACTED",
+				"Response Headers:",
+				fmt.Sprintf("curl -v -X%s", request.Method),
+				fmt.Sprintf("'%s'", request.URL.String()),
+			},
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			// execute the round tripper
+			buffer := bytes.NewBuffer(nil)
+			logger := util.NewTestLogger(buffer, testCase.logLevel)
+			rt := &testRoundTripper{}
+			contextRequest := request.Clone(logr.NewContext(context.TODO(), logger))
+			NewDebugRoundTripper(rt).RoundTrip(contextRequest) //nolint: bodyclose
+			loggedOutput := buffer.String()
+
+			if len(testCase.expectedOutputLines) == 0 {
+				require.Equal(t, "", loggedOutput)
+			}
+
+			for _, expectedString := range testCase.expectedOutputLines {
+				assert.True(t, strings.Contains(loggedOutput, expectedString), "%s not found", expectedString)
+			}
 		})
 	}
 }

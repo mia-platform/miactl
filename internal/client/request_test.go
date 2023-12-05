@@ -72,7 +72,7 @@ func TestStreamRequest(t *testing.T) {
 	defer testServer.Close()
 
 	s := testAPIServer(t, testServer)
-	readCloser, err := s.Get().APIPath("path/to/stream/thing").Stream(context.Background())
+	readCloser, err := s.Get().APIPath("path/to/stream/thing").Stream(context.TODO())
 	require.NoError(t, err)
 
 	defer readCloser.Close()

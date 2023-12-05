@@ -45,7 +45,7 @@ service account is created on the company.`,
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			credentials, err := createBasicServiceAccount(client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.ServiceAccountRole))
+			credentials, err := createBasicServiceAccount(cmd.Context(), client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.ServiceAccountRole))
 			if err != nil {
 				return err
 			}
@@ -78,7 +78,7 @@ service account is created on the company.`,
 	return cmd
 }
 
-func createBasicServiceAccount(client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) ([]string, error) {
+func createBasicServiceAccount(ctx context.Context, client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) ([]string, error) {
 	if !resources.IsValidServiceAccountRole(role) {
 		return nil, fmt.Errorf("invalid service account role %s", role)
 	}
@@ -102,7 +102,7 @@ func createBasicServiceAccount(client *client.APIClient, name, companyID string,
 		Post().
 		APIPath(fmt.Sprintf(companyServiceAccountsEndpointTemplate, companyID)).
 		Body(body).
-		Do(context.Background())
+		Do(ctx)
 
 	if err != nil {
 		return nil, err

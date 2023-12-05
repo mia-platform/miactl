@@ -74,7 +74,7 @@ func TestRequestSuccess(t *testing.T) {
 	require.NoError(t, err)
 
 	req := restClient.Get().APIPath("test")
-	response, err := req.Do(context.Background())
+	response, err := req.Do(context.TODO())
 
 	require.NoError(t, err)
 	require.NotNil(t, response)
@@ -91,7 +91,7 @@ func TestRequestError(t *testing.T) {
 	require.NoError(t, err)
 
 	req := restClient.Get().APIPath("test")
-	response, err := req.Do(context.Background())
+	response, err := req.Do(context.TODO())
 
 	require.Error(t, err)
 	require.Nil(t, response)
@@ -105,7 +105,7 @@ func TestRequestServerError(t *testing.T) {
 	require.NoError(t, err)
 
 	req := restClient.Get().APIPath("test")
-	response, err := req.Do(context.Background())
+	response, err := req.Do(context.TODO())
 
 	require.NoError(t, err)
 	require.NotNil(t, response)
@@ -121,7 +121,7 @@ func TestRequestServer5xx(t *testing.T) {
 	require.NoError(t, err)
 
 	req := restClient.Get().APIPath("test")
-	response, err := req.Do(context.Background())
+	response, err := req.Do(context.TODO())
 
 	require.NoError(t, err)
 	require.NotNil(t, response)

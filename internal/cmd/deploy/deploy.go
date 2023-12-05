@@ -43,7 +43,7 @@ will exit with error if the pipeline will not end with a success.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			environmentName := args[0]
-			return run(environmentName, options)
+			return run(cmd.Context(), environmentName, options)
 		},
 	}
 
@@ -62,7 +62,7 @@ will exit with error if the pipeline will not end with a success.`,
 	return cmd
 }
 
-func run(environmentName string, options *clioptions.CLIOptions) error {
+func run(ctx context.Context, environmentName string, options *clioptions.CLIOptions) error {
 	restConfig, err := options.ToRESTConfig()
 	if err != nil {
 		return err
@@ -78,13 +78,13 @@ func run(environmentName string, options *clioptions.CLIOptions) error {
 		return err
 	}
 
-	resp, err := triggerPipeline(client, environmentName, projectID, options)
+	resp, err := triggerPipeline(ctx, client, environmentName, projectID, options)
 	if err != nil {
 		return fmt.Errorf("error executing the deploy request: %w", err)
 	}
 	fmt.Printf("Deploying project %s in the environment '%s'\n", projectID, environmentName)
 
-	status, err := waitStatus(client, projectID, resp.ID)
+	status, err := waitStatus(ctx, client, projectID, resp.ID)
 	if err != nil {
 		return fmt.Errorf("error retrieving the pipeline status: %w", err)
 	}
@@ -93,7 +93,7 @@ func run(environmentName string, options *clioptions.CLIOptions) error {
 	return nil
 }
 
-func triggerPipeline(client *client.APIClient, environmentName, projectID string, options *clioptions.CLIOptions) (*resources.DeployProject, error) {
+func triggerPipeline(ctx context.Context, client *client.APIClient, environmentName, projectID string, options *clioptions.CLIOptions) (*resources.DeployProject, error) {
 	request := resources.DeployProjectRequest{
 		Environment: environmentName,
 		Revision:    options.Revision,
@@ -114,7 +114,7 @@ func triggerPipeline(client *client.APIClient, environmentName, projectID string
 		Post().
 		APIPath(fmt.Sprintf(deployProjectEndpointTemplate, projectID)).
 		Body(requestBody).
-		Do(context.Background())
+		Do(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
 	}
@@ -136,14 +136,14 @@ func triggerPipeline(client *client.APIClient, environmentName, projectID string
 // Declared here to override it during tests
 var sleepDuration = (1 * time.Second) + (500 * time.Millisecond)
 
-func waitStatus(client *client.APIClient, projectID string, deployID int) (string, error) {
+func waitStatus(ctx context.Context, client *client.APIClient, projectID string, deployID int) (string, error) {
 	var outStatus *resources.PipelineStatus
 	for {
 		time.Sleep(sleepDuration)
 		resp, err := client.
 			Get().
 			APIPath(fmt.Sprintf(pipelineStatusEndpointTemplate, projectID, deployID)).
-			Do(context.Background())
+			Do(ctx)
 
 		if err != nil {
 			return "", err

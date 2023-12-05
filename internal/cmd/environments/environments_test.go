@@ -16,6 +16,7 @@
 package environments
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -28,13 +29,13 @@ import (
 )
 
 func TestPreconditions(t *testing.T) {
-	err := printEnvironments(nil, "company-id", "")
+	err := printEnvironments(context.TODO(), nil, "company-id", "")
 	assert.Error(t, err)
 
-	err = printEnvironments(nil, "", "project-id")
+	err = printEnvironments(context.TODO(), nil, "", "project-id")
 	assert.Error(t, err)
 
-	err = printEnvironments(nil, "", "")
+	err = printEnvironments(context.TODO(), nil, "", "")
 	assert.Error(t, err)
 }
 
@@ -131,7 +132,7 @@ func TestListEnvironments(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printEnvironments(client, testCase.companyID, testCase.projectID)
+			err = printEnvironments(context.TODO(), client, testCase.companyID, testCase.projectID)
 			switch testCase.err {
 			case false:
 				require.NoError(t, err)

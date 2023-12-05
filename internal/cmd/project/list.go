@@ -46,7 +46,7 @@ an error.`,
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return listProjects(client, restConfig.CompanyID)
+			return listProjects(cmd.Context(), client, restConfig.CompanyID)
 		},
 	}
 
@@ -54,7 +54,7 @@ an error.`,
 }
 
 // listProjects retrieves the projects with the company ID of the current context
-func listProjects(client *client.APIClient, companyID string) error {
+func listProjects(ctx context.Context, client *client.APIClient, companyID string) error {
 	if len(companyID) == 0 {
 		return fmt.Errorf("missing company id, please set one with the flag or context")
 	}
@@ -64,7 +64,7 @@ func listProjects(client *client.APIClient, companyID string) error {
 		Get().
 		SetParam("tenantIds", companyID).
 		APIPath(listProjectsEndpoint).
-		Do(context.Background())
+		Do(ctx)
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}

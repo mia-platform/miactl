@@ -44,15 +44,15 @@ Companies can be used to logically group projects by organizations or internal t
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return listCompanies(client)
+			return listCompanies(cmd.Context(), client)
 		},
 	}
 }
 
 // listCompanies retrieves the companies belonging to the current context
-func listCompanies(client *client.APIClient) error {
+func listCompanies(ctx context.Context, client *client.APIClient) error {
 	// execute the request
-	resp, err := client.Get().APIPath(listCompaniesEndpoint).Do(context.Background())
+	resp, err := client.Get().APIPath(listCompaniesEndpoint).Do(ctx)
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}

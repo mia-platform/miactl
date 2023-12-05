@@ -17,6 +17,7 @@ package logs
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -79,7 +80,7 @@ func TestGetLogs(t *testing.T) {
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			stream, err := getLogs(client, testCase.projectID, testCase.environment, testCase.podRegex, false)
+			stream, err := getLogs(context.TODO(), client, testCase.projectID, testCase.environment, testCase.podRegex, false)
 			if testCase.err {
 				assert.Error(t, err)
 				return

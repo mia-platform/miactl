@@ -62,14 +62,14 @@ func listEnvironmentsCmd(o *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return printEnvironments(client, restConfig.CompanyID, restConfig.ProjectID)
+			return printEnvironments(cmd.Context(), client, restConfig.CompanyID, restConfig.ProjectID)
 		},
 	}
 
 	return cmd
 }
 
-func printEnvironments(client *client.APIClient, companyID, projectID string) error {
+func printEnvironments(ctx context.Context, client *client.APIClient, companyID, projectID string) error {
 	switch {
 	case len(companyID) == 0:
 		return fmt.Errorf("missing company id, please set one with the flag or context")
@@ -80,7 +80,7 @@ func printEnvironments(client *client.APIClient, companyID, projectID string) er
 	resp, err := client.
 		Get().
 		APIPath(fmt.Sprintf(listEnvironmentsEndpointTemplate, projectID)).
-		Do(context.Background())
+		Do(ctx)
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}
@@ -117,7 +117,7 @@ func printEnvironments(client *client.APIClient, companyID, projectID string) er
 		clusterID := env.Cluster.ID
 		clusterName, found := clustersCache[clusterID]
 		if !found {
-			name, err := clusterNameForID(client, companyID, clusterID)
+			name, err := clusterNameForID(ctx, client, companyID, clusterID)
 			if err != nil {
 				return err
 			}
@@ -138,7 +138,7 @@ func printEnvironments(client *client.APIClient, companyID, projectID string) er
 	return nil
 }
 
-func clusterNameForID(client *client.APIClient, companyID, clusterID string) (string, error) {
+func clusterNameForID(ctx context.Context, client *client.APIClient, companyID, clusterID string) (string, error) {
 	if len(clusterID) == 0 {
 		return "", nil
 	}
@@ -146,7 +146,7 @@ func clusterNameForID(client *client.APIClient, companyID, clusterID string) (st
 	resp, err := client.
 		Get().
 		APIPath(fmt.Sprintf(getClusterEndpointTemplate, companyID, clusterID)).
-		Do(context.Background())
+		Do(ctx)
 
 	if err != nil {
 		return "", fmt.Errorf("error executing request: %w", err)

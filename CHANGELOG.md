@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `marketplace list-versions`
   - `marketplace get` with `--itemId` and `--version` flags
   - `marketplace delete` with `--itemId` and `--version` flags
+- verbose log for all the remote HTTP requests
 
 ### Changed
 
@@ -24,9 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update go version to 1.21.4
 - update oauth2 to v0.15.0
 - update exp to v0.0.0-20231127185646-65229373498e
-
-### Updated
-
 - modified `miactl marketplace delete` command to accept either the `objectId` or a `companyId`-`itemId`-`version`
 	tuple that identifies the item to be deleted.
 - modified `miactl marketplace get` command to accept either the `objectId` or a `companyId`-`itemId`-`version` tuple

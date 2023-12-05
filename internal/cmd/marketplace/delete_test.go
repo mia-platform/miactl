@@ -125,7 +125,7 @@ func TestDeleteItemByObjectId(t *testing.T) {
 			client, err := client.APIClientForConfig(mockClientConfig)
 			require.NoError(t, err)
 			err = deleteItemByObjectID(
-				context.Background(),
+				context.TODO(),
 				client,
 				mockDeleteCompanyID,
 				mockDeleteObjectID,
@@ -213,7 +213,7 @@ func TestDeleteItemByItemIDAndVersion(t *testing.T) {
 			require.NoError(t, err)
 
 			err = deleteItemByItemIDAndVersion(
-				context.Background(),
+				context.TODO(),
 				client,
 				mockDeleteCompanyID,
 				tt.itemID,

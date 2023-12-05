@@ -16,6 +16,7 @@
 package marketplace
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -92,7 +93,7 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 			testCase.clientConfig.Host = testCase.server.URL
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
-			found, err := buildMarketplaceItemsList(client, "my-company")
+			found, err := buildMarketplaceItemsList(context.TODO(), client, "my-company")
 			if testCase.err {
 				assert.Error(t, err)
 				assert.Zero(t, found)

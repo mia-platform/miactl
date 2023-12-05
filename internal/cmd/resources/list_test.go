@@ -16,6 +16,7 @@
 package resources
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -105,7 +106,7 @@ func TestPrintServicesList(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printList(client, testCase.projectID, testCase.resourceType, testCase.environment)
+			err = printList(context.TODO(), client, testCase.projectID, testCase.resourceType, testCase.environment)
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

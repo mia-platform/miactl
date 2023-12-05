@@ -55,7 +55,7 @@ miactl runtime logs "^job-name$"`,
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			stream, err := getLogs(client, restConfig.ProjectID, restConfig.Environment, args[0], o.FollowLogs)
+			stream, err := getLogs(cmd.Context(), client, restConfig.ProjectID, restConfig.Environment, args[0], o.FollowLogs)
 			cobra.CheckErr(err)
 
 			defer stream.Close()
@@ -71,7 +71,7 @@ miactl runtime logs "^job-name$"`,
 	return cmd
 }
 
-func getLogs(client *client.APIClient, projectID, environment, podRegex string, follow bool) (io.ReadCloser, error) {
+func getLogs(ctx context.Context, client *client.APIClient, projectID, environment, podRegex string, follow bool) (io.ReadCloser, error) {
 	if projectID == "" {
 		return nil, fmt.Errorf("missing project id, please set one with the flag or context")
 	}
@@ -88,7 +88,7 @@ func getLogs(client *client.APIClient, projectID, environment, podRegex string, 
 	resp, err := client.
 		Get().
 		APIPath(fmt.Sprintf(listEndpointTemplate, projectID, environment)).
-		Do(context.Background())
+		Do(ctx)
 
 	if err != nil {
 		return nil, err
@@ -120,5 +120,5 @@ func getLogs(client *client.APIClient, projectID, environment, podRegex string, 
 		}
 	}
 
-	return logRequest.Stream(context.Background())
+	return logRequest.Stream(ctx)
 }

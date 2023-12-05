@@ -16,12 +16,20 @@
 package transport
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
+	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/mia-platform/miactl/internal/netutil"
 )
 
 func roundTripperWrappersForConfig(config *Config, roundTripper http.RoundTripper) http.RoundTripper {
+	if config.Verbose {
+		roundTripper = NewDebugRoundTripper(roundTripper)
+	}
+
 	if len(config.UserAgent) > 0 {
 		roundTripper = NewUserAgentRoundTripper(config.UserAgent, roundTripper)
 	}
@@ -31,6 +39,86 @@ func roundTripperWrappersForConfig(config *Config, roundTripper http.RoundTrippe
 		roundTripper = config.AuthorizeWrapper(roundTripper)
 	}
 	return roundTripper
+}
+
+type debugRoundTripper struct {
+	next http.RoundTripper
+}
+
+func NewDebugRoundTripper(next http.RoundTripper) http.RoundTripper {
+	return &debugRoundTripper{next: next}
+}
+
+func (rt *debugRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
+	clonedReq := netutil.CloneRequest(req)
+	logger := logr.FromContextOrDiscard(req.Context())
+
+	logger.V(6).Info(fmt.Sprintf("%s, %s", req.Method, req.URL.String()))
+	logger.V(7).Info("Request Headers:")
+	for headerKey, headerValues := range req.Header {
+		for _, value := range headerValues {
+			maskedValue := maskSensibleHeaderValue(headerKey, value)
+			logger.V(7).Info(fmt.Sprintf("\t%s: %s", headerKey, maskedValue))
+		}
+	}
+
+	logger.V(10).Info(fmt.Sprintf("Try this at home:\n%s", printCurl(req)))
+	requestStartTime := time.Now()
+	response, err := rt.next.RoundTrip(clonedReq)
+	requestEndTime := time.Since(requestStartTime)
+	logger.V(6).Info(fmt.Sprintf("Response Status: %s in %d milliseconds", response.Status, requestEndTime.Milliseconds()))
+	logger.V(7).Info("Response Headers:")
+	for headerKey, headerValues := range response.Header {
+		for _, value := range headerValues {
+			maskedValue := maskSensibleHeaderValue(headerKey, value)
+			logger.V(7).Info(fmt.Sprintf("\t%s: %s", headerKey, maskedValue))
+		}
+	}
+	return response, err
+}
+
+func maskSensibleHeaderValue(headerKey string, value string) string {
+	// mask value only if the header is "Authorization"
+	if !strings.EqualFold(headerKey, "Authorization") {
+		return value
+	}
+
+	// don't do anything if the value is empty
+	if len(value) == 0 {
+		return ""
+	}
+
+	var authType string
+	if i := strings.Index(value, " "); i > 0 {
+		authType = value[0:i]
+	} else {
+		authType = value
+	}
+
+	switch strings.ToLower(authType) {
+	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#authentication_schemes
+	case "basic", "bearer", "digest", "negotiate":
+		if len(value) > len(authType)+1 {
+			value = authType + " REDACTED"
+		} else {
+			value = authType
+		}
+		return value
+	default:
+		return "REDACTED"
+	}
+}
+
+func printCurl(r *http.Request) string {
+	headers := ""
+	for key, values := range r.Header {
+		for _, value := range values {
+			value = maskSensibleHeaderValue(key, value)
+			headers += fmt.Sprintf("\t-H %q\n", fmt.Sprintf("%s: %s", key, value))
+		}
+	}
+
+	return fmt.Sprintf("curl -v -X%s\n%s\t'%s'", r.Method, headers, r.URL.String())
 }
 
 type userAgentRoundTripper struct {
