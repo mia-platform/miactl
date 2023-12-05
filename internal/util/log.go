@@ -76,3 +76,26 @@ func NewLogger(w io.Writer) logr.Logger {
 
 	return logr.New(sink)
 }
+
+func NewTestLogger(w io.Writer, level int) logr.Logger {
+	sink := &testSink{
+		stdSink: stdSink{
+			name:   "test",
+			writer: w,
+		},
+		level: level,
+	}
+
+	return logr.New(sink)
+}
+
+var _ logr.LogSink = &testSink{}
+
+type testSink struct {
+	stdSink
+	level int
+}
+
+func (sink *testSink) Enabled(level int) bool {
+	return sink.level >= level
+}

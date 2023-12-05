@@ -62,6 +62,7 @@ func (rt *debugRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 		}
 	}
 
+	logger.V(10).Info(fmt.Sprintf("Try this at home:\n%s", printCurl(req)))
 	requestStartTime := time.Now()
 	response, err := rt.next.RoundTrip(clonedReq)
 	requestEndTime := time.Since(requestStartTime)
@@ -97,15 +98,27 @@ func maskSensibleHeaderValue(headerKey string, value string) string {
 	switch strings.ToLower(authType) {
 	// https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#authentication_schemes
 	case "basic", "bearer", "digest", "negotiate":
-		return "REDACTED"
-	default:
 		if len(value) > len(authType)+1 {
 			value = authType + " REDACTED"
 		} else {
 			value = authType
 		}
 		return value
+	default:
+		return "REDACTED"
 	}
+}
+
+func printCurl(r *http.Request) string {
+	headers := ""
+	for key, values := range r.Header {
+		for _, value := range values {
+			value = maskSensibleHeaderValue(key, value)
+			headers += fmt.Sprintf("\t-H %q\n", fmt.Sprintf("%s: %s", key, value))
+		}
+	}
+
+	return fmt.Sprintf("curl -v -X%s\n%s\t'%s'", r.Method, headers, r.URL.String())
 }
 
 type userAgentRoundTripper struct {
