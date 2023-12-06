@@ -30,6 +30,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - modified `miactl marketplace get` command to accept either the `objectId` or a `companyId`-`itemId`-`version` tuple
 	that identifies the item to be retrieved.
 
+### Fixed
+
+- `runtime logs` now is working correctly for pods with more than one container
+
 ### BREAKING
 
 - `miactl marketplace delete` does not accept anymore the id as argument, it should be provided to the flag `--object-id`

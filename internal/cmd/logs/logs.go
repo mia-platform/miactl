@@ -112,7 +112,7 @@ func getLogs(ctx context.Context, client *client.APIClient, projectID, environme
 
 	for _, pod := range pods {
 		if regex.MatchString(pod.Name) {
-			containers := make([]string, len(pod.Containers))
+			containers := make([]string, 0)
 			for _, container := range pod.Containers {
 				containers = append(containers, container.Name)
 			}
