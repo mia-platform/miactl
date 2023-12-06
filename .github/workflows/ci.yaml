@@ -59,8 +59,8 @@ jobs:
         # - "1.27"
         # - "1.28"
     runs-on: ${{ matrix.os }}
-    env:
-      ENVTEST_K8S_VERSION: ${{matrix.k8s_version}}
+    # env:
+    #   ENVTEST_K8S_VERSION: ${{matrix.k8s_version}}
     steps:
     - name: Checkout Repository
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1

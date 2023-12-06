@@ -4,7 +4,7 @@
 	"containerUser": "root",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:1": {},
-		"ghcr.io/devcontainers/features/go:1": {"version": "none", "golangciLintVersion": "1.53.2"}
+		"ghcr.io/devcontainers/features/go:1": {"version": "none", "golangciLintVersion": "1.55.2"}
 	},
 	"runArgs": [
 		"--cap-add=SYS_PTRACE",
