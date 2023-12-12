@@ -231,3 +231,10 @@ func (re *RuntimeEvent) UnmarshalJSON(data []byte) error {
 	re.LastSeen = lastSeen
 	return nil
 }
+
+type IAMIdentity struct {
+	ID    string   `json:"identityId"` //nolint: tagliatelle
+	Name  string   `json:"name"`
+	Type  string   `json:"identityType"` //nolint: tagliatelle
+	Roles []string `json:"companyRoles"` //nolint: tagliatelle
+}

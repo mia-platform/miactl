@@ -17,6 +17,7 @@ package company
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam"
 	"github.com/spf13/cobra"
 )
 
@@ -34,7 +35,9 @@ via a group or through service accounts.`,
 	o.AddContextFlags(flags)
 	o.AddCompanyFlags(flags)
 
-	// cmd.AddCommand()
+	cmd.AddCommand(
+		iam.ListCmd(o),
+	)
 
 	return cmd
 }

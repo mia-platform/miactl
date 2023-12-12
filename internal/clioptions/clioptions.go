@@ -66,6 +66,10 @@ type CLIOptions struct {
 
 	// OutputFormat describes the output format of some commands. Can be json or yaml.
 	OutputFormat string
+
+	ShowUsers           bool
+	ShowGroups          bool
+	ShowServiceAccounts bool
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -172,6 +176,12 @@ func (o *CLIOptions) AddLogsFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddOutputFormatFlag(flags *pflag.FlagSet, defaultVal string) {
 	flags.StringVarP(&o.OutputFormat, "output", "o", defaultVal, "Output format. Allowed values: json, yaml")
+}
+
+func (o *CLIOptions) AddIAMListFlags(flags *pflag.FlagSet) {
+	flags.BoolVar(&o.ShowUsers, "users", false, "Filter IAM entities to show only users. Mutally exclusive with groups and serviceAccounts")
+	flags.BoolVar(&o.ShowGroups, "groups", false, "Filter IAM entities to show only groups. Mutally exclusive with users and serviceAccounts")
+	flags.BoolVar(&o.ShowServiceAccounts, "serviceAccounts", false, "Filter IAM entities to show only service accounts. Mutally exclusive with users and groups")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
