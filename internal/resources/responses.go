@@ -238,3 +238,17 @@ type IAMIdentity struct {
 	Type  string   `json:"identityType"` //nolint: tagliatelle
 	Roles []string `json:"companyRoles"` //nolint: tagliatelle
 }
+
+type UserIdentity struct {
+	ID        string          `json:"userId"` //nolint: tagliatelle
+	Email     string          `json:"email"`
+	Name      string          `json:"fullname"`     //nolint:  tagliatelle
+	Roles     []string        `json:"companyRoles"` //nolint: tagliatelle
+	LastLogin time.Time       `json:"lastLogin"`
+	Groups    []GroupIdentity `json:"groups"`
+}
+
+type GroupIdentity struct {
+	Name   string `json:"name"`
+	RoleID string `json:"roleId"`
+}

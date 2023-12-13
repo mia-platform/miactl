@@ -20,10 +20,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/resources"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 	"golang.org/x/text/cases"
@@ -32,9 +34,11 @@ import (
 
 const (
 	listAllIAMEntitiesTemplate = "/api/companies/%s/identities"
-	GroupsEntityName           = "group"
-	UsersEntityName            = "user"
-	ServiceAccountsEntityName  = "serviceAccount"
+	listUserEntityTemplate     = "/api/companies/%s/users"
+
+	GroupsEntityName          = "group"
+	UsersEntityName           = "user"
+	ServiceAccountsEntityName = "serviceAccount"
 )
 
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -44,6 +48,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Long: `A Company can have associated different entities for managing the roles, this command will list
 all of them noting the type and the current role associated with them`,
 
+		Args: cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
@@ -62,6 +67,29 @@ all of them noting the type and the current role associated with them`,
 
 	options.AddIAMListFlags(cmd.Flags())
 	cmd.MarkFlagsMutuallyExclusive("users", "groups", "serviceAccounts")
+
+	cmd.AddCommand(
+		listUserCmd(options),
+	)
+
+	return cmd
+}
+
+func listUserCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "users",
+		Short: "List all users that have access to the company, directly or via a group",
+		Long:  "List all users that have access to the company, directly or via a group",
+
+		RunE: func(cmd *cobra.Command, args []string) error {
+			restConfig, err := options.ToRESTConfig()
+			cobra.CheckErr(err)
+			client, err := client.APIClientForConfig(restConfig)
+			cobra.CheckErr(err)
+
+			return listSpecificEntities(cmd.Context(), client, restConfig.CompanyID, UsersEntityName)
+		},
+	}
 
 	return cmd
 }
@@ -145,4 +173,73 @@ func readableRoles(roles []string) []string {
 	}
 
 	return transformedRoles
+}
+
+func listSpecificEntities(ctx context.Context, client *client.APIClient, companyID string, entityType string) error {
+	if len(companyID) == 0 {
+		return fmt.Errorf("missing company id, please set one with the flag or context")
+	}
+
+	var apiPathTemplate string
+	switch entityType {
+	case UsersEntityName:
+		apiPathTemplate = listUserEntityTemplate
+	default:
+		return fmt.Errorf("unknown IAM entity")
+	}
+
+	response, err := client.
+		Get().
+		APIPath(fmt.Sprintf(apiPathTemplate, companyID)).
+		Do(ctx)
+
+	if err != nil {
+		return fmt.Errorf("error executing request: %w", err)
+	}
+
+	if err := response.Error(); err != nil {
+		return err
+	}
+
+	identities := make([]*resources.UserIdentity, 0)
+	if err := response.ParseResponse(&identities); err != nil {
+		return fmt.Errorf("error parsing response body: %w", err)
+	}
+
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetCenterSeparator("")
+	table.SetColumnSeparator("")
+	table.SetRowSeparator("")
+	table.SetHeader([]string{"Name", "Email", "Roles", "Groups", "Last Login"})
+
+	caser := cases.Title(language.English)
+	for _, identity := range identities {
+		groupNames := make([]string, 0)
+		for _, group := range identity.Groups {
+			groupNames = append(groupNames, group.Name)
+		}
+
+		groups := "-"
+		if len(groupNames) > 0 {
+			groups = strings.Join(groupNames, ", ")
+		}
+
+		roles := "-"
+		if len(identity.Roles) > 0 {
+			roles = caser.String(strings.Join(readableRoles(identity.Roles), ", "))
+		}
+
+		table.Append([]string{
+			caser.String(readableType(identity.Name)),
+			identity.Email,
+			roles,
+			groups,
+			util.HumanDuration(time.Since(identity.LastLogin)),
+		})
+	}
+
+	table.Render()
+	return nil
 }
