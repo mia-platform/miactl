@@ -242,13 +242,16 @@ type IAMIdentity struct {
 type UserIdentity struct {
 	ID        string          `json:"userId"` //nolint: tagliatelle
 	Email     string          `json:"email"`
-	Name      string          `json:"fullname"`     //nolint:  tagliatelle
+	FullName  string          `json:"fullname"` //nolint: tagliatelle
+	Name      string          `json:"name"`
 	Roles     []string        `json:"companyRoles"` //nolint: tagliatelle
 	LastLogin time.Time       `json:"lastLogin"`
 	Groups    []GroupIdentity `json:"groups"`
 }
 
 type GroupIdentity struct {
-	Name   string `json:"name"`
-	RoleID string `json:"roleId"`
+	Name    string         `json:"name"`
+	Role    string         `json:"role"`
+	RoleID  string         `json:"roleId"`
+	Members []UserIdentity `json:"members"`
 }

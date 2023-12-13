@@ -21,25 +21,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/mia-platform/miactl/internal/util"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
-
-func rowsForResources[T any](response *client.Response, rowParser func(T) []string) ([][]string, error) {
-	resources := make([]T, 0)
-	if err := response.ParseResponse(&resources); err != nil {
-		return nil, err
-	}
-
-	rows := make([][]string, 0)
-	for _, resource := range resources {
-		rows = append(rows, rowParser(resource))
-	}
-	return rows, nil
-}
 
 func rowForService(service resources.Service) []string {
 	ports := make([]string, 0)

@@ -19,22 +19,18 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
-	"time"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 )
 
 const (
 	listAllIAMEntitiesTemplate = "/api/companies/%s/identities"
-	listUserEntityTemplate     = "/api/companies/%s/users"
+	listUsersEntityTemplate    = "/api/companies/%s/users"
+	listGroupsEntityTemplate   = "/api/companies/%s/groups"
 
 	GroupsEntityName          = "group"
 	UsersEntityName           = "user"
@@ -69,13 +65,14 @@ all of them noting the type and the current role associated with them`,
 	cmd.MarkFlagsMutuallyExclusive("users", "groups", "serviceAccounts")
 
 	cmd.AddCommand(
-		listUserCmd(options),
+		listUsersCmd(options),
+		listGroupsCmd(options),
 	)
 
 	return cmd
 }
 
-func listUserCmd(options *clioptions.CLIOptions) *cobra.Command {
+func listUsersCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "users",
 		Short: "List all users that have access to the company, directly or via a group",
@@ -88,6 +85,25 @@ func listUserCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 
 			return listSpecificEntities(cmd.Context(), client, restConfig.CompanyID, UsersEntityName)
+		},
+	}
+
+	return cmd
+}
+
+func listGroupsCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "groups",
+		Short: "List all groups that have access to the company",
+		Long:  "List all groups that have access to the company",
+
+		RunE: func(cmd *cobra.Command, args []string) error {
+			restConfig, err := options.ToRESTConfig()
+			cobra.CheckErr(err)
+			client, err := client.APIClientForConfig(restConfig)
+			cobra.CheckErr(err)
+
+			return listSpecificEntities(cmd.Context(), client, restConfig.CompanyID, GroupsEntityName)
 		},
 	}
 
@@ -120,9 +136,9 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 		return err
 	}
 
-	identities := make([]*resources.IAMIdentity, 0)
-	if err := resp.ParseResponse(&identities); err != nil {
-		return fmt.Errorf("error parsing response body: %w", err)
+	rows, err := util.RowsForResources(resp, rowForIAMIdentity)
+	if err != nil {
+		return err
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -132,47 +148,9 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
 	table.SetHeader([]string{"Type", "Name", "Roles"})
-
-	caser := cases.Title(language.English)
-	for _, identity := range identities {
-		table.Append([]string{
-			caser.String(readableType(identity.Type)),
-			identity.Name,
-			caser.String(strings.Join(readableRoles(identity.Roles), ", ")),
-		})
-	}
-
+	table.AppendBulk(rows)
 	table.Render()
 	return nil
-}
-
-func readableType(identityType string) string {
-	switch identityType {
-	case UsersEntityName:
-		return "user"
-	case GroupsEntityName:
-		return "group"
-	case ServiceAccountsEntityName:
-		return "service account"
-	default:
-		return identityType
-	}
-}
-
-func readableRoles(roles []string) []string {
-	transformedRoles := make([]string, 0)
-	for _, role := range roles {
-		switch role {
-		case "company-owner":
-			transformedRoles = append(transformedRoles, "company owner")
-		case "project-admin":
-			transformedRoles = append(transformedRoles, "project admin")
-		default:
-			transformedRoles = append(transformedRoles, role)
-		}
-	}
-
-	return transformedRoles
 }
 
 func listSpecificEntities(ctx context.Context, client *client.APIClient, companyID string, entityType string) error {
@@ -181,9 +159,12 @@ func listSpecificEntities(ctx context.Context, client *client.APIClient, company
 	}
 
 	var apiPathTemplate string
+
 	switch entityType {
 	case UsersEntityName:
-		apiPathTemplate = listUserEntityTemplate
+		apiPathTemplate = listUsersEntityTemplate
+	case GroupsEntityName:
+		apiPathTemplate = listGroupsEntityTemplate
 	default:
 		return fmt.Errorf("unknown IAM entity")
 	}
@@ -201,9 +182,19 @@ func listSpecificEntities(ctx context.Context, client *client.APIClient, company
 		return err
 	}
 
-	identities := make([]*resources.UserIdentity, 0)
-	if err := response.ParseResponse(&identities); err != nil {
-		return fmt.Errorf("error parsing response body: %w", err)
+	var tableHeaders []string
+	var rows [][]string
+	switch entityType {
+	case UsersEntityName:
+		tableHeaders = []string{"Name", "Email", "Roles", "Groups", "Last Login"}
+		rows, err = util.RowsForResources(response, rowForUserIdentity)
+	case GroupsEntityName:
+		tableHeaders = []string{"Name", "Role", "Members"}
+		rows, err = util.RowsForResources(response, rowForGroupIdentity)
+	}
+
+	if err != nil {
+		return err
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -212,34 +203,9 @@ func listSpecificEntities(ctx context.Context, client *client.APIClient, company
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
-	table.SetHeader([]string{"Name", "Email", "Roles", "Groups", "Last Login"})
-
-	caser := cases.Title(language.English)
-	for _, identity := range identities {
-		groupNames := make([]string, 0)
-		for _, group := range identity.Groups {
-			groupNames = append(groupNames, group.Name)
-		}
-
-		groups := "-"
-		if len(groupNames) > 0 {
-			groups = strings.Join(groupNames, ", ")
-		}
-
-		roles := "-"
-		if len(identity.Roles) > 0 {
-			roles = caser.String(strings.Join(readableRoles(identity.Roles), ", "))
-		}
-
-		table.Append([]string{
-			caser.String(readableType(identity.Name)),
-			identity.Email,
-			roles,
-			groups,
-			util.HumanDuration(time.Since(identity.LastLogin)),
-		})
-	}
-
+	table.SetHeader(tableHeaders)
+	table.SetAutoWrapText(false)
+	table.AppendBulk(rows)
 	table.Render()
 	return nil
 }

@@ -25,7 +25,7 @@ import (
 	"testing"
 
 	"github.com/go-logr/logr"
-	"github.com/mia-platform/miactl/internal/util"
+	"github.com/mia-platform/miactl/internal/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -230,7 +230,7 @@ func TestDebugRoundTripper(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			// execute the round tripper
 			buffer := bytes.NewBuffer(nil)
-			logger := util.NewTestLogger(buffer, testCase.logLevel)
+			logger := logger.NewTestLogger(buffer, testCase.logLevel)
 			rt := &testRoundTripper{}
 			contextRequest := request.Clone(logr.NewContext(context.TODO(), logger))
 			NewDebugRoundTripper(rt).RoundTrip(contextRequest) //nolint: bodyclose

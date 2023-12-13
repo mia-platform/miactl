@@ -86,7 +86,6 @@ func TestListUsersIdentities(t *testing.T) {
 		server       *httptest.Server
 		clientConfig *client.Config
 		companyID    string
-		searchParams map[string]bool
 		err          bool
 	}{
 		"valid get response": {
@@ -95,7 +94,6 @@ func TestListUsersIdentities(t *testing.T) {
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
-			searchParams: map[string]bool{},
 		},
 		"invalid body response": {
 			server:    mockListServer(t),
@@ -124,6 +122,47 @@ func TestListUsersIdentities(t *testing.T) {
 	}
 }
 
+func TestListGroupsIdentities(t *testing.T) {
+	testCases := map[string]struct {
+		server       *httptest.Server
+		clientConfig *client.Config
+		companyID    string
+		err          bool
+	}{
+		"valid get response": {
+			server:    mockListServer(t),
+			companyID: "success",
+			clientConfig: &client.Config{
+				Transport: http.DefaultTransport,
+			},
+		},
+		"invalid body response": {
+			server:    mockListServer(t),
+			companyID: "fail",
+			clientConfig: &client.Config{
+				Transport: http.DefaultTransport,
+			},
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			testCase.clientConfig.Host = testCase.server.URL
+			client, err := client.APIClientForConfig(testCase.clientConfig)
+			require.NoError(t, err)
+
+			err = listSpecificEntities(context.TODO(), client, testCase.companyID, GroupsEntityName)
+			if testCase.err {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
 func mockListServer(t *testing.T) *httptest.Server {
 	t.Helper()
 
@@ -141,15 +180,23 @@ func mockListServer(t *testing.T) *httptest.Server {
 			assert.ElementsMatch(t, []string{"group", "serviceAccount"}, searchTerms)
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(filteredListIAMIdentitiesString))
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listUserEntityTemplate, "success"):
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listUsersEntityTemplate, "success"):
 			assert.Equal(t, 0, len(params))
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(validListUserIdentitiesBodyString))
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listGroupsEntityTemplate, "success"):
+			assert.Equal(t, 0, len(params))
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(validListGroupIdentitiesBodyString))
 		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listAllIAMEntitiesTemplate, "fail"):
 			assert.Equal(t, 0, len(params))
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("invalid json"))
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listUserEntityTemplate, "fail"):
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listUsersEntityTemplate, "fail"):
+			assert.Equal(t, 0, len(params))
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("invalid json"))
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listGroupsEntityTemplate, "fail"):
 			assert.Equal(t, 0, len(params))
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("invalid json"))
@@ -245,6 +292,35 @@ const (
     "groups": [{
       "name": "Role Name",
       "roleId": "role-id"
+    }]
+  }
+]`
+	validListGroupIdentitiesBodyString = `[
+  {
+    "_id": "000000000000000000000001",
+    "name": "group name",
+    "fullName": "User Full Name",
+    "role": "role-id",
+    "members": [{
+      "name": "User Name"
+    }]
+  },
+  {
+    "_id": "000000000000000000000002",
+    "name": "group name",
+    "fullName": "User Full Name",
+    "role": "role-id"
+  },
+  {
+    "_id": "000000000000000000000003",
+    "name": "group name",
+    "fullName": "User Full Name",
+    "role": "role-id",
+    "members": [{
+      "name": "User Name"
+    },
+    {
+      "name": "User Name"
     }]
   }
 ]`
