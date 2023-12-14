@@ -249,9 +249,91 @@ type UserIdentity struct {
 	Groups    []GroupIdentity `json:"groups"`
 }
 
+func (ui *UserIdentity) UnmarshalJSON(data []byte) error {
+	type shadowIdentity struct {
+		UserID       string          `json:"userId"`
+		Email        string          `json:"email"`
+		Fullname     string          `json:"fullname"`
+		Name         string          `json:"name"`
+		CompanyRoles []string        `json:"companyRoles"`
+		LastLogin    string          `json:"lastLogin"`
+		Groups       []GroupIdentity `json:"groups"`
+	}
+
+	parseTime := func(timeString string) (time.Time, error) {
+		if len(timeString) == 0 {
+			return time.Time{}, nil
+		}
+		return time.Parse(time.RFC3339, timeString)
+	}
+
+	var si shadowIdentity
+	if err := json.Unmarshal(data, &si); err != nil {
+		return err
+	}
+
+	ui.ID = si.UserID
+	ui.Email = si.Email
+	ui.FullName = si.Fullname
+	ui.Name = si.Name
+	ui.Roles = si.CompanyRoles
+	ui.Groups = si.Groups
+
+	lastLogin, err := parseTime(si.LastLogin)
+	if err != nil {
+		return err
+	}
+
+	ui.LastLogin = lastLogin
+	return nil
+}
+
 type GroupIdentity struct {
 	Name    string         `json:"name"`
 	Role    string         `json:"role"`
 	RoleID  string         `json:"roleId"`
 	Members []UserIdentity `json:"members"`
+}
+
+type ServiceAccountIdentity struct {
+	ID         string    `json:"clientId"` //nolint: tagliatelle
+	Name       string    `json:"name"`
+	AuthMethod string    `json:"authMethod"`
+	Roles      []string  `json:"companyRoles"` //nolint: tagliatelle
+	LastLogin  time.Time `json:"lastLogin"`
+}
+
+func (sai *ServiceAccountIdentity) UnmarshalJSON(data []byte) error {
+	type shadowIdentity struct {
+		ClientID     string   `json:"clientId"`
+		Name         string   `json:"name"`
+		AuthMethod   string   `json:"authMethod"`
+		CompanyRoles []string `json:"companyRoles"`
+		LastLogin    string   `json:"lastLogin"`
+	}
+
+	parseTime := func(timeString string) (time.Time, error) {
+		if len(timeString) == 0 {
+			return time.Time{}, nil
+		}
+		return time.Parse(time.RFC3339, timeString)
+	}
+
+	var si shadowIdentity
+	if err := json.Unmarshal(data, &si); err != nil {
+		return err
+	}
+
+	sai.ID = si.ClientID
+	sai.Name = si.Name
+	sai.AuthMethod = si.AuthMethod
+	sai.Roles = si.CompanyRoles
+
+	lastLogin, err := parseTime(si.LastLogin)
+	if err != nil {
+		return err
+	}
+
+	sai.LastLogin = lastLogin
+	return nil
 }

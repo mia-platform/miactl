@@ -163,6 +163,48 @@ func TestListGroupsIdentities(t *testing.T) {
 	}
 }
 
+func TestServiceAccountGroupsIdentities(t *testing.T) {
+	testCases := map[string]struct {
+		server       *httptest.Server
+		clientConfig *client.Config
+		companyID    string
+		err          bool
+	}{
+		"valid get response": {
+			server:    mockListServer(t),
+			companyID: "success",
+			clientConfig: &client.Config{
+				Transport: http.DefaultTransport,
+			},
+		},
+		"invalid body response": {
+			server:    mockListServer(t),
+			companyID: "fail",
+			clientConfig: &client.Config{
+				Transport: http.DefaultTransport,
+			},
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			testCase.clientConfig.Host = testCase.server.URL
+			client, err := client.APIClientForConfig(testCase.clientConfig)
+			require.NoError(t, err)
+
+			err = listSpecificEntities(context.TODO(), client, testCase.companyID, ServiceAccountsEntityName)
+			if testCase.err {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+//gocyclo:ignore
 func mockListServer(t *testing.T) *httptest.Server {
 	t.Helper()
 
@@ -188,15 +230,17 @@ func mockListServer(t *testing.T) *httptest.Server {
 			assert.Equal(t, 0, len(params))
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(validListGroupIdentitiesBodyString))
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listServiceAccountsEntityTemplate, "success"):
+			assert.Equal(t, 0, len(params))
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(validListServiceAccountIdentitiesBodyString))
 		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listAllIAMEntitiesTemplate, "fail"):
 			assert.Equal(t, 0, len(params))
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("invalid json"))
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listUsersEntityTemplate, "fail"):
-			assert.Equal(t, 0, len(params))
-			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("invalid json"))
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listGroupsEntityTemplate, "fail"):
+		case r.Method == http.MethodGet && (r.URL.Path == fmt.Sprintf(listUsersEntityTemplate, "fail") ||
+			r.URL.Path == fmt.Sprintf(listGroupsEntityTemplate, "fail") ||
+			r.URL.Path == fmt.Sprintf(listServiceAccountsEntityTemplate, "fail")):
 			assert.Equal(t, 0, len(params))
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte("invalid json"))
@@ -322,6 +366,22 @@ const (
     {
       "name": "User Name"
     }]
+  }
+]`
+	validListServiceAccountIdentitiesBodyString = `[
+  {
+    "clientId": "000000000000000000000001",
+    "name": "service account name",
+    "authMethod": "client_secret_basic",
+    "companyRoles": ["guest"],
+    "lastLogin": "2010-01-01T00:00:00.000Z"
+  },
+  {
+    "clientId": "000000000000000000000002",
+    "name": "service account name",
+    "authMethod": "private_key_jwt",
+    "companyRoles": ["company-owner"],
+    "lastLogin": "2010-01-01T00:00:00.000Z"
   }
 ]`
 )

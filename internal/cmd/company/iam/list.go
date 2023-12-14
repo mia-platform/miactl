@@ -28,9 +28,10 @@ import (
 )
 
 const (
-	listAllIAMEntitiesTemplate = "/api/companies/%s/identities"
-	listUsersEntityTemplate    = "/api/companies/%s/users"
-	listGroupsEntityTemplate   = "/api/companies/%s/groups"
+	listAllIAMEntitiesTemplate        = "/api/companies/%s/identities"
+	listUsersEntityTemplate           = "/api/companies/%s/users"
+	listGroupsEntityTemplate          = "/api/companies/%s/groups"
+	listServiceAccountsEntityTemplate = "/api/companies/%s/service-accounts"
 
 	GroupsEntityName          = "group"
 	UsersEntityName           = "user"
@@ -65,18 +66,37 @@ all of them noting the type and the current role associated with them`,
 	cmd.MarkFlagsMutuallyExclusive("users", "groups", "serviceAccounts")
 
 	cmd.AddCommand(
-		listUsersCmd(options),
-		listGroupsCmd(options),
+		listEntity(
+			options,
+			"users",
+			"List all users that have access to the company, directly or via a group",
+			"List all users that have access to the company, directly or via a group",
+			UsersEntityName,
+		),
+		listEntity(
+			options,
+			"groups",
+			"List all groups that have access to the company",
+			"List all groups that have access to the company",
+			GroupsEntityName,
+		),
+		listEntity(
+			options,
+			"serviceaccounts",
+			"List all service accounts that have access to the company",
+			"List all service accounts that have access to the company",
+			ServiceAccountsEntityName,
+		),
 	)
 
 	return cmd
 }
 
-func listUsersCmd(options *clioptions.CLIOptions) *cobra.Command {
+func listEntity(options *clioptions.CLIOptions, commandName, shortHelp, longHelp, entityName string) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "users",
-		Short: "List all users that have access to the company, directly or via a group",
-		Long:  "List all users that have access to the company, directly or via a group",
+		Use:   commandName,
+		Short: shortHelp,
+		Long:  longHelp,
 
 		RunE: func(cmd *cobra.Command, args []string) error {
 			restConfig, err := options.ToRESTConfig()
@@ -84,26 +104,7 @@ func listUsersCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			return listSpecificEntities(cmd.Context(), client, restConfig.CompanyID, UsersEntityName)
-		},
-	}
-
-	return cmd
-}
-
-func listGroupsCmd(options *clioptions.CLIOptions) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "groups",
-		Short: "List all groups that have access to the company",
-		Long:  "List all groups that have access to the company",
-
-		RunE: func(cmd *cobra.Command, args []string) error {
-			restConfig, err := options.ToRESTConfig()
-			cobra.CheckErr(err)
-			client, err := client.APIClientForConfig(restConfig)
-			cobra.CheckErr(err)
-
-			return listSpecificEntities(cmd.Context(), client, restConfig.CompanyID, GroupsEntityName)
+			return listSpecificEntities(cmd.Context(), client, restConfig.CompanyID, entityName)
 		},
 	}
 
@@ -165,6 +166,8 @@ func listSpecificEntities(ctx context.Context, client *client.APIClient, company
 		apiPathTemplate = listUsersEntityTemplate
 	case GroupsEntityName:
 		apiPathTemplate = listGroupsEntityTemplate
+	case ServiceAccountsEntityName:
+		apiPathTemplate = listServiceAccountsEntityTemplate
 	default:
 		return fmt.Errorf("unknown IAM entity")
 	}
@@ -189,8 +192,11 @@ func listSpecificEntities(ctx context.Context, client *client.APIClient, company
 		tableHeaders = []string{"Name", "Email", "Roles", "Groups", "Last Login"}
 		rows, err = util.RowsForResources(response, rowForUserIdentity)
 	case GroupsEntityName:
-		tableHeaders = []string{"Name", "Role", "Members"}
+		tableHeaders = []string{"Name", "Roles", "Members"}
 		rows, err = util.RowsForResources(response, rowForGroupIdentity)
+	case ServiceAccountsEntityName:
+		tableHeaders = []string{"Name", "Roles", "Last Login"}
+		rows, err = util.RowsForResources(response, rowForServiceAccountIdentity)
 	}
 
 	if err != nil {

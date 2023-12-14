@@ -51,12 +51,17 @@ func rowForUserIdentity(identity resources.UserIdentity) []string {
 		roles = caser.String(strings.Join(readableRoles(identity.Roles), ", "))
 	}
 
+	lastLogin := "-"
+	if !identity.LastLogin.IsZero() {
+		lastLogin = util.HumanDuration(time.Since(identity.LastLogin))
+	}
+
 	return []string{
 		identity.FullName,
 		identity.Email,
 		roles,
 		groups,
-		util.HumanDuration(time.Since(identity.LastLogin)),
+		lastLogin,
 	}
 }
 
@@ -75,6 +80,25 @@ func rowForGroupIdentity(identity resources.GroupIdentity) []string {
 		readableType(identity.Name),
 		caser.String(readableRole(identity.Role)),
 		names,
+	}
+}
+
+func rowForServiceAccountIdentity(identity resources.ServiceAccountIdentity) []string {
+	caser := cases.Title(language.English)
+	roles := "-"
+	if len(identity.Roles) > 0 {
+		roles = caser.String(strings.Join(readableRoles(identity.Roles), ", "))
+	}
+
+	lastLogin := "-"
+	if !identity.LastLogin.IsZero() {
+		lastLogin = util.HumanDuration(time.Since(identity.LastLogin))
+	}
+
+	return []string{
+		identity.Name,
+		roles,
+		lastLogin,
 	}
 }
 

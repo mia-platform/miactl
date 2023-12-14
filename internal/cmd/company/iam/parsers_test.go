@@ -170,3 +170,32 @@ func TestRowForGroupIdentity(t *testing.T) {
 		})
 	}
 }
+
+func TestRowForServiceAccountIdentity(t *testing.T) {
+	testCases := map[string]struct {
+		identity    resources.ServiceAccountIdentity
+		expectedRow []string
+	}{
+		"base service account": {
+			identity: resources.ServiceAccountIdentity{
+				Name:      "identity name",
+				Roles:     []string{"guest"},
+				LastLogin: time.Now(),
+			},
+			expectedRow: []string{"identity name", "Guest", "0s"},
+		},
+		"service account without login and with multiple roles": {
+			identity: resources.ServiceAccountIdentity{
+				Name:  "identity name",
+				Roles: []string{"guest, developer"},
+			},
+			expectedRow: []string{"identity name", "Guest, Developer", "-"},
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, testCase.expectedRow, rowForServiceAccountIdentity(testCase.identity))
+		})
+	}
+}
