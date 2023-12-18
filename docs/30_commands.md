@@ -104,13 +104,13 @@ Available flags for the command:
 
 ### iam
 
-The `company iam` subcommands are used for managin the RBAC permissions associated with a company. Only
+The `company iam` subcommands are used for managing the RBAC permissions associated with a company. Only
 **Company Owners** can modify, add or remove RBAC authorization to the company.
 
 #### list
 
 The `company iam list` subcommand allows you to view the list of all the different identity associated with the Company
-specified in the current  context. The output will show the **names**, **types** and **permissions** associated with
+specified in the current context. The output will show the **names**, **types** and **permissions** associated with
 them.
 
 Usage:
@@ -143,9 +143,6 @@ miactl company iam list users [flags]
 
 Available flags for the command:
 
-- `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
-- `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
-- `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
 - `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
@@ -154,7 +151,7 @@ Available flags for the command:
 
 ##### groups
 
-The `company iam list groups` subcommand allows you to view the list of all groups that are availabe in your company.
+The `company iam list groups` subcommand allows you to view the list of all groups that are available in your company.
 
 Usage:
 
@@ -164,9 +161,6 @@ miactl company iam list groups [flags]
 
 Available flags for the command:
 
-- `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
-- `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
-- `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
 - `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
@@ -175,7 +169,7 @@ Available flags for the command:
 
 ##### serviceaccounts
 
-The `company iam list serviceaccounts` subcommand allows you to view the list of all service accounts that are availabe
+The `company iam list serviceaccounts` subcommand allows you to view the list of all service accounts that are available
 in your company.
 
 Usage:
@@ -186,9 +180,6 @@ miactl company iam list serviceaccounts [flags]
 
 Available flags for the command:
 
-- `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
-- `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
-- `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
 - `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
@@ -399,7 +390,7 @@ pods available in the current context and then the logs of all their containers 
 Usage:
 
 ```sh
-miactl runtime logs  POD-QUERY [flags]
+miactl runtime logs POD-QUERY [flags]
 ```
 
 Available flags for the command:
