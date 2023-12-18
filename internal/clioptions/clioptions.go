@@ -23,7 +23,8 @@ import (
 
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/util"
+	"github.com/mia-platform/miactl/internal/logger"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -66,6 +67,10 @@ type CLIOptions struct {
 
 	// OutputFormat describes the output format of some commands. Can be json or yaml.
 	OutputFormat string
+
+	ShowUsers           bool
+	ShowGroups          bool
+	ShowServiceAccounts bool
 }
 
 // NewCLIOptions return a new CLIOptions instance
@@ -77,7 +82,7 @@ func (o *CLIOptions) AddGlobalFlags(flags *pflag.FlagSet) {
 	locator := cliconfig.NewConfigPathLocator()
 	configFilePathDescription := fmt.Sprintf("path to the config file default to %s", locator.DefaultConfigPath())
 	flags.StringVarP(&o.MiactlConfig, "config", "c", "", configFilePathDescription)
-	flags.IntVarP(&util.LogLevel, "verbose", "v", 0, "increase the verbosity of the cli output")
+	flags.IntVarP(&logger.LogLevel, "verbose", "v", 0, "increase the verbosity of the cli output")
 }
 
 func (o *CLIOptions) AddConnectionFlags(flags *pflag.FlagSet) {
@@ -172,6 +177,12 @@ func (o *CLIOptions) AddLogsFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddOutputFormatFlag(flags *pflag.FlagSet, defaultVal string) {
 	flags.StringVarP(&o.OutputFormat, "output", "o", defaultVal, "Output format. Allowed values: json, yaml")
+}
+
+func (o *CLIOptions) AddIAMListFlags(flags *pflag.FlagSet) {
+	flags.BoolVar(&o.ShowUsers, "users", false, "Filter IAM entities to show only users. Mutally exclusive with groups and serviceAccounts")
+	flags.BoolVar(&o.ShowGroups, "groups", false, "Filter IAM entities to show only groups. Mutally exclusive with users and serviceAccounts")
+	flags.BoolVar(&o.ShowServiceAccounts, "serviceAccounts", false, "Filter IAM entities to show only service accounts. Mutally exclusive with users and groups")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {

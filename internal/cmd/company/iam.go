@@ -13,29 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package company
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/company"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam"
 	"github.com/spf13/cobra"
 )
 
-func CompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
+func IAMCmd(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "company",
-		Short: "View and manage Mia-Platform companies",
+		Use:   "iam",
+		Short: "Manage Mia-Platform IAM for a company",
+		Long: `A Company Owner user can manager the access to the company directly to a user,
+via a group or through service accounts.`,
 	}
 
 	// add cmd flags
 	flags := cmd.PersistentFlags()
-	options.AddConnectionFlags(flags)
-	options.AddContextFlags(flags)
+	o.AddConnectionFlags(flags)
+	o.AddContextFlags(flags)
+	o.AddCompanyFlags(flags)
 
-	// add sub commands
 	cmd.AddCommand(
-		company.ListCmd(options),
-		company.IAMCmd(options),
+		iam.ListCmd(o),
 	)
 
 	return cmd

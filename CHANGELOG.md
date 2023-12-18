@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `company iam list` command
+- `company iam list users` command
+- `company iam list groups` command
+- `company iam list serviceaccounts` command
 - marketplace apply: add version to multipart request metadata if present in the item
 - add command `miactl marketplace list-versions`
 - mark as alpha the features:

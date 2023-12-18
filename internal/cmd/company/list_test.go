@@ -43,8 +43,7 @@ func TestListCompanies(t *testing.T) {
 		err          bool
 	}{
 		"valid get response": {
-			server:       mockServer(t, true),
-			companiesURI: listCompaniesEndpoint,
+			server: mockServer(t, true),
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
@@ -54,8 +53,7 @@ func TestListCompanies(t *testing.T) {
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
-			err:          true,
-			companiesURI: listCompaniesEndpoint,
+			err: true,
 		},
 	}
 

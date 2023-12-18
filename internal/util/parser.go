@@ -13,30 +13,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package util
 
-import (
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/company"
-	"github.com/spf13/cobra"
-)
+import "github.com/mia-platform/miactl/internal/client"
 
-func CompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "company",
-		Short: "View and manage Mia-Platform companies",
+func RowsForResources[T any](response *client.Response, rowParser func(T) []string) ([][]string, error) {
+	resources := make([]T, 0)
+	if err := response.ParseResponse(&resources); err != nil {
+		return nil, err
 	}
 
-	// add cmd flags
-	flags := cmd.PersistentFlags()
-	options.AddConnectionFlags(flags)
-	options.AddContextFlags(flags)
-
-	// add sub commands
-	cmd.AddCommand(
-		company.ListCmd(options),
-		company.IAMCmd(options),
-	)
-
-	return cmd
+	rows := make([][]string, 0)
+	for _, resource := range resources {
+		rows = append(rows, rowParser(resource))
+	}
+	return rows, nil
 }
