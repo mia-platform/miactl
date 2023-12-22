@@ -28,6 +28,7 @@ import (
 func rowForIAMIdentity(identity resources.IAMIdentity) []string {
 	caser := cases.Title(language.English)
 	return []string{
+		identity.ID,
 		caser.String(readableType(identity.Type)),
 		identity.Name,
 		caser.String(strings.Join(readableRoles(identity.Roles), ", ")),
@@ -57,6 +58,7 @@ func rowForUserIdentity(identity resources.UserIdentity) []string {
 	}
 
 	return []string{
+		identity.ID,
 		identity.FullName,
 		identity.Email,
 		roles,
@@ -77,6 +79,7 @@ func rowForGroupIdentity(identity resources.GroupIdentity) []string {
 		names = strings.Join(memberNames, ", ")
 	}
 	return []string{
+		identity.ID,
 		readableType(identity.Name),
 		caser.String(readableRole(identity.Role)),
 		names,
@@ -96,6 +99,7 @@ func rowForServiceAccountIdentity(identity resources.ServiceAccountIdentity) []s
 	}
 
 	return []string{
+		identity.ID,
 		identity.Name,
 		roles,
 		lastLogin,

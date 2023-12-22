@@ -289,6 +289,7 @@ func (ui *UserIdentity) UnmarshalJSON(data []byte) error {
 }
 
 type GroupIdentity struct {
+	ID      string         `json:"_id"` //nolint: tagliatelle
 	Name    string         `json:"name"`
 	Role    string         `json:"role"`
 	RoleID  string         `json:"roleId"`

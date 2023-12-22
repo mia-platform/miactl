@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- the company iam list commands now return the id of the entities as well
 - update go version to 1.21.5
 - update logr to v1.4.1
 - update uuid to 1.5.0
