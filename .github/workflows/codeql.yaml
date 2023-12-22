@@ -16,7 +16,7 @@ on:
   - cron: 0 5 * * 1 # Run every monday at 5 UTC
 
 env:
-  GO_VERSION: 1.21.4
+  GO_VERSION: 1.21.5
   GORELEASER_VERSION: v1.22.1
 
 jobs:

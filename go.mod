@@ -1,16 +1,16 @@
 module github.com/mia-platform/miactl
 
-go 1.21.4
+go 1.21.5
 
 require (
 	dario.cat/mergo v1.0.0
-	github.com/go-logr/logr v1.3.0
-	github.com/google/uuid v1.4.0
+	github.com/go-logr/logr v1.4.1
+	github.com/google/uuid v1.5.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/spf13/cobra v1.8.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/exp v0.0.0-20231127185646-65229373498e
+	golang.org/x/exp v0.0.0-20231219180239-dc181d75b848
 	golang.org/x/oauth2 v0.15.0
 	golang.org/x/sync v0.5.0
 	golang.org/x/text v0.14.0
