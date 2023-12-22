@@ -36,6 +36,12 @@ type AddUserRequest struct {
 	Role  ServiceAccountRole `json:"role"`
 }
 
+type CreateGroupRequest struct {
+	Name    string             `json:"name"`
+	Role    ServiceAccountRole `json:"role"`
+	Members []string           `json:"members"`
+}
+
 type PublicKey struct {
 	Type      string `json:"kty"` //nolint: tagliatelle
 	Use       string `json:"use"` //nolint: tagliatelle

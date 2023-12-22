@@ -233,7 +233,7 @@ The `company iam add user` subcommand allows you to add a user in your Company w
 Usage:
 
 ```sh
-miactl company iam add user NAME [flags]
+miactl company iam add user [flags]
 ```
 
 Available flags for the command:
@@ -244,6 +244,25 @@ Available flags for the command:
 - `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--email`, the email of the user to add
+- `--role`, the Company role of the user
+
+#### add group
+
+The `company iam add group` subcommand allows you to add a group in your Company with the given role.
+
+Usage:
+
+```sh
+miactl company iam add group NAME [flags]
+```
+
+Available flags for the command:
+
+- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--certificate-authority`, to provide the path to a custom CA certificate
+- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
+- `--context`, to specify a different context from the currently selected one
+- `--company-id`, to set the ID of the desired Company
 - `--role`, the Company role of the user
 
 ## project

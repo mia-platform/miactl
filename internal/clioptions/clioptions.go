@@ -147,6 +147,10 @@ func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.UserEmail, "email", "", "", "the email of the user to add")
 }
 
+func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the group")
+}
+
 func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 	cmd.Flags().StringArrayVarP(&o.MarketplaceResourcePaths, "file-path", "f", []string{}, "paths to JSON/YAML files or folder of files containing a Marketplace item definition")
 	err := cmd.MarkFlagRequired("file-path")

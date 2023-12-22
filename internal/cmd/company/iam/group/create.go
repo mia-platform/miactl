@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package user
+package group
 
 import (
 	"context"
@@ -26,28 +26,28 @@ import (
 )
 
 const (
-	addUserToCompanyTemplate = "/api/companies/%s/users"
+	createGroupTemplate = "/api/companies/%s/groups"
 )
 
 func AddCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "user",
-		Short: "Add a user to a company",
-		Long:  "Add a user to a company",
+		Use:   "group NAME",
+		Short: "Create a new group in a company",
+		Long:  "Create a new group in a company",
 
-		Args: cobra.NoArgs,
+		Args: cobra.ExactArgs(1),
 		Run: func(cmd *cobra.Command, args []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			err = addUserToCompany(cmd.Context(), client, restConfig.CompanyID, options.UserEmail, resources.ServiceAccountRole(options.IAMRole))
+			err = createNewGroup(cmd.Context(), client, restConfig.CompanyID, args[0], resources.ServiceAccountRole(options.IAMRole))
 			cobra.CheckErr(err)
 		},
 	}
 
-	options.AddNewUserFlags(cmd.Flags())
+	options.CreateNewGroupFlags(cmd.Flags())
 	err := cmd.RegisterFlagCompletionFunc("role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{
 			resources.ServiceAccountRoleGuest.String(),
@@ -67,22 +67,23 @@ func AddCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func addUserToCompany(ctx context.Context, client *client.APIClient, companyID, userEmail string, role resources.ServiceAccountRole) error {
+func createNewGroup(ctx context.Context, client *client.APIClient, companyID, groupName string, role resources.ServiceAccountRole) error {
 	if !resources.IsValidServiceAccountRole(role) {
 		return fmt.Errorf("invalid service account role %s", role)
+	}
+
+	if len(groupName) == 0 {
+		return fmt.Errorf("a group name is required")
 	}
 
 	if len(companyID) == 0 {
 		return fmt.Errorf("company id is required, please set it via flag or context")
 	}
 
-	if len(userEmail) == 0 {
-		return fmt.Errorf("the user email is required")
-	}
-
-	payload := resources.AddUserRequest{
-		Email: userEmail,
-		Role:  role,
+	payload := resources.CreateGroupRequest{
+		Name:    groupName,
+		Role:    role,
+		Members: []string{},
 	}
 
 	body, err := resources.EncodeResourceToJSON(payload)
@@ -92,7 +93,7 @@ func addUserToCompany(ctx context.Context, client *client.APIClient, companyID, 
 
 	resp, err := client.
 		Post().
-		APIPath(fmt.Sprintf(addUserToCompanyTemplate, companyID)).
+		APIPath(fmt.Sprintf(createGroupTemplate, companyID)).
 		Body(body).
 		Do(ctx)
 
@@ -104,6 +105,6 @@ func addUserToCompany(ctx context.Context, client *client.APIClient, companyID, 
 		return err
 	}
 
-	fmt.Printf("user %s added to %s company\n", userEmail, companyID)
+	fmt.Printf("group %s added to %s company\n", groupName, companyID)
 	return nil
 }
