@@ -186,6 +186,46 @@ Available flags for the command:
 - `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 
+#### add serviceaccount basic
+
+The `company iam add serviceaccount basic` subcommand allows you to create a new service account for your Company.
+
+Usage:
+
+```sh
+miactl company iam add serviceaccount basic NAME [flags]
+```
+
+Available flags for the command:
+
+- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--certificate-authority`, to provide the path to a custom CA certificate
+- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
+- `--context`, to specify a different context from the currently selected one
+- `--company-id`, to set the ID of the desired Company
+- `--role`, the Company role for the service account
+
+#### add serviceaccount jwt
+
+The `company iam add serviceaccount jwt` subcommand allows you to create a new service account for your Company that will
+use the jwt authorization method.
+
+Usage:
+
+```sh
+miactl company iam add serviceaccount jwtt NAME [flags]
+```
+
+Available flags for the command:
+
+- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--certificate-authority`, to provide the path to a custom CA certificate
+- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
+- `--context`, to specify a different context from the currently selected one
+- `--company-id`, to set the ID of the desired Company
+- `--output`, optional flag to save the service account json description in a file at the provided path
+- `--role`, the Company role for the service account
+
 ## project
 
 This command allows you to manage `miactl` Projects.
@@ -232,48 +272,6 @@ Available flags for the command:
 - `--deploy-type`, to select a deploy type (default is `smart_deploy`)
 - `--no-semver`, to force the deploy without `semver`
 - `--revision`, to specify the revision of the commit to deploy
-
-## serviceaccount
-
-### create basic
-
-The `serviceaccount create basic` subcommand allows you to create a new service account for your Company.
-
-Usage:
-
-```sh
-miactl serviceaccount create basic NAME [flags]
-```
-
-Available flags for the command:
-
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired Company
-- `--role`, the Company role for the service account
-
-### create jwt
-
-The `serviceaccount create jwt` subcommand allows you to create a new service account for your Company that will
-use the jwt authorization method.
-
-Usage:
-
-```sh
-miactl serviceaccount create jwt NAME [flags]
-```
-
-Available flags for the command:
-
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
-- `--company-id`, to set the ID of the desired Company
-- `--output`, optional flag to save the service account json description in a file at the provided path
-- `--role`, the Company role for the service account
 
 ## runtime
 

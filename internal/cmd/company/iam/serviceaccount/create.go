@@ -17,14 +17,14 @@ package serviceaccount
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/basic"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/jwt"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/serviceaccount/basic"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/serviceaccount/jwt"
 	"github.com/spf13/cobra"
 )
 
 func CreateServiceAccountCmd(o *clioptions.CLIOptions) *cobra.Command {
 	createCmd := &cobra.Command{
-		Use:   "create",
+		Use:   "serviceaccount",
 		Short: "Create a service account",
 		Long:  "Create a service account using specified subcommand",
 	}

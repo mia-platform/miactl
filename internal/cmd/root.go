@@ -50,7 +50,6 @@ func NewRootCommand() *cobra.Command {
 		CompanyCmd(options),
 		ContextCmd(options),
 		ProjectCmd(options),
-		ServiceAccountCmd(options),
 		MarketplaceCmd(options),
 		RuntimeCmd(options),
 		VersionCmd(options),
