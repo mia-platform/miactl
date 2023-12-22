@@ -46,12 +46,14 @@ type CLIOptions struct {
 	DeployType string
 	NoSemVer   bool
 
+	IAMRole string
+
+	UserEmail string
+
 	BasicClientID     string
 	BasicClientSecret string
 	JWTJsonPath       string
-
-	ServiceAccountRole string
-	OutputPath         string
+	OutputPath        string
 
 	MarketplaceResourcePaths []string
 	// MarketplaceItemID is the itemId field of a Marketplace item
@@ -132,12 +134,17 @@ func (o *CLIOptions) AddContextAuthFlags(flags *pflag.FlagSet) {
 }
 
 func (o *CLIOptions) AddServiceAccountFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.ServiceAccountRole, "role", "r", "", "the company role of the service account")
+	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the service account")
 }
 
 func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 	o.AddServiceAccountFlags(flags)
 	flags.StringVarP(&o.OutputPath, "output", "o", "", "write the service account to a file")
+}
+
+func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the user")
+	flags.StringVarP(&o.UserEmail, "email", "", "", "the email of the user to add")
 }
 
 func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {

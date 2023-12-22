@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `company iam add user` command
+
 ### Changed
 
 - the company iam list commands now return the id of the entities as well

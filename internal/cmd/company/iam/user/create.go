@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package basic
+package user
 
 import (
 	"context"
@@ -26,39 +26,28 @@ import (
 )
 
 const (
-	companyServiceAccountsEndpointTemplate = "/api/companies/%s/service-accounts"
+	addUserToCompanyTemplate = "/api/companies/%s/users"
 )
 
-func ServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
+func AddCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "basic SERVICEACCOUNT [flags]",
-		Short: "Create a new basic authentication service account",
-		Long: `Create a new basic authentication service account in the provided company.
+		Use:   "user",
+		Short: "Add a user to a company",
+		Long:  "Add a user to a company",
 
-You can create a service account with the same or lower role than the role that
-the current authentication has. The role company-owner can be used only when the
-service account is created on the company.`,
-		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			serviceAccountName := args[0]
+		Args: cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			credentials, err := createBasicServiceAccount(cmd.Context(), client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.IAMRole))
-			if err != nil {
-				return err
-			}
 
-			cmd.Println("Service account created, please save the following parameters:")
-			cmd.Println("")
-			cmd.Printf("Client ID: %s\nClient Secret: %s\n", credentials[0], credentials[1])
-			return nil
+			err = addUserToCompany(cmd.Context(), client, restConfig.CompanyID, options.UserEmail, resources.ServiceAccountRole(options.IAMRole))
+			cobra.CheckErr(err)
 		},
 	}
 
-	// add cmd flags
-	options.AddServiceAccountFlags(cmd.Flags())
+	options.AddNewUserFlags(cmd.Flags())
 	err := cmd.RegisterFlagCompletionFunc("role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{
 			resources.ServiceAccountRoleGuest.String(),
@@ -78,44 +67,43 @@ service account is created on the company.`,
 	return cmd
 }
 
-func createBasicServiceAccount(ctx context.Context, client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) ([]string, error) {
+func addUserToCompany(ctx context.Context, client *client.APIClient, companyID, userEmail string, role resources.ServiceAccountRole) error {
 	if !resources.IsValidServiceAccountRole(role) {
-		return nil, fmt.Errorf("invalid service account role %s", role)
+		return fmt.Errorf("invalid service account role %s", role)
 	}
 
 	if len(companyID) == 0 {
-		return nil, fmt.Errorf("company id is required, please set it via flag or context")
+		return fmt.Errorf("company id is required, please set it via flag or context")
 	}
 
-	payload := &resources.ServiceAccountRequest{
-		Name: name,
-		Type: resources.ServiceAccountBasic,
-		Role: role,
+	if len(userEmail) == 0 {
+		return fmt.Errorf("the user email is required")
+	}
+
+	payload := resources.AddUserRequest{
+		Email: userEmail,
+		Role:  role,
 	}
 
 	body, err := resources.EncodeResourceToJSON(payload)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode request body: %w", err)
+		return fmt.Errorf("failed to encode request body: %w", err)
 	}
 
 	resp, err := client.
 		Post().
-		APIPath(fmt.Sprintf(companyServiceAccountsEndpointTemplate, companyID)).
+		APIPath(fmt.Sprintf(addUserToCompanyTemplate, companyID)).
 		Body(body).
 		Do(ctx)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := resp.Error(); err != nil {
-		return nil, err
+		return err
 	}
 
-	response := new(resources.ServiceAccount)
-	if err := resp.ParseResponse(response); err != nil {
-		return nil, err
-	}
-
-	return []string{response.ClientID, response.ClientSecret}, nil
+	fmt.Printf("user %s added to %s company", userEmail, companyID)
+	return nil
 }

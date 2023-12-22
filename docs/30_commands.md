@@ -213,7 +213,7 @@ use the jwt authorization method.
 Usage:
 
 ```sh
-miactl company iam add serviceaccount jwtt NAME [flags]
+miactl company iam add serviceaccount jwt NAME [flags]
 ```
 
 Available flags for the command:
@@ -225,6 +225,26 @@ Available flags for the command:
 - `--company-id`, to set the ID of the desired Company
 - `--output`, optional flag to save the service account json description in a file at the provided path
 - `--role`, the Company role for the service account
+
+#### add user
+
+The `company iam add user` subcommand allows you to add a user in your Company with the given role.
+
+Usage:
+
+```sh
+miactl company iam add user NAME [flags]
+```
+
+Available flags for the command:
+
+- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--certificate-authority`, to provide the path to a custom CA certificate
+- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
+- `--context`, to specify a different context from the currently selected one
+- `--company-id`, to set the ID of the desired Company
+- `--email`, the email of the user to add
+- `--role`, the Company role of the user
 
 ## project
 

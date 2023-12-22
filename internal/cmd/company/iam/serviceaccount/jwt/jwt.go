@@ -57,7 +57,7 @@ service account is created on the company.`,
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			credentials, err := createJWTServiceAccount(cmd.Context(), client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.ServiceAccountRole))
+			credentials, err := createJWTServiceAccount(cmd.Context(), client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.IAMRole))
 			if err != nil {
 				return err
 			}
