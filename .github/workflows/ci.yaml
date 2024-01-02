@@ -27,7 +27,7 @@ jobs:
       with:
         show-progress: false
     - name: Setup Golang
-      uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
       with:
         go-version: ${{ env.GO_VERSION }}
         cache: false
@@ -67,7 +67,7 @@ jobs:
       with:
         show-progress: false
     - name: Setup Golang
-      uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
       with:
         go-version: ${{ env.GO_VERSION }}
         cache: true
@@ -87,7 +87,7 @@ jobs:
       with:
         show-progress: false
     - name: Setup Golang
-      uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
       with:
         go-version: ${{ env.GO_VERSION }}
         cache: true
@@ -112,7 +112,7 @@ jobs:
         show-progress: false
         fetch-depth: 0
     - name: Setup Golang
-      uses: actions/setup-go@93397bea11091df50f3d7e59dc26a7711a8bcfbe # v4.1.0
+      uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
       with:
         go-version: ${{ env.GO_VERSION }}
         cache: true
