@@ -35,6 +35,7 @@ add them to the company selected via the flag or context`,
 		serviceaccount.CreateServiceAccountCmd(options),
 		user.AddCmd(options),
 		group.AddCmd(options),
+		group.AddMemberCmd(options),
 	)
 
 	return cmd

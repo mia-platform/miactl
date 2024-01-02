@@ -42,6 +42,10 @@ type CreateGroupRequest struct {
 	Members []string           `json:"members"`
 }
 
+type AddMembersToGroup struct {
+	Members []string `json:"emails"` //nolint: tagliatelle
+}
+
 type PublicKey struct {
 	Type      string `json:"kty"` //nolint: tagliatelle
 	Use       string `json:"use"` //nolint: tagliatelle
