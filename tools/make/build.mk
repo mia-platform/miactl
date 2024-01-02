@@ -63,7 +63,7 @@ go/build/multiarch:
 .PHONY: build-deps
 build-deps:
 
-$(GORELEASER_PATH): $(TOOLS_DIR)/GORELEASER_VERSION
+$(TOOLS_BIN)/goreleaser: $(TOOLS_DIR)/GORELEASER_VERSION
 	$(eval GORELEASER_VERSION:= $(shell cat $<))
 	mkdir -p $(TOOLS_BIN)
 	$(info Installing goreleaser $(GORELEASER_VERSION) bin in $(TOOLS_BIN))

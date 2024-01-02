@@ -1,2 +1,4 @@
 # All files
 * @mia-platform/sig-cli
+# Actions must also be checked by security
+.github/actions @mia-platform/sig-cli @mia-platform/sig-security

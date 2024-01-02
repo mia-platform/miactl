@@ -17,5 +17,8 @@ MD029:
 MD033:
   allowed_elements:
   - center
+  - picture
+  - source
+  - img
 MD046:
   style: fenced
