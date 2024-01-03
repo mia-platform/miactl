@@ -36,13 +36,14 @@ func AddMemberCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Long:  "Add one or more users to a company group. The users can be added via their emails",
 
 		Args: cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		Run: func(cmd *cobra.Command, args []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			return addMemberToGroup(cmd.Context(), client, restConfig.CompanyID, options.GroupID, options.UserEmails)
+			err = addMemberToGroup(cmd.Context(), client, restConfig.CompanyID, options.GroupID, options.UserEmails)
+			cobra.CheckErr(err)
 		},
 	}
 

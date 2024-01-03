@@ -155,7 +155,7 @@ func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {
 }
 
 func (o *CLIOptions) AddMemberToGroupFlags(flags *pflag.FlagSet) {
-	flags.StringArrayVarP(&o.UserEmails, "user-email", "", []string{}, "the list of user email to add to the group")
+	flags.StringSliceVarP(&o.UserEmails, "user-email", "", []string{}, "the list of user email to add to the group")
 	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id where to add the users")
 }
 
