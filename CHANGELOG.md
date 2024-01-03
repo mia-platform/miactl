@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### BREAKING
+
+- move serviceaccount commads under `company iam add`
+
 ### Added
 
 - `company iam add user` command
@@ -21,11 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update uuid to 1.5.0
 - update exp to v0.0.0-20231219180239-dc181d75b848
 
+## [0.10.0] - 2023-12-20
+
 ### BREAKING
 
-- move serviceaccount commads under `company iam add`
-
-## [0.10.0] - 2023-12-20
+- `miactl marketplace delete` does not accept anymore the id as argument, it should be provided to the flag `--object-id`
+- `miactl marketplace get` does not accept anymore the id as argument, it should be provided to the flag `--object-id`
 
 ### Added
 
@@ -57,11 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `runtime logs` now is working correctly for pods with more than one container
-
-### BREAKING
-
-- `miactl marketplace delete` does not accept anymore the id as argument, it should be provided to the flag `--object-id`
-- `miactl marketplace get` does not accept anymore the id as argument, it should be provided to the flag `--object-id`
 
 ## [0.9.0] - 2023-11-15
 
