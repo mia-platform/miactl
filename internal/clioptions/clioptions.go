@@ -142,7 +142,7 @@ func (o *CLIOptions) AddServiceAccountFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 	o.AddServiceAccountFlags(flags)
-	flags.StringVarP(&o.OutputPath, "output", "o", "", "write the service account to a file")
+	flags.StringVarP(&o.OutputPath, "output", "o", "", "write the service account configuration as json to a file")
 }
 
 func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {
