@@ -7,14 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### BREAKING
+
+- move serviceaccount commads under `company iam add`
+
+### Added
+
+- `company iam add user` command
+- `company iam add group` command
+- `company iam add group-member` command
+
 ### Changed
 
+- the company iam list commands now return the id of the entities as well
 - update go version to 1.21.5
 - update logr to v1.4.1
 - update uuid to 1.5.0
 - update exp to v0.0.0-20231219180239-dc181d75b848
 
 ## [0.10.0] - 2023-12-20
+
+### BREAKING
+
+- `miactl marketplace delete` does not accept anymore the id as argument, it should be provided to the flag `--object-id`
+- `miactl marketplace get` does not accept anymore the id as argument, it should be provided to the flag `--object-id`
 
 ### Added
 
@@ -46,11 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `runtime logs` now is working correctly for pods with more than one container
-
-### BREAKING
-
-- `miactl marketplace delete` does not accept anymore the id as argument, it should be provided to the flag `--object-id`
-- `miactl marketplace get` does not accept anymore the id as argument, it should be provided to the flag `--object-id`
 
 ## [0.9.0] - 2023-11-15
 

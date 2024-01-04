@@ -148,7 +148,7 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 	table.SetCenterSeparator("")
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
-	table.SetHeader([]string{"Type", "Name", "Roles"})
+	table.SetHeader([]string{"ID", "Type", "Name", "Roles"})
 	table.AppendBulk(rows)
 	table.Render()
 	return nil
@@ -189,13 +189,13 @@ func listSpecificEntities(ctx context.Context, client *client.APIClient, company
 	var rows [][]string
 	switch entityType {
 	case UsersEntityName:
-		tableHeaders = []string{"Name", "Email", "Roles", "Groups", "Last Login"}
+		tableHeaders = []string{"ID", "Name", "Email", "Roles", "Groups", "Last Login"}
 		rows, err = util.RowsForResources(response, rowForUserIdentity)
 	case GroupsEntityName:
-		tableHeaders = []string{"Name", "Roles", "Members"}
+		tableHeaders = []string{"ID", "Name", "Roles", "Members"}
 		rows, err = util.RowsForResources(response, rowForGroupIdentity)
 	case ServiceAccountsEntityName:
-		tableHeaders = []string{"Name", "Roles", "Last Login"}
+		tableHeaders = []string{"ID", "Name", "Roles", "Last Login"}
 		rows, err = util.RowsForResources(response, rowForServiceAccountIdentity)
 	}
 

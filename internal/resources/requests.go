@@ -31,6 +31,21 @@ type ServiceAccountRequest struct {
 	PublicKey PublicKey          `json:"publicKey,omitempty"`
 }
 
+type AddUserRequest struct {
+	Email string             `json:"email"`
+	Role  ServiceAccountRole `json:"role"`
+}
+
+type CreateGroupRequest struct {
+	Name    string             `json:"name"`
+	Role    ServiceAccountRole `json:"role"`
+	Members []string           `json:"members"`
+}
+
+type AddMembersToGroup struct {
+	Members []string `json:"emails"` //nolint: tagliatelle
+}
+
 type PublicKey struct {
 	Type      string `json:"kty"` //nolint: tagliatelle
 	Use       string `json:"use"` //nolint: tagliatelle

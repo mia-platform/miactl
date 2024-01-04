@@ -13,27 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package serviceaccount
+package iam
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/basic"
-	"github.com/mia-platform/miactl/internal/cmd/serviceaccount/jwt"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/group"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/serviceaccount"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/user"
 	"github.com/spf13/cobra"
 )
 
-func CreateServiceAccountCmd(o *clioptions.CLIOptions) *cobra.Command {
-	createCmd := &cobra.Command{
-		Use:   "create",
-		Short: "Create a service account",
-		Long:  "Create a service account using specified subcommand",
+func AddCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "add",
+		Short: "Add a new IAM entity to a company",
+		Long: `A Company can have associated different entities for managing the roles, this command will create or
+add them to the company selected via the flag or context`,
 	}
 
-	// add sub commands
-	createCmd.AddCommand(
-		basic.ServiceAccountCmd(o),
-		jwt.ServiceAccountCmd(o),
+	cmd.AddCommand(
+		serviceaccount.CreateServiceAccountCmd(options),
+		user.AddCmd(options),
+		group.AddCmd(options),
+		group.AddMemberCmd(options),
 	)
 
-	return createCmd
+	return cmd
 }

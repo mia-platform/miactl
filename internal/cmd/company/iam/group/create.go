@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package basic
+package group
 
 import (
 	"context"
@@ -26,39 +26,28 @@ import (
 )
 
 const (
-	companyServiceAccountsEndpointTemplate = "/api/companies/%s/service-accounts"
+	createGroupTemplate = "/api/companies/%s/groups"
 )
 
-func ServiceAccountCmd(options *clioptions.CLIOptions) *cobra.Command {
+func AddCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "basic SERVICEACCOUNT [flags]",
-		Short: "Create a new basic authentication service account",
-		Long: `Create a new basic authentication service account in the provided company.
+		Use:   "group NAME",
+		Short: "Create a new group in a company",
+		Long:  "Create a new group in a company",
 
-You can create a service account with the same or lower role than the role that
-the current authentication has. The role company-owner can be used only when the
-service account is created on the company.`,
 		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			serviceAccountName := args[0]
+		Run: func(cmd *cobra.Command, args []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			credentials, err := createBasicServiceAccount(cmd.Context(), client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.ServiceAccountRole))
-			if err != nil {
-				return err
-			}
 
-			cmd.Println("Service account created, please save the following parameters:")
-			cmd.Println("")
-			cmd.Printf("Client ID: %s\nClient Secret: %s\n", credentials[0], credentials[1])
-			return nil
+			err = createNewGroup(cmd.Context(), client, restConfig.CompanyID, args[0], resources.ServiceAccountRole(options.IAMRole))
+			cobra.CheckErr(err)
 		},
 	}
 
-	// add cmd flags
-	options.AddServiceAccountFlags(cmd.Flags())
+	options.CreateNewGroupFlags(cmd.Flags())
 	err := cmd.RegisterFlagCompletionFunc("role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{
 			resources.ServiceAccountRoleGuest.String(),
@@ -78,44 +67,44 @@ service account is created on the company.`,
 	return cmd
 }
 
-func createBasicServiceAccount(ctx context.Context, client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) ([]string, error) {
+func createNewGroup(ctx context.Context, client *client.APIClient, companyID, groupName string, role resources.ServiceAccountRole) error {
 	if !resources.IsValidServiceAccountRole(role) {
-		return nil, fmt.Errorf("invalid service account role %s", role)
+		return fmt.Errorf("invalid service account role %s", role)
+	}
+
+	if len(groupName) == 0 {
+		return fmt.Errorf("a group name is required")
 	}
 
 	if len(companyID) == 0 {
-		return nil, fmt.Errorf("company id is required, please set it via flag or context")
+		return fmt.Errorf("company id is required, please set it via flag or context")
 	}
 
-	payload := &resources.ServiceAccountRequest{
-		Name: name,
-		Type: resources.ServiceAccountBasic,
-		Role: role,
+	payload := resources.CreateGroupRequest{
+		Name:    groupName,
+		Role:    role,
+		Members: []string{},
 	}
 
 	body, err := resources.EncodeResourceToJSON(payload)
 	if err != nil {
-		return nil, fmt.Errorf("failed to encode request body: %w", err)
+		return fmt.Errorf("failed to encode request body: %w", err)
 	}
 
 	resp, err := client.
 		Post().
-		APIPath(fmt.Sprintf(companyServiceAccountsEndpointTemplate, companyID)).
+		APIPath(fmt.Sprintf(createGroupTemplate, companyID)).
 		Body(body).
 		Do(ctx)
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if err := resp.Error(); err != nil {
-		return nil, err
+		return err
 	}
 
-	response := new(resources.ServiceAccount)
-	if err := resp.ParseResponse(response); err != nil {
-		return nil, err
-	}
-
-	return []string{response.ClientID, response.ClientSecret}, nil
+	fmt.Printf("group %s added to %s company\n", groupName, companyID)
+	return nil
 }

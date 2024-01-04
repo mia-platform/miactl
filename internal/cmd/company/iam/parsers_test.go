@@ -35,7 +35,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 				Type:  "group",
 				Roles: []string{"company-owner", "guest"},
 			},
-			expectedRow: []string{"Group", "identity name", "Company Owner, Guest"},
+			expectedRow: []string{"identity-id", "Group", "identity name", "Company Owner, Guest"},
 		},
 		"user account IAM identity": {
 			identity: resources.IAMIdentity{
@@ -44,7 +44,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 				Type:  "serviceAccount",
 				Roles: []string{"developer"},
 			},
-			expectedRow: []string{"Service Account", "identity name", "Developer"},
+			expectedRow: []string{"identity-id", "Service Account", "identity name", "Developer"},
 		},
 		"user IAM identity": {
 			identity: resources.IAMIdentity{
@@ -53,7 +53,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 				Type:  "user",
 				Roles: []string{"developer"},
 			},
-			expectedRow: []string{"User", "identity name", "Developer"},
+			expectedRow: []string{"identity-id", "User", "identity name", "Developer"},
 		},
 	}
 
@@ -77,7 +77,7 @@ func TestRowForUserIdentity(t *testing.T) {
 				Roles:     []string{"company-owner", "guest"},
 				LastLogin: time.Now(),
 			},
-			expectedRow: []string{"identity name", "user@example.com", "Company Owner, Guest", "-", "0s"},
+			expectedRow: []string{"identity-id", "identity name", "user@example.com", "Company Owner, Guest", "-", "0s"},
 		},
 		"user with groups": {
 			identity: resources.UserIdentity{
@@ -92,7 +92,7 @@ func TestRowForUserIdentity(t *testing.T) {
 				},
 				LastLogin: time.Now(),
 			},
-			expectedRow: []string{"identity name", "user@example.com", "-", "group name", "0s"},
+			expectedRow: []string{"identity-id", "identity name", "user@example.com", "-", "group name", "0s"},
 		},
 		"user with both": {
 			identity: resources.UserIdentity{
@@ -112,7 +112,7 @@ func TestRowForUserIdentity(t *testing.T) {
 				},
 				LastLogin: time.Now(),
 			},
-			expectedRow: []string{"identity name", "user@example.com", "Company Owner", "group name, group name2", "0s"},
+			expectedRow: []string{"identity-id", "identity name", "user@example.com", "Company Owner", "group name, group name2", "0s"},
 		},
 	}
 
@@ -130,13 +130,15 @@ func TestRowForGroupIdentity(t *testing.T) {
 	}{
 		"group without users": {
 			identity: resources.GroupIdentity{
+				ID:   "identity-id",
 				Name: "identity name",
 				Role: "guest",
 			},
-			expectedRow: []string{"identity name", "Guest", "-"},
+			expectedRow: []string{"identity-id", "identity name", "Guest", "-"},
 		},
 		"group without one user": {
 			identity: resources.GroupIdentity{
+				ID:   "identity-id",
 				Name: "identity name",
 				Role: "project-admin",
 				Members: []resources.UserIdentity{
@@ -145,10 +147,11 @@ func TestRowForGroupIdentity(t *testing.T) {
 					},
 				},
 			},
-			expectedRow: []string{"identity name", "Project Administrator", "user name"},
+			expectedRow: []string{"identity-id", "identity name", "Project Administrator", "user name"},
 		},
 		"group without more users": {
 			identity: resources.GroupIdentity{
+				ID:   "identity-id",
 				Name: "identity name",
 				Role: "guest",
 				Members: []resources.UserIdentity{
@@ -160,7 +163,7 @@ func TestRowForGroupIdentity(t *testing.T) {
 					},
 				},
 			},
-			expectedRow: []string{"identity name", "Guest", "user name, name user"},
+			expectedRow: []string{"identity-id", "identity name", "Guest", "user name, name user"},
 		},
 	}
 
@@ -178,18 +181,20 @@ func TestRowForServiceAccountIdentity(t *testing.T) {
 	}{
 		"base service account": {
 			identity: resources.ServiceAccountIdentity{
+				ID:        "identity-id",
 				Name:      "identity name",
 				Roles:     []string{"guest"},
 				LastLogin: time.Now(),
 			},
-			expectedRow: []string{"identity name", "Guest", "0s"},
+			expectedRow: []string{"identity-id", "identity name", "Guest", "0s"},
 		},
 		"service account without login and with multiple roles": {
 			identity: resources.ServiceAccountIdentity{
+				ID:    "identity-id",
 				Name:  "identity name",
 				Roles: []string{"guest, developer"},
 			},
-			expectedRow: []string{"identity name", "Guest, Developer", "-"},
+			expectedRow: []string{"identity-id", "identity name", "Guest, Developer", "-"},
 		},
 	}
 
