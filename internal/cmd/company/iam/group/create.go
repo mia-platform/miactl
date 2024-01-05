@@ -42,22 +42,13 @@ func AddCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			err = createNewGroup(cmd.Context(), client, restConfig.CompanyID, args[0], resources.ServiceAccountRole(options.IAMRole))
+			err = createNewGroup(cmd.Context(), client, restConfig.CompanyID, args[0], resources.IAMRole(options.IAMRole))
 			cobra.CheckErr(err)
 		},
 	}
 
 	options.CreateNewGroupFlags(cmd.Flags())
-	err := cmd.RegisterFlagCompletionFunc("role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{
-			resources.ServiceAccountRoleGuest.String(),
-			resources.ServiceAccountRoleReporter.String(),
-			resources.ServiceAccountRoleDeveloper.String(),
-			resources.ServiceAccountRoleMaintainer.String(),
-			resources.ServiceAccountRoleProjectAdmin.String(),
-			resources.ServiceAccountRoleCompanyOwner.String(),
-		}, cobra.ShellCompDirectiveDefault
-	})
+	err := cmd.RegisterFlagCompletionFunc("role", resources.IAMRoleCompletion)
 
 	if err != nil {
 		// we panic here because if we reach here, something nasty is happening in flag autocomplete registration
@@ -67,8 +58,8 @@ func AddCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func createNewGroup(ctx context.Context, client *client.APIClient, companyID, groupName string, role resources.ServiceAccountRole) error {
-	if !resources.IsValidServiceAccountRole(role) {
+func createNewGroup(ctx context.Context, client *client.APIClient, companyID, groupName string, role resources.IAMRole) error {
+	if !resources.IsValidIAMRole(role) {
 		return fmt.Errorf("invalid service account role %s", role)
 	}
 

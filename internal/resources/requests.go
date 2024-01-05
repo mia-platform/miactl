@@ -25,25 +25,29 @@ type RefreshTokenRequest struct {
 }
 
 type ServiceAccountRequest struct {
-	Name      string             `json:"name"`
-	Type      string             `json:"tokenEndpointAuthMethod"` //nolint: tagliatelle
-	Role      ServiceAccountRole `json:"role"`
-	PublicKey PublicKey          `json:"publicKey,omitempty"`
+	Name      string    `json:"name"`
+	Type      string    `json:"tokenEndpointAuthMethod"` //nolint: tagliatelle
+	Role      IAMRole   `json:"role"`
+	PublicKey PublicKey `json:"publicKey,omitempty"`
 }
 
 type AddUserRequest struct {
-	Email string             `json:"email"`
-	Role  ServiceAccountRole `json:"role"`
+	Email string  `json:"email"`
+	Role  IAMRole `json:"role"`
 }
 
 type CreateGroupRequest struct {
-	Name    string             `json:"name"`
-	Role    ServiceAccountRole `json:"role"`
-	Members []string           `json:"members"`
+	Name    string   `json:"name"`
+	Role    IAMRole  `json:"role"`
+	Members []string `json:"members"`
 }
 
 type AddMembersToGroup struct {
 	Members []string `json:"emails"` //nolint: tagliatelle
+}
+
+type EditIAMRole struct {
+	Role IAMRole `json:"role"`
 }
 
 type PublicKey struct {
@@ -55,18 +59,18 @@ type PublicKey struct {
 	Exponent  string `json:"e"`   //nolint: tagliatelle
 }
 
-type ServiceAccountRole string
+type IAMRole string
 
 const (
 	ServiceAccountBasic = "client_secret_basic"
 	ServiceAccountJWT   = "private_key_jwt"
 
-	ServiceAccountRoleGuest        = ServiceAccountRole("guest")
-	ServiceAccountRoleReporter     = ServiceAccountRole("reporter")
-	ServiceAccountRoleDeveloper    = ServiceAccountRole("developer")
-	ServiceAccountRoleMaintainer   = ServiceAccountRole("maintainer")
-	ServiceAccountRoleProjectAdmin = ServiceAccountRole("project-admin")
-	ServiceAccountRoleCompanyOwner = ServiceAccountRole("company-owner")
+	IAMRoleGuest        = IAMRole("guest")
+	IAMRoleReporter     = IAMRole("reporter")
+	IAMRoleDeveloper    = IAMRole("developer")
+	IAMRoleMaintainer   = IAMRole("maintainer")
+	IAMRoleProjectAdmin = IAMRole("project-admin")
+	IAMRoleCompanyOwner = IAMRole("company-owner")
 )
 
 type DeployProjectRequest struct {

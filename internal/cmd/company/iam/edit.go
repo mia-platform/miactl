@@ -17,6 +17,7 @@ package iam
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/group"
 	"github.com/mia-platform/miactl/internal/cmd/company/iam/serviceaccount"
 	"github.com/mia-platform/miactl/internal/cmd/company/iam/user"
 	"github.com/spf13/cobra"
@@ -32,6 +33,7 @@ func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd.AddCommand(
 		user.EditCmd(options),
 		serviceaccount.EditCmd(options),
+		group.EditCmd(options),
 	)
 
 	return cmd

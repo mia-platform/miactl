@@ -32,41 +32,41 @@ func TestEditServiceAccount(t *testing.T) {
 	testCases := map[string]struct {
 		server           *httptest.Server
 		companyID        string
-		role             resources.ServiceAccountRole
+		role             resources.IAMRole
 		serviceAccountID string
 		expectErr        bool
 	}{
 		"edit service account": {
 			server:           editServiceAccountTestServer(t),
 			companyID:        "success",
-			role:             resources.ServiceAccountRoleGuest,
+			role:             resources.IAMRoleGuest,
 			serviceAccountID: "000000000000000000000001",
 		},
 		"missing company": {
 			server:           editServiceAccountTestServer(t),
 			companyID:        "",
-			role:             resources.ServiceAccountRoleGuest,
+			role:             resources.IAMRoleGuest,
 			serviceAccountID: "000000000000000000000001",
 			expectErr:        true,
 		},
 		"missing service account id": {
 			server:           editServiceAccountTestServer(t),
 			companyID:        "success",
-			role:             resources.ServiceAccountRoleGuest,
+			role:             resources.IAMRoleGuest,
 			serviceAccountID: "",
 			expectErr:        true,
 		},
 		"wrong role": {
 			server:           editServiceAccountTestServer(t),
 			companyID:        "",
-			role:             resources.ServiceAccountRole("example"),
+			role:             resources.IAMRole("example"),
 			serviceAccountID: "000000000000000000000001",
 			expectErr:        true,
 		},
 		"error from backend": {
 			server:           editServiceAccountTestServer(t),
 			companyID:        "fail",
-			role:             resources.ServiceAccountRoleCompanyOwner,
+			role:             resources.IAMRoleCompanyOwner,
 			serviceAccountID: "000000000000000000000001",
 			expectErr:        true,
 		},

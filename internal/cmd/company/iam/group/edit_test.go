@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package user
+package group
 
 import (
 	"context"
@@ -28,46 +28,46 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEditUser(t *testing.T) {
+func TestEditGroup(t *testing.T) {
 	testCases := map[string]struct {
 		server    *httptest.Server
 		companyID string
 		role      resources.IAMRole
-		userID    string
+		groupID   string
 		expectErr bool
 	}{
-		"edit user": {
-			server:    editUserTestServer(t),
+		"edit group": {
+			server:    editGroupTestServer(t),
 			companyID: "success",
 			role:      resources.IAMRoleGuest,
-			userID:    "000000000000000000000001",
+			groupID:   "000000000000000000000001",
 		},
 		"missing company": {
-			server:    editUserTestServer(t),
+			server:    editGroupTestServer(t),
 			companyID: "",
 			role:      resources.IAMRoleGuest,
-			userID:    "000000000000000000000001",
+			groupID:   "000000000000000000000001",
 			expectErr: true,
 		},
-		"missing user id": {
-			server:    editUserTestServer(t),
+		"missing group id": {
+			server:    editGroupTestServer(t),
 			companyID: "success",
 			role:      resources.IAMRoleGuest,
-			userID:    "",
+			groupID:   "",
 			expectErr: true,
 		},
 		"wrong role": {
-			server:    editUserTestServer(t),
+			server:    editGroupTestServer(t),
 			companyID: "",
 			role:      resources.IAMRole("example"),
-			userID:    "000000000000000000000001",
+			groupID:   "000000000000000000000001",
 			expectErr: true,
 		},
 		"error from backend": {
-			server:    editUserTestServer(t),
+			server:    editGroupTestServer(t),
 			companyID: "fail",
 			role:      resources.IAMRoleCompanyOwner,
-			userID:    "000000000000000000000001",
+			groupID:   "000000000000000000000001",
 			expectErr: true,
 		},
 	}
@@ -80,11 +80,11 @@ func TestEditUser(t *testing.T) {
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			err = editCompanyUser(
+			err = editCompanyGroup(
 				context.TODO(),
 				client,
 				testCase.companyID,
-				testCase.userID,
+				testCase.groupID,
 				testCase.role,
 			)
 
@@ -98,14 +98,14 @@ func TestEditUser(t *testing.T) {
 	}
 }
 
-func editUserTestServer(t *testing.T) *httptest.Server {
+func editGroupTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editUserRoleTemplate, "success", "000000000000000000000001"):
+		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editGroupRoleTemplate, "success", "000000000000000000000001"):
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editUserRoleTemplate, "fail", "000000000000000000000001"):
+		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editGroupRoleTemplate, "fail", "000000000000000000000001"):
 			w.WriteHeader(http.StatusBadRequest)
 		default:
 			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)

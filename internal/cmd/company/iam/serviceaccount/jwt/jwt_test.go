@@ -34,9 +34,9 @@ func TestRequestFromKey(t *testing.T) {
 	key, err := generateRSAKey()
 	assert.NoError(t, err)
 
-	payload := requestFromKey("testName", resources.ServiceAccountRoleCompanyOwner, key)
+	payload := requestFromKey("testName", resources.IAMRoleCompanyOwner, key)
 	assert.Equal(t, "testName", payload.Name)
-	assert.Equal(t, resources.ServiceAccountRoleCompanyOwner, payload.Role)
+	assert.Equal(t, resources.IAMRoleCompanyOwner, payload.Role)
 	assert.Equal(t, "sig", payload.PublicKey.Use)
 	assert.Equal(t, "RSA", payload.PublicKey.Type)
 	assert.Equal(t, "RSA256", payload.PublicKey.Algorithm)
@@ -48,24 +48,24 @@ func TestCreateServiceAccount(t *testing.T) {
 	testCases := map[string]struct {
 		server    *httptest.Server
 		companyID string
-		role      resources.ServiceAccountRole
+		role      resources.IAMRole
 		expectErr bool
 	}{
 		"create successul": {
 			server:    testServer(t),
 			companyID: "company",
-			role:      resources.ServiceAccountRoleGuest,
+			role:      resources.IAMRoleGuest,
 		},
 		"wrong role": {
 			server:    testServer(t),
 			companyID: "unused",
-			role:      resources.ServiceAccountRole("wrong"),
+			role:      resources.IAMRole("wrong"),
 			expectErr: true,
 		},
 		"remote error": {
 			server:    testServer(t),
 			companyID: "error",
-			role:      resources.ServiceAccountRoleGuest,
+			role:      resources.IAMRoleGuest,
 			expectErr: true,
 		},
 	}

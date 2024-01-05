@@ -32,41 +32,41 @@ func TestCreateGroup(t *testing.T) {
 	testCases := map[string]struct {
 		server    *httptest.Server
 		companyID string
-		role      resources.ServiceAccountRole
+		role      resources.IAMRole
 		groupName string
 		expectErr bool
 	}{
 		"create group": {
 			server:    addUserTestServer(t),
 			companyID: "success",
-			role:      resources.ServiceAccountRoleGuest,
+			role:      resources.IAMRoleGuest,
 			groupName: "group-name",
 		},
 		"missing company": {
 			server:    addUserTestServer(t),
 			companyID: "",
-			role:      resources.ServiceAccountRoleGuest,
+			role:      resources.IAMRoleGuest,
 			groupName: "group-name",
 			expectErr: true,
 		},
 		"missing group name": {
 			server:    addUserTestServer(t),
 			companyID: "success",
-			role:      resources.ServiceAccountRoleGuest,
+			role:      resources.IAMRoleGuest,
 			groupName: "",
 			expectErr: true,
 		},
 		"wrong role": {
 			server:    addUserTestServer(t),
 			companyID: "succes",
-			role:      resources.ServiceAccountRole("example"),
+			role:      resources.IAMRole("example"),
 			groupName: "group-name",
 			expectErr: true,
 		},
 		"error from backend": {
 			server:    addUserTestServer(t),
 			companyID: "fail",
-			role:      resources.ServiceAccountRoleCompanyOwner,
+			role:      resources.IAMRoleCompanyOwner,
 			groupName: "group-name",
 			expectErr: true,
 		},

@@ -57,7 +57,7 @@ service account is created on the company.`,
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			credentials, err := createJWTServiceAccount(cmd.Context(), client, serviceAccountName, restConfig.CompanyID, resources.ServiceAccountRole(options.IAMRole))
+			credentials, err := createJWTServiceAccount(cmd.Context(), client, serviceAccountName, restConfig.CompanyID, resources.IAMRole(options.IAMRole))
 			if err != nil {
 				return err
 			}
@@ -68,16 +68,7 @@ service account is created on the company.`,
 
 	// add cmd flags
 	options.AddJWTServiceAccountFlags(cmd.Flags())
-	err := cmd.RegisterFlagCompletionFunc("role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-		return []string{
-			resources.ServiceAccountRoleGuest.String(),
-			resources.ServiceAccountRoleReporter.String(),
-			resources.ServiceAccountRoleDeveloper.String(),
-			resources.ServiceAccountRoleMaintainer.String(),
-			resources.ServiceAccountRoleProjectAdmin.String(),
-			resources.ServiceAccountRoleCompanyOwner.String(),
-		}, cobra.ShellCompDirectiveDefault
-	})
+	err := cmd.RegisterFlagCompletionFunc("role", resources.IAMRoleCompletion)
 
 	if err != nil {
 		// we panic here because if we reach here, something nasty is happenign in flag autocomplete registration
@@ -93,8 +84,8 @@ service account is created on the company.`,
 	return cmd
 }
 
-func createJWTServiceAccount(ctx context.Context, client *client.APIClient, name, companyID string, role resources.ServiceAccountRole) (*resources.JWTServiceAccountJSON, error) {
-	if !resources.IsValidServiceAccountRole(role) {
+func createJWTServiceAccount(ctx context.Context, client *client.APIClient, name, companyID string, role resources.IAMRole) (*resources.JWTServiceAccountJSON, error) {
+	if !resources.IsValidIAMRole(role) {
 		return nil, fmt.Errorf("invalid service account role %s", role)
 	}
 
@@ -182,7 +173,7 @@ func generateRSAKey() (*rsa.PrivateKey, error) {
 	return rsa.GenerateKey(rand.Reader, rsaKeyBytes)
 }
 
-func requestFromKey(name string, role resources.ServiceAccountRole, key *rsa.PrivateKey) *resources.ServiceAccountRequest {
+func requestFromKey(name string, role resources.IAMRole, key *rsa.PrivateKey) *resources.ServiceAccountRequest {
 	encoder := base64.RawURLEncoding
 	modulus, exponent := rsaPublicKeyToBytes(&key.PublicKey)
 
