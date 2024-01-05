@@ -54,6 +54,8 @@ type CLIOptions struct {
 	UserEmails []string
 	GroupID    string
 
+	ServiceAccountID string
+
 	BasicClientID     string
 	BasicClientSecret string
 	JWTJsonPath       string
@@ -144,6 +146,11 @@ func (o *CLIOptions) AddServiceAccountFlags(flags *pflag.FlagSet) {
 func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 	o.AddServiceAccountFlags(flags)
 	flags.StringVarP(&o.OutputPath, "output", "o", "", "write the service account configuration as json to a file")
+}
+
+func (o *CLIOptions) AddEditServiceAccountFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the user")
+	flags.StringVarP(&o.ServiceAccountID, "service-account-id", "", "", "the service account id to edit")
 }
 
 func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {

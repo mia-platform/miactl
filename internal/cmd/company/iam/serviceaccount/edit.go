@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package user
+package serviceaccount
 
 import (
 	"context"
@@ -26,14 +26,14 @@ import (
 )
 
 const (
-	editUserRoleTemplate = "/api/companies/%s/users/%s"
+	editServiceAccountRoleTemplate = "/api/companies/%s/service-accounts/%s"
 )
 
 func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "user",
-		Short: "Edit a user in a company",
-		Long:  "Edit a user in a company",
+		Use:   "serviceaccount",
+		Short: "Edit a service account in a company",
+		Long:  "Edit a service account in a company",
 
 		Args: cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -42,12 +42,12 @@ func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			err = editCompanyUser(cmd.Context(), client, restConfig.CompanyID, options.UserID, resources.ServiceAccountRole(options.IAMRole))
+			err = editCompanyServiceAccount(cmd.Context(), client, restConfig.CompanyID, options.ServiceAccountID, resources.ServiceAccountRole(options.IAMRole))
 			cobra.CheckErr(err)
 		},
 	}
 
-	options.AddEditUserFlags(cmd.Flags())
+	options.AddEditServiceAccountFlags(cmd.Flags())
 	err := cmd.RegisterFlagCompletionFunc("role", func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 		return []string{
 			resources.ServiceAccountRoleGuest.String(),
@@ -67,7 +67,7 @@ func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func editCompanyUser(ctx context.Context, client *client.APIClient, companyID, userID string, role resources.ServiceAccountRole) error {
+func editCompanyServiceAccount(ctx context.Context, client *client.APIClient, companyID, serviceAccountID string, role resources.ServiceAccountRole) error {
 	if !resources.IsValidServiceAccountRole(role) {
 		return fmt.Errorf("invalid service account role %s", role)
 	}
@@ -76,7 +76,7 @@ func editCompanyUser(ctx context.Context, client *client.APIClient, companyID, u
 		return fmt.Errorf("company id is required, please set it via flag or context")
 	}
 
-	if len(userID) == 0 {
+	if len(serviceAccountID) == 0 {
 		return fmt.Errorf("the user id is required")
 	}
 
@@ -91,7 +91,7 @@ func editCompanyUser(ctx context.Context, client *client.APIClient, companyID, u
 
 	resp, err := client.
 		Patch().
-		APIPath(fmt.Sprintf(editUserRoleTemplate, companyID, userID)).
+		APIPath(fmt.Sprintf(editServiceAccountRoleTemplate, companyID, serviceAccountID)).
 		Body(body).
 		Do(ctx)
 
@@ -103,6 +103,6 @@ func editCompanyUser(ctx context.Context, client *client.APIClient, companyID, u
 		return err
 	}
 
-	fmt.Printf("user %s role successfully updated\n", userID)
+	fmt.Printf("service account %s role successfully updated\n", serviceAccountID)
 	return nil
 }

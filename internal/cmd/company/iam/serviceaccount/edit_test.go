@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package user
+package serviceaccount
 
 import (
 	"context"
@@ -28,47 +28,47 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestEditUser(t *testing.T) {
+func TestEditServiceAccount(t *testing.T) {
 	testCases := map[string]struct {
-		server    *httptest.Server
-		companyID string
-		role      resources.ServiceAccountRole
-		userID    string
-		expectErr bool
+		server           *httptest.Server
+		companyID        string
+		role             resources.ServiceAccountRole
+		serviceAccountID string
+		expectErr        bool
 	}{
-		"edit user": {
-			server:    editUserTestServer(t),
-			companyID: "success",
-			role:      resources.ServiceAccountRoleGuest,
-			userID:    "000000000000000000000001",
+		"edit service account": {
+			server:           editServiceAccountTestServer(t),
+			companyID:        "success",
+			role:             resources.ServiceAccountRoleGuest,
+			serviceAccountID: "000000000000000000000001",
 		},
 		"missing company": {
-			server:    editUserTestServer(t),
-			companyID: "",
-			role:      resources.ServiceAccountRoleGuest,
-			userID:    "000000000000000000000001",
-			expectErr: true,
+			server:           editServiceAccountTestServer(t),
+			companyID:        "",
+			role:             resources.ServiceAccountRoleGuest,
+			serviceAccountID: "000000000000000000000001",
+			expectErr:        true,
 		},
-		"missing user id": {
-			server:    editUserTestServer(t),
-			companyID: "success",
-			role:      resources.ServiceAccountRoleGuest,
-			userID:    "",
-			expectErr: true,
+		"missing service account id": {
+			server:           editServiceAccountTestServer(t),
+			companyID:        "success",
+			role:             resources.ServiceAccountRoleGuest,
+			serviceAccountID: "",
+			expectErr:        true,
 		},
 		"wrong role": {
-			server:    editUserTestServer(t),
-			companyID: "",
-			role:      resources.ServiceAccountRole("example"),
-			userID:    "000000000000000000000001",
-			expectErr: true,
+			server:           editServiceAccountTestServer(t),
+			companyID:        "",
+			role:             resources.ServiceAccountRole("example"),
+			serviceAccountID: "000000000000000000000001",
+			expectErr:        true,
 		},
 		"error from backend": {
-			server:    editUserTestServer(t),
-			companyID: "fail",
-			role:      resources.ServiceAccountRoleCompanyOwner,
-			userID:    "000000000000000000000001",
-			expectErr: true,
+			server:           editServiceAccountTestServer(t),
+			companyID:        "fail",
+			role:             resources.ServiceAccountRoleCompanyOwner,
+			serviceAccountID: "000000000000000000000001",
+			expectErr:        true,
 		},
 	}
 
@@ -80,11 +80,11 @@ func TestEditUser(t *testing.T) {
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			err = editCompanyUser(
+			err = editCompanyServiceAccount(
 				context.TODO(),
 				client,
 				testCase.companyID,
-				testCase.userID,
+				testCase.serviceAccountID,
 				testCase.role,
 			)
 
@@ -98,14 +98,14 @@ func TestEditUser(t *testing.T) {
 	}
 }
 
-func editUserTestServer(t *testing.T) *httptest.Server {
+func editServiceAccountTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editUserRoleTemplate, "success", "000000000000000000000001"):
+		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editServiceAccountRoleTemplate, "success", "000000000000000000000001"):
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editUserRoleTemplate, "fail", "000000000000000000000001"):
+		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editServiceAccountRoleTemplate, "fail", "000000000000000000000001"):
 			w.WriteHeader(http.StatusBadRequest)
 		default:
 			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)
