@@ -49,6 +49,7 @@ type CLIOptions struct {
 	IAMRole string
 
 	UserEmail string
+	UserID    string
 
 	UserEmails []string
 	GroupID    string
@@ -148,6 +149,11 @@ func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the user")
 	flags.StringVarP(&o.UserEmail, "email", "", "", "the email of the user to add")
+}
+
+func (o *CLIOptions) AddEditUserFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the user")
+	flags.StringVarP(&o.UserID, "user-id", "", "", "the user id to edit")
 }
 
 func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {
