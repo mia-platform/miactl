@@ -28,45 +28,45 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAddUsder(t *testing.T) {
+func TestAddUser(t *testing.T) {
 	testCases := map[string]struct {
 		server    *httptest.Server
 		companyID string
-		role      resources.ServiceAccountRole
+		role      resources.IAMRole
 		userEmail string
 		expectErr bool
 	}{
 		"create user": {
 			server:    addUserTestServer(t),
 			companyID: "success",
-			role:      resources.ServiceAccountRoleGuest,
+			role:      resources.IAMRoleGuest,
 			userEmail: "user@example.com",
 		},
 		"missing company": {
 			server:    addUserTestServer(t),
 			companyID: "",
-			role:      resources.ServiceAccountRoleGuest,
+			role:      resources.IAMRoleGuest,
 			userEmail: "user@example.com",
 			expectErr: true,
 		},
 		"missing email": {
 			server:    addUserTestServer(t),
 			companyID: "success",
-			role:      resources.ServiceAccountRoleGuest,
+			role:      resources.IAMRoleGuest,
 			userEmail: "",
 			expectErr: true,
 		},
 		"wrong role": {
 			server:    addUserTestServer(t),
 			companyID: "",
-			role:      resources.ServiceAccountRole("example"),
+			role:      resources.IAMRole("example"),
 			userEmail: "user@example.com",
 			expectErr: true,
 		},
 		"error from backend": {
 			server:    addUserTestServer(t),
 			companyID: "fail",
-			role:      resources.ServiceAccountRoleCompanyOwner,
+			role:      resources.IAMRoleCompanyOwner,
 			userEmail: "user@example.com",
 			expectErr: true,
 		},

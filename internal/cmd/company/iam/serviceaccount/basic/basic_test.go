@@ -39,7 +39,7 @@ func TestCreateBasicServiceAccount(t *testing.T) {
 		server              *httptest.Server
 		serviceAccountName  string
 		companyID           string
-		role                resources.ServiceAccountRole
+		role                resources.IAMRole
 		expectedCredentials []string
 		expectErr           bool
 	}{
@@ -47,7 +47,7 @@ func TestCreateBasicServiceAccount(t *testing.T) {
 			server:             testServer(t),
 			serviceAccountName: "new-sa",
 			companyID:          "company",
-			role:               resources.ServiceAccountRoleReporter,
+			role:               resources.IAMRoleReporter,
 			expectedCredentials: []string{
 				"client-id",
 				"client-secret",
@@ -57,13 +57,13 @@ func TestCreateBasicServiceAccount(t *testing.T) {
 			server:              testServer(t),
 			serviceAccountName:  "new-sa",
 			companyID:           "error",
-			role:                resources.ServiceAccountRoleReporter,
+			role:                resources.IAMRoleReporter,
 			expectErr:           true,
 			expectedCredentials: nil,
 		},
 		"wrong role": {
 			server:    testServer(t),
-			role:      resources.ServiceAccountRole("wrong"),
+			role:      resources.IAMRole("wrong"),
 			expectErr: true,
 		},
 	}

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package group
+package user
 
 import (
 	"context"
@@ -26,28 +26,28 @@ import (
 )
 
 const (
-	createGroupTemplate = "/api/companies/%s/groups"
+	editUserRoleTemplate = "/api/companies/%s/users/%s"
 )
 
-func AddCmd(options *clioptions.CLIOptions) *cobra.Command {
+func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "group NAME",
-		Short: "Create a new group in a company",
-		Long:  "Create a new group in a company",
+		Use:   "user",
+		Short: "Edit a user in a company",
+		Long:  "Edit a user in a company",
 
-		Args: cobra.ExactArgs(1),
+		Args: cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			err = createNewGroup(cmd.Context(), client, restConfig.CompanyID, args[0], resources.IAMRole(options.IAMRole))
+			err = editCompanyUser(cmd.Context(), client, restConfig.CompanyID, options.UserID, resources.IAMRole(options.IAMRole))
 			cobra.CheckErr(err)
 		},
 	}
 
-	options.CreateNewGroupFlags(cmd.Flags())
+	options.AddEditUserFlags(cmd.Flags())
 	err := cmd.RegisterFlagCompletionFunc("role", resources.IAMRoleCompletion)
 
 	if err != nil {
@@ -58,23 +58,21 @@ func AddCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func createNewGroup(ctx context.Context, client *client.APIClient, companyID, groupName string, role resources.IAMRole) error {
+func editCompanyUser(ctx context.Context, client *client.APIClient, companyID, userID string, role resources.IAMRole) error {
 	if !resources.IsValidIAMRole(role) {
 		return fmt.Errorf("invalid service account role %s", role)
-	}
-
-	if len(groupName) == 0 {
-		return fmt.Errorf("a group name is required")
 	}
 
 	if len(companyID) == 0 {
 		return fmt.Errorf("company id is required, please set it via flag or context")
 	}
 
-	payload := resources.CreateGroupRequest{
-		Name:    groupName,
-		Role:    role,
-		Members: []string{},
+	if len(userID) == 0 {
+		return fmt.Errorf("the user id is required")
+	}
+
+	payload := resources.EditIAMRole{
+		Role: role,
 	}
 
 	body, err := resources.EncodeResourceToJSON(payload)
@@ -83,8 +81,8 @@ func createNewGroup(ctx context.Context, client *client.APIClient, companyID, gr
 	}
 
 	resp, err := client.
-		Post().
-		APIPath(fmt.Sprintf(createGroupTemplate, companyID)).
+		Patch().
+		APIPath(fmt.Sprintf(editUserRoleTemplate, companyID, userID)).
 		Body(body).
 		Do(ctx)
 
@@ -96,6 +94,6 @@ func createNewGroup(ctx context.Context, client *client.APIClient, companyID, gr
 		return err
 	}
 
-	fmt.Printf("group %s added to %s company\n", groupName, companyID)
+	fmt.Printf("user %s role successfully updated\n", userID)
 	return nil
 }

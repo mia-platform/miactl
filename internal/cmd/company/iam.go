@@ -38,6 +38,7 @@ via a group or through service accounts.`,
 	cmd.AddCommand(
 		iam.ListCmd(o),
 		iam.AddCmd(o),
+		iam.EditCmd(o),
 	)
 
 	return cmd

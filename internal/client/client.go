@@ -29,6 +29,7 @@ type Interface interface {
 	Delete() *Request
 	Get() *Request
 	Post() *Request
+	Patch() *Request
 	HTTPClient() *http.Client
 }
 
@@ -76,6 +77,10 @@ func (c *APIClient) Post() *Request {
 // Delete return a new Request object for a DELETE http request
 func (c *APIClient) Delete() *Request {
 	return NewRequest(c).SetVerb(http.MethodDelete)
+}
+
+func (c *APIClient) Patch() *Request {
+	return NewRequest(c).SetVerb(http.MethodPatch)
 }
 
 func (c *APIClient) HTTPClient() *http.Client {

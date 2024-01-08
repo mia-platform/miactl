@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package group
+package serviceaccount
 
 import (
 	"context"
@@ -28,47 +28,47 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateGroup(t *testing.T) {
+func TestEditServiceAccount(t *testing.T) {
 	testCases := map[string]struct {
-		server    *httptest.Server
-		companyID string
-		role      resources.IAMRole
-		groupName string
-		expectErr bool
+		server           *httptest.Server
+		companyID        string
+		role             resources.IAMRole
+		serviceAccountID string
+		expectErr        bool
 	}{
-		"create group": {
-			server:    addUserTestServer(t),
-			companyID: "success",
-			role:      resources.IAMRoleGuest,
-			groupName: "group-name",
+		"edit service account": {
+			server:           editServiceAccountTestServer(t),
+			companyID:        "success",
+			role:             resources.IAMRoleGuest,
+			serviceAccountID: "000000000000000000000001",
 		},
 		"missing company": {
-			server:    addUserTestServer(t),
-			companyID: "",
-			role:      resources.IAMRoleGuest,
-			groupName: "group-name",
-			expectErr: true,
+			server:           editServiceAccountTestServer(t),
+			companyID:        "",
+			role:             resources.IAMRoleGuest,
+			serviceAccountID: "000000000000000000000001",
+			expectErr:        true,
 		},
-		"missing group name": {
-			server:    addUserTestServer(t),
-			companyID: "success",
-			role:      resources.IAMRoleGuest,
-			groupName: "",
-			expectErr: true,
+		"missing service account id": {
+			server:           editServiceAccountTestServer(t),
+			companyID:        "success",
+			role:             resources.IAMRoleGuest,
+			serviceAccountID: "",
+			expectErr:        true,
 		},
 		"wrong role": {
-			server:    addUserTestServer(t),
-			companyID: "succes",
-			role:      resources.IAMRole("example"),
-			groupName: "group-name",
-			expectErr: true,
+			server:           editServiceAccountTestServer(t),
+			companyID:        "",
+			role:             resources.IAMRole("example"),
+			serviceAccountID: "000000000000000000000001",
+			expectErr:        true,
 		},
 		"error from backend": {
-			server:    addUserTestServer(t),
-			companyID: "fail",
-			role:      resources.IAMRoleCompanyOwner,
-			groupName: "group-name",
-			expectErr: true,
+			server:           editServiceAccountTestServer(t),
+			companyID:        "fail",
+			role:             resources.IAMRoleCompanyOwner,
+			serviceAccountID: "000000000000000000000001",
+			expectErr:        true,
 		},
 	}
 
@@ -80,11 +80,11 @@ func TestCreateGroup(t *testing.T) {
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			err = createNewGroup(
+			err = editCompanyServiceAccount(
 				context.TODO(),
 				client,
 				testCase.companyID,
-				testCase.groupName,
+				testCase.serviceAccountID,
 				testCase.role,
 			)
 
@@ -98,14 +98,14 @@ func TestCreateGroup(t *testing.T) {
 	}
 }
 
-func addUserTestServer(t *testing.T) *httptest.Server {
+func editServiceAccountTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case r.Method == http.MethodPost && r.URL.Path == fmt.Sprintf(createGroupTemplate, "success"):
+		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editServiceAccountRoleTemplate, "success", "000000000000000000000001"):
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPost && r.URL.Path == fmt.Sprintf(createGroupTemplate, "fail"):
+		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editServiceAccountRoleTemplate, "fail", "000000000000000000000001"):
 			w.WriteHeader(http.StatusBadRequest)
 		default:
 			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)

@@ -49,9 +49,12 @@ type CLIOptions struct {
 	IAMRole string
 
 	UserEmail string
+	UserID    string
 
 	UserEmails []string
 	GroupID    string
+
+	ServiceAccountID string
 
 	BasicClientID     string
 	BasicClientSecret string
@@ -145,9 +148,19 @@ func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.OutputPath, "output", "o", "", "write the service account configuration as json to a file")
 }
 
+func (o *CLIOptions) AddEditServiceAccountFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the service account")
+	flags.StringVarP(&o.ServiceAccountID, "service-account-id", "", "", "the service account id to edit")
+}
+
 func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the user")
 	flags.StringVarP(&o.UserEmail, "email", "", "", "the email of the user to add")
+}
+
+func (o *CLIOptions) AddEditUserFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the user")
+	flags.StringVarP(&o.UserID, "user-id", "", "", "the user id to edit")
 }
 
 func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {
@@ -157,6 +170,11 @@ func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {
 func (o *CLIOptions) AddMemberToGroupFlags(flags *pflag.FlagSet) {
 	flags.StringSliceVarP(&o.UserEmails, "user-email", "", []string{}, "the list of user email to add to the group")
 	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id where to add the users")
+}
+
+func (o *CLIOptions) AddEditGroupFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the group")
+	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id to edit")
 }
 
 func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {

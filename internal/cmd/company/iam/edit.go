@@ -13,17 +13,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package resources
+package iam
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
+	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/group"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/serviceaccount"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/user"
+	"github.com/spf13/cobra"
 )
 
-func TestIsValidRole(t *testing.T) {
-	for _, role := range validServiceAccountRoles {
-		require.True(t, IsValidIAMRole(role))
+func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "edit",
+		Short: "Edit an IAM entity in a company",
+		Long:  "Edit an IAM entity in a company",
 	}
-	require.False(t, IsValidIAMRole("wrong-role"))
+
+	cmd.AddCommand(
+		user.EditCmd(options),
+		serviceaccount.EditCmd(options),
+		group.EditCmd(options),
+	)
+
+	return cmd
 }

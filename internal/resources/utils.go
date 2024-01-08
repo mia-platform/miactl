@@ -18,22 +18,25 @@ package resources
 import (
 	"bytes"
 	"encoding/json"
+	"strings"
+
+	"github.com/spf13/cobra"
 )
 
-var validServiceAccountRoles = []ServiceAccountRole{
-	ServiceAccountRoleGuest,
-	ServiceAccountRoleReporter,
-	ServiceAccountRoleDeveloper,
-	ServiceAccountRoleMaintainer,
-	ServiceAccountRoleProjectAdmin,
-	ServiceAccountRoleCompanyOwner,
+var validServiceAccountRoles = []IAMRole{
+	IAMRoleGuest,
+	IAMRoleReporter,
+	IAMRoleDeveloper,
+	IAMRoleMaintainer,
+	IAMRoleProjectAdmin,
+	IAMRoleCompanyOwner,
 }
 
-func (role ServiceAccountRole) String() string {
+func (role IAMRole) String() string {
 	return string(role)
 }
 
-func IsValidServiceAccountRole(role ServiceAccountRole) bool {
+func IsValidIAMRole(role IAMRole) bool {
 	for _, validRole := range validServiceAccountRoles {
 		if validRole == role {
 			return true
@@ -41,6 +44,30 @@ func IsValidServiceAccountRole(role ServiceAccountRole) bool {
 	}
 
 	return false
+}
+
+func IAMRoleCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+	allRoles := []string{
+		IAMRoleGuest.String(),
+		IAMRoleReporter.String(),
+		IAMRoleDeveloper.String(),
+		IAMRoleMaintainer.String(),
+		IAMRoleProjectAdmin.String(),
+		IAMRoleCompanyOwner.String(),
+	}
+
+	if len(toComplete) == 0 {
+		return allRoles, cobra.ShellCompDirectiveDefault
+	}
+
+	var completableRole []string
+	for _, role := range allRoles {
+		if strings.HasPrefix(role, toComplete) {
+			completableRole = append(completableRole, role)
+		}
+	}
+
+	return completableRole, cobra.ShellCompDirectiveDefault
 }
 
 func EncodeResourceToJSON(obj interface{}) ([]byte, error) {
