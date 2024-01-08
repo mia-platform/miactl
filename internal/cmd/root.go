@@ -32,7 +32,7 @@ func NewRootCommand() *cobra.Command {
 		Short: "Mia-Platform Console CLI",
 		Long: `miactl is a CLI for interacting with Mia-Platform Console
 
-	Find more information at: https://docs.example.org/docs/cli/miactl/overview`,
+	Find more information at: https://docs.mia-platform.eu/docs/cli/miactl/overview`,
 	}
 
 	// initialize clioptions and setup during initialization
