@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package user
+package serviceaccount
 
 import (
 	"context"
@@ -27,41 +27,35 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestRemoveUser(t *testing.T) {
+func TestRemoveServiceAccount(t *testing.T) {
 	testCases := map[string]struct {
-		server    *httptest.Server
-		companyID string
-		userID    string
-		expectErr bool
+		server           *httptest.Server
+		companyID        string
+		serviceAccountID string
+		expectErr        bool
 	}{
-		"remove user": {
-			server:    removeUserTestServer(t),
-			companyID: "success",
-			userID:    "000000000000000000000001",
+		"remove service account": {
+			server:           removeServiceAccountTestServer(t),
+			companyID:        "success",
+			serviceAccountID: "000000000000000000000001",
 		},
 		"missing company": {
-			server:    removeUserTestServer(t),
-			companyID: "",
-			userID:    "000000000000000000000001",
-			expectErr: true,
+			server:           removeServiceAccountTestServer(t),
+			companyID:        "",
+			serviceAccountID: "000000000000000000000001",
+			expectErr:        true,
 		},
-		"missing user id": {
-			server:    removeUserTestServer(t),
-			companyID: "success",
-			userID:    "",
-			expectErr: true,
-		},
-		"turn off delete from groups": {
-			server:    removeUserTestServer(t),
-			companyID: "only-iam",
-			userID:    "",
-			expectErr: true,
+		"missing service account id": {
+			server:           removeServiceAccountTestServer(t),
+			companyID:        "success",
+			serviceAccountID: "",
+			expectErr:        true,
 		},
 		"error from backend": {
-			server:    removeUserTestServer(t),
-			companyID: "fail",
-			userID:    "000000000000000000000001",
-			expectErr: true,
+			server:           removeServiceAccountTestServer(t),
+			companyID:        "fail",
+			serviceAccountID: "000000000000000000000001",
+			expectErr:        true,
 		},
 	}
 
@@ -73,12 +67,11 @@ func TestRemoveUser(t *testing.T) {
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			err = removeCompanyUser(
+			err = removeCompanyServiceAccount(
 				context.TODO(),
 				client,
 				testCase.companyID,
-				testCase.userID,
-				testCase.companyID == "only-iam",
+				testCase.serviceAccountID,
 			)
 
 			switch testCase.expectErr {
@@ -91,19 +84,14 @@ func TestRemoveUser(t *testing.T) {
 	}
 }
 
-func removeUserTestServer(t *testing.T) *httptest.Server {
+func removeServiceAccountTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		params := r.URL.Query()
 		switch {
-		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeUserTemplate, "success", "000000000000000000000001"):
-			assert.Equal(t, "true", params.Get(removeFromGroupParamKey))
+		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeServiceAccountTemplate, "success", "000000000000000000000001"):
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeUserTemplate, "only-iam", "000000000000000000000001"):
-			assert.Equal(t, "false", params.Get(removeFromGroupParamKey))
-			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeUserTemplate, "fail", "000000000000000000000001"):
+		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeServiceAccountTemplate, "fail", "000000000000000000000001"):
 			w.WriteHeader(http.StatusBadRequest)
 		default:
 			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)

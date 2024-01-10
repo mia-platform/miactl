@@ -18,6 +18,7 @@ package iam
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/company/iam/group"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/serviceaccount"
 	"github.com/mia-platform/miactl/internal/cmd/company/iam/user"
 	"github.com/spf13/cobra"
 )
@@ -33,6 +34,7 @@ from the company selected via the flag or context`,
 	cmd.AddCommand(
 		user.RemoveCmd(options),
 		group.RemoveCmd(options),
+		serviceaccount.RemoveCmd(options),
 	)
 
 	return cmd

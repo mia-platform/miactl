@@ -89,9 +89,9 @@ func removeGroupTestServer(t *testing.T) *httptest.Server {
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
-		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeGroupRoleTemplate, "success", "000000000000000000000001"):
+		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeGroupTemplate, "success", "000000000000000000000001"):
 			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeGroupRoleTemplate, "fail", "000000000000000000000001"):
+		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeGroupTemplate, "fail", "000000000000000000000001"):
 			w.WriteHeader(http.StatusBadRequest)
 		default:
 			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)

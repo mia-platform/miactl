@@ -154,6 +154,10 @@ func (o *CLIOptions) AddEditServiceAccountFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.ServiceAccountID, "service-account-id", "", "", "the service account id to edit")
 }
 
+func (o *CLIOptions) AddRemoveServiceAccountFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.ServiceAccountID, "service-account-id", "", "", "the service account id to remove")
+}
+
 func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the user")
 	flags.StringVarP(&o.UserEmail, "email", "", "", "the email of the user to add")

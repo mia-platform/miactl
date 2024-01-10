@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package user
+package serviceaccount
 
 import (
 	"context"
@@ -25,15 +25,14 @@ import (
 )
 
 const (
-	removeUserTemplate      = "/api/companies/%s/users/%s"
-	removeFromGroupParamKey = "removeFromGroups"
+	removeServiceAccountTemplate = "/api/companies/%s/service-accounts/%s"
 )
 
 func RemoveCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "user",
-		Short: "Remove a user from a company",
-		Long:  "Remove a user from a company",
+		Use:   "serviceaccount",
+		Short: "Remove a service account from a company",
+		Long:  "Remove a service account from a company",
 
 		Args: cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -42,31 +41,27 @@ func RemoveCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			err = removeCompanyUser(cmd.Context(), client, restConfig.CompanyID, options.UserID, options.KeepUserGroupMemeberships)
+			err = removeCompanyServiceAccount(cmd.Context(), client, restConfig.CompanyID, options.ServiceAccountID)
 			cobra.CheckErr(err)
 		},
 	}
 
-	options.AddRemoveUserFlags(cmd.Flags())
+	options.AddRemoveServiceAccountFlags(cmd.Flags())
 	return cmd
 }
 
-func removeCompanyUser(ctx context.Context, client *client.APIClient, companyID, userID string, keepMemberships bool) error {
+func removeCompanyServiceAccount(ctx context.Context, client *client.APIClient, companyID, serviceAccountID string) error {
 	if len(companyID) == 0 {
 		return fmt.Errorf("company id is required, please set it via flag or context")
 	}
 
-	if len(userID) == 0 {
-		return fmt.Errorf("the user id is required")
+	if len(serviceAccountID) == 0 {
+		return fmt.Errorf("the service account id is required")
 	}
 
 	request := client.
 		Delete().
-		APIPath(fmt.Sprintf(removeUserTemplate, companyID, userID))
-
-	if !keepMemberships {
-		request.SetParam(removeFromGroupParamKey, "true")
-	}
+		APIPath(fmt.Sprintf(removeServiceAccountTemplate, companyID, serviceAccountID))
 
 	resp, err := request.Do(ctx)
 
@@ -78,6 +73,6 @@ func removeCompanyUser(ctx context.Context, client *client.APIClient, companyID,
 		return err
 	}
 
-	fmt.Printf("user %s successfully removed\n", userID)
+	fmt.Printf("service account %s successfully removed\n", serviceAccountID)
 	return nil
 }

@@ -25,7 +25,7 @@ import (
 )
 
 const (
-	removeGroupRoleTemplate = "/api/companies/%s/groups/%s"
+	removeGroupTemplate = "/api/companies/%s/groups/%s"
 )
 
 func RemoveCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -61,7 +61,7 @@ func removeCompanyGroup(ctx context.Context, client *client.APIClient, companyID
 
 	resp, err := client.
 		Delete().
-		APIPath(fmt.Sprintf(removeGroupRoleTemplate, companyID, groupID)).
+		APIPath(fmt.Sprintf(removeGroupTemplate, companyID, groupID)).
 		Do(ctx)
 
 	if err != nil {
