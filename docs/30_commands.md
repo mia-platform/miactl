@@ -346,6 +346,27 @@ Available flags for the command:
 - `--group-id`, the id of the group to edit
 - `--role`, the new Company role of the group
 
+#### remove user
+
+The `company iam remove user` subcommand allows you to remove a user from a company. Alternatively you can use the
+`no-include-groups` flag for only remove the role directly associated to a user, but leave intact its groups memberships.
+
+Usage:
+
+```sh
+miactl company iam edit user [flags]
+```
+
+Available flags for the command:
+
+- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--certificate-authority`, to provide the path to a custom CA certificate
+- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
+- `--context`, to specify a different context from the currently selected one
+- `--company-id`, to set the ID of the desired Company
+- `--user-id`, the id of the user to edit
+- `--no-include-groups`, set this flag for keep the user memberhip, and only remove the role attached to the user
+
 ## project
 
 This command allows you to manage `miactl` Projects.

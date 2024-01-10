@@ -48,8 +48,9 @@ type CLIOptions struct {
 
 	IAMRole string
 
-	UserEmail string
-	UserID    string
+	UserEmail                 string
+	UserID                    string
+	KeepUserGroupMemeberships bool
 
 	UserEmails []string
 	GroupID    string
@@ -161,6 +162,11 @@ func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {
 func (o *CLIOptions) AddEditUserFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the user")
 	flags.StringVarP(&o.UserID, "user-id", "", "", "the user id to edit")
+}
+
+func (o *CLIOptions) AddRemoveUserFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.UserID, "user-id", "", "", "the user id to remove")
+	flags.BoolVarP(&o.KeepUserGroupMemeberships, "no-include-groups", "", false, "keep the user membership in the company groups")
 }
 
 func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {

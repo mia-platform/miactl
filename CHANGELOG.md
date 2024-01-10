@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `company iam add group-member` command
 - `company iam edit serviceaccount` command
 - `company iam edit group` command
+- `company iam remove user` command
 
 ### Changed
 
