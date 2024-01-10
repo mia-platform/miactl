@@ -200,7 +200,7 @@ func (o *CLIOptions) AddMarketplaceItemObjectIDFlag(flags *pflag.FlagSet) (flagN
 
 func (o *CLIOptions) AddMarketplaceVersionFlag(flags *pflag.FlagSet) (flagName string) {
 	flagName = "version"
-	flags.StringVarP(&o.MarketplaceItemVersion, flagName, "v", "", "The version of the Marketplace item")
+	flags.StringVarP(&o.MarketplaceItemVersion, flagName, "", "", "The version of the Marketplace item")
 	return
 }
 
