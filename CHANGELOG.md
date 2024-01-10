@@ -28,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update uuid to 1.5.0
 - update exp to v0.0.0-20231219180239-dc181d75b848
 
+### Fixed
+
+- remove conflicting shortand flag `-v` from `miactl marketplace delete` command
+
 ## [0.10.0] - 2023-12-20
 
 ### BREAKING
