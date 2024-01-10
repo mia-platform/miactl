@@ -183,6 +183,10 @@ func (o *CLIOptions) AddEditGroupFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id to edit")
 }
 
+func (o *CLIOptions) AddRemoveGroupFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id to remove")
+}
+
 func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 	cmd.Flags().StringArrayVarP(&o.MarketplaceResourcePaths, "file-path", "f", []string{}, "paths to JSON/YAML files or folder of files containing a Marketplace item definition")
 	err := cmd.MarkFlagRequired("file-path")
