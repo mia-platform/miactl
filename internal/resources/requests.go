@@ -25,10 +25,10 @@ type RefreshTokenRequest struct {
 }
 
 type ServiceAccountRequest struct {
-	Name      string    `json:"name"`
-	Type      string    `json:"tokenEndpointAuthMethod"` //nolint: tagliatelle
-	Role      IAMRole   `json:"role"`
-	PublicKey PublicKey `json:"publicKey,omitempty"`
+	Name      string     `json:"name"`
+	Type      string     `json:"tokenEndpointAuthMethod"` //nolint: tagliatelle
+	Role      IAMRole    `json:"role"`
+	PublicKey *PublicKey `json:"publicKey,omitempty"`
 }
 
 type AddUserRequest struct {

@@ -181,7 +181,7 @@ func requestFromKey(name string, role resources.IAMRole, key *rsa.PrivateKey) *r
 		Name: name,
 		Role: role,
 		Type: resources.ServiceAccountJWT,
-		PublicKey: resources.PublicKey{
+		PublicKey: &resources.PublicKey{
 			Use:       "sig",
 			Type:      "RSA",
 			Algorithm: "RSA256",
