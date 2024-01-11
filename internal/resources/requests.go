@@ -46,6 +46,10 @@ type AddMembersToGroup struct {
 	Members []string `json:"emails"` //nolint: tagliatelle
 }
 
+type RemoveMembersToGroup struct {
+	Members []string `json:"memberIds"` //nolint: tagliatelle
+}
+
 type EditIAMRole struct {
 	Role IAMRole `json:"role"`
 }

@@ -34,6 +34,7 @@ from the company selected via the flag or context`,
 	cmd.AddCommand(
 		user.RemoveCmd(options),
 		group.RemoveCmd(options),
+		group.RemoveMemberCmd(options),
 		serviceaccount.RemoveCmd(options),
 	)
 

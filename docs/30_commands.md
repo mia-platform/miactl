@@ -405,6 +405,26 @@ Available flags for the command:
 - `--company-id`, to set the ID of the desired Company
 - `--service-account-id`, the id of the service account to remove
 
+#### remove group-member
+
+The `company iam remove group-member` subcommand allows you to remove one or more users from a group in your Company.
+
+Usage:
+
+```sh
+miactl company iam remove group-member [flags]
+```
+
+Available flags for the command:
+
+- `--group-id`, the group id where to remove the users
+- `--user-id`, the list of user ids to remove from the group
+- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--certificate-authority`, to provide the path to a custom CA certificate
+- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
+- `--context`, to specify a different context from the currently selected one
+- `--company-id`, to set the ID of the desired Company
+
 ## project
 
 This command allows you to manage `miactl` Projects.

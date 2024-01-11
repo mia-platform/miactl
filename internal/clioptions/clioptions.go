@@ -53,6 +53,7 @@ type CLIOptions struct {
 	KeepUserGroupMemeberships bool
 
 	UserEmails []string
+	UserIDs    []string
 	GroupID    string
 
 	ServiceAccountID string
@@ -177,7 +178,7 @@ func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the group")
 }
 
-func (o *CLIOptions) AddMemberToGroupFlags(flags *pflag.FlagSet) {
+func (o *CLIOptions) AddNewMembersToGroupFlags(flags *pflag.FlagSet) {
 	flags.StringSliceVarP(&o.UserEmails, "user-email", "", []string{}, "the list of user email to add to the group")
 	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id where to add the users")
 }
@@ -189,6 +190,11 @@ func (o *CLIOptions) AddEditGroupFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddRemoveGroupFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id to remove")
+}
+
+func (o *CLIOptions) AddRemoveMembersFromGroupFlags(flags *pflag.FlagSet) {
+	flags.StringSliceVarP(&o.UserIDs, "user-id", "", []string{}, "the list of user id to remove to the group")
+	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id where to remove the users")
 }
 
 func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
