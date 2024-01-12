@@ -32,8 +32,8 @@ const (
 func RemoveMemberCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "group-member",
-		Short: "Remove one or more users to a group",
-		Long:  "Remove one or more users to a company group. The users can be removed via their ids",
+		Short: "Remove one or more users from a group",
+		Long:  "Remove one or more users from a company group. The users can be removed via their ids",
 
 		Args: cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {

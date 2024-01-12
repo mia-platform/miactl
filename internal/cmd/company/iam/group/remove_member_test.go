@@ -35,7 +35,7 @@ func TestRemoveGroupMember(t *testing.T) {
 		userIds   []string
 		expectErr bool
 	}{
-		"remove member to group": {
+		"remove member from group": {
 			server:    removeGroupMemeberTestServer(t),
 			companyID: "success",
 			groupID:   "group-id",
