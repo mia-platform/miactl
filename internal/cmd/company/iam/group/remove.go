@@ -21,19 +21,18 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/spf13/cobra"
 )
 
 const (
-	addMemberTemplate = "/api/companies/%s/groups/%s/members"
+	removeGroupTemplate = "/api/companies/%s/groups/%s"
 )
 
-func AddMemberCmd(options *clioptions.CLIOptions) *cobra.Command {
+func RemoveCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "group-member",
-		Short: "Add one or more users to a group",
-		Long:  "Add one or more users to a company group. The users can be added via their emails",
+		Use:   "group",
+		Short: "Remove a group from a company",
+		Long:  "Remove a group from a company",
 
 		Args: cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -42,41 +41,27 @@ func AddMemberCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			err = addMemberToGroup(cmd.Context(), client, restConfig.CompanyID, options.GroupID, options.UserEmails)
+			err = removeCompanyGroup(cmd.Context(), client, restConfig.CompanyID, options.GroupID)
 			cobra.CheckErr(err)
 		},
 	}
 
-	options.AddNewMembersToGroupFlags(cmd.Flags())
+	options.AddRemoveGroupFlags(cmd.Flags())
 	return cmd
 }
 
-func addMemberToGroup(ctx context.Context, client *client.APIClient, companyID, groupID string, userEmails []string) error {
+func removeCompanyGroup(ctx context.Context, client *client.APIClient, companyID, groupID string) error {
 	if len(companyID) == 0 {
 		return fmt.Errorf("company id is required, please set it via flag or context")
 	}
 
 	if len(groupID) == 0 {
-		return fmt.Errorf("a group id is required")
-	}
-
-	if len(userEmails) < 1 {
-		return fmt.Errorf("at least one user must be added to the group")
-	}
-
-	payload := resources.AddMembersToGroup{
-		Members: userEmails,
-	}
-
-	body, err := resources.EncodeResourceToJSON(payload)
-	if err != nil {
-		return fmt.Errorf("failed to encode request body: %w", err)
+		return fmt.Errorf("the group id is required")
 	}
 
 	resp, err := client.
-		Post().
-		APIPath(fmt.Sprintf(addMemberTemplate, companyID, groupID)).
-		Body(body).
+		Delete().
+		APIPath(fmt.Sprintf(removeGroupTemplate, companyID, groupID)).
 		Do(ctx)
 
 	if err != nil {
@@ -87,6 +72,6 @@ func addMemberToGroup(ctx context.Context, client *client.APIClient, companyID, 
 		return err
 	}
 
-	fmt.Println("the users has been added to the group")
+	fmt.Printf("group %s successfully removed\n", groupID)
 	return nil
 }

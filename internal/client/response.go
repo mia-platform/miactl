@@ -90,11 +90,6 @@ func (r *Response) ParseResponse(obj interface{}) error {
 		return r.err
 	}
 
-	err := json.Unmarshal(r.body, obj)
-	if err != nil && err != io.EOF {
-		return fmt.Errorf("error during response parsing: %w", err)
-	}
-
 	return parseBody(r.body, obj)
 }
 

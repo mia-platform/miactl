@@ -13,33 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package company
+package iam
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/company/iam"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/group"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/serviceaccount"
+	"github.com/mia-platform/miactl/internal/cmd/company/iam/user"
 	"github.com/spf13/cobra"
 )
 
-func IAMCmd(o *clioptions.CLIOptions) *cobra.Command {
+func RemoveCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "iam",
-		Short: "Manage Mia-Platform IAM for a company",
-		Long: `A Company Owner user can manager the access to the company directly to a user,
-via a group or through service accounts.`,
+		Use:   "remove",
+		Short: "remove a IAM entity from a company",
+		Long: `A Company can have associated different entities for managing the roles, this command will remove them
+from the company selected via the flag or context`,
 	}
 
-	// add cmd flags
-	flags := cmd.PersistentFlags()
-	o.AddConnectionFlags(flags)
-	o.AddContextFlags(flags)
-	o.AddCompanyFlags(flags)
-
 	cmd.AddCommand(
-		iam.ListCmd(o),
-		iam.AddCmd(o),
-		iam.EditCmd(o),
-		iam.RemoveCmd(o),
+		user.RemoveCmd(options),
+		group.RemoveCmd(options),
+		group.RemoveMemberCmd(options),
+		serviceaccount.RemoveCmd(options),
 	)
 
 	return cmd

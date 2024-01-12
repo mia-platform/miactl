@@ -48,10 +48,12 @@ type CLIOptions struct {
 
 	IAMRole string
 
-	UserEmail string
-	UserID    string
+	UserEmail                 string
+	UserID                    string
+	KeepUserGroupMemeberships bool
 
 	UserEmails []string
+	UserIDs    []string
 	GroupID    string
 
 	ServiceAccountID string
@@ -153,6 +155,10 @@ func (o *CLIOptions) AddEditServiceAccountFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.ServiceAccountID, "service-account-id", "", "", "the service account id to edit")
 }
 
+func (o *CLIOptions) AddRemoveServiceAccountFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.ServiceAccountID, "service-account-id", "", "", "the service account id to remove")
+}
+
 func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the user")
 	flags.StringVarP(&o.UserEmail, "email", "", "", "the email of the user to add")
@@ -163,11 +169,16 @@ func (o *CLIOptions) AddEditUserFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.UserID, "user-id", "", "", "the user id to edit")
 }
 
+func (o *CLIOptions) AddRemoveUserFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.UserID, "user-id", "", "", "the user id to remove")
+	flags.BoolVarP(&o.KeepUserGroupMemeberships, "no-include-groups", "", false, "keep the user membership in the company groups")
+}
+
 func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the group")
 }
 
-func (o *CLIOptions) AddMemberToGroupFlags(flags *pflag.FlagSet) {
+func (o *CLIOptions) AddNewMembersToGroupFlags(flags *pflag.FlagSet) {
 	flags.StringSliceVarP(&o.UserEmails, "user-email", "", []string{}, "the list of user email to add to the group")
 	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id where to add the users")
 }
@@ -175,6 +186,15 @@ func (o *CLIOptions) AddMemberToGroupFlags(flags *pflag.FlagSet) {
 func (o *CLIOptions) AddEditGroupFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the group")
 	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id to edit")
+}
+
+func (o *CLIOptions) AddRemoveGroupFlags(flags *pflag.FlagSet) {
+	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id to remove")
+}
+
+func (o *CLIOptions) AddRemoveMembersFromGroupFlags(flags *pflag.FlagSet) {
+	flags.StringSliceVarP(&o.UserIDs, "user-id", "", []string{}, "the list of user id to remove to the group")
+	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id where to remove the users")
 }
 
 func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {

@@ -19,6 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `company iam add group-member` command
 - `company iam edit serviceaccount` command
 - `company iam edit group` command
+- `company iam remove user` command
+- `company iam remove group` command
+- `company iam remove serviceaccount` command
+- `company iam remove group-member` command
 
 ### Changed
 
@@ -31,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - remove conflicting shortand flag `-v` from `miactl marketplace delete` command
+- creation of basic auth service account
 
 ## [0.10.0] - 2023-12-20
 
