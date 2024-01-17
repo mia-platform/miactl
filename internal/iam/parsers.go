@@ -25,7 +25,13 @@ import (
 	"golang.org/x/text/language"
 )
 
-func rowForIAMIdentity(identity resources.IAMIdentity) []string {
+const (
+	GroupsEntityName          = "group"
+	UsersEntityName           = "user"
+	ServiceAccountsEntityName = "serviceAccount"
+)
+
+func RowForIAMIdentity(identity resources.IAMIdentity) []string {
 	caser := cases.Title(language.English)
 	return []string{
 		identity.ID,
@@ -35,7 +41,7 @@ func rowForIAMIdentity(identity resources.IAMIdentity) []string {
 	}
 }
 
-func rowForUserIdentity(identity resources.UserIdentity) []string {
+func RowForUserIdentity(identity resources.UserIdentity) []string {
 	caser := cases.Title(language.English)
 	groupNames := make([]string, 0)
 	for _, group := range identity.Groups {
@@ -67,7 +73,7 @@ func rowForUserIdentity(identity resources.UserIdentity) []string {
 	}
 }
 
-func rowForGroupIdentity(identity resources.GroupIdentity) []string {
+func RowForGroupIdentity(identity resources.GroupIdentity) []string {
 	caser := cases.Title(language.English)
 	memberNames := make([]string, 0)
 	for _, member := range identity.Members {
@@ -86,7 +92,7 @@ func rowForGroupIdentity(identity resources.GroupIdentity) []string {
 	}
 }
 
-func rowForServiceAccountIdentity(identity resources.ServiceAccountIdentity) []string {
+func RowForServiceAccountIdentity(identity resources.ServiceAccountIdentity) []string {
 	caser := cases.Title(language.English)
 	roles := "-"
 	if len(identity.Roles) > 0 {

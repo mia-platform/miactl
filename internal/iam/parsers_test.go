@@ -59,7 +59,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForIAMIdentity(testCase.identity))
+			assert.Equal(t, testCase.expectedRow, RowForIAMIdentity(testCase.identity))
 		})
 	}
 }
@@ -118,7 +118,7 @@ func TestRowForUserIdentity(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForUserIdentity(testCase.identity))
+			assert.Equal(t, testCase.expectedRow, RowForUserIdentity(testCase.identity))
 		})
 	}
 }
@@ -169,7 +169,7 @@ func TestRowForGroupIdentity(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForGroupIdentity(testCase.identity))
+			assert.Equal(t, testCase.expectedRow, RowForGroupIdentity(testCase.identity))
 		})
 	}
 }
@@ -200,7 +200,7 @@ func TestRowForServiceAccountIdentity(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForServiceAccountIdentity(testCase.identity))
+			assert.Equal(t, testCase.expectedRow, RowForServiceAccountIdentity(testCase.identity))
 		})
 	}
 }
