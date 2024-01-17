@@ -13,36 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package project
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/project"
+	"github.com/mia-platform/miactl/internal/cmd/project/iam"
 	"github.com/spf13/cobra"
 )
 
-func ProjectCmd(o *clioptions.CLIOptions) *cobra.Command {
-	projectCmd := &cobra.Command{
-		Use:   "project",
-		Short: "Manage Mia-Platform Console projects",
-		Long: `Manage Mia-Platform Console projects.
-
-Projects contains the configurations for the various Services, APIs, CronJobs and the other
-resources that make up the applications of a specific company.
-		`,
+func IAMCmd(o *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "iam",
+		Short: "Manage Mia-Platform IAM for a project",
+		Long: `A Project Administrator user can manager the access to the project directly to a user,
+via a group or through service accounts that has been granted access to the parent company.`,
 	}
 
 	// add cmd flags
-	flags := projectCmd.PersistentFlags()
+	flags := cmd.PersistentFlags()
 	o.AddConnectionFlags(flags)
 	o.AddContextFlags(flags)
 	o.AddCompanyFlags(flags)
+	o.AddProjectFlags(flags)
 
-	// add sub commands
-	projectCmd.AddCommand(
-		project.ListCmd(o),
-		project.IAMCmd(o),
+	cmd.AddCommand(
+		iam.ListCmd(o),
 	)
 
-	return projectCmd
+	return cmd
 }
