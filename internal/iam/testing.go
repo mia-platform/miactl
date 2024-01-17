@@ -52,18 +52,9 @@ func ErrorTestServerForProjectIAM(t *testing.T, companyID, projectID string) *ht
 func internalErrorServerHandler(t *testing.T, w http.ResponseWriter, r *http.Request, companyID string) {
 	t.Helper()
 	switch {
-	case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listAllIAMEntitiesTemplate, companyID):
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("invalid json"))
-	case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listUsersEntityTemplate, companyID):
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("invalid json"))
-	case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listGroupsEntityTemplate, companyID):
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("invalid json"))
-	case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listServiceAccountsEntityTemplate, companyID):
-		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte("invalid json"))
+	case r.Method == http.MethodGet && (r.URL.Path == fmt.Sprintf(listAllIAMEntitiesTemplate, companyID) || r.URL.Path == fmt.Sprintf(listUsersEntityTemplate, companyID) || r.URL.Path == fmt.Sprintf(listGroupsEntityTemplate, companyID) || r.URL.Path == fmt.Sprintf(listServiceAccountsEntityTemplate, companyID)):
+		w.WriteHeader(http.StatusUnauthorized)
+		_, _ = w.Write([]byte(`{"statusCode": 401, "message": "unathorized"}`))
 	default:
 		w.WriteHeader(http.StatusNotFound)
 		require.Fail(t, "unsupported call", "%q, %q", r.Method, r.URL.String())
