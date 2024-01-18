@@ -25,7 +25,7 @@ import (
 func ListAllIAMEntities(ctx context.Context, client *client.APIClient, companyID string, projectIds []string, entityTypes map[string]bool) (*client.Response, error) {
 	request := client.
 		Get().
-		APIPath(fmt.Sprintf(listAllIAMEntitiesTemplate, companyID))
+		APIPath(fmt.Sprintf(entititesPathTemplate, companyID))
 
 	if len(projectIds) > 0 {
 		request.SetParam(projectIdsKey, projectIds...)
@@ -46,11 +46,11 @@ func ListSpecificEntities(ctx context.Context, client *client.APIClient, company
 
 	switch entityType {
 	case UsersEntityName:
-		apiPathTemplate = listUsersEntityTemplate
+		apiPathTemplate = usersPathTemplate
 	case GroupsEntityName:
-		apiPathTemplate = listGroupsEntityTemplate
+		apiPathTemplate = groupsPathTemplate
 	case ServiceAccountsEntityName:
-		apiPathTemplate = listServiceAccountsEntityTemplate
+		apiPathTemplate = serviceAccountsPathTemplate
 	default:
 		return nil, fmt.Errorf("unknown IAM entity")
 	}

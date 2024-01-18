@@ -21,12 +21,9 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/iam"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/spf13/cobra"
-)
-
-const (
-	editGroupRoleTemplate = "/api/companies/%s/groups/%s"
 )
 
 func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -75,17 +72,7 @@ func editCompanyGroup(ctx context.Context, client *client.APIClient, companyID, 
 		Role: role,
 	}
 
-	body, err := resources.EncodeResourceToJSON(payload)
-	if err != nil {
-		return fmt.Errorf("failed to encode request body: %w", err)
-	}
-
-	resp, err := client.
-		Patch().
-		APIPath(fmt.Sprintf(editGroupRoleTemplate, companyID, groupID)).
-		Body(body).
-		Do(ctx)
-
+	resp, err := iam.EditGroupRole(ctx, client, companyID, groupID, payload)
 	if err != nil {
 		return err
 	}

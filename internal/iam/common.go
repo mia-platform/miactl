@@ -16,10 +16,10 @@
 package iam
 
 const (
-	listAllIAMEntitiesTemplate        = "/api/companies/%s/identities"
-	listUsersEntityTemplate           = "/api/companies/%s/users"
-	listGroupsEntityTemplate          = "/api/companies/%s/groups"
-	listServiceAccountsEntityTemplate = "/api/companies/%s/service-accounts"
+	entititesPathTemplate       = "/api/companies/%s/identities"
+	usersPathTemplate           = "/api/companies/%s/users"
+	groupsPathTemplate          = "/api/companies/%s/groups"
+	serviceAccountsPathTemplate = "/api/companies/%s/service-accounts"
 
 	projectIdsKey = "projectIds"
 )

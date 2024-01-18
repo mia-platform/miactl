@@ -21,12 +21,9 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/iam"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/spf13/cobra"
-)
-
-const (
-	editServiceAccountRoleTemplate = "/api/companies/%s/service-accounts/%s"
 )
 
 func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -75,17 +72,7 @@ func editCompanyServiceAccount(ctx context.Context, client *client.APIClient, co
 		Role: role,
 	}
 
-	body, err := resources.EncodeResourceToJSON(payload)
-	if err != nil {
-		return fmt.Errorf("failed to encode request body: %w", err)
-	}
-
-	resp, err := client.
-		Patch().
-		APIPath(fmt.Sprintf(editServiceAccountRoleTemplate, companyID, serviceAccountID)).
-		Body(body).
-		Do(ctx)
-
+	resp, err := iam.EditServiceAccountRole(ctx, client, companyID, serviceAccountID, payload)
 	if err != nil {
 		return err
 	}

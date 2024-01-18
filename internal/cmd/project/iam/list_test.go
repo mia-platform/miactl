@@ -47,7 +47,7 @@ func TestListAllIAMIdentities(t *testing.T) {
 			},
 		},
 		"invalid body response": {
-			server: iam.ErrorTestServerForProjectIAM(t, companyID, projectID),
+			server: iam.ErrorTestServerForProjectIAMList(t, companyID, projectID),
 			err:    true,
 		},
 	}

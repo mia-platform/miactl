@@ -17,18 +17,19 @@ package serviceaccount
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/iam"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestEditServiceAccount(t *testing.T) {
+	companyID := "company-id"
+	entityID := "000000000000000000000001"
 	testCases := map[string]struct {
 		server           *httptest.Server
 		companyID        string
@@ -37,37 +38,37 @@ func TestEditServiceAccount(t *testing.T) {
 		expectErr        bool
 	}{
 		"edit service account": {
-			server:           editServiceAccountTestServer(t),
-			companyID:        "success",
+			server:           iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
+			companyID:        companyID,
 			role:             resources.IAMRoleGuest,
-			serviceAccountID: "000000000000000000000001",
+			serviceAccountID: entityID,
 		},
 		"missing company": {
-			server:           editServiceAccountTestServer(t),
+			server:           iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
 			companyID:        "",
 			role:             resources.IAMRoleGuest,
-			serviceAccountID: "000000000000000000000001",
+			serviceAccountID: entityID,
 			expectErr:        true,
 		},
 		"missing service account id": {
-			server:           editServiceAccountTestServer(t),
-			companyID:        "success",
+			server:           iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
+			companyID:        companyID,
 			role:             resources.IAMRoleGuest,
 			serviceAccountID: "",
 			expectErr:        true,
 		},
 		"wrong role": {
-			server:           editServiceAccountTestServer(t),
+			server:           iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
 			companyID:        "",
 			role:             resources.IAMRole("example"),
-			serviceAccountID: "000000000000000000000001",
+			serviceAccountID: entityID,
 			expectErr:        true,
 		},
 		"error from backend": {
-			server:           editServiceAccountTestServer(t),
-			companyID:        "fail",
+			server:           iam.ErrorTestServerForEditIAMRole(t, companyID, entityID),
+			companyID:        companyID,
 			role:             resources.IAMRoleCompanyOwner,
-			serviceAccountID: "000000000000000000000001",
+			serviceAccountID: entityID,
 			expectErr:        true,
 		},
 	}
@@ -96,20 +97,4 @@ func TestEditServiceAccount(t *testing.T) {
 			}
 		})
 	}
-}
-
-func editServiceAccountTestServer(t *testing.T) *httptest.Server {
-	t.Helper()
-
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editServiceAccountRoleTemplate, "success", "000000000000000000000001"):
-			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editServiceAccountRoleTemplate, "fail", "000000000000000000000001"):
-			w.WriteHeader(http.StatusBadRequest)
-		default:
-			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
 }

@@ -42,11 +42,11 @@ func TestListAllIAMEntitites(t *testing.T) {
 			projectIds: []string{projectID},
 		},
 		"test error for company": {
-			server:    ErrorTestServerForCompanyIAM(t, companyID),
+			server:    ErrorTestServerForCompanyIAMList(t, companyID),
 			expectErr: true,
 		},
 		"test error for project": {
-			server:     ErrorTestServerForProjectIAM(t, companyID, projectID),
+			server:     ErrorTestServerForProjectIAMList(t, companyID, projectID),
 			projectIds: []string{projectID},
 			expectErr:  true,
 		},
@@ -93,7 +93,7 @@ func TestSpecificIAMList(t *testing.T) {
 			iamType: ServiceAccountsEntityName,
 		},
 		"test error for company": {
-			server:    ErrorTestServerForCompanyIAM(t, companyID),
+			server:    ErrorTestServerForCompanyIAMList(t, companyID),
 			iamType:   UsersEntityName,
 			expectErr: true,
 		},

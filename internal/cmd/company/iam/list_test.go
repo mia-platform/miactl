@@ -49,7 +49,7 @@ func TestListAllIAMIdentities(t *testing.T) {
 			},
 		},
 		"invalid body response": {
-			server:    iam.ErrorTestServerForCompanyIAM(t, companyID),
+			server:    iam.ErrorTestServerForCompanyIAMList(t, companyID),
 			companyID: companyID,
 			err:       true,
 		},
@@ -87,7 +87,7 @@ func TestListUsersIdentities(t *testing.T) {
 			companyID: companyID,
 		},
 		"invalid body response": {
-			server:    iam.ErrorTestServerForCompanyIAM(t, companyID),
+			server:    iam.ErrorTestServerForCompanyIAMList(t, companyID),
 			companyID: companyID,
 			err:       true,
 		},
@@ -130,7 +130,7 @@ func TestListGroupsIdentities(t *testing.T) {
 			},
 		},
 		"invalid body response": {
-			server:    iam.ErrorTestServerForCompanyIAM(t, companyID),
+			server:    iam.ErrorTestServerForCompanyIAMList(t, companyID),
 			companyID: companyID,
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
@@ -172,7 +172,7 @@ func TestServiceAccountGroupsIdentities(t *testing.T) {
 			},
 		},
 		"invalid body response": {
-			server:    iam.ErrorTestServerForCompanyIAM(t, companyID),
+			server:    iam.ErrorTestServerForCompanyIAMList(t, companyID),
 			companyID: companyID,
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,

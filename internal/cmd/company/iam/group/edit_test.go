@@ -17,18 +17,19 @@ package group
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/iam"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestEditGroup(t *testing.T) {
+	companyID := "company-id"
+	groupID := "000000000000000000000001"
 	testCases := map[string]struct {
 		server    *httptest.Server
 		companyID string
@@ -37,37 +38,37 @@ func TestEditGroup(t *testing.T) {
 		expectErr bool
 	}{
 		"edit group": {
-			server:    editGroupTestServer(t),
-			companyID: "success",
+			server:    iam.TestServerForCompanyIAMEditRole(t, companyID, groupID, iam.GroupsEntityName),
+			companyID: companyID,
 			role:      resources.IAMRoleGuest,
-			groupID:   "000000000000000000000001",
+			groupID:   groupID,
 		},
 		"missing company": {
-			server:    editGroupTestServer(t),
+			server:    iam.TestServerForCompanyIAMEditRole(t, companyID, groupID, iam.GroupsEntityName),
 			companyID: "",
 			role:      resources.IAMRoleGuest,
-			groupID:   "000000000000000000000001",
+			groupID:   groupID,
 			expectErr: true,
 		},
 		"missing group id": {
-			server:    editGroupTestServer(t),
-			companyID: "success",
+			server:    iam.TestServerForCompanyIAMEditRole(t, companyID, groupID, iam.GroupsEntityName),
+			companyID: companyID,
 			role:      resources.IAMRoleGuest,
 			groupID:   "",
 			expectErr: true,
 		},
 		"wrong role": {
-			server:    editGroupTestServer(t),
+			server:    iam.TestServerForCompanyIAMEditRole(t, companyID, groupID, iam.GroupsEntityName),
 			companyID: "",
 			role:      resources.IAMRole("example"),
-			groupID:   "000000000000000000000001",
+			groupID:   groupID,
 			expectErr: true,
 		},
 		"error from backend": {
-			server:    editGroupTestServer(t),
-			companyID: "fail",
+			server:    iam.ErrorTestServerForEditIAMRole(t, companyID, groupID),
+			companyID: companyID,
 			role:      resources.IAMRoleCompanyOwner,
-			groupID:   "000000000000000000000001",
+			groupID:   groupID,
 			expectErr: true,
 		},
 	}
@@ -96,20 +97,4 @@ func TestEditGroup(t *testing.T) {
 			}
 		})
 	}
-}
-
-func editGroupTestServer(t *testing.T) *httptest.Server {
-	t.Helper()
-
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editGroupRoleTemplate, "success", "000000000000000000000001"):
-			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editGroupRoleTemplate, "fail", "000000000000000000000001"):
-			w.WriteHeader(http.StatusBadRequest)
-		default:
-			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
 }

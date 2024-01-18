@@ -28,7 +28,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func ErrorTestServerForCompanyIAM(t *testing.T, companyID string) *httptest.Server {
+func ErrorTestServerForCompanyIAMList(t *testing.T, companyID string) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params := r.URL.Query()
@@ -37,7 +37,7 @@ func ErrorTestServerForCompanyIAM(t *testing.T, companyID string) *httptest.Serv
 	}))
 }
 
-func ErrorTestServerForProjectIAM(t *testing.T, companyID, projectID string) *httptest.Server {
+func ErrorTestServerForProjectIAMList(t *testing.T, companyID, projectID string) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params := r.URL.Query()
@@ -52,13 +52,27 @@ func ErrorTestServerForProjectIAM(t *testing.T, companyID, projectID string) *ht
 func internalErrorServerHandler(t *testing.T, w http.ResponseWriter, r *http.Request, companyID string) {
 	t.Helper()
 	switch {
-	case r.Method == http.MethodGet && (r.URL.Path == fmt.Sprintf(listAllIAMEntitiesTemplate, companyID) || r.URL.Path == fmt.Sprintf(listUsersEntityTemplate, companyID) || r.URL.Path == fmt.Sprintf(listGroupsEntityTemplate, companyID) || r.URL.Path == fmt.Sprintf(listServiceAccountsEntityTemplate, companyID)):
+	case r.Method == http.MethodGet && (r.URL.Path == fmt.Sprintf(entititesPathTemplate, companyID) || r.URL.Path == fmt.Sprintf(usersPathTemplate, companyID) || r.URL.Path == fmt.Sprintf(groupsPathTemplate, companyID) || r.URL.Path == fmt.Sprintf(serviceAccountsPathTemplate, companyID)):
 		w.WriteHeader(http.StatusUnauthorized)
 		_, _ = w.Write([]byte(`{"statusCode": 401, "message": "unathorized"}`))
 	default:
 		w.WriteHeader(http.StatusNotFound)
 		require.Fail(t, "unsupported call", "%q, %q", r.Method, r.URL.String())
 	}
+}
+
+func ErrorTestServerForEditIAMRole(t *testing.T, companyID, entityID string) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodPatch && (r.URL.Path == fmt.Sprintf(groupsPathTemplate, companyID)+"/"+entityID || r.URL.Path == fmt.Sprintf(usersPathTemplate, companyID)+"/"+entityID || r.URL.Path == fmt.Sprintf(serviceAccountsPathTemplate, companyID)+"/"+entityID):
+			w.WriteHeader(http.StatusUnauthorized)
+			_, _ = w.Write([]byte(`{"statusCode": 401, "message": "unathorized"}`))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+			require.Fail(t, "unsupported call", "%q, %q", r.Method, r.URL.String())
+		}
+	}))
 }
 
 func TestServerForCompanyIAMList(t *testing.T, companyID string) *httptest.Server {
@@ -72,7 +86,7 @@ func TestServerForCompanyIAMList(t *testing.T, companyID string) *httptest.Serve
 		}
 
 		switch {
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listAllIAMEntitiesTemplate, companyID):
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(entititesPathTemplate, companyID):
 			w.WriteHeader(http.StatusOK)
 
 			var identities []interface{}
@@ -111,7 +125,7 @@ func TestServerForProjectIAMList(t *testing.T, companyID, projectID string) *htt
 		}
 
 		switch {
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(listAllIAMEntitiesTemplate, companyID):
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(entititesPathTemplate, companyID):
 			w.WriteHeader(http.StatusOK)
 
 			var identities []interface{}
@@ -135,19 +149,19 @@ func TestServerForProjectIAMList(t *testing.T, companyID, projectID string) *htt
 	}))
 }
 
-func TestServerForCompanySpecificList(t *testing.T, companyID string, entityType string) *httptest.Server {
+func TestServerForCompanySpecificList(t *testing.T, companyID, entityType string) *httptest.Server {
 	t.Helper()
 	var pathTemplate string
 	var responseResources []interface{}
 	switch entityType {
 	case UsersEntityName:
-		pathTemplate = listUsersEntityTemplate
+		pathTemplate = usersPathTemplate
 		responseResources = []interface{}{userExample}
 	case GroupsEntityName:
-		pathTemplate = listGroupsEntityTemplate
+		pathTemplate = groupsPathTemplate
 		responseResources = []interface{}{groupExample}
 	case ServiceAccountsEntityName:
-		pathTemplate = listServiceAccountsEntityTemplate
+		pathTemplate = serviceAccountsPathTemplate
 		responseResources = []interface{}{serviceAccountExample}
 	default:
 		require.FailNow(t, "unrecognized entity type", "%q", entityType)
@@ -162,6 +176,33 @@ func TestServerForCompanySpecificList(t *testing.T, companyID string, entityType
 			payload, err := resources.EncodeResourceToJSON(responseResources)
 			require.NoError(t, err)
 			_, _ = w.Write(payload)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+			require.Fail(t, "unsupported call", "%q, %q", r.Method, r.URL.String())
+		}
+	}))
+}
+
+func TestServerForCompanyIAMEditRole(t *testing.T, companyID, entityID, entityType string) *httptest.Server {
+	t.Helper()
+	var pathTemplate string
+	switch entityType {
+	case UsersEntityName:
+		pathTemplate = usersPathTemplate
+	case GroupsEntityName:
+		pathTemplate = groupsPathTemplate
+	case ServiceAccountsEntityName:
+		pathTemplate = serviceAccountsPathTemplate
+	default:
+		require.FailNow(t, "unrecognized entity type", "%q", entityType)
+	}
+
+	pathTemplate += "/%s"
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(pathTemplate, companyID, entityID):
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"statusCode": 200,"message": "identity roles successfully updated"}`))
 		default:
 			w.WriteHeader(http.StatusNotFound)
 			require.Fail(t, "unsupported call", "%q, %q", r.Method, r.URL.String())
