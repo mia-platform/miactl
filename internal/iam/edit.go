@@ -24,18 +24,18 @@ import (
 )
 
 func EditUserRole(ctx context.Context, client *client.APIClient, companyID, resourceID string, change resources.EditIAMRole) (*client.Response, error) {
-	return editIAMResourceRole(ctx, client, companyID, resourceID, UsersEntityName, change)
+	return EditIAMResourceRole(ctx, client, companyID, resourceID, UsersEntityName, change)
 }
 
 func EditGroupRole(ctx context.Context, client *client.APIClient, companyID, resourceID string, change resources.EditIAMRole) (*client.Response, error) {
-	return editIAMResourceRole(ctx, client, companyID, resourceID, GroupsEntityName, change)
+	return EditIAMResourceRole(ctx, client, companyID, resourceID, GroupsEntityName, change)
 }
 
 func EditServiceAccountRole(ctx context.Context, client *client.APIClient, companyID, resourceID string, change resources.EditIAMRole) (*client.Response, error) {
-	return editIAMResourceRole(ctx, client, companyID, resourceID, ServiceAccountsEntityName, change)
+	return EditIAMResourceRole(ctx, client, companyID, resourceID, ServiceAccountsEntityName, change)
 }
 
-func editIAMResourceRole(ctx context.Context, client *client.APIClient, companyID, resourceID, entityType string, change resources.EditIAMRole) (*client.Response, error) {
+func EditIAMResourceRole(ctx context.Context, client *client.APIClient, companyID, resourceID, entityType string, change resources.EditIAMRole) (*client.Response, error) {
 	apiPath := ""
 	switch entityType {
 	case UsersEntityName:

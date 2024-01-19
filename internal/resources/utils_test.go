@@ -23,7 +23,7 @@ import (
 
 func TestIsValidRole(t *testing.T) {
 	for _, role := range validServiceAccountRoles {
-		require.True(t, IsValidIAMRole(role))
+		require.True(t, IsValidIAMRole(role, false))
 	}
-	require.False(t, IsValidIAMRole("wrong-role"))
+	require.False(t, IsValidIAMRole(IAMRoleCompanyOwner, true))
 }

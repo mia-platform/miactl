@@ -16,6 +16,10 @@
 package iam
 
 const (
+	GroupsEntityName          = "group"
+	UsersEntityName           = "user"
+	ServiceAccountsEntityName = "serviceaccount"
+
 	entititesPathTemplate       = "/api/companies/%s/identities"
 	usersPathTemplate           = "/api/companies/%s/users"
 	groupsPathTemplate          = "/api/companies/%s/groups"

@@ -25,12 +25,6 @@ import (
 	"golang.org/x/text/language"
 )
 
-const (
-	GroupsEntityName          = "group"
-	UsersEntityName           = "user"
-	ServiceAccountsEntityName = "serviceAccount"
-)
-
 func RowForIAMIdentity(identity resources.IAMIdentity) []string {
 	caser := cases.Title(language.English)
 	return []string{

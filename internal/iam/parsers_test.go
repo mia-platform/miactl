@@ -32,7 +32,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 			identity: resources.IAMIdentity{
 				ID:    "identity-id",
 				Name:  "identity name",
-				Type:  "group",
+				Type:  GroupsEntityName,
 				Roles: []string{"company-owner", "guest"},
 			},
 			expectedRow: []string{"identity-id", "Group", "identity name", "Company Owner, Guest"},
@@ -41,7 +41,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 			identity: resources.IAMIdentity{
 				ID:    "identity-id",
 				Name:  "identity name",
-				Type:  "serviceAccount",
+				Type:  ServiceAccountsEntityName,
 				Roles: []string{"developer"},
 			},
 			expectedRow: []string{"identity-id", "Service Account", "identity name", "Developer"},
@@ -50,7 +50,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 			identity: resources.IAMIdentity{
 				ID:    "identity-id",
 				Name:  "identity name",
-				Type:  "user",
+				Type:  UsersEntityName,
 				Roles: []string{"developer"},
 			},
 			expectedRow: []string{"identity-id", "User", "identity name", "Developer"},

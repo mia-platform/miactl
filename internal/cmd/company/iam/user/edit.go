@@ -39,13 +39,13 @@ func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			err = editCompanyUser(cmd.Context(), client, restConfig.CompanyID, options.UserID, resources.IAMRole(options.IAMRole))
+			err = editCompanyUser(cmd.Context(), client, restConfig.CompanyID, options.EntityID, resources.IAMRole(options.IAMRole))
 			cobra.CheckErr(err)
 		},
 	}
 
 	options.AddEditUserFlags(cmd.Flags())
-	err := cmd.RegisterFlagCompletionFunc("role", resources.IAMRoleCompletion)
+	err := cmd.RegisterFlagCompletionFunc("role", resources.IAMRoleCompletion(false))
 
 	if err != nil {
 		// we panic here because if we reach here, something nasty is happening in flag autocomplete registration
@@ -56,7 +56,7 @@ func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
 }
 
 func editCompanyUser(ctx context.Context, client *client.APIClient, companyID, userID string, role resources.IAMRole) error {
-	if !resources.IsValidIAMRole(role) {
+	if !resources.IsValidIAMRole(role, false) {
 		return fmt.Errorf("invalid service account role %s", role)
 	}
 
