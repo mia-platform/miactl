@@ -23,16 +23,15 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/iam"
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/spf13/cobra"
 )
 
-func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
+func RemoveroleCmd(options *clioptions.CLIOptions) *cobra.Command {
 	validArgs := []string{iam.UsersEntityName, iam.GroupsEntityName, iam.ServiceAccountsEntityName}
 	cmd := &cobra.Command{
-		Use:       "edit " + "[" + strings.Join(validArgs, "|") + "]",
-		Short:     "Edit the role of an IAM entity for a project or one of its environment",
-		Long:      "Edit the role of an IAM entity for a project or one of its environment",
+		Use:       "remove-role " + "[" + strings.Join(validArgs, "|") + "]",
+		Short:     "Remove the role of an IAM entity for a project or one of its environment",
+		Long:      "Remove the role of an IAM entity for a project or one of its environment",
 		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
 		ValidArgs: validArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -44,33 +43,19 @@ func EditCmd(options *clioptions.CLIOptions) *cobra.Command {
 				companyID:       restConfig.CompanyID,
 				projectID:       restConfig.ProjectID,
 				entityID:        options.EntityID,
-				entityType:      args[0],
 				environmentName: options.Environment,
-				environmentRole: options.EnvironmentIAMRole,
-				projectRole:     &options.ProjectIAMRole,
+				entityType:      args[0],
 			}
-			return editRoleForEntity(cmd.Context(), client, changes)
+			return removeRoleForEntity(cmd.Context(), client, changes)
 		},
 	}
 
-	options.AddEditCompanyIAMFlags(cmd.Flags())
-	cmd.MarkFlagsRequiredTogether("environment-role", "environment")
-	cmd.MarkFlagsMutuallyExclusive("environment-role", "project-role")
-
-	if err := cmd.RegisterFlagCompletionFunc("project-role", resources.IAMRoleCompletion(true)); err != nil {
-		// we panic here because if we reach here, something nasty is happening in flag autocomplete registration
-		panic(err)
-	}
-
-	if err := cmd.RegisterFlagCompletionFunc("environment-role", resources.IAMEnvironmentRoleCompletion()); err != nil {
-		// we panic here because if we reach here, something nasty is happening in flag autocomplete registration
-		panic(err)
-	}
+	options.AddRemoveProjectIAMRoleFlags(cmd.Flags())
 
 	return cmd
 }
 
-func editRoleForEntity(ctx context.Context, client *client.APIClient, changes roleChanges) error {
+func removeRoleForEntity(ctx context.Context, client *client.APIClient, changes roleChanges) error {
 	if len(changes.companyID) == 0 {
 		return fmt.Errorf("missing company id, please set one with the flag or context")
 	}
@@ -83,12 +68,9 @@ func editRoleForEntity(ctx context.Context, client *client.APIClient, changes ro
 		return fmt.Errorf("missing entity id, please set one with the flag")
 	}
 
-	if changes.projectRole != nil && len(*changes.projectRole) > 0 && !resources.IsValidIAMRole(resources.IAMRole(*changes.projectRole), true) {
-		return fmt.Errorf("invalid role for project: %s", *changes.projectRole)
-	}
-
-	if len(changes.environmentRole) > 0 && !resources.IsValidEnvironmentRole(resources.IAMRole(changes.environmentRole)) {
-		return fmt.Errorf("invalid role for environment: %s", changes.environmentRole)
+	if len(changes.environmentName) == 0 {
+		empty := ""
+		changes.projectRole = &empty
 	}
 
 	payload := payloadForChanges(changes)

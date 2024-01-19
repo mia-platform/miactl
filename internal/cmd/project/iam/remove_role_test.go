@@ -23,60 +23,53 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/iam"
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestEditRoleForEntity(t *testing.T) {
+func TestRemoveRoleForEntity(t *testing.T) {
 	companyID := "company"
 	projectID := "project"
 	entityID := "entity-id"
-	role := string(resources.IAMRoleDeveloper)
-	wrongRole := "wrong"
 	testCases := map[string]struct {
 		server     *httptest.Server
 		roleChange roleChanges
 		err        bool
 	}{
-		"update user": {
+		"remove role to user": {
 			server: iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.UsersEntityName),
 			roleChange: roleChanges{
-				companyID:   companyID,
-				projectID:   projectID,
-				entityID:    entityID,
-				entityType:  iam.UsersEntityName,
-				projectRole: &role,
+				companyID:  companyID,
+				projectID:  projectID,
+				entityID:   entityID,
+				entityType: iam.UsersEntityName,
 			},
 		},
-		"update group": {
+		"remove role to group": {
 			server: iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.GroupsEntityName),
 			roleChange: roleChanges{
-				companyID:   companyID,
-				projectID:   projectID,
-				entityID:    entityID,
-				entityType:  iam.GroupsEntityName,
-				projectRole: &role,
+				companyID:  companyID,
+				projectID:  projectID,
+				entityID:   entityID,
+				entityType: iam.GroupsEntityName,
 			},
 		},
-		"update service account": {
+		"remove role to service account": {
 			server: iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
 			roleChange: roleChanges{
-				companyID:   companyID,
-				projectID:   projectID,
-				entityID:    entityID,
-				entityType:  iam.ServiceAccountsEntityName,
-				projectRole: &role,
+				companyID:  companyID,
+				projectID:  projectID,
+				entityID:   entityID,
+				entityType: iam.ServiceAccountsEntityName,
 			},
 		},
 		"missing company ID": {
 			server: iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
 			roleChange: roleChanges{
-				companyID:   "",
-				projectID:   projectID,
-				entityID:    entityID,
-				entityType:  iam.ServiceAccountsEntityName,
-				projectRole: &role,
+				companyID:  "",
+				projectID:  projectID,
+				entityID:   entityID,
+				entityType: iam.ServiceAccountsEntityName,
 			},
 
 			err: true,
@@ -84,46 +77,20 @@ func TestEditRoleForEntity(t *testing.T) {
 		"missing project ID": {
 			server: iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
 			roleChange: roleChanges{
-				companyID:   companyID,
-				projectID:   "",
-				entityID:    entityID,
-				entityType:  iam.ServiceAccountsEntityName,
-				projectRole: &role,
+				companyID:  companyID,
+				projectID:  "",
+				entityID:   entityID,
+				entityType: iam.ServiceAccountsEntityName,
 			},
 			err: true,
 		},
 		"missing entity ID": {
 			server: iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
 			roleChange: roleChanges{
-				companyID:   companyID,
-				projectID:   projectID,
-				entityID:    "",
-				entityType:  iam.ServiceAccountsEntityName,
-				projectRole: &role,
-			},
-			err: true,
-		},
-		"invalid project role": {
-			server: iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
-			roleChange: roleChanges{
-				companyID:   companyID,
-				projectID:   projectID,
-				entityID:    entityID,
-				entityType:  iam.ServiceAccountsEntityName,
-				projectRole: &wrongRole,
-			},
-			err: true,
-		},
-		"invalid environment role": {
-			server: iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.ServiceAccountsEntityName),
-			roleChange: roleChanges{
-				companyID:       companyID,
-				projectID:       projectID,
-				entityID:        entityID,
-				entityType:      iam.ServiceAccountsEntityName,
-				projectRole:     &role,
-				environmentName: "environment",
-				environmentRole: wrongRole,
+				companyID:  companyID,
+				projectID:  projectID,
+				entityID:   "",
+				entityType: iam.ServiceAccountsEntityName,
 			},
 			err: true,
 		},
@@ -142,7 +109,7 @@ func TestEditRoleForEntity(t *testing.T) {
 			}
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
-			err = editRoleForEntity(context.TODO(), client, testCase.roleChange)
+			err = removeRoleForEntity(context.TODO(), client, testCase.roleChange)
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

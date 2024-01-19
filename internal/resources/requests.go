@@ -57,7 +57,7 @@ type EditIAMRole struct {
 
 type EditProjectRole struct {
 	ProjectID        string                `json:"projectId"`
-	Role             IAMRole               `json:"role,omitempty"`
+	Role             *IAMRole              `json:"role,omitempty"`
 	EnvironmentsRole []EditEnvironmentRole `json:"environmentsRole,omitempty"`
 }
 

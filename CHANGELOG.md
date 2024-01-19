@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `project iam list` command
+- `project iam edit` command
+- `project iam remove-role` command
+
 ### Changed
 
 - update go version to 1.21.6

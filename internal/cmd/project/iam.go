@@ -39,6 +39,7 @@ via a group or through service accounts that has been granted access to the pare
 	cmd.AddCommand(
 		iam.ListCmd(o),
 		iam.EditCmd(o),
+		iam.RemoveroleCmd(o),
 	)
 
 	return cmd
