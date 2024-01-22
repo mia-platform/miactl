@@ -16,6 +16,7 @@
 package iam
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -32,6 +33,35 @@ func RowForIAMIdentity(identity resources.IAMIdentity) []string {
 		caser.String(readableType(identity.Type)),
 		identity.Name,
 		caser.String(strings.Join(readableRoles(identity.Roles), ", ")),
+	}
+}
+
+func RowForProjectIAMIdentity(projectID string) func(resources.IAMIdentity) []string {
+	return func(identity resources.IAMIdentity) []string {
+		fmt.Println(identity)
+		var roleStrings []string
+		inherited := ""
+		if len(identity.ProjectsRole) > 0 {
+			for _, role := range identity.ProjectsRole {
+				if role.ID == projectID {
+					roleStrings = role.Roles
+					break
+				}
+			}
+		}
+
+		if len(roleStrings) == 0 {
+			roleStrings = identity.Roles
+			inherited = " (inherited)"
+		}
+
+		caser := cases.Title(language.English)
+		return []string{
+			identity.ID,
+			caser.String(readableType(identity.Type)),
+			identity.Name,
+			caser.String(strings.Join(readableRoles(roleStrings), ", ")) + inherited,
+		}
 	}
 }
 

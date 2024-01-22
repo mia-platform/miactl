@@ -64,6 +64,75 @@ func TestRowForIAMIdentity(t *testing.T) {
 	}
 }
 
+func TestRowForProjectIAMIdentity(t *testing.T) {
+	projectID := "000000000000000000000001"
+	testCases := map[string]struct {
+		identity    resources.IAMIdentity
+		expectedRow []string
+	}{
+		"IAM identity without project roles": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  GroupsEntityName,
+				Roles: []string{"company-owner", "guest"},
+			},
+			expectedRow: []string{"identity-id", "Group", "identity name", "Company Owner, Guest (inherited)"},
+		},
+		"IAM identity with project role": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  ServiceAccountsEntityName,
+				Roles: []string{"developer"},
+				ProjectsRole: []resources.ProjectRole{
+					{
+						ID:    projectID,
+						Roles: []string{"guest"},
+					},
+				},
+			},
+			expectedRow: []string{"identity-id", "Service Account", "identity name", "Guest"},
+		},
+		"IAM identity with empty project role": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  UsersEntityName,
+				Roles: []string{"developer"},
+				ProjectsRole: []resources.ProjectRole{
+					{
+						ID:    projectID,
+						Roles: []string{},
+					},
+				},
+			},
+			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)"},
+		},
+		"IAM with other projects access": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  UsersEntityName,
+				Roles: []string{"developer"},
+				ProjectsRole: []resources.ProjectRole{
+					{
+						ID:    "other-id",
+						Roles: []string{"guest"},
+					},
+				},
+			},
+			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)"},
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, testCase.expectedRow, RowForProjectIAMIdentity(projectID)(testCase.identity))
+		})
+	}
+}
+
 func TestRowForUserIdentity(t *testing.T) {
 	testCases := map[string]struct {
 		identity    resources.UserIdentity

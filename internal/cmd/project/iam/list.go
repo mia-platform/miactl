@@ -77,7 +77,7 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 		return err
 	}
 
-	rows, err := util.RowsForResources(resp, iam.RowForIAMIdentity)
+	rows, err := util.RowsForResources(resp, iam.RowForProjectIAMIdentity(projectID))
 	if err != nil {
 		return err
 	}
@@ -86,6 +86,7 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
 	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
 	table.SetCenterSeparator("")
+	table.SetAutoWrapText(false)
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
 	table.SetHeader([]string{"ID", "Type", "Name", "Roles"})
