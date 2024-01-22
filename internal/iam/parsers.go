@@ -41,26 +41,37 @@ func RowForProjectIAMIdentity(projectID string) func(resources.IAMIdentity) []st
 		fmt.Println(identity)
 		var roleStrings []string
 		inherited := ""
+		caser := cases.Title(language.English)
+		var environmentRoles []string
+
 		if len(identity.ProjectsRole) > 0 {
 			for _, role := range identity.ProjectsRole {
 				if role.ID == projectID {
-					roleStrings = role.Roles
-					break
+					roleStrings = readableRoles(role.Roles)
+				}
+				if len(role.Environments) > 0 {
+					for _, environment := range role.Environments {
+						environmentRoles = append(environmentRoles, environment.ID+"="+caser.String(strings.Join(readableRoles(environment.Roles), ", ")))
+					}
 				}
 			}
 		}
 
 		if len(roleStrings) == 0 {
-			roleStrings = identity.Roles
+			roleStrings = projectReadableRoles(identity.Roles)
 			inherited = " (inherited)"
 		}
 
-		caser := cases.Title(language.English)
+		roles := caser.String(strings.Join(roleStrings, ", "))
+		if len(roles) > 0 {
+			roles += inherited
+		}
 		return []string{
 			identity.ID,
 			caser.String(readableType(identity.Type)),
 			identity.Name,
-			caser.String(strings.Join(readableRoles(roleStrings), ", ")) + inherited,
+			roles,
+			strings.Join(environmentRoles, " "),
 		}
 	}
 }
@@ -153,6 +164,17 @@ func readableRoles(roles []string) []string {
 	transformedRoles := make([]string, 0)
 	for _, role := range roles {
 		transformedRoles = append(transformedRoles, readableRole(role))
+	}
+
+	return transformedRoles
+}
+
+func projectReadableRoles(roles []string) []string {
+	transformedRoles := make([]string, 0)
+	for _, role := range roles {
+		if role != "guest" {
+			transformedRoles = append(transformedRoles, readableRole(role))
+		}
 	}
 
 	return transformedRoles

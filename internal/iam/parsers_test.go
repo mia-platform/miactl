@@ -77,7 +77,7 @@ func TestRowForProjectIAMIdentity(t *testing.T) {
 				Type:  GroupsEntityName,
 				Roles: []string{"company-owner", "guest"},
 			},
-			expectedRow: []string{"identity-id", "Group", "identity name", "Company Owner, Guest (inherited)"},
+			expectedRow: []string{"identity-id", "Group", "identity name", "Company Owner (inherited)", ""},
 		},
 		"IAM identity with project role": {
 			identity: resources.IAMIdentity{
@@ -92,7 +92,7 @@ func TestRowForProjectIAMIdentity(t *testing.T) {
 					},
 				},
 			},
-			expectedRow: []string{"identity-id", "Service Account", "identity name", "Guest"},
+			expectedRow: []string{"identity-id", "Service Account", "identity name", "Guest", ""},
 		},
 		"IAM identity with empty project role": {
 			identity: resources.IAMIdentity{
@@ -107,7 +107,7 @@ func TestRowForProjectIAMIdentity(t *testing.T) {
 					},
 				},
 			},
-			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)"},
+			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)", ""},
 		},
 		"IAM with other projects access": {
 			identity: resources.IAMIdentity{
@@ -122,7 +122,28 @@ func TestRowForProjectIAMIdentity(t *testing.T) {
 					},
 				},
 			},
-			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)"},
+			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)", ""},
+		},
+		"IAM with environment specific access": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  UsersEntityName,
+				Roles: []string{"developer"},
+				ProjectsRole: []resources.ProjectRole{
+					{
+						ID:    "other-id",
+						Roles: []string{"guest"},
+						Environments: []resources.EnvironmentRole{
+							{
+								ID:    "envId",
+								Roles: []string{"developer"},
+							},
+						},
+					},
+				},
+			},
+			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)", "envId=Developer"},
 		},
 	}
 

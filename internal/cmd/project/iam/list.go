@@ -89,7 +89,7 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 	table.SetAutoWrapText(false)
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
-	table.SetHeader([]string{"ID", "Type", "Name", "Roles"})
+	table.SetHeader([]string{"ID", "Type", "Name", "Roles", "Environments Roles"})
 	table.AppendBulk(rows)
 	table.Render()
 	return nil
