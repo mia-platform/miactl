@@ -87,6 +87,6 @@ func addMemberToGroup(ctx context.Context, client *client.APIClient, companyID, 
 		return err
 	}
 
-	fmt.Println("the users has been added to the group")
+	fmt.Println("the users have been added to the group")
 	return nil
 }
