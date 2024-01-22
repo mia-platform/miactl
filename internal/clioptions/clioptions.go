@@ -252,7 +252,7 @@ func (o *CLIOptions) AddEditCompanyIAMFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddRemoveProjectIAMRoleFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.EntityID, "entity-id", "", "the entity id to change")
-	flags.StringVar(&o.Environment, "environment", "", "the environment where to change the role")
+	flags.StringVar(&o.Environment, "environment", "", "set the flag to the environment name for deleting the role for that environment")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
