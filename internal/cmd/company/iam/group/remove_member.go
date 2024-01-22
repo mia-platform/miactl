@@ -87,6 +87,6 @@ func removeMemberFromGroup(ctx context.Context, client *client.APIClient, compan
 		return err
 	}
 
-	fmt.Println("the users has been removed from the group")
+	fmt.Println("the users have been removed from the group")
 	return nil
 }
