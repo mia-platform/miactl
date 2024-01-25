@@ -26,7 +26,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func RemoveroleCmd(options *clioptions.CLIOptions) *cobra.Command {
+func RemoveRoleCmd(options *clioptions.CLIOptions) *cobra.Command {
 	validArgs := []string{iam.UsersEntityName, iam.GroupsEntityName, iam.ServiceAccountsEntityName}
 	cmd := &cobra.Command{
 		Use:       "remove-role " + "[" + strings.Join(validArgs, "|") + "]",

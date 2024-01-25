@@ -72,7 +72,7 @@ func editCompanyGroup(ctx context.Context, client *client.APIClient, companyID, 
 		Role: role,
 	}
 
-	resp, err := iam.EditGroupRole(ctx, client, companyID, groupID, payload)
+	resp, err := iam.EditIAMResourceRole(ctx, client, companyID, groupID, iam.GroupsEntityName, payload)
 	if err != nil {
 		return err
 	}

@@ -25,7 +25,7 @@ func IAMCmd(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "iam",
 		Short: "Manage Mia-Platform IAM for a company",
-		Long: `A Company Owner user can manager the access to the company directly to a user,
+		Long: `A Company Owner user can manage the access to the company directly to a user,
 via a group or through service accounts.`,
 	}
 

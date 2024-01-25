@@ -23,18 +23,6 @@ import (
 	"github.com/mia-platform/miactl/internal/resources"
 )
 
-func EditUserRole(ctx context.Context, client *client.APIClient, companyID, resourceID string, change resources.EditIAMRole) (*client.Response, error) {
-	return EditIAMResourceRole(ctx, client, companyID, resourceID, UsersEntityName, change)
-}
-
-func EditGroupRole(ctx context.Context, client *client.APIClient, companyID, resourceID string, change resources.EditIAMRole) (*client.Response, error) {
-	return EditIAMResourceRole(ctx, client, companyID, resourceID, GroupsEntityName, change)
-}
-
-func EditServiceAccountRole(ctx context.Context, client *client.APIClient, companyID, resourceID string, change resources.EditIAMRole) (*client.Response, error) {
-	return EditIAMResourceRole(ctx, client, companyID, resourceID, ServiceAccountsEntityName, change)
-}
-
 func EditIAMResourceRole(ctx context.Context, client *client.APIClient, companyID, resourceID, entityType string, change resources.EditIAMRole) (*client.Response, error) {
 	apiPath := ""
 	switch entityType {

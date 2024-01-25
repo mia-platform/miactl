@@ -25,7 +25,7 @@ func IAMCmd(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "iam",
 		Short: "Manage Mia-Platform IAM for a project",
-		Long: `A Project Administrator user can manager the access to the project directly to a user,
+		Long: `A Project Administrator user can manage the access to the project directly to a user,
 via a group or through service accounts that has been granted access to the parent company.`,
 	}
 
@@ -39,7 +39,7 @@ via a group or through service accounts that has been granted access to the pare
 	cmd.AddCommand(
 		iam.ListCmd(o),
 		iam.EditCmd(o),
-		iam.RemoveroleCmd(o),
+		iam.RemoveRoleCmd(o),
 	)
 
 	return cmd
