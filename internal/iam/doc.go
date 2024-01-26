@@ -13,17 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package resources
-
-import (
-	"testing"
-
-	"github.com/stretchr/testify/require"
-)
-
-func TestIsValidRole(t *testing.T) {
-	for _, role := range validServiceAccountRoles {
-		require.True(t, IsValidIAMRole(role, false))
-	}
-	require.False(t, IsValidIAMRole(IAMRoleCompanyOwner, true))
-}
+// iam package contains functions for working with the IAM APIs
+package iam

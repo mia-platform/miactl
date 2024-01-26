@@ -13,17 +13,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package resources
+package iam
 
-import (
-	"testing"
+const (
+	GroupsEntityName          = "group"
+	UsersEntityName           = "user"
+	ServiceAccountsEntityName = "serviceaccount"
 
-	"github.com/stretchr/testify/require"
+	entititesPathTemplate       = "/api/companies/%s/identities"
+	usersPathTemplate           = "/api/companies/%s/users"
+	groupsPathTemplate          = "/api/companies/%s/groups"
+	serviceAccountsPathTemplate = "/api/companies/%s/service-accounts"
+
+	projectIdsKey = "projectIds"
 )
-
-func TestIsValidRole(t *testing.T) {
-	for _, role := range validServiceAccountRoles {
-		require.True(t, IsValidIAMRole(role, false))
-	}
-	require.False(t, IsValidIAMRole(IAMRoleCompanyOwner, true))
-}

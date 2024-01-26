@@ -17,18 +17,19 @@ package user
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/iam"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestEditUser(t *testing.T) {
+	companyID := "company-id"
+	entityID := "000000000000000000000001"
 	testCases := map[string]struct {
 		server    *httptest.Server
 		companyID string
@@ -37,37 +38,37 @@ func TestEditUser(t *testing.T) {
 		expectErr bool
 	}{
 		"edit user": {
-			server:    editUserTestServer(t),
-			companyID: "success",
+			server:    iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.UsersEntityName),
+			companyID: companyID,
 			role:      resources.IAMRoleGuest,
-			userID:    "000000000000000000000001",
+			userID:    entityID,
 		},
 		"missing company": {
-			server:    editUserTestServer(t),
+			server:    iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.UsersEntityName),
 			companyID: "",
 			role:      resources.IAMRoleGuest,
-			userID:    "000000000000000000000001",
+			userID:    entityID,
 			expectErr: true,
 		},
 		"missing user id": {
-			server:    editUserTestServer(t),
-			companyID: "success",
+			server:    iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.UsersEntityName),
+			companyID: companyID,
 			role:      resources.IAMRoleGuest,
 			userID:    "",
 			expectErr: true,
 		},
 		"wrong role": {
-			server:    editUserTestServer(t),
+			server:    iam.TestServerForCompanyIAMEditRole(t, companyID, entityID, iam.UsersEntityName),
 			companyID: "",
 			role:      resources.IAMRole("example"),
-			userID:    "000000000000000000000001",
+			userID:    entityID,
 			expectErr: true,
 		},
 		"error from backend": {
-			server:    editUserTestServer(t),
-			companyID: "fail",
+			server:    iam.ErrorTestServerForEditIAMRole(t, companyID, entityID),
+			companyID: companyID,
 			role:      resources.IAMRoleCompanyOwner,
-			userID:    "000000000000000000000001",
+			userID:    entityID,
 			expectErr: true,
 		},
 	}
@@ -96,20 +97,4 @@ func TestEditUser(t *testing.T) {
 			}
 		})
 	}
-}
-
-func editUserTestServer(t *testing.T) *httptest.Server {
-	t.Helper()
-
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		switch {
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editUserRoleTemplate, "success", "000000000000000000000001"):
-			w.WriteHeader(http.StatusOK)
-		case r.Method == http.MethodPatch && r.URL.Path == fmt.Sprintf(editUserRoleTemplate, "fail", "000000000000000000000001"):
-			w.WriteHeader(http.StatusBadRequest)
-		default:
-			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)
-			w.WriteHeader(http.StatusNotFound)
-		}
-	}))
 }

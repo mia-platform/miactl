@@ -29,15 +29,18 @@ var validServiceAccountRoles = []IAMRole{
 	IAMRoleDeveloper,
 	IAMRoleMaintainer,
 	IAMRoleProjectAdmin,
-	IAMRoleCompanyOwner,
 }
 
 func (role IAMRole) String() string {
 	return string(role)
 }
 
-func IsValidIAMRole(role IAMRole) bool {
-	for _, validRole := range validServiceAccountRoles {
+func IsValidIAMRole(role IAMRole, project bool) bool {
+	roles := validServiceAccountRoles
+	if !project {
+		roles = append(roles, IAMRoleCompanyOwner)
+	}
+	for _, validRole := range roles {
 		if validRole == role {
 			return true
 		}
@@ -46,28 +49,56 @@ func IsValidIAMRole(role IAMRole) bool {
 	return false
 }
 
-func IAMRoleCompletion(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-	allRoles := []string{
-		IAMRoleGuest.String(),
-		IAMRoleReporter.String(),
-		IAMRoleDeveloper.String(),
-		IAMRoleMaintainer.String(),
-		IAMRoleProjectAdmin.String(),
-		IAMRoleCompanyOwner.String(),
+func IsValidEnvironmentRole(role IAMRole) bool {
+	roles := []IAMRole{
+		IAMRoleReporter,
+		IAMRoleMaintainer,
 	}
 
-	if len(toComplete) == 0 {
-		return allRoles, cobra.ShellCompDirectiveDefault
-	}
-
-	var completableRole []string
-	for _, role := range allRoles {
-		if strings.HasPrefix(role, toComplete) {
-			completableRole = append(completableRole, role)
+	for _, validRole := range roles {
+		if validRole == role {
+			return true
 		}
 	}
 
-	return completableRole, cobra.ShellCompDirectiveDefault
+	return false
+}
+
+func IAMRoleCompletion(project bool) func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	allRoles := []string{
+		string(IAMRoleGuest),
+		string(IAMRoleReporter),
+		string(IAMRoleDeveloper),
+		string(IAMRoleMaintainer),
+		string(IAMRoleProjectAdmin),
+	}
+
+	if !project {
+		allRoles = append(allRoles, string(IAMRoleCompanyOwner))
+	}
+
+	return completionForRoles(allRoles)
+}
+
+func IAMEnvironmentRoleCompletion() func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	return completionForRoles([]string{string(IAMRoleReporter), string(IAMRoleMaintainer)})
+}
+
+func completionForRoles(roles []string) func(*cobra.Command, []string, string) ([]string, cobra.ShellCompDirective) {
+	return func(_ *cobra.Command, _ []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		if len(toComplete) == 0 {
+			return roles, cobra.ShellCompDirectiveDefault
+		}
+
+		var completableRole []string
+		for _, role := range roles {
+			if strings.HasPrefix(role, toComplete) {
+				completableRole = append(completableRole, role)
+			}
+		}
+
+		return completableRole, cobra.ShellCompDirectiveDefault
+	}
 }
 
 func EncodeResourceToJSON(obj interface{}) ([]byte, error) {

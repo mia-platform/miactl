@@ -22,20 +22,10 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/iam"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
-)
-
-const (
-	listAllIAMEntitiesTemplate        = "/api/companies/%s/identities"
-	listUsersEntityTemplate           = "/api/companies/%s/users"
-	listGroupsEntityTemplate          = "/api/companies/%s/groups"
-	listServiceAccountsEntityTemplate = "/api/companies/%s/service-accounts"
-
-	GroupsEntityName          = "group"
-	UsersEntityName           = "user"
-	ServiceAccountsEntityName = "serviceAccount"
 )
 
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -53,9 +43,9 @@ all of them noting the type and the current role associated with them`,
 			cobra.CheckErr(err)
 
 			entityTypes := map[string]bool{
-				GroupsEntityName:          options.ShowGroups,
-				UsersEntityName:           options.ShowUsers,
-				ServiceAccountsEntityName: options.ShowServiceAccounts,
+				iam.GroupsEntityName:          options.ShowGroups,
+				iam.UsersEntityName:           options.ShowUsers,
+				iam.ServiceAccountsEntityName: options.ShowServiceAccounts,
 			}
 
 			return listAllIAMEntities(cmd.Context(), client, restConfig.CompanyID, entityTypes)
@@ -71,21 +61,21 @@ all of them noting the type and the current role associated with them`,
 			"users",
 			"List all users that have access to the company, directly or via a group",
 			"List all users that have access to the company, directly or via a group",
-			UsersEntityName,
+			iam.UsersEntityName,
 		),
 		listEntity(
 			options,
 			"groups",
 			"List all groups that have access to the company",
 			"List all groups that have access to the company",
-			GroupsEntityName,
+			iam.GroupsEntityName,
 		),
 		listEntity(
 			options,
 			"serviceaccounts",
 			"List all service accounts that have access to the company",
 			"List all service accounts that have access to the company",
-			ServiceAccountsEntityName,
+			iam.ServiceAccountsEntityName,
 		),
 	)
 
@@ -115,19 +105,7 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 	if len(companyID) == 0 {
 		return fmt.Errorf("missing company id, please set one with the flag or context")
 	}
-
-	request := client.
-		Get().
-		APIPath(fmt.Sprintf(listAllIAMEntitiesTemplate, companyID))
-
-	for entityName, enabled := range entityTypes {
-		if !enabled {
-			continue
-		}
-		request.SetParam("identityType", entityName)
-	}
-
-	resp, err := request.Do(ctx)
+	resp, err := iam.ListAllIAMEntities(ctx, client, companyID, nil, entityTypes)
 
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
@@ -137,7 +115,7 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 		return err
 	}
 
-	rows, err := util.RowsForResources(resp, rowForIAMIdentity)
+	rows, err := util.RowsForResources(resp, iam.RowForIAMIdentity)
 	if err != nil {
 		return err
 	}
@@ -158,24 +136,7 @@ func listSpecificEntities(ctx context.Context, client *client.APIClient, company
 	if len(companyID) == 0 {
 		return fmt.Errorf("missing company id, please set one with the flag or context")
 	}
-
-	var apiPathTemplate string
-
-	switch entityType {
-	case UsersEntityName:
-		apiPathTemplate = listUsersEntityTemplate
-	case GroupsEntityName:
-		apiPathTemplate = listGroupsEntityTemplate
-	case ServiceAccountsEntityName:
-		apiPathTemplate = listServiceAccountsEntityTemplate
-	default:
-		return fmt.Errorf("unknown IAM entity")
-	}
-
-	response, err := client.
-		Get().
-		APIPath(fmt.Sprintf(apiPathTemplate, companyID)).
-		Do(ctx)
+	response, err := iam.ListSpecificEntities(ctx, client, companyID, entityType)
 
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
@@ -188,15 +149,15 @@ func listSpecificEntities(ctx context.Context, client *client.APIClient, company
 	var tableHeaders []string
 	var rows [][]string
 	switch entityType {
-	case UsersEntityName:
+	case iam.UsersEntityName:
 		tableHeaders = []string{"ID", "Name", "Email", "Roles", "Groups", "Last Login"}
-		rows, err = util.RowsForResources(response, rowForUserIdentity)
-	case GroupsEntityName:
+		rows, err = util.RowsForResources(response, iam.RowForUserIdentity)
+	case iam.GroupsEntityName:
 		tableHeaders = []string{"ID", "Name", "Roles", "Members"}
-		rows, err = util.RowsForResources(response, rowForGroupIdentity)
-	case ServiceAccountsEntityName:
+		rows, err = util.RowsForResources(response, iam.RowForGroupIdentity)
+	case iam.ServiceAccountsEntityName:
 		tableHeaders = []string{"ID", "Name", "Roles", "Last Login"}
-		rows, err = util.RowsForResources(response, rowForServiceAccountIdentity)
+		rows, err = util.RowsForResources(response, iam.RowForServiceAccountIdentity)
 	}
 
 	if err != nil {

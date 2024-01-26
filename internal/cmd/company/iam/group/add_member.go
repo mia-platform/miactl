@@ -42,7 +42,7 @@ func AddMemberCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			err = addMemberToGroup(cmd.Context(), client, restConfig.CompanyID, options.GroupID, options.UserEmails)
+			err = addMemberToGroup(cmd.Context(), client, restConfig.CompanyID, options.EntityID, options.UserEmails)
 			cobra.CheckErr(err)
 		},
 	}

@@ -51,7 +51,19 @@ type RemoveMembersToGroup struct {
 }
 
 type EditIAMRole struct {
-	Role IAMRole `json:"role"`
+	Role         IAMRole           `json:"role,omitempty"`
+	ProjectsRole []EditProjectRole `json:"projectsRole,omitempty"`
+}
+
+type EditProjectRole struct {
+	ProjectID        string                `json:"projectId"`
+	Role             *IAMRole              `json:"role,omitempty"`
+	EnvironmentsRole []EditEnvironmentRole `json:"environmentsRole,omitempty"`
+}
+
+type EditEnvironmentRole struct {
+	EnvironmentID string  `json:"envId"` //nolint: tagliatelle
+	Role          IAMRole `json:"role"`
 }
 
 type PublicKey struct {

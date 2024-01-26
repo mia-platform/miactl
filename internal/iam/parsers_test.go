@@ -32,7 +32,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 			identity: resources.IAMIdentity{
 				ID:    "identity-id",
 				Name:  "identity name",
-				Type:  "group",
+				Type:  GroupsEntityName,
 				Roles: []string{"company-owner", "guest"},
 			},
 			expectedRow: []string{"identity-id", "Group", "identity name", "Company Owner, Guest"},
@@ -41,7 +41,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 			identity: resources.IAMIdentity{
 				ID:    "identity-id",
 				Name:  "identity name",
-				Type:  "serviceAccount",
+				Type:  ServiceAccountsEntityName,
 				Roles: []string{"developer"},
 			},
 			expectedRow: []string{"identity-id", "Service Account", "identity name", "Developer"},
@@ -50,7 +50,7 @@ func TestRowForIAMIdentity(t *testing.T) {
 			identity: resources.IAMIdentity{
 				ID:    "identity-id",
 				Name:  "identity name",
-				Type:  "user",
+				Type:  UsersEntityName,
 				Roles: []string{"developer"},
 			},
 			expectedRow: []string{"identity-id", "User", "identity name", "Developer"},
@@ -59,7 +59,97 @@ func TestRowForIAMIdentity(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForIAMIdentity(testCase.identity))
+			assert.Equal(t, testCase.expectedRow, RowForIAMIdentity(testCase.identity))
+		})
+	}
+}
+
+func TestRowForProjectIAMIdentity(t *testing.T) {
+	projectID := "000000000000000000000001"
+	testCases := map[string]struct {
+		identity    resources.IAMIdentity
+		expectedRow []string
+	}{
+		"IAM identity without project roles": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  GroupsEntityName,
+				Roles: []string{"company-owner", "guest"},
+			},
+			expectedRow: []string{"identity-id", "Group", "identity name", "Company Owner (inherited)", ""},
+		},
+		"IAM identity with project role": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  ServiceAccountsEntityName,
+				Roles: []string{"developer"},
+				ProjectsRole: []resources.ProjectRole{
+					{
+						ID:    projectID,
+						Roles: []string{"guest"},
+					},
+				},
+			},
+			expectedRow: []string{"identity-id", "Service Account", "identity name", "Guest", ""},
+		},
+		"IAM identity with empty project role": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  UsersEntityName,
+				Roles: []string{"developer"},
+				ProjectsRole: []resources.ProjectRole{
+					{
+						ID:    projectID,
+						Roles: []string{},
+					},
+				},
+			},
+			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)", ""},
+		},
+		"IAM with other projects access": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  UsersEntityName,
+				Roles: []string{"developer"},
+				ProjectsRole: []resources.ProjectRole{
+					{
+						ID:    "other-id",
+						Roles: []string{"guest"},
+					},
+				},
+			},
+			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)", ""},
+		},
+		"IAM with environment specific access": {
+			identity: resources.IAMIdentity{
+				ID:    "identity-id",
+				Name:  "identity name",
+				Type:  UsersEntityName,
+				Roles: []string{"developer"},
+				ProjectsRole: []resources.ProjectRole{
+					{
+						ID:    "other-id",
+						Roles: []string{"guest"},
+						Environments: []resources.EnvironmentRole{
+							{
+								ID:    "envId",
+								Roles: []string{"developer"},
+							},
+						},
+					},
+				},
+			},
+			expectedRow: []string{"identity-id", "User", "identity name", "Developer (inherited)", "envId=Developer"},
+		},
+	}
+
+	for name, testCase := range testCases {
+		t.Run(name, func(t *testing.T) {
+			assert.Equal(t, testCase.expectedRow, RowForProjectIAMIdentity(projectID)(testCase.identity))
 		})
 	}
 }
@@ -118,7 +208,7 @@ func TestRowForUserIdentity(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForUserIdentity(testCase.identity))
+			assert.Equal(t, testCase.expectedRow, RowForUserIdentity(testCase.identity))
 		})
 	}
 }
@@ -169,7 +259,7 @@ func TestRowForGroupIdentity(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForGroupIdentity(testCase.identity))
+			assert.Equal(t, testCase.expectedRow, RowForGroupIdentity(testCase.identity))
 		})
 	}
 }
@@ -200,7 +290,7 @@ func TestRowForServiceAccountIdentity(t *testing.T) {
 
 	for name, testCase := range testCases {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, testCase.expectedRow, rowForServiceAccountIdentity(testCase.identity))
+			assert.Equal(t, testCase.expectedRow, RowForServiceAccountIdentity(testCase.identity))
 		})
 	}
 }

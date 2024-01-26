@@ -42,7 +42,7 @@ func RemoveMemberCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			err = removeMemberFromGroup(cmd.Context(), client, restConfig.CompanyID, options.GroupID, options.UserIDs)
+			err = removeMemberFromGroup(cmd.Context(), client, restConfig.CompanyID, options.EntityID, options.UserIDs)
 			cobra.CheckErr(err)
 		},
 	}

@@ -41,6 +41,7 @@ resources that make up the applications of a specific company.
 	// add sub commands
 	projectCmd.AddCommand(
 		project.ListCmd(o),
+		project.IAMCmd(o),
 	)
 
 	return projectCmd

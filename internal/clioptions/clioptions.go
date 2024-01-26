@@ -46,15 +46,16 @@ type CLIOptions struct {
 	DeployType string
 	NoSemVer   bool
 
-	IAMRole string
+	IAMRole            string
+	ProjectIAMRole     string
+	EnvironmentIAMRole string
+	EntityID           string
 
 	UserEmail                 string
-	UserID                    string
 	KeepUserGroupMemeberships bool
 
 	UserEmails []string
 	UserIDs    []string
-	GroupID    string
 
 	ServiceAccountID string
 
@@ -152,26 +153,26 @@ func (o *CLIOptions) AddJWTServiceAccountFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddEditServiceAccountFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the service account")
-	flags.StringVarP(&o.ServiceAccountID, "service-account-id", "", "", "the service account id to edit")
+	flags.StringVar(&o.ServiceAccountID, "service-account-id", "", "the service account id to edit")
 }
 
 func (o *CLIOptions) AddRemoveServiceAccountFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.ServiceAccountID, "service-account-id", "", "", "the service account id to remove")
+	flags.StringVar(&o.ServiceAccountID, "service-account-id", "", "the service account id to remove")
 }
 
 func (o *CLIOptions) AddNewUserFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the company role of the user")
-	flags.StringVarP(&o.UserEmail, "email", "", "", "the email of the user to add")
+	flags.StringVar(&o.UserEmail, "email", "", "the email of the user to add")
 }
 
 func (o *CLIOptions) AddEditUserFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the user")
-	flags.StringVarP(&o.UserID, "user-id", "", "", "the user id to edit")
+	flags.StringVar(&o.EntityID, "user-id", "", "the user id to edit")
 }
 
 func (o *CLIOptions) AddRemoveUserFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.UserID, "user-id", "", "", "the user id to remove")
-	flags.BoolVarP(&o.KeepUserGroupMemeberships, "no-include-groups", "", false, "keep the user membership in the company groups")
+	flags.StringVar(&o.EntityID, "user-id", "", "the user id to remove")
+	flags.BoolVar(&o.KeepUserGroupMemeberships, "no-include-groups", false, "keep the user membership in the company groups")
 }
 
 func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {
@@ -179,22 +180,22 @@ func (o *CLIOptions) CreateNewGroupFlags(flags *pflag.FlagSet) {
 }
 
 func (o *CLIOptions) AddNewMembersToGroupFlags(flags *pflag.FlagSet) {
-	flags.StringSliceVarP(&o.UserEmails, "user-email", "", []string{}, "the list of user email to add to the group")
-	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id where to add the users")
+	flags.StringSliceVar(&o.UserEmails, "user-email", []string{}, "the list of user email to add to the group")
+	flags.StringVar(&o.EntityID, "group-id", "", "the group id where to add the users")
 }
 
 func (o *CLIOptions) AddEditGroupFlags(flags *pflag.FlagSet) {
 	flags.StringVarP(&o.IAMRole, "role", "r", "", "the new company role for the group")
-	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id to edit")
+	flags.StringVar(&o.EntityID, "group-id", "", "the group id to edit")
 }
 
 func (o *CLIOptions) AddRemoveGroupFlags(flags *pflag.FlagSet) {
-	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id to remove")
+	flags.StringVar(&o.EntityID, "group-id", "", "the group id to remove")
 }
 
 func (o *CLIOptions) AddRemoveMembersFromGroupFlags(flags *pflag.FlagSet) {
-	flags.StringSliceVarP(&o.UserIDs, "user-id", "", []string{}, "the list of user id to remove to the group")
-	flags.StringVarP(&o.GroupID, "group-id", "", "", "the group id where to remove the users")
+	flags.StringSliceVar(&o.UserIDs, "user-id", []string{}, "the list of user id to remove to the group")
+	flags.StringVar(&o.EntityID, "group-id", "", "the group id where to remove the users")
 }
 
 func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
@@ -220,7 +221,7 @@ func (o *CLIOptions) AddMarketplaceItemObjectIDFlag(flags *pflag.FlagSet) (flagN
 
 func (o *CLIOptions) AddMarketplaceVersionFlag(flags *pflag.FlagSet) (flagName string) {
 	flagName = "version"
-	flags.StringVarP(&o.MarketplaceItemVersion, flagName, "", "", "The version of the Marketplace item")
+	flags.StringVar(&o.MarketplaceItemVersion, flagName, "", "The version of the Marketplace item")
 	return
 }
 
@@ -240,6 +241,18 @@ func (o *CLIOptions) AddIAMListFlags(flags *pflag.FlagSet) {
 	flags.BoolVar(&o.ShowUsers, "users", false, "Filter IAM entities to show only users. Mutally exclusive with groups and serviceAccounts")
 	flags.BoolVar(&o.ShowGroups, "groups", false, "Filter IAM entities to show only groups. Mutally exclusive with users and serviceAccounts")
 	flags.BoolVar(&o.ShowServiceAccounts, "serviceAccounts", false, "Filter IAM entities to show only service accounts. Mutally exclusive with users and groups")
+}
+
+func (o *CLIOptions) AddEditCompanyIAMFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.EntityID, "entity-id", "", "the entity id to change")
+	flags.StringVar(&o.ProjectIAMRole, "project-role", "", "the new role for the current project")
+	flags.StringVar(&o.EnvironmentIAMRole, "environment-role", "", "the new role for the selected environment")
+	flags.StringVar(&o.Environment, "environment", "", "the environment where to change the role")
+}
+
+func (o *CLIOptions) AddRemoveProjectIAMRoleFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.EntityID, "entity-id", "", "the entity id to change")
+	flags.StringVar(&o.Environment, "environment", "", "set the flag to the environment name for deleting the role for that environment")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {

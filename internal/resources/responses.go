@@ -233,10 +233,22 @@ func (re *RuntimeEvent) UnmarshalJSON(data []byte) error {
 }
 
 type IAMIdentity struct {
-	ID    string   `json:"identityId"` //nolint: tagliatelle
-	Name  string   `json:"name"`
-	Type  string   `json:"identityType"` //nolint: tagliatelle
-	Roles []string `json:"companyRoles"` //nolint: tagliatelle
+	ID           string        `json:"identityId"` //nolint: tagliatelle
+	Name         string        `json:"name"`
+	Type         string        `json:"identityType"` //nolint: tagliatelle
+	Roles        []string      `json:"companyRoles"` //nolint: tagliatelle
+	ProjectsRole []ProjectRole `json:"projects"`     //nolint: tagliatelle
+}
+
+type ProjectRole struct {
+	ID           string            `json:"_id"` //nolint: tagliatelle
+	Roles        []string          `json:"roles"`
+	Environments []EnvironmentRole `json:"environments"`
+}
+
+type EnvironmentRole struct {
+	ID    string   `json:"envId"` //nolint: tagliatelle
+	Roles []string `json:"roles"`
 }
 
 type UserIdentity struct {

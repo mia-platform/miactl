@@ -68,7 +68,7 @@ service account is created on the company.`,
 
 	// add cmd flags
 	options.AddJWTServiceAccountFlags(cmd.Flags())
-	err := cmd.RegisterFlagCompletionFunc("role", resources.IAMRoleCompletion)
+	err := cmd.RegisterFlagCompletionFunc("role", resources.IAMRoleCompletion(false))
 
 	if err != nil {
 		// we panic here because if we reach here, something nasty is happenign in flag autocomplete registration
@@ -85,7 +85,7 @@ service account is created on the company.`,
 }
 
 func createJWTServiceAccount(ctx context.Context, client *client.APIClient, name, companyID string, role resources.IAMRole) (*resources.JWTServiceAccountJSON, error) {
-	if !resources.IsValidIAMRole(role) {
+	if !resources.IsValidIAMRole(role, false) {
 		return nil, fmt.Errorf("invalid service account role %s", role)
 	}
 

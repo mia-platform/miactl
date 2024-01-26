@@ -16,6 +16,7 @@
 package iam
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -25,7 +26,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-func rowForIAMIdentity(identity resources.IAMIdentity) []string {
+func RowForIAMIdentity(identity resources.IAMIdentity) []string {
 	caser := cases.Title(language.English)
 	return []string{
 		identity.ID,
@@ -35,7 +36,47 @@ func rowForIAMIdentity(identity resources.IAMIdentity) []string {
 	}
 }
 
-func rowForUserIdentity(identity resources.UserIdentity) []string {
+func RowForProjectIAMIdentity(projectID string) func(resources.IAMIdentity) []string {
+	return func(identity resources.IAMIdentity) []string {
+		fmt.Println(identity)
+		var roleStrings []string
+		inherited := ""
+		caser := cases.Title(language.English)
+		var environmentRoles []string
+
+		if len(identity.ProjectsRole) > 0 {
+			for _, role := range identity.ProjectsRole {
+				if role.ID == projectID {
+					roleStrings = readableRoles(role.Roles)
+				}
+				if len(role.Environments) > 0 {
+					for _, environment := range role.Environments {
+						environmentRoles = append(environmentRoles, environment.ID+"="+caser.String(strings.Join(readableRoles(environment.Roles), ", ")))
+					}
+				}
+			}
+		}
+
+		if len(roleStrings) == 0 {
+			roleStrings = projectReadableRoles(identity.Roles)
+			inherited = " (inherited)"
+		}
+
+		roles := caser.String(strings.Join(roleStrings, ", "))
+		if len(roles) > 0 {
+			roles += inherited
+		}
+		return []string{
+			identity.ID,
+			caser.String(readableType(identity.Type)),
+			identity.Name,
+			roles,
+			strings.Join(environmentRoles, " "),
+		}
+	}
+}
+
+func RowForUserIdentity(identity resources.UserIdentity) []string {
 	caser := cases.Title(language.English)
 	groupNames := make([]string, 0)
 	for _, group := range identity.Groups {
@@ -67,7 +108,7 @@ func rowForUserIdentity(identity resources.UserIdentity) []string {
 	}
 }
 
-func rowForGroupIdentity(identity resources.GroupIdentity) []string {
+func RowForGroupIdentity(identity resources.GroupIdentity) []string {
 	caser := cases.Title(language.English)
 	memberNames := make([]string, 0)
 	for _, member := range identity.Members {
@@ -86,7 +127,7 @@ func rowForGroupIdentity(identity resources.GroupIdentity) []string {
 	}
 }
 
-func rowForServiceAccountIdentity(identity resources.ServiceAccountIdentity) []string {
+func RowForServiceAccountIdentity(identity resources.ServiceAccountIdentity) []string {
 	caser := cases.Title(language.English)
 	roles := "-"
 	if len(identity.Roles) > 0 {
@@ -123,6 +164,17 @@ func readableRoles(roles []string) []string {
 	transformedRoles := make([]string, 0)
 	for _, role := range roles {
 		transformedRoles = append(transformedRoles, readableRole(role))
+	}
+
+	return transformedRoles
+}
+
+func projectReadableRoles(roles []string) []string {
+	transformedRoles := make([]string, 0)
+	for _, role := range roles {
+		if role != "guest" {
+			transformedRoles = append(transformedRoles, readableRole(role))
+		}
 	}
 
 	return transformedRoles

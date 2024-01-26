@@ -13,20 +13,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package company
+package project
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/company/iam"
+	"github.com/mia-platform/miactl/internal/cmd/project/iam"
 	"github.com/spf13/cobra"
 )
 
 func IAMCmd(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "iam",
-		Short: "Manage Mia-Platform IAM for a company",
-		Long: `A Company Owner user can manage the access to the company directly to a user,
-via a group or through service accounts.`,
+		Short: "Manage Mia-Platform IAM for a project",
+		Long: `A Project Administrator user can manage the access to the project directly to a user,
+via a group or through service accounts that has been granted access to the parent company.`,
 	}
 
 	// add cmd flags
@@ -34,12 +34,12 @@ via a group or through service accounts.`,
 	o.AddConnectionFlags(flags)
 	o.AddContextFlags(flags)
 	o.AddCompanyFlags(flags)
+	o.AddProjectFlags(flags)
 
 	cmd.AddCommand(
 		iam.ListCmd(o),
-		iam.AddCmd(o),
 		iam.EditCmd(o),
-		iam.RemoveCmd(o),
+		iam.RemoveRoleCmd(o),
 	)
 
 	return cmd
