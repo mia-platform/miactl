@@ -17,8 +17,10 @@ package marketplace
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -26,29 +28,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
-
-const mockResponseBody = `[
-	{
-		"_id": "43774c07d09ac6996ecfb3ef",
-		"name": "Space Travel Service",
-		"itemId": "space-travel-service",
-		"tenantId": "my-company",
-		"description": "This service provides a REST API to book your next journey to space!",
-		"type": "plugin",
-		"imageUrl": "/v2/files/download/space.png",
-		"supportedByImageUrl": "/v2/files/download/23b12dd9-43a6-4920-cb2d-2a809d946851.png",
-		"supportedBy": "My-Company",
-		"category": {
-			"id": "auth",
-			"label": "Core Plugins - Travel"
-		},
-		"repositoryUrl": "https://git.com/plugins/core/space-travel-service",
-		"documentation": {
-			"type": "externalLink",
-			"url": "https://docs.my-company.eu/docs/space-travel-service/overview"
-		}
-	}
-]`
 
 func TestNewGetCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
@@ -60,15 +39,30 @@ func TestNewGetCmd(t *testing.T) {
 
 func TestBuildMarketplaceItemsList(t *testing.T) {
 	testCases := map[string]struct {
+		options          GetMarketplaceItemsOptions
 		server           *httptest.Server
 		clientConfig     *client.Config
-		companiesURI     string
 		err              bool
 		expectedContains []string
 	}{
-		"valid get response": {
-			server:       mockServer(t, true),
-			companiesURI: listMarketplaceEndpoint,
+		"private company marketplace": {
+			options: GetMarketplaceItemsOptions{
+				companyID: "my-company",
+				public:    false,
+			},
+			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch {
+				default:
+					w.WriteHeader(http.StatusNotFound)
+					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
+					t.FailNow()
+				case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+					r.Method == http.MethodGet &&
+					r.URL.Query().Get("tenantId") == "my-company":
+					_, err := w.Write([]byte(marketplacePrivateCompanyBodyContent(t)))
+					require.NoError(t, err)
+				}
+			})),
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
@@ -78,14 +72,55 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
 			},
 		},
-		"invalid body response": {
-			server: mockServer(t, false),
+		"wrong payload": {
+			options: GetMarketplaceItemsOptions{
+				companyID: "my-company",
+				public:    false,
+			},
+			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch {
+				default:
+					w.WriteHeader(http.StatusNotFound)
+					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
+				case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+					r.Method == http.MethodGet &&
+					r.URL.Query().Get("tenantId") == "my-company":
+					_, err := w.Write([]byte("{}"))
+					require.NoError(t, err)
+				}
+			})),
 			clientConfig: &client.Config{
 				Transport: http.DefaultTransport,
 			},
-			err:          true,
-			companiesURI: listMarketplaceEndpoint,
+			err:              true,
+			expectedContains: []string{},
 		},
+		// "public marketplace": {
+		// 	options: GetMarketplaceItemsOptions{
+		// 		public: true,
+		// 	},
+		// 	server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// 		switch {
+		// 		default:
+		// 			w.WriteHeader(http.StatusNotFound)
+		// 			assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
+		// 		case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+		// 			r.Method == http.MethodGet &&
+		// 			!r.URL.Query().Has("tenantId"):
+		// 			_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
+		// 			require.NoError(t, err)
+		// 		}
+		// 	})),
+		// 	clientConfig: &client.Config{
+		// 		Transport: http.DefaultTransport,
+		// 	},
+		// 	err: false,
+		// 	expectedContains: []string{
+		// 		"ID", "ITEM ID", "NAME", "TYPE", "COMPANY ID",
+		// 		"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
+		// 		"43774c07d09ac6996ecfb3eg", "a-public-service", "A public service", "plugin", "another-company",
+		// 	},
+		// },
 	}
 
 	for testName, testCase := range testCases {
@@ -94,7 +129,7 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 			testCase.clientConfig.Host = testCase.server.URL
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
-			found, err := getMarketplaceItemsTable(context.TODO(), client, "my-company")
+			found, err := getMarketplaceItemsTable(context.TODO(), client, testCase.options)
 			if testCase.err {
 				assert.Error(t, err)
 				assert.Zero(t, found)
@@ -109,20 +144,78 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 	}
 }
 
-func mockServer(t *testing.T, validResponse bool) *httptest.Server {
+func marketplacePrivateCompanyBodyContent(t *testing.T) string {
 	t.Helper()
 
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != listMarketplaceEndpoint && r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusNotFound)
-			require.Fail(t, "unsupported call")
-			return
+	return `[
+		{
+			"_id": "43774c07d09ac6996ecfb3ef",
+			"name": "Space Travel Service",
+			"itemId": "space-travel-service",
+			"tenantId": "my-company",
+			"description": "This service provides a REST API to book your next journey to space!",
+			"type": "plugin",
+			"imageUrl": "/v2/files/download/space.png",
+			"supportedByImageUrl": "/v2/files/download/23b12dd9-43a6-4920-cb2d-2a809d946851.png",
+			"supportedBy": "My-Company",
+			"category": {
+				"id": "auth",
+				"label": "Core Plugins - Travel"
+			},
+			"repositoryUrl": "https://git.com/plugins/core/space-travel-service",
+			"documentation": {
+				"type": "externalLink",
+				"url": "https://docs.my-company.eu/docs/space-travel-service/overview"
+			}
 		}
-		w.WriteHeader(http.StatusOK)
-		if validResponse {
-			w.Write([]byte(mockResponseBody))
-			return
+	]`
+}
+
+func marketplaceItemsBodyContent(t *testing.T) string {
+	t.Helper()
+
+	return `[
+		{
+			"_id": "43774c07d09ac6996ecfb3ef",
+			"name": "Space Travel Service",
+			"itemId": "space-travel-service",
+			"tenantId": "my-company",
+			"description": "This service provides a REST API to book your next journey to space!",
+			"type": "plugin",
+			"imageUrl": "/v2/files/download/space.png",
+			"supportedByImageUrl": "/v2/files/download/23b12dd9-43a6-4920-cb2d-2a809d946851.png",
+			"supportedBy": "My-Company",
+			"category": {
+				"id": "auth",
+				"label": "Core Plugins - Travel"
+			},
+			"repositoryUrl": "https://git.com/plugins/core/space-travel-service",
+			"documentation": {
+				"type": "externalLink",
+				"url": "https://docs.my-company.eu/docs/space-travel-service/overview"
+			}
+		},
+		{
+			"_id": "43774c07d09ac6996ecfb3eg",
+			"name": "A public service",
+			"itemId": "a-public-service",
+			"tenantId": "another-company",
+			"description": "This service provides a REST API to book your next journey to space!",
+			"type": "plugin",
+			"imageUrl": "/v2/files/download/space.png",
+			"supportedByImageUrl": "/v2/files/download/23b12dd9-43a6-4920-cb2d-2a809d946851.png",
+			"category": {
+				"id": "auth",
+				"label": "Core Plugins - Travel"
+			},
+			"repositoryUrl": "https://git.com/plugins/core/space-travel-service",
+			"documentation": {
+				"type": "externalLink",
+				"url": "https://docs.my-company.eu/docs/space-travel-service/overview"
+			},
+			"visibility": {
+				"public": true
+			}
 		}
-		w.Write([]byte(`{"message": "invalid json"}`))
-	}))
+	]`
 }

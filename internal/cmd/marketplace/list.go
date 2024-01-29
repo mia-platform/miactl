@@ -44,7 +44,12 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			table, err := getMarketplaceItemsTable(context.Background(), client, options.CompanyID)
+			getMarketplaceItemsOptions := GetMarketplaceItemsOptions{
+				companyID: options.CompanyID,
+				public:    false,
+			}
+
+			table, err := getMarketplaceItemsTable(context.Background(), client, getMarketplaceItemsOptions)
 			cobra.CheckErr(err)
 
 			fmt.Println(table)
@@ -52,8 +57,14 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	}
 }
 
-func getMarketplaceItemsTable(context context.Context, client *client.APIClient, companyID string) (string, error) {
-	marketplaceItems, err := getMarketplaceItemsByCompanyID(context, client, companyID)
+type GetMarketplaceItemsOptions struct {
+	companyID string
+	public    bool
+}
+
+func getMarketplaceItemsTable(context context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) (string, error) {
+
+	marketplaceItems, err := getMarketplaceItemsByCompanyID(context, client, options)
 	if err != nil {
 		return "", err
 	}
@@ -62,14 +73,14 @@ func getMarketplaceItemsTable(context context.Context, client *client.APIClient,
 	return table, nil
 }
 
-func getMarketplaceItemsByCompanyID(ctx context.Context, client *client.APIClient, companyID string) ([]*resources.MarketplaceItem, error) {
-	if len(companyID) == 0 {
+func getMarketplaceItemsByCompanyID(ctx context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) ([]*resources.MarketplaceItem, error) {
+	if len(options.companyID) == 0 {
 		return nil, marketplace.ErrMissingCompanyID
 	}
 
 	resp, err := client.
 		Get().
-		SetParam("tenantId", companyID).
+		SetParam("tenantId", options.companyID).
 		APIPath(listMarketplaceEndpoint).
 		Do(ctx)
 
