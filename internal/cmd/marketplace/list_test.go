@@ -32,6 +32,7 @@ const mockResponseBody = `[
 		"_id": "43774c07d09ac6996ecfb3ef",
 		"name": "Space Travel Service",
 		"itemId": "space-travel-service",
+		"tenantId": "my-company",
 		"description": "This service provides a REST API to book your next journey to space!",
 		"type": "plugin",
 		"imageUrl": "/v2/files/download/space.png",
@@ -73,8 +74,8 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 			},
 			err: false,
 			expectedContains: []string{
-				"ID", "ITEM ID", "NAME", "TYPE",
-				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin",
+				"ID", "ITEM ID", "NAME", "TYPE", "COMPANY ID",
+				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
 			},
 		},
 		"invalid body response": {
@@ -93,7 +94,7 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 			testCase.clientConfig.Host = testCase.server.URL
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
-			found, err := buildMarketplaceItemsList(context.TODO(), client, "my-company")
+			found, err := getMarketplaceItemsTable(context.TODO(), client, "my-company")
 			if testCase.err {
 				assert.Error(t, err)
 				assert.Zero(t, found)

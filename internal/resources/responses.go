@@ -61,6 +61,7 @@ type MarketplaceItem struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
 	SupportedBy string `json:"supportedBy"`
+	TenantID    string `json:"tenantId"`
 }
 
 type Pipelines struct {
