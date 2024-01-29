@@ -24,7 +24,7 @@ import (
 var (
 	ErrItemNotFound          = errors.New("item not found")
 	ErrVersionNameNotAString = errors.New(`the field "version.name" must be a string`)
-	ErrMissingCompanyID      = errors.New("missing company id, please set one with the flag company-id or in the context")
+	ErrMissingCompanyID      = errors.New("missing company id, please set one with the flag company-id or in the context or use the flag public")
 	ErrPublicAndCompanyID    = errors.New("cannot use both --public and --company-id")
 )
 
