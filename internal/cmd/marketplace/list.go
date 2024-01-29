@@ -80,7 +80,6 @@ type GetMarketplaceItemsOptions struct {
 }
 
 func getMarketplaceItemsTable(context context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) (string, error) {
-
 	marketplaceItems, err := fetchMarketplaceItems(context, client, options)
 	if err != nil {
 		return "", err

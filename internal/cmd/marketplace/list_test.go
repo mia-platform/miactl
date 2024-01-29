@@ -38,110 +38,64 @@ func TestNewGetCmd(t *testing.T) {
 }
 
 func TestBuildMarketplaceItemsList(t *testing.T) {
-	testCases := map[string]struct {
+	type testCase struct {
+		name             string
 		options          GetMarketplaceItemsOptions
-		server           *httptest.Server
+		responseHandler  http.HandlerFunc
 		clientConfig     *client.Config
-		err              bool
+		expectError      bool
 		expectedContains []string
-	}{
-		"private company marketplace": {
+	}
+
+	testCases := []testCase{
+		{
+			name: "private company marketplace",
 			options: GetMarketplaceItemsOptions{
 				companyID: "my-company",
 				public:    false,
 			},
-			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				switch {
-				default:
-					w.WriteHeader(http.StatusNotFound)
-					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
-					t.FailNow()
-				case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
-					r.Method == http.MethodGet &&
-					r.URL.Query().Get("tenantId") == "my-company":
-					_, err := w.Write([]byte(marketplacePrivateCompanyBodyContent(t)))
-					require.NoError(t, err)
-				}
-			})),
-			clientConfig: &client.Config{
-				Transport: http.DefaultTransport,
-			},
-			err: false,
+			responseHandler: privateCompanyMarketplaceHandler(t),
+			clientConfig:    &client.Config{Transport: http.DefaultTransport},
+			expectError:     false,
 			expectedContains: []string{
 				"ID", "ITEM ID", "NAME", "TYPE", "COMPANY ID",
 				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
 			},
 		},
-		"wrong payload": {
+		{
+			name: "wrong payload",
 			options: GetMarketplaceItemsOptions{
 				companyID: "my-company",
 				public:    false,
 			},
-			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				switch {
-				default:
-					w.WriteHeader(http.StatusNotFound)
-					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
-				case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
-					r.Method == http.MethodGet &&
-					r.URL.Query().Get("tenantId") == "my-company":
-					_, err := w.Write([]byte("{}"))
-					require.NoError(t, err)
-				}
-			})),
-			clientConfig: &client.Config{
-				Transport: http.DefaultTransport,
-			},
-			err:              true,
+			responseHandler:  wrongPayloadHandler(t),
+			clientConfig:     &client.Config{Transport: http.DefaultTransport},
+			expectError:      true,
 			expectedContains: []string{},
 		},
-		"public marketplace": {
+		{
+			name: "public marketplace",
 			options: GetMarketplaceItemsOptions{
 				public: true,
 			},
-			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				switch {
-				default:
-					w.WriteHeader(http.StatusNotFound)
-					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
-				case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
-					r.Method == http.MethodGet &&
-					!r.URL.Query().Has("tenantId"):
-					_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
-					require.NoError(t, err)
-				}
-			})),
-			clientConfig: &client.Config{
-				Transport: http.DefaultTransport,
-			},
-			err: false,
+			responseHandler: publicMarketplaceHandler(t),
+			clientConfig:    &client.Config{Transport: http.DefaultTransport},
+			expectError:     false,
 			expectedContains: []string{
 				"ID", "ITEM ID", "NAME", "TYPE", "COMPANY ID",
 				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
 				"43774c07d09ac6996ecfb3eg", "a-public-service", "A public service", "plugin", "another-company",
 			},
 		},
-		"should retrieve public marketplace when company and public are being set": {
+		{
+			name: "public marketplace with company set",
 			options: GetMarketplaceItemsOptions{
 				companyID: "my-company",
 				public:    true,
 			},
-			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				switch {
-				default:
-					w.WriteHeader(http.StatusNotFound)
-					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
-				case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
-					r.Method == http.MethodGet &&
-					!r.URL.Query().Has("tenantId"):
-					_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
-					require.NoError(t, err)
-				}
-			})),
-			clientConfig: &client.Config{
-				Transport: http.DefaultTransport,
-			},
-			err: false,
+			responseHandler: publicMarketplaceHandler(t),
+			clientConfig:    &client.Config{Transport: http.DefaultTransport},
+			expectError:     false,
 			expectedContains: []string{
 				"ID", "ITEM ID", "NAME", "TYPE", "COMPANY ID",
 				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
@@ -150,24 +104,77 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		},
 	}
 
-	for testName, testCase := range testCases {
-		t.Run(testName, func(t *testing.T) {
-			defer testCase.server.Close()
-			testCase.clientConfig.Host = testCase.server.URL
-			client, err := client.APIClientForConfig(testCase.clientConfig)
-			require.NoError(t, err)
-			found, err := getMarketplaceItemsTable(context.TODO(), client, testCase.options)
-			if testCase.err {
-				assert.Error(t, err)
-				assert.Zero(t, found)
-			} else {
-				assert.NoError(t, err)
-				assert.NotZero(t, found)
-				for _, expected := range testCase.expectedContains {
-					assert.Contains(t, found, expected)
-				}
+	runTestCase := func(t *testing.T, tc testCase) {
+		t.Helper()
+		server := httptest.NewServer(tc.responseHandler)
+		defer server.Close()
+
+		tc.clientConfig.Host = server.URL
+		client, err := client.APIClientForConfig(tc.clientConfig)
+		require.NoError(t, err)
+
+		found, err := getMarketplaceItemsTable(context.TODO(), client, tc.options)
+		if tc.expectError {
+			assert.Error(t, err)
+			assert.Zero(t, found)
+		} else {
+			assert.NoError(t, err)
+			assert.NotZero(t, found)
+			for _, expected := range tc.expectedContains {
+				assert.Contains(t, found, expected)
 			}
+		}
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			runTestCase(t, tc)
 		})
+	}
+}
+
+func privateCompanyMarketplaceHandler(t *testing.T) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+			r.Method == http.MethodGet &&
+			r.URL.Query().Get("tenantId") == "my-company" {
+			_, err := w.Write([]byte(marketplacePrivateCompanyBodyContent(t)))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
+	}
+}
+
+func wrongPayloadHandler(t *testing.T) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+			r.Method == http.MethodGet &&
+			r.URL.Query().Get("tenantId") == "my-company" {
+			_, err := w.Write([]byte("{}")) // Incorrect payload
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
+	}
+}
+
+func publicMarketplaceHandler(t *testing.T) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+			r.Method == http.MethodGet &&
+			!r.URL.Query().Has("tenantId") {
+			_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
 	}
 }
 
