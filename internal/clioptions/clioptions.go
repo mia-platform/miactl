@@ -71,6 +71,8 @@ type CLIOptions struct {
 	MarketplaceItemVersion string
 	// MarketplaceItemObjectID is the _id of a Marketplace item
 	MarketplaceItemObjectID string
+	// Fetch also public items
+	Public bool
 
 	FromCronJob string
 
@@ -210,6 +212,12 @@ func (o *CLIOptions) AddMarketplaceApplyFlags(cmd *cobra.Command) {
 func (o *CLIOptions) AddMarketplaceItemIDFlag(flags *pflag.FlagSet) (flagName string) {
 	flagName = "item-id"
 	flags.StringVarP(&o.MarketplaceItemID, flagName, "i", "", "The itemId of the Marketplace item")
+	return
+}
+
+func (o *CLIOptions) AddPublicFlag(flags *pflag.FlagSet) (flagName string) {
+	flagName = "public"
+	flags.BoolVar(&o.Public, flagName, false, "specify if the command should fetch also public items")
 	return
 }
 

@@ -30,30 +30,47 @@ import (
 
 const (
 	listMarketplaceEndpoint = "/api/backend/marketplace/"
+	listCmdLong             = `List Marketplace items
+
+    You can specify either:
+    - the companyId, via the --company-id flag. This will list all the Marketplace items for the specified company.
+    - the --public flag. This will list all public Marketplace items.
+
+    If both --company-id and --public are provided, the command will fetch public Marketplace items, ignoring the --company-id flag.
+    `
+	listCmdUse = "list { --company-id company-id | --public } [FLAGS]..."
 )
 
 // ListCmd return a new cobra command for listing marketplace items
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
-	return &cobra.Command{
-		Use:   "list",
+	cmd := &cobra.Command{
+		Use:   listCmdUse,
 		Short: "List marketplace items",
-		Long:  `List the Marketplace items that the current user can access.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			restConfig, err := options.ToRESTConfig()
-			cobra.CheckErr(err)
-			client, err := client.APIClientForConfig(restConfig)
-			cobra.CheckErr(err)
+		Long:  listCmdLong,
+		Run:   runListCmd(options),
+	}
 
-			getMarketplaceItemsOptions := GetMarketplaceItemsOptions{
-				companyID: options.CompanyID,
-				public:    false,
-			}
+	options.AddPublicFlag(cmd.Flags())
 
-			table, err := getMarketplaceItemsTable(context.Background(), client, getMarketplaceItemsOptions)
-			cobra.CheckErr(err)
+	return cmd
+}
 
-			fmt.Println(table)
-		},
+func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []string) {
+	return func(cmd *cobra.Command, args []string) {
+		restConfig, err := options.ToRESTConfig()
+		cobra.CheckErr(err)
+		apiClient, err := client.APIClientForConfig(restConfig)
+		cobra.CheckErr(err)
+
+		marketplaceItemsOptions := GetMarketplaceItemsOptions{
+			companyID: options.CompanyID,
+			public:    options.Public,
+		}
+
+		table, err := getMarketplaceItemsTable(context.Background(), apiClient, marketplaceItemsOptions)
+		cobra.CheckErr(err)
+
+		fmt.Println(table)
 	}
 }
 
@@ -64,7 +81,7 @@ type GetMarketplaceItemsOptions struct {
 
 func getMarketplaceItemsTable(context context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) (string, error) {
 
-	marketplaceItems, err := getMarketplaceItemsByCompanyID(context, client, options)
+	marketplaceItems, err := fetchMarketplaceItems(context, client, options)
 	if err != nil {
 		return "", err
 	}
@@ -73,25 +90,59 @@ func getMarketplaceItemsTable(context context.Context, client *client.APIClient,
 	return table, nil
 }
 
-func getMarketplaceItemsByCompanyID(ctx context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) ([]*resources.MarketplaceItem, error) {
-	if len(options.companyID) == 0 {
-		return nil, marketplace.ErrMissingCompanyID
+func fetchMarketplaceItems(ctx context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) ([]*resources.MarketplaceItem, error) {
+	err := validateOptions(options)
+	if err != nil {
+		return nil, err
 	}
 
-	resp, err := client.
-		Get().
-		SetParam("tenantId", options.companyID).
-		APIPath(listMarketplaceEndpoint).
-		Do(ctx)
+	request := buildRequest(client, options)
+	resp, err := executeRequest(ctx, request)
+	if err != nil {
+		return nil, err
+	}
 
+	marketplaceItems, err := parseResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return marketplaceItems, nil
+}
+
+func validateOptions(options GetMarketplaceItemsOptions) error {
+	requestedPublic := options.public
+	requestedSpecificCompany := len(options.companyID) > 0
+
+	if !requestedSpecificCompany && !requestedPublic {
+		return marketplace.ErrMissingCompanyID
+	}
+
+	return nil
+}
+
+func buildRequest(client *client.APIClient, options GetMarketplaceItemsOptions) *client.Request {
+	request := client.Get().APIPath(listMarketplaceEndpoint)
+	if len(options.companyID) > 0 && !options.public {
+		request.SetParam("tenantId", options.companyID)
+	}
+
+	return request
+}
+
+func executeRequest(ctx context.Context, request *client.Request) (*client.Response, error) {
+	resp, err := request.Do(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
 	}
-
 	if err := resp.Error(); err != nil {
 		return nil, err
 	}
 
+	return resp, nil
+}
+
+func parseResponse(resp *client.Response) ([]*resources.MarketplaceItem, error) {
 	marketplaceItems := make([]*resources.MarketplaceItem, 0)
 	if err := resp.ParseResponse(&marketplaceItems); err != nil {
 		return nil, fmt.Errorf("error parsing response body: %w", err)

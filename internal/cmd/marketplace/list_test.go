@@ -95,32 +95,59 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 			err:              true,
 			expectedContains: []string{},
 		},
-		// "public marketplace": {
-		// 	options: GetMarketplaceItemsOptions{
-		// 		public: true,
-		// 	},
-		// 	server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 		switch {
-		// 		default:
-		// 			w.WriteHeader(http.StatusNotFound)
-		// 			assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
-		// 		case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
-		// 			r.Method == http.MethodGet &&
-		// 			!r.URL.Query().Has("tenantId"):
-		// 			_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
-		// 			require.NoError(t, err)
-		// 		}
-		// 	})),
-		// 	clientConfig: &client.Config{
-		// 		Transport: http.DefaultTransport,
-		// 	},
-		// 	err: false,
-		// 	expectedContains: []string{
-		// 		"ID", "ITEM ID", "NAME", "TYPE", "COMPANY ID",
-		// 		"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
-		// 		"43774c07d09ac6996ecfb3eg", "a-public-service", "A public service", "plugin", "another-company",
-		// 	},
-		// },
+		"public marketplace": {
+			options: GetMarketplaceItemsOptions{
+				public: true,
+			},
+			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch {
+				default:
+					w.WriteHeader(http.StatusNotFound)
+					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
+				case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+					r.Method == http.MethodGet &&
+					!r.URL.Query().Has("tenantId"):
+					_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
+					require.NoError(t, err)
+				}
+			})),
+			clientConfig: &client.Config{
+				Transport: http.DefaultTransport,
+			},
+			err: false,
+			expectedContains: []string{
+				"ID", "ITEM ID", "NAME", "TYPE", "COMPANY ID",
+				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
+				"43774c07d09ac6996ecfb3eg", "a-public-service", "A public service", "plugin", "another-company",
+			},
+		},
+		"should retrieve public marketplace when company and public are being set": {
+			options: GetMarketplaceItemsOptions{
+				companyID: "my-company",
+				public:    true,
+			},
+			server: httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch {
+				default:
+					w.WriteHeader(http.StatusNotFound)
+					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
+				case strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+					r.Method == http.MethodGet &&
+					!r.URL.Query().Has("tenantId"):
+					_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
+					require.NoError(t, err)
+				}
+			})),
+			clientConfig: &client.Config{
+				Transport: http.DefaultTransport,
+			},
+			err: false,
+			expectedContains: []string{
+				"ID", "ITEM ID", "NAME", "TYPE", "COMPANY ID",
+				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
+				"43774c07d09ac6996ecfb3eg", "a-public-service", "A public service", "plugin", "another-company",
+			},
+		},
 	}
 
 	for testName, testCase := range testCases {

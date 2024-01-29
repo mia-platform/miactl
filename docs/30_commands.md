@@ -708,11 +708,23 @@ List Marketplace items
 
 #### Synopsis
 
-List the Marketplace items that the current user can access.
+List the Marketplace items that the current user can access.  
+This command allows you to view items in the Marketplace with various filters:
 
+*   Specify a `companyId` to view all Marketplace items for a specific company.
+*   Use the `--public` flag to list all public Marketplace items.
+*   If both `--company-id` and `--public` are provided, the command will prioritize the `--public` flag, listing public Marketplace items and ignoring the `--company-id` flag.
+
+#### Usage
+
+```sh
+miactl marketplace list { --company-id company-id | --public } [flags]
 ```
-miactl marketplace list [flags]
-```
+
+#### Flags
+
+*   `--company-id string` - List all Marketplace items for the specified company.
+*   `--public` - List all public Marketplace items.
 
 ### get
 
