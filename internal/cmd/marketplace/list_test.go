@@ -164,21 +164,6 @@ func wrongPayloadHandler(t *testing.T) http.HandlerFunc {
 	}
 }
 
-func publicMarketplaceHandler(t *testing.T) http.HandlerFunc {
-	t.Helper()
-	return func(w http.ResponseWriter, r *http.Request) {
-		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
-			r.Method == http.MethodGet &&
-			!r.URL.Query().Has("tenantId") {
-			_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
-			require.NoError(t, err)
-		} else {
-			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
-		}
-	}
-}
-
 func marketplacePrivateCompanyBodyContent(t *testing.T) string {
 	t.Helper()
 
