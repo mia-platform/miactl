@@ -217,7 +217,7 @@ func (o *CLIOptions) AddMarketplaceItemIDFlag(flags *pflag.FlagSet) (flagName st
 
 func (o *CLIOptions) AddPublicFlag(flags *pflag.FlagSet) (flagName string) {
 	flagName = "public"
-	flags.BoolVarP(&o.Public, flagName, "p", false, "specify if the command should fetch only public items")
+	flags.BoolVarP(&o.Public, flagName, "p", false, "specify to fetch only public items")
 	return
 }
 
