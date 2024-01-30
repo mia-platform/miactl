@@ -37,7 +37,7 @@ const (
     you can also speficfy following flags:
     - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Marketplace items from other companies.
     `
-	listCmdUse = "list { --company-id company-id | --public } [FLAGS]..."
+	listCmdUse = "list --company-id company-id [FLAGS]..."
 )
 
 // ListCmd return a new cobra command for listing marketplace items
