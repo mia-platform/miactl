@@ -70,9 +70,8 @@ type CLIOptions struct {
 	// MarketplaceItemVersion is the version field of a Marketplace item
 	MarketplaceItemVersion string
 	// MarketplaceItemObjectID is the _id of a Marketplace item
-	MarketplaceItemObjectID string
-	// Fetch only public items
-	Public bool
+	MarketplaceItemObjectID     string
+	MarketplaceFetchPublicItems bool
 
 	FromCronJob string
 
@@ -217,7 +216,7 @@ func (o *CLIOptions) AddMarketplaceItemIDFlag(flags *pflag.FlagSet) (flagName st
 
 func (o *CLIOptions) AddPublicFlag(flags *pflag.FlagSet) (flagName string) {
 	flagName = "public"
-	flags.BoolVarP(&o.Public, flagName, "p", false, "specify to fetch also public items")
+	flags.BoolVarP(&o.MarketplaceFetchPublicItems, flagName, "p", false, "specify to fetch also public items")
 	return
 }
 

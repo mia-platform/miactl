@@ -63,7 +63,7 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 
 		marketplaceItemsOptions := GetMarketplaceItemsOptions{
 			companyID: options.CompanyID,
-			public:    options.Public,
+			public:    options.MarketplaceFetchPublicItems,
 		}
 
 		table, err := getMarketplaceItemsTable(context.Background(), apiClient, marketplaceItemsOptions)
