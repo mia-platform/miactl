@@ -708,7 +708,7 @@ List Marketplace items
 
 #### Synopsis
 
-List the Marketplace items that the current user can access.  
+List the Marketplace items that the current user can access. 
 
 #### Usage
 
