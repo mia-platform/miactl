@@ -32,11 +32,10 @@ const (
 	listMarketplaceEndpoint = "/api/backend/marketplace/"
 	listCmdLong             = `List Marketplace items
 
-    You can specify either:
-    - the companyId, via the --company-id flag. This will list all the Marketplace items for the specified company.
-	- the --public flag. This will list only the public Marketplace items from any company.
+    This command lists the Marketplace items of a company.
 
-    If both --company-id and --public are provided, the command will prioritize the --public flag, listing public Marketplace items and ignoring the --company-id flag
+    you can also speficfy following flags:
+    - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Marketplace items from other companies.
     `
 	listCmdUse = "list { --company-id company-id | --public } [FLAGS]..."
 )
@@ -110,10 +109,9 @@ func fetchMarketplaceItems(ctx context.Context, client *client.APIClient, option
 }
 
 func validateOptions(options GetMarketplaceItemsOptions) error {
-	requestedPublic := options.public
 	requestedSpecificCompany := len(options.companyID) > 0
 
-	if !requestedSpecificCompany && !requestedPublic {
+	if !requestedSpecificCompany {
 		return marketplace.ErrMissingCompanyID
 	}
 
@@ -122,7 +120,10 @@ func validateOptions(options GetMarketplaceItemsOptions) error {
 
 func buildRequest(client *client.APIClient, options GetMarketplaceItemsOptions) *client.Request {
 	request := client.Get().APIPath(listMarketplaceEndpoint)
-	if len(options.companyID) > 0 && !options.public {
+	switch {
+	case options.public:
+		request.SetParam("includeTenantId", options.companyID)
+	case !options.public:
 		request.SetParam("tenantId", options.companyID)
 	}
 

@@ -74,26 +74,12 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 			expectedContains: []string{},
 		},
 		{
-			name: "public marketplace",
-			options: GetMarketplaceItemsOptions{
-				public: true,
-			},
-			responseHandler: publicMarketplaceHandler(t),
-			clientConfig:    &client.Config{Transport: http.DefaultTransport},
-			expectError:     false,
-			expectedContains: []string{
-				"ID", "ITEM ID", "NAME", "TYPE", "COMPANY ID",
-				"43774c07d09ac6996ecfb3ef", "space-travel-service", "Space Travel Service", "plugin", "my-company",
-				"43774c07d09ac6996ecfb3eg", "a-public-service", "A public service", "plugin", "another-company",
-			},
-		},
-		{
 			name: "public marketplace with company set",
 			options: GetMarketplaceItemsOptions{
 				companyID: "my-company",
 				public:    true,
 			},
-			responseHandler: publicMarketplaceHandler(t),
+			responseHandler: privateAndPublicMarketplaceHandler(t),
 			clientConfig:    &client.Config{Transport: http.DefaultTransport},
 			expectError:     false,
 			expectedContains: []string{
@@ -130,6 +116,21 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			runTestCase(t, tc)
 		})
+	}
+}
+
+func privateAndPublicMarketplaceHandler(t *testing.T) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+			r.Method == http.MethodGet &&
+			r.URL.Query().Get("includeTenantId") == "my-company" {
+			_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
 	}
 }
 
