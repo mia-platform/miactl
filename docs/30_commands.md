@@ -712,7 +712,7 @@ List the Marketplace items that the current user can access.
 This command allows you to view items in the Marketplace with various filters:
 
 *   Specify a `companyId` to view all Marketplace items for a specific company.
-*   Use the `--public` flag to list all public Marketplace items.
+*   Use the `--public` flag to list only the available public Marketplace items from any company.
 *   If both `--company-id` and `--public` are provided, the command will prioritize the `--public` flag, listing public Marketplace items and ignoring the `--company-id` flag.
 
 #### Usage

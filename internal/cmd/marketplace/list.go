@@ -34,9 +34,9 @@ const (
 
     You can specify either:
     - the companyId, via the --company-id flag. This will list all the Marketplace items for the specified company.
-    - the --public flag. This will list all public Marketplace items.
+	- the --public flag. This will list only the public Marketplace items from any company.
 
-    If both --company-id and --public are provided, the command will fetch public Marketplace items, ignoring the --company-id flag.
+    If both --company-id and --public are provided, the command will prioritize the --public flag, listing public Marketplace items and ignoring the --company-id flag
     `
 	listCmdUse = "list { --company-id company-id | --public } [FLAGS]..."
 )
