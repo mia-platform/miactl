@@ -708,11 +708,17 @@ List Marketplace items
 
 #### Synopsis
 
-List the Marketplace items that the current user can access.
+List the Marketplace items that the current user can access. 
 
+#### Usage
+
+```sh
+miactl marketplace list --company-id company-id [FLAGS]...
 ```
-miactl marketplace list [flags]
-```
+
+#### Flags
+
+*   `--public` - if this flag is set, the command fetches not only the items from the requested company, but also the public Marketplace items from other companies.
 
 ### get
 

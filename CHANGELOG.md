@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `project iam list` command
 - `project iam edit` command
 - `project iam remove-role` command
+- `--public` flag to `marketplace list` command
 
 ### Changed
 

@@ -30,47 +30,119 @@ import (
 
 const (
 	listMarketplaceEndpoint = "/api/backend/marketplace/"
+	listCmdLong             = `List Marketplace items
+
+    This command lists the Marketplace items of a company.
+
+    you can also speficfy following flags:
+    - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Marketplace items from other companies.
+    `
+	listCmdUse = "list --company-id company-id [FLAGS]..."
 )
 
 // ListCmd return a new cobra command for listing marketplace items
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
-	return &cobra.Command{
-		Use:   "list",
+	cmd := &cobra.Command{
+		Use:   listCmdUse,
 		Short: "List marketplace items",
-		Long:  `List the Marketplace items that the current user can access.`,
-		Run: func(cmd *cobra.Command, args []string) {
-			restConfig, err := options.ToRESTConfig()
-			cobra.CheckErr(err)
-			client, err := client.APIClientForConfig(restConfig)
-			cobra.CheckErr(err)
+		Long:  listCmdLong,
+		Run:   runListCmd(options),
+	}
 
-			list, err := buildMarketplaceItemsList(cmd.Context(), client, restConfig.CompanyID)
-			cobra.CheckErr(err)
+	options.AddPublicFlag(cmd.Flags())
 
-			fmt.Println(list)
-		},
+	return cmd
+}
+
+func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []string) {
+	return func(cmd *cobra.Command, args []string) {
+		restConfig, err := options.ToRESTConfig()
+		cobra.CheckErr(err)
+		apiClient, err := client.APIClientForConfig(restConfig)
+		cobra.CheckErr(err)
+
+		marketplaceItemsOptions := GetMarketplaceItemsOptions{
+			companyID: options.CompanyID,
+			public:    options.MarketplaceFetchPublicItems,
+		}
+
+		table, err := getMarketplaceItemsTable(context.Background(), apiClient, marketplaceItemsOptions)
+		cobra.CheckErr(err)
+
+		fmt.Println(table)
 	}
 }
 
-func getMarketplaceItemsByCompanyID(ctx context.Context, client *client.APIClient, companyID string) ([]*resources.MarketplaceItem, error) {
-	if len(companyID) == 0 {
-		return nil, marketplace.ErrMissingCompanyID
+type GetMarketplaceItemsOptions struct {
+	companyID string
+	public    bool
+}
+
+func getMarketplaceItemsTable(context context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) (string, error) {
+	marketplaceItems, err := fetchMarketplaceItems(context, client, options)
+	if err != nil {
+		return "", err
 	}
 
-	resp, err := client.
-		Get().
-		SetParam("tenantId", companyID).
-		APIPath(listMarketplaceEndpoint).
-		Do(ctx)
+	table := buildMarketplaceItemsTable(marketplaceItems)
+	return table, nil
+}
 
+func fetchMarketplaceItems(ctx context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) ([]*resources.MarketplaceItem, error) {
+	err := validateOptions(options)
+	if err != nil {
+		return nil, err
+	}
+
+	request := buildRequest(client, options)
+	resp, err := executeRequest(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+
+	marketplaceItems, err := parseResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	return marketplaceItems, nil
+}
+
+func validateOptions(options GetMarketplaceItemsOptions) error {
+	requestedSpecificCompany := len(options.companyID) > 0
+
+	if !requestedSpecificCompany {
+		return marketplace.ErrMissingCompanyID
+	}
+
+	return nil
+}
+
+func buildRequest(client *client.APIClient, options GetMarketplaceItemsOptions) *client.Request {
+	request := client.Get().APIPath(listMarketplaceEndpoint)
+	switch {
+	case options.public:
+		request.SetParam("includeTenantId", options.companyID)
+	case !options.public:
+		request.SetParam("tenantId", options.companyID)
+	}
+
+	return request
+}
+
+func executeRequest(ctx context.Context, request *client.Request) (*client.Response, error) {
+	resp, err := request.Do(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
 	}
-
 	if err := resp.Error(); err != nil {
 		return nil, err
 	}
 
+	return resp, nil
+}
+
+func parseResponse(resp *client.Response) ([]*resources.MarketplaceItem, error) {
 	marketplaceItems := make([]*resources.MarketplaceItem, 0)
 	if err := resp.ParseResponse(&marketplaceItems); err != nil {
 		return nil, fmt.Errorf("error parsing response body: %w", err)
@@ -79,13 +151,7 @@ func getMarketplaceItemsByCompanyID(ctx context.Context, client *client.APIClien
 	return marketplaceItems, nil
 }
 
-// buildMarketplaceItemsList retrieves the marketplace items belonging to the current context
-// and returns a string with a human-readable list
-func buildMarketplaceItemsList(ctx context.Context, client *client.APIClient, companyID string) (string, error) {
-	marketplaceItems, err := getMarketplaceItemsByCompanyID(ctx, client, companyID)
-	if err != nil {
-		return "", err
-	}
+func buildMarketplaceItemsTable(marketplaceItems []*resources.MarketplaceItem) string {
 	strBuilder := &strings.Builder{}
 	table := tablewriter.NewWriter(strBuilder)
 	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
@@ -94,16 +160,17 @@ func buildMarketplaceItemsList(ctx context.Context, client *client.APIClient, co
 	table.SetColumnSeparator("")
 	table.SetRowSeparator("")
 	table.SetAutoWrapText(true)
-	table.SetHeader([]string{"Object ID", "Item ID", "Name", "Type"})
+	table.SetHeader([]string{"Object ID", "Item ID", "Name", "Type", "Company ID"})
 	for _, marketplaceItem := range marketplaceItems {
 		table.Append([]string{
 			marketplaceItem.ID,
 			marketplaceItem.ItemID,
 			marketplaceItem.Name,
 			marketplaceItem.Type,
+			marketplaceItem.TenantID,
 		})
 	}
 	table.Render()
 
-	return strBuilder.String(), nil
+	return strBuilder.String()
 }
