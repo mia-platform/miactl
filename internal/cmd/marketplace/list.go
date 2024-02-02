@@ -61,13 +61,8 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 		apiClient, err := client.APIClientForConfig(restConfig)
 		cobra.CheckErr(err)
 
-		companyID := restConfig.CompanyID
-		if options.CompanyID != "" {
-			companyID = options.CompanyID
-		}
-
 		marketplaceItemsOptions := GetMarketplaceItemsOptions{
-			companyID: companyID,
+			companyID: restConfig.CompanyID,
 			public:    options.MarketplaceFetchPublicItems,
 		}
 
