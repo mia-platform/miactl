@@ -34,7 +34,7 @@ const (
 
     This command lists the Marketplace items of a company.
 
-    you can also speficfy following flags:
+    you can also specify following flags:
     - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Marketplace items from other companies.
     `
 	listCmdUse = "list --company-id company-id [FLAGS]..."
@@ -61,8 +61,13 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 		apiClient, err := client.APIClientForConfig(restConfig)
 		cobra.CheckErr(err)
 
+		companyID := restConfig.CompanyID
+		if options.CompanyID != "" {
+			companyID = options.CompanyID
+		}
+
 		marketplaceItemsOptions := GetMarketplaceItemsOptions{
-			companyID: options.CompanyID,
+			companyID: companyID,
 			public:    options.MarketplaceFetchPublicItems,
 		}
 
