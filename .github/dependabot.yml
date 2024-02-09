@@ -22,3 +22,9 @@ updates:
     interval: daily
     time: "07:00"
     timezone: Europe/Rome
+
+# keep up to date devcontainers
+- package-ecosystem: devcontainers
+  directory: "/"
+  schedule:
+    interval: monthly

@@ -63,7 +63,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   use,
 		Short: "Get Marketplace item",
 		Long:  long,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

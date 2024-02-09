@@ -32,41 +32,41 @@ func TestRemoveGroupMember(t *testing.T) {
 		server    *httptest.Server
 		companyID string
 		groupID   string
-		userIds   []string
+		userIDs   []string
 		expectErr bool
 	}{
 		"remove member from group": {
 			server:    removeGroupMemeberTestServer(t),
 			companyID: "success",
 			groupID:   "group-id",
-			userIds:   []string{"000000000000000000000001"},
+			userIDs:   []string{"000000000000000000000001"},
 		},
 		"missing company": {
 			server:    removeGroupMemeberTestServer(t),
 			companyID: "",
 			groupID:   "group-id",
-			userIds:   []string{"000000000000000000000001"},
+			userIDs:   []string{"000000000000000000000001"},
 			expectErr: true,
 		},
 		"missing group id": {
 			server:    removeGroupMemeberTestServer(t),
 			companyID: "success",
 			groupID:   "",
-			userIds:   []string{"000000000000000000000001"},
+			userIDs:   []string{"000000000000000000000001"},
 			expectErr: true,
 		},
 		"missing user id": {
 			server:    removeGroupMemeberTestServer(t),
 			companyID: "succes",
 			groupID:   "group-id",
-			userIds:   []string{},
+			userIDs:   []string{},
 			expectErr: true,
 		},
 		"error from backend": {
 			server:    removeGroupMemeberTestServer(t),
 			companyID: "fail",
 			groupID:   "group-id",
-			userIds:   []string{"000000000000000000000001"},
+			userIDs:   []string{"000000000000000000000001"},
 			expectErr: true,
 		},
 	}
@@ -84,7 +84,7 @@ func TestRemoveGroupMember(t *testing.T) {
 				client,
 				testCase.companyID,
 				testCase.groupID,
-				testCase.userIds,
+				testCase.userIDs,
 			)
 
 			switch testCase.expectErr {

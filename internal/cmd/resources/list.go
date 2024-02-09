@@ -76,7 +76,7 @@ func APIResourcesCommand(_ *clioptions.CLIOptions) *cobra.Command {
 		Short: "List Mia-Platform Console supported runtime resources",
 		Long:  "List Mia-Platform Console supported runtime resources.",
 
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			writer := cmd.OutOrStdout()
 			fmt.Fprint(writer, "NAME")
 			fmt.Fprintln(writer)
@@ -101,7 +101,7 @@ of different kinds associcated with one or more of its environments.
 
 Use "miactl runtime api-resources" for a complete list of currently supported resources.`,
 		Args: cobra.ExactArgs(1),
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+		ValidArgsFunction: func(_ *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
 			return resourcesCompletions(args, toComplete), cobra.ShellCompDirectiveNoFileComp
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {

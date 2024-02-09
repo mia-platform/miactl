@@ -28,7 +28,7 @@ func UseCmd(opts *clioptions.CLIOptions) *cobra.Command {
 		Use:   "use CONTEXT [flags]",
 		Short: "Select a context to use",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			locator := cliconfig.NewConfigPathLocator()
 			locator.ExplicitPath = opts.MiactlConfig
 			newContext := args[0]

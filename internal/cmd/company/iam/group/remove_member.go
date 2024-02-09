@@ -36,7 +36,7 @@ func RemoveMemberCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Long:  "Remove one or more users from a company group. The users can be removed via their ids",
 
 		Args: cobra.NoArgs,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

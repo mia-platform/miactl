@@ -53,7 +53,7 @@ func jobCommand(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   "job",
 		Short: "Create a job from a cronjob in the selected environment and project",
 		Long:  "Create a job from a cronjob in the selected environment and project",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

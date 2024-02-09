@@ -25,5 +25,5 @@ const (
 	groupsPathTemplate          = "/api/companies/%s/groups"
 	serviceAccountsPathTemplate = "/api/companies/%s/service-accounts"
 
-	projectIdsKey = "projectIds"
+	projectIDsKey = "projectIds"
 )

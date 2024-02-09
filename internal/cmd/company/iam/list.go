@@ -36,7 +36,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 all of them noting the type and the current role associated with them`,
 
 		Args: cobra.NoArgs,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
@@ -88,7 +88,7 @@ func listEntity(options *clioptions.CLIOptions, commandName, shortHelp, longHelp
 		Short: shortHelp,
 		Long:  longHelp,
 
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

@@ -73,7 +73,7 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Short:      "Delete a Marketplace item",
 		Long:       long,
 		SuggestFor: []string{"rm"},
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

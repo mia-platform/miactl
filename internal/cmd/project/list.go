@@ -41,7 +41,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 The company can be set via the dedicated flag, or it will be inferred from
 the current context. If no company can be selected the command will return
 an error.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

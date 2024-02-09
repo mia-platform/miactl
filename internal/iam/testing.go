@@ -32,7 +32,7 @@ func ErrorTestServerForCompanyIAMList(t *testing.T, companyID string) *httptest.
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params := r.URL.Query()
-		require.False(t, params.Has(projectIdsKey), "for company calls no project ids are allowed")
+		require.False(t, params.Has(projectIDsKey), "for company calls no project ids are allowed")
 		internalErrorServerHandler(t, w, r, companyID)
 	}))
 }
@@ -41,8 +41,8 @@ func ErrorTestServerForProjectIAMList(t *testing.T, companyID, projectID string)
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params := r.URL.Query()
-		require.True(t, params.Has(projectIdsKey), "for project calls project ids are required")
-		projectIDs := params[projectIdsKey]
+		require.True(t, params.Has(projectIDsKey), "for project calls project ids are required")
+		projectIDs := params[projectIDsKey]
 		require.Equal(t, 1, len(projectIDs), "only one project id is required")
 		assert.Equal(t, projectID, projectIDs[0])
 		internalErrorServerHandler(t, w, r, companyID)
@@ -79,7 +79,7 @@ func TestServerForCompanyIAMList(t *testing.T, companyID string) *httptest.Serve
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params := r.URL.Query()
-		require.False(t, params.Has(projectIdsKey), "for company calls no project ids are allowed")
+		require.False(t, params.Has(projectIDsKey), "for company calls no project ids are allowed")
 		searchTerms := params["identityType"]
 		if len(searchTerms) == 0 {
 			searchTerms = append(searchTerms, UsersEntityName, GroupsEntityName, ServiceAccountsEntityName)
@@ -114,8 +114,8 @@ func TestServerForProjectIAMList(t *testing.T, companyID, projectID string) *htt
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params := r.URL.Query()
-		require.True(t, params.Has(projectIdsKey), "for project calls project ids are required")
-		projectIDs := params[projectIdsKey]
+		require.True(t, params.Has(projectIDsKey), "for project calls project ids are required")
+		projectIDs := params[projectIDsKey]
 		require.Equal(t, 1, len(projectIDs), "only one project id is required")
 		assert.Equal(t, projectID, projectIDs[0])
 

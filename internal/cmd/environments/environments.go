@@ -57,7 +57,7 @@ func listEnvironmentsCmd(o *clioptions.CLIOptions) *cobra.Command {
 		Use:   "list",
 		Short: "List all environments for a given project id",
 		Long:  "List all environments for a given project id",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := o.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

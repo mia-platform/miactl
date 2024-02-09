@@ -39,7 +39,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Long: `List the companies that the current user can access.
 
 Companies can be used to logically group projects by organizations or internal teams.`,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

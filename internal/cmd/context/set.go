@@ -30,7 +30,7 @@ func SetCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   "set CONTEXT [flags]",
 		Short: "Set a context for miactl",
 		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			contextName := args[0]
 			modified, err := setContext(args[0], options)
 			if err != nil {

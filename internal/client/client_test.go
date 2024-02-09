@@ -131,7 +131,7 @@ func TestRequestServer5xx(t *testing.T) {
 
 func testServerEnv(t *testing.T, statusCode int) *httptest.Server {
 	t.Helper()
-	fakeHandler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	fakeHandler := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(statusCode)
 		w.Write([]byte("{}"))
 	})

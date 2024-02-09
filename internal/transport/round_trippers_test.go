@@ -100,14 +100,14 @@ func TestRoundTripperWrapping(t *testing.T) {
 		},
 		"auth wrapper": {
 			config: &Config{
-				AuthorizeWrapper: func(rt http.RoundTripper) http.RoundTripper { return &testAuthTripper{} },
+				AuthorizeWrapper: func(_ http.RoundTripper) http.RoundTripper { return &testAuthTripper{} },
 			},
 			expectedType: &testAuthTripper{},
 		},
 		"both config, return auth wrapper": {
 			config: &Config{
 				UserAgent:        "foo",
-				AuthorizeWrapper: func(rt http.RoundTripper) http.RoundTripper { return &testAuthTripper{} },
+				AuthorizeWrapper: func(_ http.RoundTripper) http.RoundTripper { return &testAuthTripper{} },
 			},
 			expectedType: &testAuthTripper{},
 		},
@@ -115,7 +115,7 @@ func TestRoundTripperWrapping(t *testing.T) {
 			config: &Config{
 				UserAgent:        "foo",
 				Verbose:          true,
-				AuthorizeWrapper: func(rt http.RoundTripper) http.RoundTripper { return &testAuthTripper{} },
+				AuthorizeWrapper: func(_ http.RoundTripper) http.RoundTripper { return &testAuthTripper{} },
 			},
 			expectedType: &testAuthTripper{},
 		},

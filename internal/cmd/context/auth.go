@@ -35,7 +35,7 @@ func AuthCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Long: `Set an auth configuration for miactl. You can set service account access
 and then attach it to one or more contexts.`,
 		Args: cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(_ *cobra.Command, args []string) error {
 			authName := args[0]
 			modified, err := setAuth(args[0], options)
 			if err != nil {

@@ -16,11 +16,11 @@ on:
   - cron: 0 5 * * 1 # Run every monday at 5 UTC
 
 env:
-  GORELEASER_VERSION: v1.23.0
+  GORELEASER_VERSION: v1.24.0
 
 jobs:
   codeql:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     permissions:
       security-events: write
     steps:

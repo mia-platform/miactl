@@ -63,12 +63,6 @@ go/build/multiarch:
 .PHONY: build-deps
 build-deps:
 
-$(TOOLS_BIN)/goreleaser: $(TOOLS_DIR)/GORELEASER_VERSION
-	$(eval GORELEASER_VERSION:= $(shell cat $<))
-	mkdir -p $(TOOLS_BIN)
-	$(info Installing goreleaser $(GORELEASER_VERSION) bin in $(TOOLS_BIN))
-	GOBIN=$(TOOLS_BIN) go install github.com/goreleaser/goreleaser@$(GORELEASER_VERSION)
-
 build-deps: $(GORELEASER_PATH)
 
 build: build-deps
@@ -80,3 +74,9 @@ endif
 
 .PHONY: build
 build: go/build/$(GOOS)/$(GOARCH)/$(GOARM)
+
+$(TOOLS_BIN)/goreleaser: $(TOOLS_DIR)/GORELEASER_VERSION
+	$(eval GORELEASER_VERSION:= $(shell cat $<))
+	mkdir -p $(TOOLS_BIN)
+	$(info Installing goreleaser $(GORELEASER_VERSION) bin in $(TOOLS_BIN))
+	GOBIN=$(TOOLS_BIN) go install github.com/goreleaser/goreleaser@$(GORELEASER_VERSION)

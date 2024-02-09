@@ -31,7 +31,7 @@ func TestListAllIAMEntitites(t *testing.T) {
 	projectID := "project-id"
 	testCases := map[string]struct {
 		server     *httptest.Server
-		projectIds []string
+		projectIDs []string
 		expectErr  bool
 	}{
 		"list all entities in company": {
@@ -39,7 +39,7 @@ func TestListAllIAMEntitites(t *testing.T) {
 		},
 		"list all entities in project": {
 			server:     TestServerForProjectIAMList(t, companyID, projectID),
-			projectIds: []string{projectID},
+			projectIDs: []string{projectID},
 		},
 		"test error for company": {
 			server:    ErrorTestServerForCompanyIAMList(t, companyID),
@@ -47,7 +47,7 @@ func TestListAllIAMEntitites(t *testing.T) {
 		},
 		"test error for project": {
 			server:     ErrorTestServerForProjectIAMList(t, companyID, projectID),
-			projectIds: []string{projectID},
+			projectIDs: []string{projectID},
 			expectErr:  true,
 		},
 	}
@@ -61,7 +61,7 @@ func TestListAllIAMEntitites(t *testing.T) {
 			client, err := client.APIClientForConfig(config)
 			require.NoError(t, err)
 
-			response, err := ListAllIAMEntities(context.TODO(), client, companyID, testCase.projectIds, nil)
+			response, err := ListAllIAMEntities(context.TODO(), client, companyID, testCase.projectIDs, nil)
 			require.NoError(t, err)
 			if testCase.expectErr {
 				assert.Error(t, response.Error())

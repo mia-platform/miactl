@@ -44,7 +44,7 @@ func ListVersionCmd(options *clioptions.CLIOptions) *cobra.Command {
 The command will output a table with each version of the item.
 
 This command is in ALPHA state. This means that it can be subject to breaking changes in the next versions of miactl.`,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

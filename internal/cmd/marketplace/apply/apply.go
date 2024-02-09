@@ -101,7 +101,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Short:   "Create or update Marketplace items",
 		Long:    applyLong,
 		Example: applyExample,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)

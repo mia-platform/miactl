@@ -59,7 +59,7 @@ func TestNewRequest(t *testing.T) {
 func TestStreamRequest(t *testing.T) {
 	expectedBody := "expected body"
 
-	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		flusher, ok := w.(http.Flusher)
 		if !ok {
 			panic("need flusher!")

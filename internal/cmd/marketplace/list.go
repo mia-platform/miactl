@@ -55,7 +55,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 }
 
 func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []string) {
-	return func(cmd *cobra.Command, args []string) {
+	return func(cmd *cobra.Command, _ []string) {
 		restConfig, err := options.ToRESTConfig()
 		cobra.CheckErr(err)
 		apiClient, err := client.APIClientForConfig(restConfig)
@@ -66,7 +66,7 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 			public:    options.MarketplaceFetchPublicItems,
 		}
 
-		table, err := getMarketplaceItemsTable(context.Background(), apiClient, marketplaceItemsOptions)
+		table, err := getMarketplaceItemsTable(cmd.Context(), apiClient, marketplaceItemsOptions)
 		cobra.CheckErr(err)
 
 		fmt.Println(table)

@@ -22,13 +22,13 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 )
 
-func ListAllIAMEntities(ctx context.Context, client *client.APIClient, companyID string, projectIds []string, entityTypes map[string]bool) (*client.Response, error) {
+func ListAllIAMEntities(ctx context.Context, client *client.APIClient, companyID string, projectIDs []string, entityTypes map[string]bool) (*client.Response, error) {
 	request := client.
 		Get().
 		APIPath(fmt.Sprintf(entititesPathTemplate, companyID))
 
-	if len(projectIds) > 0 {
-		request.SetParam(projectIdsKey, projectIds...)
+	if len(projectIDs) > 0 {
+		request.SetParam(projectIDsKey, projectIDs...)
 	}
 
 	for entityName, enabled := range entityTypes {

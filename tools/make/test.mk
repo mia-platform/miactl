@@ -32,7 +32,7 @@ test/unit:
 .PHONY: test/integration
 test/integration:
 	$(info Running integration tests...)
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test $(GO_TEST_DEBUG_FLAG) -tags=integration -race ./...
+	go test $(GO_TEST_DEBUG_FLAG) -tags=integration -race ./...
 
 .PHONY: test/coverage
 test/coverage:
@@ -42,13 +42,13 @@ test/coverage:
 .PHONY: test/integration/coverage
 test/integration/coverage:
 	$(info Running ci tests with coverage on...)
-	KUBEBUILDER_ASSETS=$(KUBEBUILDER_ASSETS) go test -tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
+	go test -tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 .PHONY: test/conformance test/conformance/setup test/conformance/teardown
 test/conformance/setup:
 test/conformance:
 	$(info Running conformance tests...)
-	go test -tags=conformance -race $(GO_TEST_DEBUG_FLAG) $(CONFORMANCE_TEST_PATH)
+	go test -count=1 -tags=conformance -race $(GO_TEST_DEBUG_FLAG) $(CONFORMANCE_TEST_PATH)
 test/conformance/teardown:
 
 test/show/coverage:

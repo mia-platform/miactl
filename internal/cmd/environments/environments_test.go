@@ -81,7 +81,7 @@ func TestListEnvironments(t *testing.T) {
 			projectID: projectID,
 		},
 		"error in list project call": {
-			testServer: testServer(t, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			testServer: testServer(t, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 				w.WriteHeader(http.StatusNotFound)
 			})),
 			companyID: companyID,
