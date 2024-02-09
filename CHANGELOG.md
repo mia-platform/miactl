@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- update go version to 1.22.0
+
 ### Fixed
 
 - fixed open browser feature on Linux

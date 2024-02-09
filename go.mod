@@ -1,6 +1,6 @@
 module github.com/mia-platform/miactl
 
-go 1.21.6
+go 1.22.0
 
 require (
 	dario.cat/mergo v1.0.0

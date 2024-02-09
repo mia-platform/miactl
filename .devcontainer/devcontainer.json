@@ -1,6 +1,6 @@
 {
 	"name": "Go",
-	"image": "golang:1.21.7",
+	"image": "golang:1.22.0",
 	"containerUser": "root",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {},
