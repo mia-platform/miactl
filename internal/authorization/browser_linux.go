@@ -15,7 +15,10 @@
 
 package authorization
 
-import "os/exec"
+import (
+	"os/exec"
+	"strings"
+)
 
 func openBrowser(url string) error {
 	// support different commands on linux and exec the first one found
