@@ -15,9 +15,21 @@
 
 package authorization
 
-import "os/exec"
+import (
+	"os/exec"
+	"strings"
+)
 
 func openBrowser(url string) error {
-	cmd := exec.Command("open", url)
-	return cmd.Run()
+	// support different commands on linux and exec the first one found
+	commands := []string{"open", "xdg-open"}
+	// Look for one that exists and run it
+	for _, command := range commands {
+		if _, err := exec.LookPath(command); err == nil {
+			cmd := exec.Command(command, url)
+			return cmd.Run()
+		}
+	}
+
+	return &exec.Error{Name: strings.Join(commands, ", "), Err: exec.ErrNotFound}
 }
