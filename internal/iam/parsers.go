@@ -78,7 +78,7 @@ func RowForProjectIAMIdentity(projectID string) func(resources.IAMIdentity) []st
 
 func RowForUserIdentity(identity resources.UserIdentity) []string {
 	caser := cases.Title(language.English)
-	groupNames := make([]string, 0)
+	groupNames := make([]string, 0, len(identity.Groups))
 	for _, group := range identity.Groups {
 		groupNames = append(groupNames, group.Name)
 	}
@@ -110,7 +110,7 @@ func RowForUserIdentity(identity resources.UserIdentity) []string {
 
 func RowForGroupIdentity(identity resources.GroupIdentity) []string {
 	caser := cases.Title(language.English)
-	memberNames := make([]string, 0)
+	memberNames := make([]string, 0, len(identity.Members))
 	for _, member := range identity.Members {
 		memberNames = append(memberNames, member.Name)
 	}
@@ -161,7 +161,7 @@ func readableType(identityType string) string {
 }
 
 func readableRoles(roles []string) []string {
-	transformedRoles := make([]string, 0)
+	transformedRoles := make([]string, 0, len(roles))
 	for _, role := range roles {
 		transformedRoles = append(transformedRoles, readableRole(role))
 	}

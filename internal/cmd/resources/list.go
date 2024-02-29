@@ -124,7 +124,7 @@ miactl runtime list services --environment development`,
 }
 
 func resourcesCompletions(args []string, toComplete string) []string {
-	resources := make([]string, 0)
+	resources := make([]string, 0, len(autocompletableResources))
 	if len(args) > 0 {
 		return resources
 	}

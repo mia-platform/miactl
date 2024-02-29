@@ -28,7 +28,7 @@ import (
 )
 
 func rowForService(service resources.Service) []string {
-	ports := make([]string, 0)
+	ports := make([]string, 0, len(service.Ports))
 	for _, port := range service.Ports {
 		ports = append(ports, fmt.Sprintf("%d/%s", port.Port, port.Protocol))
 	}
