@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - remove dependency from `golang.org/x/exp`
 - better memory allocation for slices
+- update uuid to v1.6.0
+- update oauth2 to v0.17.0
 
 ## [0.12.1] - 2024-02-29
 
