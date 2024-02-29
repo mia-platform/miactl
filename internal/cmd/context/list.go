@@ -23,7 +23,6 @@ import (
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
-	"golang.org/x/exp/maps"
 )
 
 func ListCmd(opts *clioptions.CLIOptions) *cobra.Command {
@@ -48,7 +47,10 @@ func printContexts(out io.Writer, locator *cliconfig.ConfigPathLocator) error {
 	}
 
 	currentContext := config.CurrentContext
-	contextNames := maps.Keys(config.Contexts)
+	contextNames := make([]string, 0, len(config.Contexts))
+	for name := range config.Contexts {
+		contextNames = append(contextNames, name)
+	}
 	sort.Strings(contextNames)
 
 	for _, key := range contextNames {

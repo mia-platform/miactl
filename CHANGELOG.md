@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Changed
+
+- remove dependency from `golang.org/x/exp`
+
 ## [0.12.1] - 2024-02-29
 
 ### Changed
