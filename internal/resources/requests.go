@@ -93,7 +93,7 @@ type DeployProjectRequest struct {
 	Environment string `json:"environment"`
 	Revision    string `json:"revision"`
 	Type        string `json:"deployType"`              //nolint: tagliatelle
-	ForceDeploy bool   `json:"forceDeplpuWhenNoSemver"` //nolint: tagliatelle
+	ForceDeploy bool   `json:"forceDeployWhenNoSemver"` //nolint: tagliatelle
 }
 
 type CreateJobRequest struct {

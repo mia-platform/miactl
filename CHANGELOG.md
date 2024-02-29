@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - fixed open browser feature on Linux
+- fixed typo in flag parameter for triggering a new release
 
 ## [0.12.0] - 2024-02-05
 
