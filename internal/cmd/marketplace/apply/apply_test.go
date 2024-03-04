@@ -349,7 +349,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		require.Contains(t, found, "id4")
 		require.Contains(t, found, "item-id-4")
 		require.Contains(t, found, "some validation error")
-		require.Contains(t, found, "ID")
+		require.Contains(t, found, "OBJECT ID")
 		require.Contains(t, found, "ITEM ID")
 	})
 
@@ -407,7 +407,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		require.Contains(t, found, "some-item-id-3")
 		require.Contains(t, found, "some-item-id-2")
 		require.Contains(t, found, "some-item-id-1")
-		require.Contains(t, found, "ID")
+		require.Contains(t, found, "OBJECT ID")
 		require.Contains(t, found, "ITEM ID")
 	})
 
@@ -449,7 +449,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		require.Contains(t, found, "some-item-id-2")
 		require.Contains(t, found, "id3")
 		require.Contains(t, found, "some-item-id-3")
-		require.Contains(t, found, "ID")
+		require.Contains(t, found, "OBJECT ID")
 		require.Contains(t, found, "ITEM ID")
 		require.NotContains(t, found, "items have not been applied due to validation errors:")
 	})
