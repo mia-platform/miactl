@@ -36,7 +36,7 @@ func UseCmd(opts *clioptions.CLIOptions) *cobra.Command {
 				return err
 			}
 
-			fmt.Printf("Switched to context \"%s\",\n", newContext)
+			fmt.Printf("Switched to context \"%s\"\n", newContext)
 			return nil
 		},
 	}
