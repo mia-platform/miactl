@@ -37,7 +37,7 @@ miactl context set CONTEXT [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--company-id`, to set the ID of the desired Company
