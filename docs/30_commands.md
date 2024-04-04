@@ -37,7 +37,7 @@ miactl context set CONTEXT [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--company-id`, to set the ID of the desired Company
@@ -97,7 +97,7 @@ miactl company list [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -124,7 +124,7 @@ Available flags for the command:
 - `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
 - `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
 - `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -143,7 +143,7 @@ miactl company iam list users [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -161,7 +161,7 @@ miactl company iam list groups [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -180,7 +180,7 @@ miactl company iam list serviceaccounts [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -198,7 +198,7 @@ miactl company iam add serviceaccount basic NAME [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -218,7 +218,7 @@ miactl company iam add serviceaccount jwt NAME [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -238,7 +238,7 @@ miactl company iam add user [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -258,7 +258,7 @@ miactl company iam add group NAME [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -279,7 +279,7 @@ Available flags for the command:
 
 - `--group-id`, the group id where to add the users
 - `--user-email`, the list of user email to add to the group
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -297,7 +297,7 @@ miactl company iam edit user [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -318,7 +318,7 @@ miactl company iam edit serviceaccount [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -338,7 +338,7 @@ miactl company iam edit group [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -359,7 +359,7 @@ miactl company iam remove user [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -379,7 +379,7 @@ miactl company iam remove group [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -398,7 +398,7 @@ miactl company iam remove serviceaccount [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -419,7 +419,7 @@ Available flags for the command:
 
 - `--group-id`, the group id where to remove the users
 - `--user-id`, the list of user ids to remove from the group
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -444,7 +444,7 @@ miactl project list [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -471,7 +471,7 @@ Available flags for the command:
 - `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
 - `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
 - `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -498,7 +498,7 @@ Available flags for the command:
 - `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
 - `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
 - `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -525,7 +525,7 @@ Available flags for the command:
 - `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
 - `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
 - `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -546,7 +546,7 @@ miactl deploy ENVIRONMENT [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -570,7 +570,7 @@ miactl runtime environment list [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -590,7 +590,7 @@ miactl runtime api-resources [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -610,7 +610,7 @@ miactl runtime list RESOURCE-TYPE [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -631,7 +631,7 @@ miactl runtime events RESOURCE-NAME [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -652,7 +652,7 @@ miactl runtime create job [flags]
 Available flags for the command:
 
 - `--from`, to set the cronjob name from which the job will be created
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
@@ -676,7 +676,7 @@ miactl runtime logs POD-QUERY [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint (default is `https://console.cloud.mia-platform.eu`)
+- `--endpoint`, to set the Console endpoint
 - `--certificate-authority`, to provide the path to a custom CA certificate
 - `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
 - `--context`, to specify a different context from the currently selected one
