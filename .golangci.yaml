@@ -1,7 +1,5 @@
 run:
   timeout: 10m
-  skip-dirs:
-  - internal/jws
   build-tags:
   - conformance
   - integration
@@ -76,6 +74,8 @@ linters-settings:
       limitations under the License.
 
 issues:
+  exclude-dirs:
+  - internal/jws
   exclude-rules:
   - path: zz_generated
     linters:

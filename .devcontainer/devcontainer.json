@@ -1,10 +1,10 @@
 {
 	"name": "Go",
-	"image": "golang:1.22.1",
+	"image": "golang:1.22.2",
 	"containerUser": "root",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {},
-		"ghcr.io/devcontainers/features/go:1": {"version": "none", "golangciLintVersion": "1.56.2"}
+		"ghcr.io/devcontainers/features/go:1": {"version": "none", "golangciLintVersion": "1.57.2"}
 	},
 	"runArgs": [
 		"--cap-add=SYS_PTRACE",
