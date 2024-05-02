@@ -6,12 +6,26 @@ updates:
   directory: /
   schedule:
     interval: monthly
+    timezone: Europe/Rome
+  groups:
+    minor-actions-dependencies:
+      update-types:
+      - minor
+      - patch
+  commit-message:
+    include: scope
+    prefix: ci
 
 # keep up to date the base docker image
 - package-ecosystem: docker
   directory: /
   schedule:
     interval: daily
+    time: "07:00"
+    timezone: Europe/Rome
+  commit-message:
+    include: scope
+    prefix: build
 
 # enable go dependencies security updates
 - directory: /
@@ -22,9 +36,16 @@ updates:
     interval: daily
     time: "07:00"
     timezone: Europe/Rome
+  commit-message:
+    include: scope
+    prefix: chore
 
 # keep up to date devcontainers
 - package-ecosystem: devcontainers
   directory: "/"
   schedule:
     interval: monthly
+    timezone: Europe/Rome
+  commit-message:
+    include: scope
+    prefix: build
