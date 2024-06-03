@@ -14,7 +14,7 @@ on:
     - examples/**
 
 env:
-  GORELEASER_VERSION: v1.26.1
+  GORELEASER_VERSION: v1.26.2
 jobs:
   lint:
     name: Lint Code

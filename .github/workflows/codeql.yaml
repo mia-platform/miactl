@@ -16,7 +16,7 @@ on:
   - cron: 0 5 * * 1 # Run every monday at 5 UTC
 
 env:
-  GORELEASER_VERSION: v1.26.1
+  GORELEASER_VERSION: v1.26.2
 
 jobs:
   codeql:
