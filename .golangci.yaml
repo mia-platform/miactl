@@ -5,24 +5,37 @@ run:
   - integration
 
 linters:
+  disable-all: true
   enable:
   - asasalint
   - asciicheck
+  - bidichk
   - bodyclose
+  - copyloopvar
+  - decorder
+  - dogsled
+  - durationcheck
+  - errcheck
+  - errname
+  - fatcontext
   - goconst
   - gocritic
   - gocyclo
   - gofmt
   - goheader
   - goimports
-  - gomnd
+  - mnd
   - gosec
+  - gosimple
   - gosmopolitan
+  - govet
+  - ineffassign
   - misspell
   - nolintlint
   - prealloc
   - predeclared
   - revive
+  - staticcheck
   - tagliatelle
   - tenv
   - thelper
@@ -48,7 +61,7 @@ linters-settings:
     all: true
   unparam:
     check-exported: false
-  gomnd:
+  mnd:
     checks:
     - case
     - condition
