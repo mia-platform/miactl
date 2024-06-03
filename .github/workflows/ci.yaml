@@ -21,11 +21,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       with:
         show-progress: false
     - name: Setup Golang
-      uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
       with:
         go-version-file: go.mod
         cache: false
@@ -54,11 +54,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       with:
         show-progress: false
     - name: Setup Golang
-      uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
       with:
         go-version-file: go.mod
     - name: Run Test Coverage
@@ -73,15 +73,15 @@ jobs:
     if: github.event_name != 'push'
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       with:
         show-progress: false
     - name: Setup Golang
-      uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
       with:
         go-version-file: go.mod
     - name: Setup Goreleaser
-      uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
+      uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5.1.0
       with:
         version: ${{ env.GORELEASER_VERSION }}
         install-only: true
@@ -96,16 +96,16 @@ jobs:
     if: github.event_name == 'push'
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       with:
         show-progress: false
         fetch-depth: 0
     - name: Setup Golang
-      uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      uses: actions/setup-go@cdcb36043654635271a94b9a6d1392de5bb323a7 # v5.0.1
       with:
         go-version-file: go.mod
     - name: Setup Goreleaser
-      uses: goreleaser/goreleaser-action@7ec5c2b0c6cdda6e8bbb49444bc797dd33d74dd8 # v5.0.0
+      uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5.1.0
       with:
         version: ${{ env.GORELEASER_VERSION }}
         install-only: true
@@ -129,7 +129,7 @@ jobs:
     - publish-release
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
+      uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4.1.6
       with:
         show-progress: false
     - name: Download Binaries
@@ -141,13 +141,13 @@ jobs:
       run: |
         find ./bin/{darwin,linux} -type f -exec chmod +x {} \;
     - name: Docker Login to GitHub Repository
-      uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
+      uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Docker Login to DockerHub
-      uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
+      uses: docker/login-action@0d4c9c5ea7693da7b068278f7b52bda2a190a446 # v3.2.0
       with:
         username: ${{ secrets.BOT_DOCKER_USERNAME }}
         password: ${{ secrets.BOT_DOCKER_TOKEN }}
