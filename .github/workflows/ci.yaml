@@ -14,7 +14,7 @@ on:
     - examples/**
 
 env:
-  GORELEASER_VERSION: v1.26.2
+  GORELEASER_VERSION: v2.0.0
 jobs:
   lint:
     name: Lint Code
@@ -81,7 +81,7 @@ jobs:
       with:
         go-version-file: go.mod
     - name: Setup Goreleaser
-      uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5.1.0
+      uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
       with:
         version: ${{ env.GORELEASER_VERSION }}
         install-only: true
@@ -105,7 +105,7 @@ jobs:
       with:
         go-version-file: go.mod
     - name: Setup Goreleaser
-      uses: goreleaser/goreleaser-action@5742e2a039330cbb23ebf35f046f814d4c6ff811 # v5.1.0
+      uses: goreleaser/goreleaser-action@286f3b13b1b49da4ac219696163fb8c1c93e1200 # v6.0.0
       with:
         version: ${{ env.GORELEASER_VERSION }}
         install-only: true
