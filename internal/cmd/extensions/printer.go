@@ -19,12 +19,11 @@ import (
 	"strings"
 
 	"github.com/mia-platform/miactl/internal/resources/extensibility"
-	"github.com/mia-platform/miactl/internal/table"
 )
 
 func printExtensionsList(extensions []*extensibility.Extension) string {
 	strBuilder := &strings.Builder{}
-	table := table.New(strBuilder)
+	table := NewTable(strBuilder)
 	table.Header("ID", "Name", "Description")
 	for _, extension := range extensions {
 		table.Row(

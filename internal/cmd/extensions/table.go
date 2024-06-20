@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package table
+package extensions
 
 import (
 	"io"
@@ -35,7 +35,7 @@ func commonTableSetup(tw *tablewriter.Table) {
 	tw.SetAutoWrapText(true)
 }
 
-func New(writer io.Writer) *Table {
+func NewTable(writer io.Writer) *Table {
 	table := tablewriter.NewWriter(writer)
 	commonTableSetup(table)
 
