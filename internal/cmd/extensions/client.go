@@ -35,7 +35,7 @@ type E11yClient struct {
 	c *client.APIClient
 }
 
-func New(c *client.APIClient) *E11yClient {
+func New(c *client.APIClient) IE11yClient {
 	return &E11yClient{c: c}
 }
 
