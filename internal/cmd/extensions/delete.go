@@ -16,6 +16,8 @@
 package extensions
 
 import (
+	"fmt"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 
@@ -51,7 +53,7 @@ func DeletCmd(options *clioptions.CLIOptions) *cobra.Command {
 			extensibilityClient := New(client)
 			err = extensibilityClient.Delete(cmd.Context(), restConfig.CompanyID, options.EntityID)
 			cobra.CheckErr(err)
-
+			fmt.Println("Successfully deleted extension from Company")
 			return nil
 		},
 	}
