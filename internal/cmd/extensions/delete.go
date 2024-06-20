@@ -26,7 +26,7 @@ import (
 
 func addExtensionIDRequiredFlag(options *clioptions.CLIOptions, cmd *cobra.Command) {
 	flags := cmd.Flags()
-	flags.StringVarP(&options.EntityID, "extension-id", "i", "", "the extension id that should be deleted")
+	flags.StringVar(&options.EntityID, "extension-id", "", "the extension id that should be deleted")
 }
 
 // DeleteCmd return a new cobra command for listing companies

@@ -18,12 +18,11 @@ package extensions
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/extensibility"
 )
-
-const minimalSuccessStatusCode = 399
 
 const extensibilityAPIPrefix = "/api/extensibility"
 
@@ -67,7 +66,7 @@ func (e *E11yClient) Delete(ctx context.Context, companyID string, extensionID s
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
-	if resp.StatusCode() > minimalSuccessStatusCode {
+	if resp.StatusCode() >= http.StatusBadRequest {
 		return resp.Error()
 	}
 
