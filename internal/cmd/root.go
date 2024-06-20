@@ -22,7 +22,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/deploy"
-	"github.com/mia-platform/miactl/internal/cmd/extensibility"
+	"github.com/mia-platform/miactl/internal/cmd/extensions"
 	"github.com/mia-platform/miactl/internal/logger"
 	"github.com/spf13/cobra"
 )
@@ -54,7 +54,7 @@ func NewRootCommand() *cobra.Command {
 		MarketplaceCmd(options),
 		RuntimeCmd(options),
 		VersionCmd(options),
-		extensibility.CMD(options),
+		extensions.CMD(options),
 	)
 
 	return rootCmd

@@ -13,28 +13,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package extensibility
+package extensions
 
 import (
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/spf13/cobra"
+	"strings"
+
+	"github.com/mia-platform/miactl/internal/resources/extensibility"
+	"github.com/mia-platform/miactl/internal/table"
 )
 
-func CMD(o *clioptions.CLIOptions) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "extensions",
-		Short: "Manage registered extensions",
-		Long:  "Manage registered extensions for the company.",
+func printExtensionsList(extensions []*extensibility.Extension) string {
+	strBuilder := &strings.Builder{}
+	table := table.New(strBuilder)
+	table.Header("ID", "Name", "Description")
+	for _, extension := range extensions {
+		table.Row(
+			extension.ExtensionID,
+			extension.Name,
+			extension.Description,
+		)
 	}
-
-	flags := cmd.PersistentFlags()
-	o.AddConnectionFlags(flags)
-	o.AddContextFlags(flags)
-	o.AddCompanyFlags(flags)
-	o.AddProjectFlags(flags)
-
-	cmd.AddCommand(
-		ListCmd(o),
-	)
-	return cmd
+	table.Print()
+	return strBuilder.String()
 }
