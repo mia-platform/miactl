@@ -31,7 +31,6 @@ import (
 
 type CLIOptions struct {
 	MiactlConfig string
-	printer      printerOptions
 
 	Endpoint string
 	Insecure bool
