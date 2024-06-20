@@ -28,3 +28,14 @@ func TestListCommandBuilder(t *testing.T) {
 	cmd := ListCmd(opts)
 	require.NotNil(t, cmd)
 }
+
+func TestListCmdRun(t *testing.T) {
+	t.Run("error for missing company flag", func(t *testing.T) {
+		opts := clioptions.NewCLIOptions()
+		cmd := ListCmd(opts)
+		require.NotNil(t, cmd)
+
+		err := cmd.RunE(cmd, nil)
+		require.ErrorIs(t, err, ErrRequiredCompanyID)
+	})
+}

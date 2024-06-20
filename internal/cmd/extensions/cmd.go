@@ -16,9 +16,15 @@
 package extensions
 
 import (
+	"fmt"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 
 	"github.com/spf13/cobra"
+)
+
+var (
+	ErrRequiredCompanyID = fmt.Errorf("company id is required, please set it via flag or context")
 )
 
 func CMD(o *clioptions.CLIOptions) *cobra.Command {
