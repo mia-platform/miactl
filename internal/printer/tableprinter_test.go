@@ -41,6 +41,5 @@ func TestTablePrinter(t *testing.T) {
 			expected,
 			str.String(),
 		)
-
 	})
 }
