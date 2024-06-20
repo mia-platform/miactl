@@ -38,7 +38,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 
 			if restConfig.CompanyID == "" {
-				return fmt.Errorf("company id is required, please set it via flag or context")
+				return ErrRequiredCompanyID
 			}
 
 			extensibilityClient := New(client)
