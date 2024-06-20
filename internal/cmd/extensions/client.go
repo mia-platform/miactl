@@ -23,12 +23,16 @@ import (
 	"github.com/mia-platform/miactl/internal/resources/extensibility"
 )
 
+const extensibilityAPIPrefix = "/api/extensibility"
+
 const (
-	listAPIFmt = "/api/extensibility/tenants/%s/extensions"
+	listAPIFmt   = extensibilityAPIPrefix + "/tenants/%s/extensions"
+	deleteAPIFmt = extensibilityAPIPrefix + "/tenants/%s/extensions/%s"
 )
 
 type IE11yClient interface {
 	List(ctx context.Context, companyID string) ([]*extensibility.Extension, error)
+	Delete(ctx context.Context, companyID string, extensionID string) error
 }
 
 type E11yClient struct {
@@ -52,4 +56,18 @@ func (e *E11yClient) List(ctx context.Context, companyID string) ([]*extensibili
 	}
 
 	return extensions, nil
+}
+
+func (e *E11yClient) Delete(ctx context.Context, companyID string, extensionID string) error {
+	apiPath := fmt.Sprintf(deleteAPIFmt, companyID, extensionID)
+	resp, err := e.c.Delete().APIPath(apiPath).Do(ctx)
+	if err != nil {
+		return fmt.Errorf("error executing request: %w", err)
+	}
+
+	if resp.StatusCode() > 399 {
+		return resp.Error()
+	}
+
+	return nil
 }

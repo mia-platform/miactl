@@ -24,7 +24,8 @@ import (
 )
 
 var (
-	ErrRequiredCompanyID = fmt.Errorf("company id is required, please set it via flag or context")
+	ErrRequiredCompanyID   = fmt.Errorf("company id is required, please set it via flag or context")
+	ErrRequiredExtensionID = fmt.Errorf("extension-id is required, please set it via flag")
 )
 
 func CMD(o *clioptions.CLIOptions) *cobra.Command {
@@ -42,6 +43,7 @@ func CMD(o *clioptions.CLIOptions) *cobra.Command {
 
 	cmd.AddCommand(
 		ListCmd(o),
+		DeletCmd(o),
 	)
 	return cmd
 }
