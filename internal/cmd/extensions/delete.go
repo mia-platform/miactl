@@ -34,7 +34,7 @@ func DeletCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "Delete extension",
-		Long:  "Delete a previously register extension for the Company.",
+		Long:  "Delete a previously registered extension for the Company.",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
