@@ -151,6 +151,7 @@ func mockListServer(t *testing.T, validResponse bool, expectedCompanyID string) 
 }
 
 func mockDeleteServer(t *testing.T, validResponse bool, expectedCompanyID, expectedExtensionID string) *httptest.Server {
+	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.RequestURI != fmt.Sprintf(deleteAPIFmt, expectedCompanyID, expectedExtensionID) && r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
@@ -158,7 +159,6 @@ func mockDeleteServer(t *testing.T, validResponse bool, expectedCompanyID, expec
 			return
 		}
 		if validResponse {
-			w.WriteHeader(http.StatusOK)
 			w.WriteHeader(http.StatusNoContent)
 			return
 		}
