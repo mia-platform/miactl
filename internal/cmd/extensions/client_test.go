@@ -79,6 +79,47 @@ func TestE11yClientList(t *testing.T) {
 	}
 }
 
+func TestE11yClientDelete(t *testing.T) {
+	testCases := map[string]struct {
+		companyID   string
+		extensionID string
+		server      *httptest.Server
+		err         bool
+	}{
+		"valid response": {
+			companyID:   "company-1",
+			extensionID: "ext-1",
+			server:      mockDeleteServer(t, true, "company-1", "ext-1"),
+		},
+		"invalid response": {
+			companyID:   "company-1",
+			extensionID: "ext-1",
+			server:      mockDeleteServer(t, false, "company-1", "ext-1"),
+			err:         true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			clientConfig := &client.Config{
+				Transport: http.DefaultTransport,
+				Host:      testCase.server.URL,
+			}
+
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+
+			err = New(client).Delete(context.TODO(), testCase.companyID, testCase.extensionID)
+			if testCase.err {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
 func mockListServer(t *testing.T, validResponse bool, expectedCompanyID string) *httptest.Server {
 	t.Helper()
 	validBodyString := `[
@@ -106,5 +147,22 @@ func mockListServer(t *testing.T, validResponse bool, expectedCompanyID string) 
 			return
 		}
 		w.Write([]byte("invalid json"))
+	}))
+}
+
+func mockDeleteServer(t *testing.T, validResponse bool, expectedCompanyID, expectedExtensionID string) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.RequestURI != fmt.Sprintf(deleteAPIFmt, expectedCompanyID, expectedExtensionID) && r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusNotFound)
+			require.Fail(t, "unsupported call")
+			return
+		}
+		if validResponse {
+			w.WriteHeader(http.StatusOK)
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(`{"error":"some error","message":"some message"}`))
 	}))
 }
