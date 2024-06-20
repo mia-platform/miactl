@@ -23,6 +23,8 @@ import (
 	"github.com/mia-platform/miactl/internal/resources/extensibility"
 )
 
+const minimalSuccessStatusCode = 399
+
 const extensibilityAPIPrefix = "/api/extensibility"
 
 const (
@@ -65,7 +67,7 @@ func (e *E11yClient) Delete(ctx context.Context, companyID string, extensionID s
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
-	if resp.StatusCode() > 399 {
+	if resp.StatusCode() > minimalSuccessStatusCode {
 		return resp.Error()
 	}
 
