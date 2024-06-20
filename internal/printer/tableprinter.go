@@ -41,9 +41,7 @@ func (t *TablePrinter) commonTableSetup(tw *tablewriter.Table) {
 }
 
 func NewTablePrinter(options TablePrinterOptions) IPrinter {
-	return &TablePrinter{
-		options: options,
-	}
+	return &TablePrinter{options: options}
 }
 
 func (t *TablePrinter) SetWriter(w io.Writer) IPrinter {
