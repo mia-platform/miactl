@@ -17,6 +17,7 @@ package extensions
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
+
 	"github.com/spf13/cobra"
 )
 

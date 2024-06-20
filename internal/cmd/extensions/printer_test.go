@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/resources/extensibility"
+
 	"github.com/stretchr/testify/require"
 )
 
