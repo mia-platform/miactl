@@ -21,19 +21,19 @@ import (
 
 type NopPrinter struct{}
 
-func (n *NopPrinter) SetWriter(w io.Writer) IPrinter {
+func (n *NopPrinter) SetWriter(_ io.Writer) IPrinter {
 	return n
 }
 
-func (n *NopPrinter) Keys(keys ...string) IPrinter {
+func (n *NopPrinter) Keys(_ ...string) IPrinter {
 	return n
 }
 
-func (n *NopPrinter) Record(recordValues ...string) IPrinter {
+func (n *NopPrinter) Record(_ ...string) IPrinter {
 	return n
 }
 
-func (n *NopPrinter) BulkRecords(records ...[]string) IPrinter {
+func (n *NopPrinter) BulkRecords(_ ...[]string) IPrinter {
 	return n
 }
 
