@@ -21,10 +21,12 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -198,7 +200,9 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
-			found := buildItemVersionListTable(&testCase.releases)
+			strBuilder := &strings.Builder{}
+			buildItemVersionListTable(&testCase.releases, printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}).SetWriter(strBuilder))
+			found := strBuilder.String()
 			assert.NotZero(t, found)
 			for _, expected := range testCase.expectedContains {
 				assert.Contains(t, found, expected)

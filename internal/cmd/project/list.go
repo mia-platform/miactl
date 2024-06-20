@@ -18,12 +18,11 @@ package project
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -46,7 +45,7 @@ an error.`,
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return listProjects(cmd.Context(), client, restConfig.CompanyID)
+			return listProjects(cmd.Context(), client, restConfig.CompanyID, options.Printer())
 		},
 	}
 
@@ -54,7 +53,7 @@ an error.`,
 }
 
 // listProjects retrieves the projects with the company ID of the current context
-func listProjects(ctx context.Context, client *client.APIClient, companyID string) error {
+func listProjects(ctx context.Context, client *client.APIClient, companyID string, p printer.IPrinter) error {
 	if len(companyID) == 0 {
 		return fmt.Errorf("missing company id, please set one with the flag or context")
 	}
@@ -78,19 +77,13 @@ func listProjects(ctx context.Context, client *client.APIClient, companyID strin
 		return fmt.Errorf("error parsing response body: %w", err)
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeader([]string{"Name", "Project ID", "Configuration Git Path"})
+	p.Keys("Name", "Project ID", "Configuration Git Path")
 	for _, project := range projects {
 		if project.CompanyID == companyID {
-			table.Append([]string{project.Name, project.ID, project.ConfigurationGitPath})
+			p.Record(project.Name, project.ID, project.ConfigurationGitPath)
 		}
 	}
 
-	table.Render()
+	p.Print()
 	return nil
 }

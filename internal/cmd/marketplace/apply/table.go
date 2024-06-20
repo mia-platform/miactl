@@ -19,28 +19,22 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/olekukonko/tablewriter"
 )
 
 func buildTable(headers []string, items []marketplace.ApplyResponseItem, columnTransform func(item marketplace.ApplyResponseItem) []string) string {
-	strBuilder := &strings.Builder{}
-	table := tablewriter.NewWriter(strBuilder)
-	table.SetBorder(false)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAutoWrapText(false)
-	table.SetHeader(headers)
+	// FIXME: should use the printer from clioptions!
+	str := &strings.Builder{}
+	p := printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}).SetWriter(str)
+	p.Keys(headers...)
 
 	for _, item := range items {
-		table.Append(columnTransform(item))
+		p.Record(columnTransform(item)...)
 	}
 
-	table.Render()
-	return strBuilder.String()
+	p.Print()
+	return str.String()
 }
 
 func buildSuccessTable(items []marketplace.ApplyResponseItem) string {

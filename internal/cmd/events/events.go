@@ -18,14 +18,13 @@ package events
 import (
 	"context"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/mia-platform/miactl/internal/util"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -44,13 +43,13 @@ func Command(o *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return printEventsList(cmd.Context(), client, restConfig.ProjectID, restConfig.Environment, args[1])
+			return printEventsList(cmd.Context(), client, restConfig.ProjectID, restConfig.Environment, args[1], o.Printer())
 		},
 	}
 	return cmd
 }
 
-func printEventsList(ctx context.Context, client *client.APIClient, projectID, environment, resourceName string) error {
+func printEventsList(ctx context.Context, client *client.APIClient, projectID, environment, resourceName string, p printer.IPrinter) error {
 	if projectID == "" {
 		return fmt.Errorf("missing project id, please set one with the flag or context")
 	}
@@ -83,24 +82,12 @@ func printEventsList(ctx context.Context, client *client.APIClient, projectID, e
 		return nil
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetAutoWrapText(false)
-	table.SetHeader([]string{"Last Seen", "Type", "Reason", "Object", "Message"})
-
-	if err != nil {
-		return err
-	}
-
+	p.Keys("Last Seen", "Type", "Reason", "Object", "Message")
 	for _, event := range events {
-		table.Append(rowForEvent(event))
+		p.Record(rowForEvent(event)...)
 	}
 
-	table.Render()
+	p.Print()
 	return nil
 }
 

@@ -25,6 +25,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -99,7 +100,10 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		client, err := client.APIClientForConfig(tc.clientConfig)
 		require.NoError(t, err)
 
-		found, err := getMarketplaceItemsTable(context.TODO(), client, tc.options)
+		strBuilder := &strings.Builder{}
+		mockPrinter := printer.NewTablePrinter(printer.TablePrinterOptions{}).SetWriter(strBuilder)
+		err = getMarketplaceItemsTable(context.TODO(), client, tc.options, mockPrinter)
+		found := strBuilder.String()
 		if tc.expectError {
 			assert.Error(t, err)
 			assert.Zero(t, found)

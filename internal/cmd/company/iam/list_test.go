@@ -23,6 +23,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/iam"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -65,7 +66,7 @@ func TestListAllIAMIdentities(t *testing.T) {
 
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
-			err = listAllIAMEntities(context.TODO(), client, testCase.companyID, testCase.searchParams)
+			err = listAllIAMEntities(context.TODO(), client, testCase.companyID, testCase.searchParams, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
@@ -104,7 +105,7 @@ func TestListUsersIdentities(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			err = listSpecificEntities(context.TODO(), client, testCase.companyID, iam.UsersEntityName)
+			err = listSpecificEntities(context.TODO(), client, testCase.companyID, iam.UsersEntityName, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
@@ -146,7 +147,7 @@ func TestListGroupsIdentities(t *testing.T) {
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
 
-			err = listSpecificEntities(context.TODO(), client, testCase.companyID, iam.GroupsEntityName)
+			err = listSpecificEntities(context.TODO(), client, testCase.companyID, iam.GroupsEntityName, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
@@ -188,7 +189,7 @@ func TestServiceAccountGroupsIdentities(t *testing.T) {
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
 
-			err = listSpecificEntities(context.TODO(), client, testCase.companyID, iam.ServiceAccountsEntityName)
+			err = listSpecificEntities(context.TODO(), client, testCase.companyID, iam.ServiceAccountsEntityName, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
