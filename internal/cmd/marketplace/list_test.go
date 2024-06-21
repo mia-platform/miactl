@@ -101,7 +101,7 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		require.NoError(t, err)
 
 		strBuilder := &strings.Builder{}
-		mockPrinter := printer.NewTablePrinter(printer.TablePrinterOptions{}).SetWriter(strBuilder)
+		mockPrinter := printer.NewTablePrinter(printer.TablePrinterOptions{}, strBuilder)
 		err = getMarketplaceItemsTable(context.TODO(), client, tc.options, mockPrinter)
 		found := strBuilder.String()
 		if tc.expectError {

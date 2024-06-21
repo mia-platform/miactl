@@ -201,7 +201,7 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
 			strBuilder := &strings.Builder{}
-			buildItemVersionListTable(&testCase.releases, printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}).SetWriter(strBuilder))
+			buildItemVersionListTable(&testCase.releases, printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}, strBuilder))
 			found := strBuilder.String()
 			assert.NotZero(t, found)
 			for _, expected := range testCase.expectedContains {

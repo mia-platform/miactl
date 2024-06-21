@@ -26,7 +26,7 @@ import (
 func buildTable(headers []string, items []marketplace.ApplyResponseItem, columnTransform func(item marketplace.ApplyResponseItem) []string) string {
 	// FIXME: should use the printer from clioptions!
 	str := &strings.Builder{}
-	p := printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}).SetWriter(str)
+	p := printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}, str)
 	p.Keys(headers...)
 
 	for _, item := range items {

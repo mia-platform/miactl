@@ -40,5 +40,5 @@ func (o *CLIOptions) Printer(options ...PrinterOption) printer.IPrinter {
 
 	return printer.NewTablePrinter(printer.TablePrinterOptions{
 		WrapLinesDisabled: opts.noWrapLines,
-	}).SetWriter(os.Stdout)
+	}, os.Stdout)
 }

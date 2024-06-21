@@ -40,11 +40,9 @@ func (t *TablePrinter) commonTableSetup(tw *tablewriter.Table) {
 	tw.SetAutoWrapText(!t.options.WrapLinesDisabled)
 }
 
-func NewTablePrinter(options TablePrinterOptions) *TablePrinter {
-	return &TablePrinter{options: options}
-}
+func NewTablePrinter(options TablePrinterOptions, w io.Writer) *TablePrinter {
+	t := &TablePrinter{options: options}
 
-func (t *TablePrinter) SetWriter(w io.Writer) IPrinter {
 	table := tablewriter.NewWriter(w)
 	t.commonTableSetup(table)
 

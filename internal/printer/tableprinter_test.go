@@ -25,8 +25,7 @@ import (
 func TestTablePrinter(t *testing.T) {
 	t.Run("simple table print", func(t *testing.T) {
 		str := &strings.Builder{}
-		p := NewTablePrinter(TablePrinterOptions{}).
-			SetWriter(str).
+		p := NewTablePrinter(TablePrinterOptions{}, str).
 			Keys("k1", "k2").
 			Record("d1", "d2")
 		p.Print()
