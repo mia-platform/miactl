@@ -23,6 +23,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -61,7 +62,7 @@ func TestGetProjects(t *testing.T) {
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			err = listProjects(context.TODO(), client, testCase.companyID)
+			err = listProjects(context.TODO(), client, testCase.companyID, &printer.NopPrinter{})
 			if testCase.expectError {
 				assert.Error(t, err)
 				return

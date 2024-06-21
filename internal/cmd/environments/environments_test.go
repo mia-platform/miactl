@@ -24,18 +24,19 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
 func TestPreconditions(t *testing.T) {
-	err := printEnvironments(context.TODO(), nil, "company-id", "")
+	err := printEnvironments(context.TODO(), nil, "company-id", "", &printer.NopPrinter{})
 	assert.Error(t, err)
 
-	err = printEnvironments(context.TODO(), nil, "", "project-id")
+	err = printEnvironments(context.TODO(), nil, "", "project-id", &printer.NopPrinter{})
 	assert.Error(t, err)
 
-	err = printEnvironments(context.TODO(), nil, "", "")
+	err = printEnvironments(context.TODO(), nil, "", "", &printer.NopPrinter{})
 	assert.Error(t, err)
 }
 
@@ -132,7 +133,7 @@ func TestListEnvironments(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printEnvironments(context.TODO(), client, testCase.companyID, testCase.projectID)
+			err = printEnvironments(context.TODO(), client, testCase.companyID, testCase.projectID, &printer.NopPrinter{})
 			switch testCase.err {
 			case false:
 				require.NoError(t, err)

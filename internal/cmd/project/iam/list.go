@@ -18,13 +18,12 @@ package iam
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/iam"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/util"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -48,7 +47,7 @@ all of them noting the type and the current role associated with them`,
 				iam.ServiceAccountsEntityName: options.ShowServiceAccounts,
 			}
 
-			return listAllIAMEntities(cmd.Context(), client, restConfig.CompanyID, restConfig.ProjectID, entityTypes)
+			return listAllIAMEntities(cmd.Context(), client, restConfig.CompanyID, restConfig.ProjectID, entityTypes, options.Printer())
 		},
 	}
 
@@ -58,7 +57,7 @@ all of them noting the type and the current role associated with them`,
 	return cmd
 }
 
-func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID, projectID string, entityTypes map[string]bool) error {
+func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID, projectID string, entityTypes map[string]bool, p printer.IPrinter) error {
 	if len(companyID) == 0 {
 		return fmt.Errorf("missing company id, please set one with the flag or context")
 	}
@@ -82,15 +81,8 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 		return err
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetAutoWrapText(false)
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeader([]string{"ID", "Type", "Name", "Roles", "Environments Roles"})
-	table.AppendBulk(rows)
-	table.Render()
+	p.Keys("ID", "Type", "Name", "Roles", "Environments Roles").
+		BulkRecords(rows...).
+		Print()
 	return nil
 }

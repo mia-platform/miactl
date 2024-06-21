@@ -18,13 +18,12 @@ package environments
 import (
 	"context"
 	"fmt"
-	"os"
 	"strconv"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -62,14 +61,14 @@ func listEnvironmentsCmd(o *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return printEnvironments(cmd.Context(), client, restConfig.CompanyID, restConfig.ProjectID)
+			return printEnvironments(cmd.Context(), client, restConfig.CompanyID, restConfig.ProjectID, o.Printer())
 		},
 	}
 
 	return cmd
 }
 
-func printEnvironments(ctx context.Context, client *client.APIClient, companyID, projectID string) error {
+func printEnvironments(ctx context.Context, client *client.APIClient, companyID, projectID string, p printer.IPrinter) error {
 	switch {
 	case len(companyID) == 0:
 		return fmt.Errorf("missing company id, please set one with the flag or context")
@@ -104,13 +103,7 @@ func printEnvironments(ctx context.Context, client *client.APIClient, companyID,
 		return nil
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeader([]string{"Name", "Environment ID", "Production", "Cluster", "Kubernetes Namespace"})
+	p.Keys("Name", "Environment ID", "Production", "Cluster", "Kubernetes Namespace")
 
 	clustersCache := make(map[string]string, 0)
 	for _, env := range environments {
@@ -125,16 +118,16 @@ func printEnvironments(ctx context.Context, client *client.APIClient, companyID,
 			clusterName = name
 		}
 
-		table.Append([]string{
+		p.Record(
 			env.DisplayName,
 			env.EnvID,
 			strconv.FormatBool(env.IsProduction),
 			clusterName,
-			env.Cluster.Namespace},
+			env.Cluster.Namespace,
 		)
 	}
 
-	table.Render()
+	p.Print()
 	return nil
 }
 
