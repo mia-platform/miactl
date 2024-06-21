@@ -25,17 +25,20 @@ import (
 	"github.com/mia-platform/miactl/internal/resources/extensibility"
 )
 
-const extensibilityAPIPrefix = "/api/extensibility"
-
 const (
-	listAPIFmt         = extensibilityAPIPrefix + "/tenants/%s/extensions"
-	deleteAPIFmt       = extensibilityAPIPrefix + "/tenants/%s/extensions/%s"
-	activationAPIFmt   = extensibilityAPIPrefix + "/tenants/%s/extensions/%s/activation"
-	deactivationAPIFmt = extensibilityAPIPrefix + "/tenants/%s/extensions/%s/%s/%s/activation"
+	extensibilityAPIPrefix     = "/api/extensibility"
+	tenantsExtensionsAPIPrefix = extensibilityAPIPrefix + "/tenants/%s/extensions"
+
+	listAPIFmt         = tenantsExtensionsAPIPrefix
+	applyAPIFmt        = tenantsExtensionsAPIPrefix
+	deleteAPIFmt       = tenantsExtensionsAPIPrefix + "/%s"
+	activationAPIFmt   = tenantsExtensionsAPIPrefix + "/%s/activation"
+	deactivationAPIFmt = tenantsExtensionsAPIPrefix + "/%s/%s/%s/activation"
 )
 
 type IE11yClient interface {
 	List(ctx context.Context, companyID string) ([]*extensibility.Extension, error)
+	Apply(ctx context.Context, companyID string, extensionData *extensibility.Extension) (string, error)
 	Delete(ctx context.Context, companyID string, extensionID string) error
 	Activate(ctx context.Context, companyID string, extensionID string, scope ActivationScope) error
 	Deactivate(ctx context.Context, companyID string, extensionID string, scope ActivationScope) error
@@ -66,6 +69,37 @@ func (e *E11yClient) List(ctx context.Context, companyID string) ([]*extensibili
 	}
 
 	return extensions, nil
+}
+
+type ApplyResponseBody struct {
+	ExtensionID string `json:"extensionId"`
+}
+
+func (e *E11yClient) Apply(ctx context.Context, companyID string, extensionData *extensibility.Extension) (string, error) {
+	apiPath := fmt.Sprintf(applyAPIFmt, companyID)
+	body, err := resources.EncodeResourceToJSON(extensionData)
+	if err != nil {
+		return "", fmt.Errorf("error serializing request body: %s", err.Error())
+	}
+
+	resp, err := e.c.Put().Body(body).APIPath(apiPath).Do(ctx)
+	if err != nil {
+		return "", fmt.Errorf("error executing request: %w", err)
+	}
+
+	if err := e.assertSuccessResponse(resp); err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode() == http.StatusNoContent {
+		return extensionData.ExtensionID, nil
+	}
+
+	var applyResult ApplyResponseBody
+	if err := resp.ParseResponse(&applyResult); err != nil {
+		return "", fmt.Errorf("error parsing response body: %w", err)
+	}
+	return applyResult.ExtensionID, nil
 }
 
 func (e *E11yClient) Delete(ctx context.Context, companyID string, extensionID string) error {

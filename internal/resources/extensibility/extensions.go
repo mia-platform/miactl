@@ -15,8 +15,57 @@
 
 package extensibility
 
+/**
+  "name": "Deployer helper",
+  "entry": "https://example.com/",
+  "contexts": ["project"],
+  "routes": [{
+    "id": "react-app",
+    "parentId": "workloads",
+    "locationId": "runtime",
+    "labelIntl": {
+      "en": "SomeLabel"
+      "it": "SomeLabelInItalian"
+    },
+    "destinationPath": "/",
+    "order": 200,
+    "icon": {
+      "name": "PiHardDrives"
+    }
+  }]
+*/
+
 type Extension struct {
-	ExtensionID string `json:"extensionId"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ExtensionID string            `json:"extensionId"`
+	Name        string            `json:"name"`
+	Description string            `json:"description"`
+	Entry       string            `json:"entry"`
+	Contexts    string            `json:"contexts"`
+	Permissions []string          `json:"permissions,omitempty"`
+	Routes      []*ExtensionRoute `json:"routes,omitempty"`
+}
+
+type Languages string
+
+const (
+	En Languages = "en"
+	It Languages = "it"
+)
+
+type IntlMessages map[Languages]string
+
+type Icon struct {
+	Name string `json:"name"`
+}
+
+type ExtensionRoute struct {
+	ID                  string       `json:"id"`
+	ParentID            string       `json:"parentId,omitempty"`
+	LocationID          string       `json:"locationId" jsonschema:"enum=tenant,enum=project,enum=runtime"`
+	DestinationPath     string       `json:"destinationPath,omitempty"`
+	LabelIntl           IntlMessages `json:"labelIntl"`
+	MatchExactMountPath bool         `json:"matchExactMountPath,omitempty"`
+	RenderType          string       `json:"renderType,omitempty" jsonschema:"enum=category"`
+	Order               *float64     `json:"order,omitempty"`
+	Icon                *Icon        `json:"icon,omitempty"`
 }
