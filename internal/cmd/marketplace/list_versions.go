@@ -57,7 +57,7 @@ This command is in ALPHA state. This means that it can be subject to breaking ch
 			)
 			cobra.CheckErr(err)
 
-			buildItemVersionListTable(releases, options.Printer(
+			printItemVersionList(releases, options.Printer(
 				clioptions.DisableWrapLines(true),
 			))
 		},
@@ -102,7 +102,7 @@ func getItemVersions(ctx context.Context, client *client.APIClient, companyID, i
 	return nil, ErrGenericServerError
 }
 
-func buildItemVersionListTable(releases *[]marketplace.Release, p printer.IPrinter) {
+func printItemVersionList(releases *[]marketplace.Release, p printer.IPrinter) {
 	p.Keys("Version", "Name", "Description")
 
 	for _, release := range *releases {

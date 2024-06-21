@@ -65,7 +65,7 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 			public:    options.MarketplaceFetchPublicItems,
 		}
 
-		err = getMarketplaceItemsTable(cmd.Context(), apiClient, marketplaceItemsOptions, options.Printer())
+		err = printMarketplaceItems(cmd.Context(), apiClient, marketplaceItemsOptions, options.Printer())
 		cobra.CheckErr(err)
 	}
 }
@@ -75,7 +75,7 @@ type GetMarketplaceItemsOptions struct {
 	public    bool
 }
 
-func getMarketplaceItemsTable(context context.Context, client *client.APIClient, options GetMarketplaceItemsOptions, p printer.IPrinter) error {
+func printMarketplaceItems(context context.Context, client *client.APIClient, options GetMarketplaceItemsOptions, p printer.IPrinter) error {
 	marketplaceItems, err := fetchMarketplaceItems(context, client, options)
 	if err != nil {
 		return err

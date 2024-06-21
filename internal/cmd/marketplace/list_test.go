@@ -102,7 +102,7 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 
 		strBuilder := &strings.Builder{}
 		mockPrinter := printer.NewTablePrinter(printer.TablePrinterOptions{}, strBuilder)
-		err = getMarketplaceItemsTable(context.TODO(), client, tc.options, mockPrinter)
+		err = printMarketplaceItems(context.TODO(), client, tc.options, mockPrinter)
 		found := strBuilder.String()
 		if tc.expectError {
 			assert.Error(t, err)
