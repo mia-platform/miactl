@@ -25,6 +25,6 @@ import (
 
 func TestRootCommandBuilder(t *testing.T) {
 	opts := clioptions.NewCLIOptions()
-	cmd := NewComand(opts)
+	cmd := NewCommand(opts)
 	require.NotNil(t, cmd)
 }

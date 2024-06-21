@@ -54,7 +54,7 @@ func NewRootCommand() *cobra.Command {
 		MarketplaceCmd(options),
 		RuntimeCmd(options),
 		VersionCmd(options),
-		extensions.NewComand(options),
+		extensions.NewCommand(options),
 	)
 
 	return rootCmd

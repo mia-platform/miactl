@@ -28,7 +28,7 @@ var (
 	ErrRequiredExtensionID = fmt.Errorf("extension-id is required, please set it via flag")
 )
 
-func NewComand(o *clioptions.CLIOptions) *cobra.Command {
+func NewCommand(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "extensions",
 		Short: "Manage registered extensions",
