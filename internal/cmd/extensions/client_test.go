@@ -31,6 +31,19 @@ import (
 )
 
 func TestE11yClientList(t *testing.T) {
+	validBodyString := `[
+	{
+		"extensionId": "ext-1",
+		"name": "Extension 1",
+		"description": "Description 1"
+	},
+	{
+		"extensionId": "ext-2",
+		"name": "Extension 2",
+		"description": "Description 2"
+	}
+]`
+
 	testCases := map[string]struct {
 		companyID string
 		server    *httptest.Server
@@ -38,12 +51,24 @@ func TestE11yClientList(t *testing.T) {
 	}{
 		"valid response": {
 			companyID: "company-1",
-			server:    mockListServer(t, true, "company-1"),
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf(listAPIFmt, "company-1"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+				respBody:   validBodyString,
+			}),
 		},
 		"invalid response": {
 			companyID: "company-1",
-			server:    mockListServer(t, false, "company-1"),
-			err:       true,
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf(listAPIFmt, "company-1"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+				err:        true,
+			}),
+			err: true,
 		},
 	}
 
@@ -91,13 +116,24 @@ func TestE11yClientDelete(t *testing.T) {
 		"valid response": {
 			companyID:   "company-1",
 			extensionID: "ext-1",
-			server:      mockDeleteServer(t, true, "company-1", "ext-1"),
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf(deleteAPIFmt, "company-1", "ext-1"),
+				verb: http.MethodDelete,
+			}, MockResponse{
+				statusCode: http.StatusNoContent,
+			}),
 		},
 		"invalid response": {
 			companyID:   "company-1",
 			extensionID: "ext-1",
-			server:      mockDeleteServer(t, false, "company-1", "ext-1"),
-			err:         true,
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf(deleteAPIFmt, "company-1", "ext-1"),
+				verb: http.MethodDelete,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+				err:        true,
+			}),
+			err: true,
 		},
 	}
 
@@ -187,53 +223,6 @@ func TestE11yClientActivate(t *testing.T) {
 			}
 		})
 	}
-}
-
-func mockListServer(t *testing.T, validResponse bool, expectedCompanyID string) *httptest.Server {
-	t.Helper()
-	validBodyString := `[
-	{
-		"extensionId": "ext-1",
-		"name": "Extension 1",
-		"description": "Description 1"
-	},
-	{
-		"extensionId": "ext-2",
-		"name": "Extension 2",
-		"description": "Description 2"
-	}
-]`
-
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != fmt.Sprintf(listAPIFmt, expectedCompanyID) && r.Method != http.MethodGet {
-			w.WriteHeader(http.StatusNotFound)
-			require.Fail(t, "unsupported call")
-			return
-		}
-		w.WriteHeader(http.StatusOK)
-		if validResponse {
-			w.Write([]byte(validBodyString))
-			return
-		}
-		w.Write([]byte("invalid json"))
-	}))
-}
-
-func mockDeleteServer(t *testing.T, validResponse bool, expectedCompanyID, expectedExtensionID string) *httptest.Server {
-	t.Helper()
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != fmt.Sprintf(deleteAPIFmt, expectedCompanyID, expectedExtensionID) && r.Method != http.MethodDelete {
-			w.WriteHeader(http.StatusNotFound)
-			require.Fail(t, "unsupported call")
-			return
-		}
-		if validResponse {
-			w.WriteHeader(http.StatusNoContent)
-			return
-		}
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(`{"error":"some error","message":"some message"}`))
-	}))
 }
 
 type MockResponse struct {
