@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update sync to v0.7.0
 - update text to v0.15.0
 
+### Refactor
+
+- introduced Printer interface with Table implementation
+
 ## [0.12.2] - 2024-03-07
 
 ## Changed
