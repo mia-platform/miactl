@@ -21,19 +21,22 @@ import (
 	"net/http"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/mia-platform/miactl/internal/resources/extensibility"
 )
 
 const extensibilityAPIPrefix = "/api/extensibility"
 
 const (
-	listAPIFmt   = extensibilityAPIPrefix + "/tenants/%s/extensions"
-	deleteAPIFmt = extensibilityAPIPrefix + "/tenants/%s/extensions/%s"
+	listAPIFmt      = extensibilityAPIPrefix + "/tenants/%s/extensions"
+	deleteAPIFmt    = extensibilityAPIPrefix + "/tenants/%s/extensions/%s"
+	activationAPImt = extensibilityAPIPrefix + "/tenants/%s/extensions/%s/activation"
 )
 
 type IE11yClient interface {
 	List(ctx context.Context, companyID string) ([]*extensibility.Extension, error)
 	Delete(ctx context.Context, companyID string, extensionID string) error
+	Activate(ctx context.Context, companyID string, extensionID string, scope ActivationScope) error
 }
 
 type E11yClient struct {
@@ -70,5 +73,28 @@ func (e *E11yClient) Delete(ctx context.Context, companyID string, extensionID s
 		return resp.Error()
 	}
 
+	return nil
+}
+
+func (e *E11yClient) Activate(ctx context.Context, companyID string, extensionID string, scope ActivationScope) error {
+	apiPath := fmt.Sprintf(activationAPImt, companyID, extensionID)
+
+	body, err := resources.EncodeResourceToJSON(scope)
+	if err != nil {
+		return fmt.Errorf("error serializing request body: %s", err.Error())
+	}
+
+	resp, err := e.c.
+		Post().
+		APIPath(apiPath).
+		Body(body).
+		Do(ctx)
+	if err != nil {
+		return fmt.Errorf("error executing request: %s", err.Error())
+	}
+
+	if resp.StatusCode() >= http.StatusBadRequest {
+		return resp.Error()
+	}
 	return nil
 }

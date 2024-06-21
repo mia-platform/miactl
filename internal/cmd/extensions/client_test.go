@@ -18,8 +18,10 @@ package extensions
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -120,6 +122,73 @@ func TestE11yClientDelete(t *testing.T) {
 	}
 }
 
+func TestE11yClientActivate(t *testing.T) {
+	testCases := map[string]struct {
+		companyID              string
+		extensionID            string
+		activationScopeRequest ActivationScope
+		server                 *httptest.Server
+		err                    bool
+	}{
+		"valid response": {
+			companyID:              "company-1",
+			extensionID:            "ext-1",
+			activationScopeRequest: ActivationScope{ContextID: "company-1", ContextType: "company"},
+			server: mockServer(t, ExpectedRequest{
+				path: "/api/extensibility/tenants/company-1/extensions/ext-1/activation",
+				verb: http.MethodPost,
+				body: `{"contextId":"company-1","contextType":"company"}`,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+			}),
+		},
+		"valid response for project activation": {
+			companyID:              "company-1",
+			extensionID:            "ext-1",
+			activationScopeRequest: ActivationScope{ContextID: "project-1", ContextType: "project"},
+			server: mockServer(t, ExpectedRequest{
+				path: "/api/extensibility/tenants/company-1/extensions/ext-1/activation",
+				verb: http.MethodPost,
+				body: `{"contextId":"project-1","contextType":"project"}`,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+			}),
+		},
+		"invalid response": {
+			companyID:   "company-1",
+			extensionID: "ext-1",
+			server: mockServer(t, ExpectedRequest{
+				path: "/api/extensibility/tenants/company-1/extensions/ext-1/activation",
+				verb: http.MethodPost,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+				err:        true,
+			}),
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			clientConfig := &client.Config{
+				Transport: http.DefaultTransport,
+				Host:      testCase.server.URL,
+			}
+
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+
+			err = New(client).Activate(context.TODO(), testCase.companyID, testCase.extensionID, testCase.activationScopeRequest)
+			if testCase.err {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
 func mockListServer(t *testing.T, validResponse bool, expectedCompanyID string) *httptest.Server {
 	t.Helper()
 	validBodyString := `[
@@ -153,7 +222,7 @@ func mockListServer(t *testing.T, validResponse bool, expectedCompanyID string) 
 func mockDeleteServer(t *testing.T, validResponse bool, expectedCompanyID, expectedExtensionID string) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != fmt.Sprintf(deleteAPIFmt, expectedCompanyID, expectedExtensionID) && r.Method != http.MethodGet {
+		if r.RequestURI != fmt.Sprintf(deleteAPIFmt, expectedCompanyID, expectedExtensionID) && r.Method != http.MethodDelete {
 			w.WriteHeader(http.StatusNotFound)
 			require.Fail(t, "unsupported call")
 			return
@@ -164,5 +233,43 @@ func mockDeleteServer(t *testing.T, validResponse bool, expectedCompanyID, expec
 		}
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(`{"error":"some error","message":"some message"}`))
+	}))
+}
+
+type MockResponse struct {
+	statusCode int
+	respBody   string
+	err        bool
+}
+
+type ExpectedRequest struct {
+	path string
+	verb string
+	body string
+}
+
+func mockServer(t *testing.T, req ExpectedRequest, resp MockResponse) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.RequestURI != req.path && r.Method != req.verb {
+			w.WriteHeader(http.StatusNotFound)
+			require.Fail(t, fmt.Sprintf("unsupported call: %s - wanted: %s", r.RequestURI, req.path))
+			return
+		}
+
+		if req.body != "" {
+			foundBody, err := io.ReadAll(r.Body)
+			if err != nil {
+				require.Fail(t, fmt.Sprintf("failed req body read: %s", err.Error()))
+			}
+			require.Equal(t, req.body, strings.TrimSuffix(string(foundBody), "\n"))
+		}
+
+		w.WriteHeader(resp.statusCode)
+		if resp.err {
+			w.Write([]byte(`{"error":"some error","message":"some message"}`))
+			return
+		}
+		w.Write([]byte(resp.respBody))
 	}))
 }
