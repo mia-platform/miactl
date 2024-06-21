@@ -74,6 +74,11 @@ func (c *APIClient) Post() *Request {
 	return NewRequest(c).SetVerb(http.MethodPost)
 }
 
+// Put return a new Request object for a Put http request
+func (c *APIClient) Put() *Request {
+	return NewRequest(c).SetVerb(http.MethodPut)
+}
+
 // Delete return a new Request object for a DELETE http request
 func (c *APIClient) Delete() *Request {
 	return NewRequest(c).SetVerb(http.MethodDelete)
