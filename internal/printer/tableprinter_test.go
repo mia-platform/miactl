@@ -13,39 +13,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package extensions
+package printer
 
 import (
+	"strings"
 	"testing"
-
-	"github.com/mia-platform/miactl/internal/resources/extensibility"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestPrintExtensionsList(t *testing.T) {
-	data := []*extensibility.Extension{
-		{
-			ExtensionID: "ext-1",
-			Name:        "Extension 1",
-			Description: "Description 1",
-		},
-		{
-			ExtensionID: "ext-2",
-			Name:        "Extension 2",
-			Description: "Description 2",
-		},
-	}
+func TestTablePrinter(t *testing.T) {
+	t.Run("simple table print", func(t *testing.T) {
+		str := &strings.Builder{}
+		p := NewTablePrinter(TablePrinterOptions{}, str).
+			Keys("k1", "k2").
+			Record("d1", "d2")
+		p.Print()
 
-	table := printExtensionsList(data)
+		expected := `  K1  K2  
 
-	expectedTokens := []string{
-		"ID", "NAME", "DESCRIPTION",
-		"ext-1", "Extension 1", "Description 1",
-		"ext-2", "Extension 2", "Description 2",
-	}
+  d1  d2  
+`
 
-	for _, expected := range expectedTokens {
-		require.Contains(t, table, expected)
-	}
+		require.Equal(
+			t,
+			expected,
+			str.String(),
+		)
+	})
 }

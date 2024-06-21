@@ -20,12 +20,11 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -58,9 +57,9 @@ This command is in ALPHA state. This means that it can be subject to breaking ch
 			)
 			cobra.CheckErr(err)
 
-			table := buildItemVersionListTable(releases)
-
-			fmt.Println(table)
+			printItemVersionList(releases, options.Printer(
+				clioptions.DisableWrapLines(true),
+			))
 		},
 	}
 
@@ -103,29 +102,19 @@ func getItemVersions(ctx context.Context, client *client.APIClient, companyID, i
 	return nil, ErrGenericServerError
 }
 
-func buildItemVersionListTable(releases *[]marketplace.Release) string {
-	strBuilder := &strings.Builder{}
-	table := tablewriter.NewWriter(strBuilder)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetAutoWrapText(false)
-	table.SetHeader([]string{"Version", "Name", "Description"})
+func printItemVersionList(releases *[]marketplace.Release, p printer.IPrinter) {
+	p.Keys("Version", "Name", "Description")
 
 	for _, release := range *releases {
 		description := "-"
 		if release.Description != "" {
 			description = release.Description
 		}
-		table.Append([]string{
+		p.Record(
 			release.Version,
 			release.Name,
 			description,
-		})
+		)
 	}
-	table.Render()
-
-	return strBuilder.String()
+	p.Print()
 }

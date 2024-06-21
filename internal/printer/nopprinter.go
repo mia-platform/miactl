@@ -13,25 +13,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package extensions
+package printer
 
 import (
-	"strings"
-
-	"github.com/mia-platform/miactl/internal/resources/extensibility"
+	"io"
 )
 
-func printExtensionsList(extensions []*extensibility.Extension) string {
-	strBuilder := &strings.Builder{}
-	table := NewTable(strBuilder)
-	table.Header("ID", "Name", "Description")
-	for _, extension := range extensions {
-		table.Row(
-			extension.ExtensionID,
-			extension.Name,
-			extension.Description,
-		)
-	}
-	table.Print()
-	return strBuilder.String()
+type NopPrinter struct{}
+
+func (n *NopPrinter) SetWriter(_ io.Writer) IPrinter {
+	return n
+}
+
+func (n *NopPrinter) Keys(_ ...string) IPrinter {
+	return n
+}
+
+func (n *NopPrinter) Record(_ ...string) IPrinter {
+	return n
+}
+
+func (n *NopPrinter) BulkRecords(_ ...[]string) IPrinter {
+	return n
+}
+
+func (n *NopPrinter) Print() {
 }

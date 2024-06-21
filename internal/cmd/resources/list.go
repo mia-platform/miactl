@@ -18,15 +18,15 @@ package resources
 import (
 	"context"
 	"fmt"
-	"os"
 	"slices"
 	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/mia-platform/miactl/internal/util"
-	"github.com/olekukonko/tablewriter"
+
 	"github.com/spf13/cobra"
 )
 
@@ -109,7 +109,7 @@ Use "miactl runtime api-resources" for a complete list of currently supported re
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return printList(cmd.Context(), client, restConfig.ProjectID, args[0], restConfig.Environment)
+			return printList(cmd.Context(), client, restConfig.ProjectID, args[0], restConfig.Environment, o.Printer())
 		},
 		Example: `# List all pods in current context
 miactl runtime list pods
@@ -138,7 +138,7 @@ func resourcesCompletions(args []string, toComplete string) []string {
 	return resources
 }
 
-func printList(ctx context.Context, client *client.APIClient, projectID, resourceType, environment string) error {
+func printList(ctx context.Context, client *client.APIClient, projectID, resourceType, environment string, p printer.IPrinter) error {
 	if projectID == "" {
 		return fmt.Errorf("missing project id, please set one with the flag or context")
 	}
@@ -202,15 +202,6 @@ func printList(ctx context.Context, client *client.APIClient, projectID, resourc
 		return nil
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetAutoWrapText(false)
-	table.SetHeader(tableHeaders)
-	table.AppendBulk(rows)
-	table.Render()
+	p.Keys(tableHeaders...).BulkRecords(rows...).Print()
 	return nil
 }

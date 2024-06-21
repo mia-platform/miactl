@@ -23,6 +23,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -63,7 +64,7 @@ func TestListCompanies(t *testing.T) {
 			testCase.clientConfig.Host = testCase.server.URL
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
-			err = listCompanies(context.TODO(), client)
+			err = listCompanies(context.TODO(), client, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

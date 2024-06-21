@@ -23,6 +23,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/iam"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -61,7 +62,7 @@ func TestListAllIAMIdentities(t *testing.T) {
 			}
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
-			err = listAllIAMEntities(context.TODO(), client, companyID, projectID, testCase.searchParams)
+			err = listAllIAMEntities(context.TODO(), client, companyID, projectID, testCase.searchParams, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

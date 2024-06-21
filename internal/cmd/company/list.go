@@ -18,12 +18,11 @@ package company
 import (
 	"context"
 	"fmt"
-	"os"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -44,13 +43,14 @@ Companies can be used to logically group projects by organizations or internal t
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-			return listCompanies(cmd.Context(), client)
+			printer := options.Printer()
+			return listCompanies(cmd.Context(), client, printer)
 		},
 	}
 }
 
 // listCompanies retrieves the companies belonging to the current context
-func listCompanies(ctx context.Context, client *client.APIClient) error {
+func listCompanies(ctx context.Context, client *client.APIClient, p printer.IPrinter) error {
 	// execute the request
 	resp, err := client.Get().APIPath(listCompaniesEndpoint).Do(ctx)
 	if err != nil {
@@ -66,21 +66,15 @@ func listCompanies(ctx context.Context, client *client.APIClient) error {
 		return fmt.Errorf("error parsing response body: %w", err)
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetHeader([]string{"Name", "Company ID", "Git Provider", "Pipelines"})
+	p.Keys("Name", "Company ID", "Git Provider", "Pipelines")
 	for _, company := range companies {
 		repositoryType := company.Repository.Type
 		if repositoryType == "" {
 			repositoryType = "gitlab"
 		}
-		table.Append([]string{company.Name, company.TenantID, repositoryType, company.Pipelines.Type})
+		p.Record(company.Name, company.TenantID, repositoryType, company.Pipelines.Type)
 	}
 
-	table.Render()
+	p.Print()
 	return nil
 }

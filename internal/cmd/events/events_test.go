@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -76,7 +77,7 @@ func TestPrintEventsList(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printEventsList(context.TODO(), client, testCase.projectID, testCase.environment, "resource")
+			err = printEventsList(context.TODO(), client, testCase.projectID, testCase.environment, "resource", &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

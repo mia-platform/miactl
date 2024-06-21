@@ -18,13 +18,12 @@ package marketplace
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/olekukonko/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -66,10 +65,8 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 			public:    options.MarketplaceFetchPublicItems,
 		}
 
-		table, err := getMarketplaceItemsTable(cmd.Context(), apiClient, marketplaceItemsOptions)
+		err = printMarketplaceItems(cmd.Context(), apiClient, marketplaceItemsOptions, options.Printer())
 		cobra.CheckErr(err)
-
-		fmt.Println(table)
 	}
 }
 
@@ -78,14 +75,24 @@ type GetMarketplaceItemsOptions struct {
 	public    bool
 }
 
-func getMarketplaceItemsTable(context context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) (string, error) {
+func printMarketplaceItems(context context.Context, client *client.APIClient, options GetMarketplaceItemsOptions, p printer.IPrinter) error {
 	marketplaceItems, err := fetchMarketplaceItems(context, client, options)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	table := buildMarketplaceItemsTable(marketplaceItems)
-	return table, nil
+	p.Keys("Object ID", "Item ID", "Name", "Type", "Company ID")
+	for _, marketplaceItem := range marketplaceItems {
+		p.Record(
+			marketplaceItem.ID,
+			marketplaceItem.ItemID,
+			marketplaceItem.Name,
+			marketplaceItem.Type,
+			marketplaceItem.TenantID,
+		)
+	}
+	p.Print()
+	return nil
 }
 
 func fetchMarketplaceItems(ctx context.Context, client *client.APIClient, options GetMarketplaceItemsOptions) ([]*resources.MarketplaceItem, error) {
@@ -149,28 +156,4 @@ func parseResponse(resp *client.Response) ([]*resources.MarketplaceItem, error) 
 	}
 
 	return marketplaceItems, nil
-}
-
-func buildMarketplaceItemsTable(marketplaceItems []*resources.MarketplaceItem) string {
-	strBuilder := &strings.Builder{}
-	table := tablewriter.NewWriter(strBuilder)
-	table.SetBorders(tablewriter.Border{Left: false, Top: false, Right: false, Bottom: false})
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetCenterSeparator("")
-	table.SetColumnSeparator("")
-	table.SetRowSeparator("")
-	table.SetAutoWrapText(true)
-	table.SetHeader([]string{"Object ID", "Item ID", "Name", "Type", "Company ID"})
-	for _, marketplaceItem := range marketplaceItems {
-		table.Append([]string{
-			marketplaceItem.ID,
-			marketplaceItem.ItemID,
-			marketplaceItem.Name,
-			marketplaceItem.Type,
-			marketplaceItem.TenantID,
-		})
-	}
-	table.Render()
-
-	return strBuilder.String()
 }
