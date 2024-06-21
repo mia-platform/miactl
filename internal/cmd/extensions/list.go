@@ -16,10 +16,10 @@
 package extensions
 
 import (
-	"fmt"
-
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
+	"github.com/mia-platform/miactl/internal/resources/extensibility"
 
 	"github.com/spf13/cobra"
 )
@@ -45,8 +45,19 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 			extensions, err := extensibilityClient.List(cmd.Context(), restConfig.CompanyID)
 			cobra.CheckErr(err)
 
-			fmt.Println(printExtensionsList(extensions))
+			printExtensionsList(extensions, options.Printer())
 			return nil
 		},
 	}
+}
+func printExtensionsList(extensions []*extensibility.Extension, p printer.IPrinter) {
+	p.Keys("ID", "Name", "Description")
+	for _, extension := range extensions {
+		p.Record(
+			extension.ExtensionID,
+			extension.Name,
+			extension.Description,
+		)
+	}
+	p.Print()
 }

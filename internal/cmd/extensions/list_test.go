@@ -16,9 +16,12 @@
 package extensions
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/printer"
+	"github.com/mia-platform/miactl/internal/resources/extensibility"
 
 	"github.com/stretchr/testify/require"
 )
@@ -27,4 +30,35 @@ func TestListCommandBuilder(t *testing.T) {
 	opts := clioptions.NewCLIOptions()
 	cmd := ListCmd(opts)
 	require.NotNil(t, cmd)
+}
+
+func TestPrintExtensionsList(t *testing.T) {
+	data := []*extensibility.Extension{
+		{
+			ExtensionID: "ext-1",
+			Name:        "Extension 1",
+			Description: "Description 1",
+		},
+		{
+			ExtensionID: "ext-2",
+			Name:        "Extension 2",
+			Description: "Description 2",
+		},
+	}
+
+	str := &strings.Builder{}
+	printExtensionsList(
+		data,
+		printer.NewTablePrinter(printer.TablePrinterOptions{}, str),
+	)
+
+	expectedTokens := []string{
+		"ID", "NAME", "DESCRIPTION",
+		"ext-1", "Extension 1", "Description 1",
+		"ext-2", "Extension 2", "Description 2",
+	}
+
+	for _, expected := range expectedTokens {
+		require.Contains(t, str.String(), expected)
+	}
 }
