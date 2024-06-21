@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `extensions list` command
+- `extensions delete` command
+
 ### Changed
 
 - update go version to 1.22.3
