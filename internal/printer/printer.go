@@ -15,10 +15,7 @@
 
 package printer
 
-import "io"
-
 type IPrinter interface {
-	SetWriter(io.Writer) IPrinter
 	Keys(...string) IPrinter
 	Record(...string) IPrinter
 	BulkRecords(...[]string) IPrinter
