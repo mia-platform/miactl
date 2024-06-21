@@ -81,7 +81,17 @@ func printMarketplaceItems(context context.Context, client *client.APIClient, op
 		return err
 	}
 
-	buildMarketplaceItemsTable(marketplaceItems, p)
+	p.Keys("Object ID", "Item ID", "Name", "Type", "Company ID")
+	for _, marketplaceItem := range marketplaceItems {
+		p.Record(
+			marketplaceItem.ID,
+			marketplaceItem.ItemID,
+			marketplaceItem.Name,
+			marketplaceItem.Type,
+			marketplaceItem.TenantID,
+		)
+	}
+	p.Print()
 	return nil
 }
 
@@ -146,18 +156,4 @@ func parseResponse(resp *client.Response) ([]*resources.MarketplaceItem, error) 
 	}
 
 	return marketplaceItems, nil
-}
-
-func buildMarketplaceItemsTable(marketplaceItems []*resources.MarketplaceItem, p printer.IPrinter) {
-	p.Keys("Object ID", "Item ID", "Name", "Type", "Company ID")
-	for _, marketplaceItem := range marketplaceItems {
-		p.Record(
-			marketplaceItem.ID,
-			marketplaceItem.ItemID,
-			marketplaceItem.Name,
-			marketplaceItem.Type,
-			marketplaceItem.TenantID,
-		)
-	}
-	p.Print()
 }
