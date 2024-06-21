@@ -45,6 +45,7 @@ func NewCommand(o *clioptions.CLIOptions) *cobra.Command {
 		ListCmd(o),
 		DeletCmd(o),
 		ActivateCmd(o),
+		DeactivateCmd(o),
 	)
 	return cmd
 }

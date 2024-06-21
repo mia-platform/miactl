@@ -28,15 +28,17 @@ import (
 const extensibilityAPIPrefix = "/api/extensibility"
 
 const (
-	listAPIFmt      = extensibilityAPIPrefix + "/tenants/%s/extensions"
-	deleteAPIFmt    = extensibilityAPIPrefix + "/tenants/%s/extensions/%s"
-	activationAPImt = extensibilityAPIPrefix + "/tenants/%s/extensions/%s/activation"
+	listAPIFmt         = extensibilityAPIPrefix + "/tenants/%s/extensions"
+	deleteAPIFmt       = extensibilityAPIPrefix + "/tenants/%s/extensions/%s"
+	activationAPIFmt   = extensibilityAPIPrefix + "/tenants/%s/extensions/%s/activation"
+	deactivationAPIFmt = extensibilityAPIPrefix + "/tenants/%s/extensions/%s/%s/%s/activation"
 )
 
 type IE11yClient interface {
 	List(ctx context.Context, companyID string) ([]*extensibility.Extension, error)
 	Delete(ctx context.Context, companyID string, extensionID string) error
 	Activate(ctx context.Context, companyID string, extensionID string, scope ActivationScope) error
+	Deactivate(ctx context.Context, companyID string, extensionID string, scope ActivationScope) error
 }
 
 type E11yClient struct {
@@ -54,6 +56,10 @@ func (e *E11yClient) List(ctx context.Context, companyID string) ([]*extensibili
 		return nil, fmt.Errorf("error executing request: %w", err)
 	}
 
+	if err := e.assertSuccessResponse(resp); err != nil {
+		return nil, err
+	}
+
 	extensions := make([]*extensibility.Extension, 0)
 	if err := resp.ParseResponse(&extensions); err != nil {
 		return nil, fmt.Errorf("error parsing response body: %w", err)
@@ -68,16 +74,11 @@ func (e *E11yClient) Delete(ctx context.Context, companyID string, extensionID s
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)
 	}
-
-	if resp.StatusCode() >= http.StatusBadRequest {
-		return resp.Error()
-	}
-
-	return nil
+	return e.assertSuccessResponse(resp)
 }
 
 func (e *E11yClient) Activate(ctx context.Context, companyID string, extensionID string, scope ActivationScope) error {
-	apiPath := fmt.Sprintf(activationAPImt, companyID, extensionID)
+	apiPath := fmt.Sprintf(activationAPIFmt, companyID, extensionID)
 
 	body, err := resources.EncodeResourceToJSON(scope)
 	if err != nil {
@@ -92,7 +93,23 @@ func (e *E11yClient) Activate(ctx context.Context, companyID string, extensionID
 	if err != nil {
 		return fmt.Errorf("error executing request: %s", err.Error())
 	}
+	return e.assertSuccessResponse(resp)
+}
 
+func (e *E11yClient) Deactivate(ctx context.Context, companyID string, extensionID string, scope ActivationScope) error {
+	apiPath := fmt.Sprintf(deactivationAPIFmt, companyID, extensionID, scope.ContextType, scope.ContextID)
+
+	resp, err := e.c.
+		Delete().
+		APIPath(apiPath).
+		Do(ctx)
+	if err != nil {
+		return fmt.Errorf("error executing request: %s", err.Error())
+	}
+	return e.assertSuccessResponse(resp)
+}
+
+func (e *E11yClient) assertSuccessResponse(resp *client.Response) error {
 	if resp.StatusCode() >= http.StatusBadRequest {
 		return resp.Error()
 	}

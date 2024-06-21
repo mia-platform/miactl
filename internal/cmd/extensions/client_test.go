@@ -169,7 +169,7 @@ func TestE11yClientActivate(t *testing.T) {
 		"valid response": {
 			companyID:              "company-1",
 			extensionID:            "ext-1",
-			activationScopeRequest: ActivationScope{ContextID: "company-1", ContextType: "company"},
+			activationScopeRequest: ActivationScope{ContextID: "company-1", ContextType: CompanyContext},
 			server: mockServer(t, ExpectedRequest{
 				path: "/api/extensibility/tenants/company-1/extensions/ext-1/activation",
 				verb: http.MethodPost,
@@ -181,7 +181,7 @@ func TestE11yClientActivate(t *testing.T) {
 		"valid response for project activation": {
 			companyID:              "company-1",
 			extensionID:            "ext-1",
-			activationScopeRequest: ActivationScope{ContextID: "project-1", ContextType: "project"},
+			activationScopeRequest: ActivationScope{ContextID: "project-1", ContextType: ProjectContext},
 			server: mockServer(t, ExpectedRequest{
 				path: "/api/extensibility/tenants/company-1/extensions/ext-1/activation",
 				verb: http.MethodPost,
@@ -216,6 +216,71 @@ func TestE11yClientActivate(t *testing.T) {
 			require.NoError(t, err)
 
 			err = New(client).Activate(context.TODO(), testCase.companyID, testCase.extensionID, testCase.activationScopeRequest)
+			if testCase.err {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestE11yClientDeactivate(t *testing.T) {
+	testCases := map[string]struct {
+		companyID                string
+		extensionID              string
+		deactivationScopeRequest ActivationScope
+		server                   *httptest.Server
+		err                      bool
+	}{
+		"valid response": {
+			companyID:                "company-1",
+			extensionID:              "ext-1",
+			deactivationScopeRequest: ActivationScope{ContextID: "company-1", ContextType: CompanyContext},
+			server: mockServer(t, ExpectedRequest{
+				path: "/api/extensibility/tenants/company-1/extensions/ext-1/company/company-1/activation",
+				verb: http.MethodDelete,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+			}),
+		},
+		"valid response for project deactivation": {
+			companyID:                "company-1",
+			extensionID:              "ext-1",
+			deactivationScopeRequest: ActivationScope{ContextID: "project-1", ContextType: ProjectContext},
+			server: mockServer(t, ExpectedRequest{
+				path: "/api/extensibility/tenants/company-1/extensions/ext-12/project/p-1/activation",
+				verb: http.MethodDelete,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+			}),
+		},
+		"invalid response": {
+			companyID:   "company-1",
+			extensionID: "ext-1",
+			server: mockServer(t, ExpectedRequest{
+				path: "/api/extensibility/tenants/company-1/extensions/ext-1/project/p-1/activation",
+				verb: http.MethodDelete,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+				err:        true,
+			}),
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			clientConfig := &client.Config{
+				Transport: http.DefaultTransport,
+				Host:      testCase.server.URL,
+			}
+
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+
+			err = New(client).Deactivate(context.TODO(), testCase.companyID, testCase.extensionID, testCase.deactivationScopeRequest)
 			if testCase.err {
 				require.Error(t, err)
 			} else {
