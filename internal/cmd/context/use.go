@@ -39,6 +39,14 @@ func UseCmd(opts *clioptions.CLIOptions) *cobra.Command {
 			fmt.Printf("Switched to context \"%s\"\n", newContext)
 			return nil
 		},
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
+			locator := cliconfig.NewConfigPathLocator()
+			config, err := locator.ReadConfig()
+			if err != nil {
+				return nil, cobra.ShellCompDirectiveNoFileComp
+			}
+			return listContexts(config), cobra.ShellCompDirectiveNoFileComp
+		},
 	}
 
 	return cmd

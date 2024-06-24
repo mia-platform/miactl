@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/cliconfig"
+	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -68,6 +69,35 @@ func TestPrintContexts(t *testing.T) {
 				assert.NoError(t, err)
 			}
 			assert.Equal(t, testCase.expectedOutput, buffer.String())
+		})
+	}
+}
+
+func TestListContext(t *testing.T) {
+	testCases := map[string]struct {
+		config         api.Config
+		expectedOutput []string
+	}{
+		"list contexts and sort names": {
+			config: api.Config{
+				Contexts: map[string]*api.ContextConfig{
+					"context3": {},
+					"context1": {},
+					"context2": {},
+				},
+			},
+			expectedOutput: []string{"context1", "context2", "context3"},
+		},
+		"list with nil contexts": {
+			config:         api.Config{},
+			expectedOutput: []string{},
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			contexts := listContexts(&testCase.config)
+			assert.Equal(t, testCase.expectedOutput, contexts)
 		})
 	}
 }
