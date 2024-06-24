@@ -125,6 +125,9 @@ func TestPreflightCheck(t *testing.T) {
 		"correct POST": {
 			request: (&Request{}).SetVerb("POST").Body([]byte("hello")),
 		},
+		"correct PUT": {
+			request: (&Request{}).SetVerb("PUT").Body([]byte("hello")),
+		},
 		"empty verb": {
 			request: &Request{},
 			err:     true,
@@ -135,6 +138,10 @@ func TestPreflightCheck(t *testing.T) {
 		},
 		"empty body": {
 			request: (&Request{}).SetVerb("POST").Body([]byte{}),
+			err:     true,
+		},
+		"empty body for PUT": {
+			request: (&Request{}).SetVerb("PUT").Body([]byte{}),
 			err:     true,
 		},
 		"valid verb and body but preexisting error": {

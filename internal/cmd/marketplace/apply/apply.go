@@ -21,12 +21,12 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"os"
 	"path/filepath"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
+	"github.com/mia-platform/miactl/internal/files"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/spf13/cobra"
 )
@@ -249,23 +249,15 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string
 	// the identifier is the concatenation of itemID and, if present, version.name
 	resIdentifierToFilePath := map[string]string{}
 	for _, filePath := range pathList {
-		content, err := os.ReadFile(filePath)
-		if err != nil {
+		marketplaceItem := &marketplace.Item{}
+		if err := files.ReadFile(filePath, marketplaceItem); err != nil {
+			if errors.Is(err, files.ErrUnsupportedFile) {
+				continue
+			}
 			return nil, nil, err
 		}
 
-		if !isSupportedExtension(filepath.Ext(filePath)) {
-			continue
-		}
-
-		marketplaceItem := &marketplace.Item{}
-		err = encoding.UnmarshalData(content, marketplaceItem)
-		if err != nil {
-			return nil, nil, fmt.Errorf("errors in file %s: %w", filePath, err)
-		}
-
-		_, err = validateItemName(marketplaceItem, filePath)
-		if err != nil {
+		if _, err := validateItemName(marketplaceItem, filePath); err != nil {
 			return nil, nil, err
 		}
 		itemID, err := validateItemHumanReadableID(marketplaceItem, filePath)
@@ -306,14 +298,6 @@ func buildItemIdentifier(item *marketplace.Item) (string, error) {
 	}
 
 	return itemID + versionName, nil
-}
-
-func isSupportedExtension(ext string) bool {
-	switch ext {
-	case encoding.YmlExtension, encoding.YamlExtension, encoding.JSONExtension:
-		return true
-	}
-	return false
 }
 
 func validateItemName(marketplaceItem *marketplace.Item, filePath string) (string, error) {

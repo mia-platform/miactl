@@ -64,6 +64,8 @@ type CLIOptions struct {
 	JWTJsonPath       string
 	OutputPath        string
 
+	InputFilePath string
+
 	MarketplaceResourcePaths []string
 	// MarketplaceItemID is the itemId field of a Marketplace item
 	MarketplaceItemID string

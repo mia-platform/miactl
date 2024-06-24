@@ -24,13 +24,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func addExtensionIDRequiredFlag(options *clioptions.CLIOptions, cmd *cobra.Command) {
-	flags := cmd.Flags()
-	flags.StringVar(&options.EntityID, "extension-id", "", "the extension id that should be deleted")
-}
-
 // DeleteCmd return a new cobra command for listing companies
-func DeletCmd(options *clioptions.CLIOptions) *cobra.Command {
+func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "delete",
 		Short: "Delete extension",
@@ -58,6 +53,6 @@ func DeletCmd(options *clioptions.CLIOptions) *cobra.Command {
 		},
 	}
 
-	addExtensionIDRequiredFlag(options, cmd)
+	addExtensionIDFlag(options, cmd)
 	return cmd
 }

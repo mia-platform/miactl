@@ -151,6 +151,8 @@ func (r *Request) preflightCheck() error {
 	}
 
 	switch {
+	case r.verb == http.MethodPut && len(r.body) == 0:
+		fallthrough
 	case r.verb == http.MethodPost && len(r.body) == 0:
 		return fmt.Errorf("empty body for a POST request")
 	case r.verb == http.MethodGet && len(r.body) > 0:

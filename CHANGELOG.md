@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `extensions list` command
+- `extensions apply` command
 - `extensions delete` command
 - `extensions activate` command
 - `extensions deactivate` command

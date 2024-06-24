@@ -106,6 +106,77 @@ func TestE11yClientList(t *testing.T) {
 	}
 }
 
+func TestE11yClientApply(t *testing.T) {
+	testCases := map[string]struct {
+		companyID           string
+		extensionID         string
+		extension           *extensibility.Extension
+		expectedExtensionID string
+		server              *httptest.Server
+		err                 bool
+	}{
+		"valid response for update": {
+			companyID: "company-1",
+			extension: &extensibility.Extension{
+				ExtensionID: "ext-1",
+			},
+			expectedExtensionID: "ext-1",
+			server: mockServer(t, ExpectedRequest{
+				path: "/api/extensibility/tenants/company-1/extensions",
+				verb: http.MethodPut,
+			}, MockResponse{
+				statusCode: http.StatusNoContent,
+			}),
+		},
+		"valid response for insert": {
+			companyID:           "company-1",
+			extension:           &extensibility.Extension{},
+			expectedExtensionID: "ext-1",
+			server: mockServer(t, ExpectedRequest{
+				path: "/api/extensibility/tenants/company-1/extensions",
+				verb: http.MethodPut,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+				respBody:   `{"extensionId":"ext-1"}`,
+			}),
+		},
+		"invalid response": {
+			companyID:           "company-1",
+			extension:           &extensibility.Extension{},
+			expectedExtensionID: "ext-1",
+			server: mockServer(t, ExpectedRequest{
+				path: "/api/extensibility/tenants/company-1/extensions",
+				verb: http.MethodPut,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+			}),
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			clientConfig := &client.Config{
+				Transport: http.DefaultTransport,
+				Host:      testCase.server.URL,
+			}
+
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+
+			id, err := New(client).Apply(context.TODO(), testCase.companyID, testCase.extension)
+			if testCase.err {
+				require.Error(t, err)
+				require.Zero(t, id)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, testCase.expectedExtensionID, id)
+			}
+		})
+	}
+}
+
 func TestE11yClientDelete(t *testing.T) {
 	testCases := map[string]struct {
 		companyID   string
