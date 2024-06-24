@@ -21,6 +21,7 @@ import (
 	"sort"
 
 	"github.com/mia-platform/miactl/internal/cliconfig"
+	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
 )
@@ -40,19 +41,24 @@ func ListCmd(opts *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func printContexts(out io.Writer, locator *cliconfig.ConfigPathLocator) error {
-	config, err := locator.ReadConfig()
-	if err != nil {
-		return err
-	}
-
-	currentContext := config.CurrentContext
+func listContexts(config *api.Config) []string {
 	contextNames := make([]string, 0, len(config.Contexts))
 	for name := range config.Contexts {
 		contextNames = append(contextNames, name)
 	}
 	sort.Strings(contextNames)
 
+	return contextNames
+}
+
+func printContexts(out io.Writer, locator *cliconfig.ConfigPathLocator) error {
+	config, err := locator.ReadConfig()
+	if err != nil {
+		return err
+	}
+
+	contextNames := listContexts(config)
+	currentContext := config.CurrentContext
 	for _, key := range contextNames {
 		switch key {
 		case currentContext:
