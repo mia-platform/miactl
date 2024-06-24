@@ -78,7 +78,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
 
-		require.ErrorContains(t, err, "errors in file ./testdata/invalidJson1.json")
+		require.ErrorContains(t, err, "file malformed ./testdata/invalidJson1.json")
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
@@ -89,7 +89,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.ErrorContains(t, err, "errors in file ./testdata/invalidYaml.yaml")
+		require.ErrorContains(t, err, "file malformed ./testdata/invalidYaml.yaml")
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})

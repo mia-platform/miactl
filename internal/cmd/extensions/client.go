@@ -36,6 +36,8 @@ const (
 	deactivationAPIFmt = tenantsExtensionsAPIPrefix + "/%s/%s/%s/activation"
 )
 
+const IFrameExtensionType = "iframe"
+
 type IE11yClient interface {
 	List(ctx context.Context, companyID string) ([]*extensibility.Extension, error)
 	Apply(ctx context.Context, companyID string, extensionData *extensibility.Extension) (string, error)

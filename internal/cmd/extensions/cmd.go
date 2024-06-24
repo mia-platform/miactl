@@ -43,9 +43,23 @@ func NewCommand(o *clioptions.CLIOptions) *cobra.Command {
 
 	cmd.AddCommand(
 		ListCmd(o),
-		DeletCmd(o),
+		ApplyCmd(o),
+		DeleteCmd(o),
 		ActivateCmd(o),
 		DeactivateCmd(o),
 	)
 	return cmd
+}
+
+func addExtensionIDFlag(options *clioptions.CLIOptions, cmd *cobra.Command) {
+	flags := cmd.Flags()
+	flags.StringVar(&options.EntityID, "extension-id", "", "the extension id that should be deleted")
+}
+
+func requireFilePathFlag(o *clioptions.CLIOptions, cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&o.InputFilePath, "file-path", "f", "", "paths to JSON/YAML file containing a Extension definition")
+	err := cmd.MarkFlagRequired("file-path")
+	if err != nil {
+		panic(err)
+	}
 }

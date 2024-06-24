@@ -1,0 +1,17 @@
+name: "Extension 1"
+description: "My extension 1"
+entry: "https://example.com/"
+contexts:
+  - project
+routes:
+  - id: "extension-1"
+    parentId: "workloads"
+    locationId: "runtime"
+    labelIntl:
+      en: "SomeLabel"
+      it: "SomeLabelInItalian"
+    destinationPath: "/"
+    renderType: "menu"
+    order: 200
+    icon:
+      name: "PiHardDrives"

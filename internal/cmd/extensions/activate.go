@@ -56,6 +56,6 @@ context to select where you want to activate it.`,
 		},
 	}
 
-	addExtensionIDRequiredFlag(o, cmd)
+	addExtensionIDFlag(o, cmd)
 	return cmd
 }

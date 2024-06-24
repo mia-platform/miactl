@@ -55,6 +55,6 @@ The cli context is used to select where the extension shall be deactivated.`,
 		},
 	}
 
-	addExtensionIDRequiredFlag(o, cmd)
+	addExtensionIDFlag(o, cmd)
 	return cmd
 }

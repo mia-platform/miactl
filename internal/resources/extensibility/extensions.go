@@ -15,57 +15,28 @@
 
 package extensibility
 
-/**
-  "name": "Deployer helper",
-  "entry": "https://example.com/",
-  "contexts": ["project"],
-  "routes": [{
-    "id": "react-app",
-    "parentId": "workloads",
-    "locationId": "runtime",
-    "labelIntl": {
-      "en": "SomeLabel"
-      "it": "SomeLabelInItalian"
-    },
-    "destinationPath": "/",
-    "order": 200,
-    "icon": {
-      "name": "PiHardDrives"
-    }
-  }]
-*/
-
 type Extension struct {
-	ExtensionID string            `json:"extensionId"`
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Entry       string            `json:"entry"`
-	Contexts    string            `json:"contexts"`
-	Permissions []string          `json:"permissions,omitempty"`
-	Routes      []*ExtensionRoute `json:"routes,omitempty"`
+	ExtensionID   string            `yaml:"extensionId,omitempty" json:"extensionId,omitempty"`
+	ExtensionType string            `yaml:"extensionType,omitempty" json:"extensionType,omitempty"`
+	Name          string            `yaml:"name" json:"name"`
+	Description   string            `yaml:"description" json:"description"`
+	Entry         string            `yaml:"entry" json:"entry"`
+	Contexts      []string          `yaml:"contexts" json:"contexts"`
+	Permissions   []string          `yaml:"permissions,omitempty" json:"permissions,omitempty"`
+	Routes        []*ExtensionRoute `yaml:"routes,omitempty" json:"routes,omitempty"`
 }
-
-type Languages string
-
-const (
-	En Languages = "en"
-	It Languages = "it"
-)
-
-type IntlMessages map[Languages]string
 
 type Icon struct {
 	Name string `json:"name"`
 }
 
 type ExtensionRoute struct {
-	ID                  string       `json:"id"`
-	ParentID            string       `json:"parentId,omitempty"`
-	LocationID          string       `json:"locationId" jsonschema:"enum=tenant,enum=project,enum=runtime"`
-	DestinationPath     string       `json:"destinationPath,omitempty"`
-	LabelIntl           IntlMessages `json:"labelIntl"`
-	MatchExactMountPath bool         `json:"matchExactMountPath,omitempty"`
-	RenderType          string       `json:"renderType,omitempty" jsonschema:"enum=category"`
-	Order               *float64     `json:"order,omitempty"`
-	Icon                *Icon        `json:"icon,omitempty"`
+	ID              string            `yaml:"id" json:"id"`
+	LocationID      string            `yaml:"locationId" json:"locationId"`
+	ParentID        string            `yaml:"parentId,omitempty" json:"parentId,omitempty"`
+	DestinationPath string            `yaml:"destinationPath,omitempty" json:"destinationPath,omitempty"`
+	LabelIntl       map[string]string `yaml:"labelIntl,omitempty" json:"labelIntl,omitempty"`
+	RenderType      string            `yaml:"renderType,omitempty" json:"renderType,omitempty"`
+	Order           *float64          `yaml:"order,omitempty" json:"order,omitempty"`
+	Icon            *Icon             `yaml:"icon,omitempty" json:"icon,omitempty"`
 }

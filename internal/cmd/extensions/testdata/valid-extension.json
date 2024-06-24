@@ -1,0 +1,25 @@
+{
+    "name": "Extension 1",
+    "description": "My extension 1",
+    "entry": "https://example.com/",
+    "contexts": [
+        "project"
+    ],
+    "extensionType": "iframe",
+    "routes": [
+        {
+            "id": "extension-r1",
+            "parentId": "workloads",
+            "locationId": "runtime",
+            "labelIntl": {
+                "en": "SomeLabel",
+                "it": "SomeLabelInItalian"
+            },
+            "destinationPath": "/",
+            "order": 200.0,
+            "icon": {
+                "name": "PiHardDrives"
+            }
+        }
+    ]
+}
