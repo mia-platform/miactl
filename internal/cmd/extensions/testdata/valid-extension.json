@@ -5,12 +5,12 @@
     "contexts": [
         "project"
     ],
-    "extensionType": "iframe",
     "routes": [
         {
-            "id": "extension-r1",
+            "id": "extension-1",
             "parentId": "workloads",
             "locationId": "runtime",
+            "renderType": "menu",
             "labelIntl": {
                 "en": "SomeLabel",
                 "it": "SomeLabelInItalian"
