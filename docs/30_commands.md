@@ -597,7 +597,7 @@ The `extensions apply` command can be used to register new extensions or update
 It accepts an Extension Manifest either in `yaml` or `json` format
 
 <details>
-<summary>Example JSON Manifest<summary>
+<summary>Example JSON Manifest</summary>
 
 ```json
 {
@@ -630,7 +630,7 @@ It accepts an Extension Manifest either in `yaml` or `json` format
 </details>
 
 <details>
-<summary>Example YAML Manifest<summary>
+<summary>Example YAML Manifest</summary>
 
 ```yaml
 name: "Extension 1"
