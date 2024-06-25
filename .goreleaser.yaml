@@ -71,7 +71,12 @@ brews:
   commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
   directory: Formula
 
-  install: bin.install "{{ .ArtifactName }}" => "{{ .Env.CMDNAME }}"
+  install: |
+    bin.install "{{ .ArtifactName }}" => "{{ .Env.CMDNAME }}"
+
+    chmod 0555, bin/"{{ .Env.CMDNAME }}" # generate_completions_from_executable fails otherwise
+    generate_completions_from_executable(bin/"{{ .Env.CMDNAME }}", "completion")
+
   homepage: "https://www.mia-platform.eu"
   description: "{{ .Env.DESCRIPTION }}"
 
