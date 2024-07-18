@@ -570,6 +570,7 @@ Available subcommands are the following ones:
 
 ```sh
   list        List registered extensions
+	get					Retrieve data of a specific extension
   apply       Create or update an extension
   activate    Activate an extension
   deactivate  Deactivate an extension
@@ -589,6 +590,21 @@ miactl extensions list [flags]
 Available flags for the command:
 
 - `--company-id` to set the ID of the desired Company
+
+### get
+
+The `extensions get` command helps you gathering information about a specific extension in your Company
+
+Usage:
+
+```sh
+miactl extensions get [flags]
+```
+
+Available flags for the command:
+
+- `--company-id` to set the ID of the desired Company
+- `--extension-id` to set the ID of the desired extension.
 
 ### apply
 
@@ -664,7 +680,7 @@ Available flags for the command:
 
 - `--company-id` to set the ID of the desired Company
 - `--file-path` (`-f`) **required** to specify the path to the extension manifest
-- `--extension-id` to set the ID of the extension Company, required for updating an existing extension.
+- `--extension-id` to set the ID of the extension, required for updating an existing extension.
 
 :::tip
 In order to specify whether a create or an update is needed you have to use the `--extension-id`

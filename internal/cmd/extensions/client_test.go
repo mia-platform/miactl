@@ -106,6 +106,66 @@ func TestE11yClientList(t *testing.T) {
 	}
 }
 
+func TestE11yClientGetOne(t *testing.T) {
+	validBodyString := `{
+		"extensionId": "ext-1",
+		"name": "Extension 1",
+		"description": "Description 1"
+	}`
+
+	testCases := map[string]struct {
+		companyID string
+		server    *httptest.Server
+		err       bool
+	}{
+		"valid response": {
+			companyID: "company-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf(getOneAPIFmt, "company-1", "ext-1"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+				respBody:   validBodyString,
+			}),
+		},
+		"invalid response": {
+			companyID: "company-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf(getOneAPIFmt, "company-1", "ext-1"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+				err:        true,
+			}),
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			clientConfig := &client.Config{
+				Transport: http.DefaultTransport,
+				Host:      testCase.server.URL,
+			}
+
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+
+			data, err := New(client).GetOne(context.TODO(), testCase.companyID, "ext-1")
+			if testCase.err {
+				require.Error(t, err)
+				require.Nil(t, data)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, &extensibility.ExtensionInfo{
+					ExtensionID: "ext-1",
+				}, data)
+			}
+		})
+	}
+}
+
 func TestE11yClientApply(t *testing.T) {
 	testCases := map[string]struct {
 		companyID           string

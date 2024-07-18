@@ -24,11 +24,12 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
-	cmd := &cobra.Command{
-		Use:   "delete",
-		Short: "Delete extension",
-		Long:  "Delete a previously registered extension for the Company.",
+// GetOneCmd return a new cobra command to get a single extension
+func GetOneCmd(options *clioptions.CLIOptions) *cobra.Command {
+	return &cobra.Command{
+		Use:   "list",
+		Short: "List registered extensions",
+		Long:  "List registered extensions for the company.",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
@@ -39,19 +40,16 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 			if restConfig.CompanyID == "" {
 				return ErrRequiredCompanyID
 			}
-
 			if options.EntityID == "" {
 				return ErrRequiredExtensionID
 			}
 
 			extensibilityClient := New(client)
-			err = extensibilityClient.Delete(cmd.Context(), restConfig.CompanyID, options.EntityID)
+			extension, err := extensibilityClient.GetOne(cmd.Context(), restConfig.CompanyID, options.EntityID)
 			cobra.CheckErr(err)
-			fmt.Println("Successfully deleted extension from Company")
+
+			fmt.Printf("%+v", extension)
 			return nil
 		},
 	}
-
-	addExtensionIDFlag(options, cmd)
-	return cmd
 }
