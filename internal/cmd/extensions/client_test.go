@@ -108,9 +108,17 @@ func TestE11yClientList(t *testing.T) {
 
 func TestE11yClientGetOne(t *testing.T) {
 	validBodyString := `{
-		"extensionId": "ext-1",
-		"name": "Extension 1",
-		"description": "Description 1"
+		"extensionId": "mocked-id",
+		"extensionName": "mocked-name",
+		"entry": "http://example.com/",
+		"type": "iframe",
+		"destination": {"id": "project"},
+		"description": "some description",
+		"activationContexts": ["project"],
+		"permissions": ["perm1"],
+		"visibilities": [{"contextType": "project", "contextId": "prjId"}],
+		"menu": {"id": "routeId", "labelIntl": {"en":"some label", "it": "qualche etichetta"}},
+		"category": {"id": "some-category"}
 	}`
 
 	testCases := map[string]struct {
@@ -159,7 +167,25 @@ func TestE11yClientGetOne(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, &extensibility.ExtensionInfo{
-					ExtensionID: "ext-1",
+					ExtensionID:        "mocked-id",
+					ExtensionName:      "mocked-name",
+					Entry:              "http://example.com/",
+					Type:               "iframe",
+					Destination:        extensibility.DestinationArea{ID: "project"},
+					Description:        "some description",
+					ActivationContexts: []extensibility.Context{"project"},
+					Permissions:        []string{"perm1"},
+					Visibilities:       []extensibility.Visibility{{ContextType: "project", ContextID: "prjId"}},
+					Menu: extensibility.Menu{
+						ID: "routeId",
+						LabelIntl: extensibility.IntlMessages{
+							"en": "some label",
+							"it": "qualche etichetta",
+						},
+					},
+					Category: extensibility.Category{
+						ID: "some-category",
+					},
 				}, data)
 			}
 		})
