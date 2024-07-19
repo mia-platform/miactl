@@ -57,7 +57,7 @@ func printExtensionsList(extensions []*extensibility.ExtensionInfo, p printer.IP
 	for _, extension := range extensions {
 		p.Record(
 			extension.ExtensionID,
-			extension.ExtensionName,
+			extension.Name,
 			extension.Entry,
 			extension.Destination.ID,
 			menucolumn(extension),

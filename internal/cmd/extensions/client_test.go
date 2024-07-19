@@ -91,14 +91,14 @@ func TestE11yClientList(t *testing.T) {
 				require.NoError(t, err)
 				require.Equal(t, []*extensibility.ExtensionInfo{
 					{
-						ExtensionID:   "ext-1",
-						ExtensionName: "Extension 1",
-						Description:   "Description 1",
+						ExtensionID: "ext-1",
+						Name:        "Extension 1",
+						Description: "Description 1",
 					},
 					{
-						ExtensionID:   "ext-2",
-						ExtensionName: "Extension 2",
-						Description:   "Description 2",
+						ExtensionID: "ext-2",
+						Name:        "Extension 2",
+						Description: "Description 2",
 					},
 				}, data)
 			}
@@ -168,7 +168,7 @@ func TestE11yClientGetOne(t *testing.T) {
 				require.NoError(t, err)
 				require.Equal(t, &extensibility.ExtensionInfo{
 					ExtensionID:        "mocked-id",
-					ExtensionName:      "mocked-name",
+					Name:               "mocked-name",
 					Entry:              "http://example.com/",
 					Type:               "iframe",
 					Destination:        extensibility.DestinationArea{ID: "project"},

@@ -35,21 +35,21 @@ func TestListCommandBuilder(t *testing.T) {
 func TestPrintExtensionsList(t *testing.T) {
 	data := []*extensibility.ExtensionInfo{
 		{
-			ExtensionID:   "ext-1",
-			ExtensionName: "Extension 1",
-			Entry:         "https://docs.mia-platform.eu",
-			Destination:   extensibility.DestinationArea{ID: "d1"},
-			Menu:          extensibility.Menu{ID: "menu-id", LabelIntl: extensibility.IntlMessages{"en": "Ex 1"}},
-			Category:      extensibility.Category{ID: "cat-1", LabelIntl: extensibility.IntlMessages{"en": "Cat 1"}},
-			Description:   "Description 1",
+			ExtensionID: "ext-1",
+			Name:        "Extension 1",
+			Entry:       "https://docs.mia-platform.eu",
+			Destination: extensibility.DestinationArea{ID: "d1"},
+			Menu:        extensibility.Menu{ID: "menu-id", LabelIntl: extensibility.IntlMessages{"en": "Ex 1"}},
+			Category:    extensibility.Category{ID: "cat-1", LabelIntl: extensibility.IntlMessages{"en": "Cat 1"}},
+			Description: "Description 1",
 		},
 		{
-			ExtensionID:   "ext-2",
-			ExtensionName: "Extension 2",
-			Entry:         "https://mia-platform.eu",
-			Destination:   extensibility.DestinationArea{ID: "d2"},
-			Menu:          extensibility.Menu{ID: "menu-id-2", LabelIntl: extensibility.IntlMessages{"en": "Ex 2"}},
-			Description:   "Description 2",
+			ExtensionID: "ext-2",
+			Name:        "Extension 2",
+			Entry:       "https://mia-platform.eu",
+			Destination: extensibility.DestinationArea{ID: "d2"},
+			Menu:        extensibility.Menu{ID: "menu-id-2", LabelIntl: extensibility.IntlMessages{"en": "Ex 2"}},
+			Description: "Description 2",
 		},
 	}
 
