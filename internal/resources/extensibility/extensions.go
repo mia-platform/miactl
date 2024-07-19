@@ -40,3 +40,38 @@ type ExtensionRoute struct {
 	Order           *float64          `yaml:"order,omitempty" json:"order,omitempty"`
 	Icon            *Icon             `yaml:"icon,omitempty" json:"icon,omitempty"`
 }
+
+type DestinationArea struct {
+	ID string `json:"id"`
+}
+
+type Visibility struct {
+	ContextType string `json:"contextType"`
+	ContextID   string `json:"contextId"`
+}
+
+type Category struct {
+	ID        string            `json:"id"`
+	LabelIntl map[string]string `json:"labelIntl,omitempty"`
+}
+
+type Menu struct {
+	ID        string            `json:"id"`
+	LabelIntl map[string]string `json:"labelIntl"`
+	Order     *float64          `json:"order,omitempty"`
+}
+
+type ExtensionInfo struct {
+	ExtensionID        string          `json:"extensionId"`
+	ExtensionName      string          `json:"extensionName"`
+	Entry              string          `json:"entry"`
+	Type               string          `json:"type"`
+	Destination        DestinationArea `json:"destination"`
+	Description        string          `json:"description,omitempty"`
+	IconName           string          `json:"iconName,omitempty"`
+	ActivationContexts []string        `json:"activationContexts"`
+	Permissions        []string        `json:"permissions,omitempty"`
+	Visibilities       []Visibility    `json:"visibilities,omitempty"`
+	Category           Category        `json:"category,omitempty"`
+	Menu               Menu            `json:"menu"`
+}

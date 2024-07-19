@@ -30,6 +30,95 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestE11yClientGet(t *testing.T) {
+	validBodyString := `{
+		"extensionId": "mocked-id",
+		"extensionName": "mocked-name",
+		"entry": "http://example.com/",
+		"type": "iframe",
+		"destination": {"id": "project"},
+		"description": "some description",
+		"activationContexts": ["project"],
+		"permissions": ["perm1"],
+		"visibilities": [{"contextType": "project", "contextId": "prjId"}],
+		"menu": {"id": "routeId", "labelIntl": {"en":"some label", "it": "qualche etichetta"}},
+		"category": {"id": "some-category"}
+	}`
+
+	testCases := map[string]struct {
+		companyID   string
+		extensionID string
+		server      *httptest.Server
+		err         bool
+	}{
+		"valid response": {
+			companyID:   "company-1",
+			extensionID: "mocked-id",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf(getByIDAPIFmt, "company-1", "mocked-id"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+				respBody:   validBodyString,
+			}),
+		},
+		"invalid response": {
+			companyID:   "company-1",
+			extensionID: "mocked-id",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf(getByIDAPIFmt, "company-1", "mocked-id"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+				err:        true,
+			}),
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			clientConfig := &client.Config{
+				Transport: http.DefaultTransport,
+				Host:      testCase.server.URL,
+			}
+
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+
+			data, err := New(client).Get(context.TODO(), testCase.companyID, testCase.extensionID)
+			if testCase.err {
+				require.Error(t, err)
+				require.Nil(t, data)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, &extensibility.ExtensionInfo{
+					ExtensionID:        "mocked-id",
+					ExtensionName:      "mocked-name",
+					Entry:              "http://example.com/",
+					Type:               "iframe",
+					Destination:        extensibility.DestinationArea{ID: "project"},
+					Description:        "some description",
+					ActivationContexts: []string{"project"},
+					Permissions:        []string{"perm1"},
+					Visibilities:       []extensibility.Visibility{{ContextType: "project", ContextID: "prjId"}},
+					Menu: extensibility.Menu{
+						ID: "routeId",
+						LabelIntl: map[string]string{
+							"en": "some label",
+							"it": "qualche etichetta",
+						},
+					},
+					Category: extensibility.Category{
+						ID: "some-category",
+					},
+				}, data)
+			}
+		})
+	}
+}
+
 func TestE11yClientList(t *testing.T) {
 	validBodyString := `[
 	{

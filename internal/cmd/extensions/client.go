@@ -29,6 +29,7 @@ const (
 	extensibilityAPIPrefix     = "/api/extensibility"
 	tenantsExtensionsAPIPrefix = extensibilityAPIPrefix + "/tenants/%s/extensions"
 
+	getByIDAPIFmt      = tenantsExtensionsAPIPrefix + "/%s"
 	listAPIFmt         = tenantsExtensionsAPIPrefix
 	applyAPIFmt        = tenantsExtensionsAPIPrefix
 	deleteAPIFmt       = tenantsExtensionsAPIPrefix + "/%s"
@@ -39,6 +40,7 @@ const (
 const IFrameExtensionType = "iframe"
 
 type IE11yClient interface {
+	Get(ctx context.Context, companyID string, extensionID string) (*extensibility.ExtensionInfo, error)
 	List(ctx context.Context, companyID string) ([]*extensibility.Extension, error)
 	Apply(ctx context.Context, companyID string, extensionData *extensibility.Extension) (string, error)
 	Delete(ctx context.Context, companyID string, extensionID string) error
@@ -52,6 +54,25 @@ type E11yClient struct {
 
 func New(c *client.APIClient) IE11yClient {
 	return &E11yClient{c: c}
+}
+
+func (e *E11yClient) Get(ctx context.Context, companyID string, extensionID string) (*extensibility.ExtensionInfo, error) {
+	apiPath := fmt.Sprintf(getByIDAPIFmt, companyID, extensionID)
+	resp, err := e.c.Get().APIPath(apiPath).Do(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error executing request: %w", err)
+	}
+
+	if err := e.assertSuccessResponse(resp); err != nil {
+		return nil, err
+	}
+
+	var extensionInfo *extensibility.ExtensionInfo
+	if err := resp.ParseResponse(&extensionInfo); err != nil {
+		return nil, fmt.Errorf("error parsing response body: %w", err)
+	}
+
+	return extensionInfo, nil
 }
 
 func (e *E11yClient) List(ctx context.Context, companyID string) ([]*extensibility.Extension, error) {
