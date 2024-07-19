@@ -81,9 +81,7 @@ func printExtensionInfo(extension *extensibility.ExtensionInfo, p printer.IPrint
 		extension.Description,
 		getStringFromArray(extension.ActivationContexts, identityTransformFunc),
 		getStringFromArray(extension.Permissions, identityTransformFunc),
-		getStringFromArray(extension.Visibilities, func(el extensibility.Visibility) string {
-			return "(" + el.ContextType + ", " + el.ContextID + ")"
-		}),
+		getStringFromArray(extension.Visibilities, transformVisibilityFunc),
 		transformMenuFunc(extension.Menu),
 		transformCategoryFunc(extension.Category),
 	)
@@ -105,6 +103,10 @@ func getStringFromArray[A any](array []A, transformFunc func(el A) string) strin
 }
 
 func identityTransformFunc(el string) string { return el }
+
+func transformVisibilityFunc(el extensibility.Visibility) string {
+	return "(" + el.ContextType + ", " + el.ContextID + ")"
+}
 
 func transformMenuFunc(el extensibility.Menu) string {
 	s := "(" + el.ID
