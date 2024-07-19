@@ -26,20 +26,18 @@ import (
 )
 
 const (
-	extensibilityAPIPrefix     = "/api/extensibility"
-	tenantsExtensionsAPIPrefix = extensibilityAPIPrefix + "/tenants/%s/extensions"
-
-	listAPIFmt         = tenantsExtensionsAPIPrefix
-	applyAPIFmt        = tenantsExtensionsAPIPrefix
-	deleteAPIFmt       = tenantsExtensionsAPIPrefix + "/%s"
-	activationAPIFmt   = tenantsExtensionsAPIPrefix + "/%s/activation"
-	deactivationAPIFmt = tenantsExtensionsAPIPrefix + "/%s/%s/%s/activation"
+	extensibilityAPIPrefix      = "/api/extensibility"
+	tenantsExtensionsAPIFmt     = extensibilityAPIPrefix + "/tenants/%s/extensions"
+	tenantsExtensionsByIDAPIFmt = tenantsExtensionsAPIFmt + "/%s"
+	activationAPIFmt            = tenantsExtensionsByIDAPIFmt + "/activation"
+	deactivationAPIFmt          = tenantsExtensionsByIDAPIFmt + "/%s/%s/activation"
 )
 
 const IFrameExtensionType = "iframe"
 
 type IE11yClient interface {
 	List(ctx context.Context, companyID string) ([]*extensibility.Extension, error)
+	GetOne(ctx context.Context, companyID string, extensionID string) (*extensibility.ExtensionInfo, error)
 	Apply(ctx context.Context, companyID string, extensionData *extensibility.Extension) (string, error)
 	Delete(ctx context.Context, companyID string, extensionID string) error
 	Activate(ctx context.Context, companyID string, extensionID string, scope ActivationScope) error
@@ -55,7 +53,7 @@ func New(c *client.APIClient) IE11yClient {
 }
 
 func (e *E11yClient) List(ctx context.Context, companyID string) ([]*extensibility.Extension, error) {
-	apiPath := fmt.Sprintf(listAPIFmt, companyID)
+	apiPath := fmt.Sprintf(tenantsExtensionsAPIFmt, companyID)
 	resp, err := e.c.Get().APIPath(apiPath).Do(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
@@ -73,12 +71,29 @@ func (e *E11yClient) List(ctx context.Context, companyID string) ([]*extensibili
 	return extensions, nil
 }
 
+func (e *E11yClient) GetOne(ctx context.Context, companyID string, extensionID string) (*extensibility.ExtensionInfo, error) {
+	apiPath := fmt.Sprintf(tenantsExtensionsByIDAPIFmt, companyID, extensionID)
+	resp, err := e.c.Get().APIPath(apiPath).Do(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error executing request: %w", err)
+	}
+	if err := e.assertSuccessResponse(resp); err != nil {
+		return nil, err
+	}
+
+	var extension *extensibility.ExtensionInfo
+	if err := resp.ParseResponse(&extension); err != nil {
+		return nil, fmt.Errorf("error parsing response body: %w", err)
+	}
+	return extension, nil
+}
+
 type ApplyResponseBody struct {
 	ExtensionID string `json:"extensionId"`
 }
 
 func (e *E11yClient) Apply(ctx context.Context, companyID string, extensionData *extensibility.Extension) (string, error) {
-	apiPath := fmt.Sprintf(applyAPIFmt, companyID)
+	apiPath := fmt.Sprintf(tenantsExtensionsAPIFmt, companyID)
 	body, err := resources.EncodeResourceToJSON(extensionData)
 	if err != nil {
 		return "", fmt.Errorf("error serializing request body: %s", err.Error())
@@ -105,7 +120,7 @@ func (e *E11yClient) Apply(ctx context.Context, companyID string, extensionData 
 }
 
 func (e *E11yClient) Delete(ctx context.Context, companyID string, extensionID string) error {
-	apiPath := fmt.Sprintf(deleteAPIFmt, companyID, extensionID)
+	apiPath := fmt.Sprintf(tenantsExtensionsByIDAPIFmt, companyID, extensionID)
 	resp, err := e.c.Delete().APIPath(apiPath).Do(ctx)
 	if err != nil {
 		return fmt.Errorf("error executing request: %w", err)

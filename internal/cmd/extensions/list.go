@@ -24,7 +24,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// ListCmd return a new cobra command for listing companies
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return &cobra.Command{
 		Use:   "list",
@@ -50,6 +49,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 		},
 	}
 }
+
 func printExtensionsList(extensions []*extensibility.Extension, p printer.IPrinter) {
 	p.Keys("ID", "Name", "Description")
 	for _, extension := range extensions {

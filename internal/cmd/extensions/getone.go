@@ -20,15 +20,17 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/encoding"
 
 	"github.com/spf13/cobra"
 )
 
-func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
+// GetOneCmd return a new cobra command to get a single extension
+func GetOneCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "delete",
-		Short: "Delete extension",
-		Long:  "Delete a previously registered extension for the Company.",
+		Use:   "get",
+		Short: "Get a registered extension",
+		Long:  "Get details for a single registered extension for the company.",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
@@ -39,19 +41,24 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 			if restConfig.CompanyID == "" {
 				return ErrRequiredCompanyID
 			}
-
 			if options.EntityID == "" {
 				return ErrRequiredExtensionID
 			}
 
 			extensibilityClient := New(client)
-			err = extensibilityClient.Delete(cmd.Context(), restConfig.CompanyID, options.EntityID)
+			extension, err := extensibilityClient.GetOne(cmd.Context(), restConfig.CompanyID, options.EntityID)
 			cobra.CheckErr(err)
-			fmt.Println("Successfully deleted extension from Company")
+
+			serialized, err := encoding.MarshalData(extension, options.OutputFormat, encoding.MarshalOptions{Indent: true})
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(serialized))
 			return nil
 		},
 	}
 
+	options.AddOutputFormatFlag(cmd.Flags(), encoding.JSON)
 	addExtensionIDFlag(options, cmd)
 	return cmd
 }

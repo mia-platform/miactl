@@ -52,7 +52,7 @@ func TestE11yClientList(t *testing.T) {
 		"valid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(listAPIFmt, "company-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions", "company-1"),
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusOK,
@@ -62,7 +62,7 @@ func TestE11yClientList(t *testing.T) {
 		"invalid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(listAPIFmt, "company-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions", "company-1"),
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusInternalServerError,
@@ -99,6 +99,92 @@ func TestE11yClientList(t *testing.T) {
 						ExtensionID: "ext-2",
 						Name:        "Extension 2",
 						Description: "Description 2",
+					},
+				}, data)
+			}
+		})
+	}
+}
+
+func TestE11yClientGetOne(t *testing.T) {
+	validBodyString := `{
+		"extensionId": "mocked-id",
+		"extensionName": "mocked-name",
+		"entry": "http://example.com/",
+		"type": "iframe",
+		"destination": {"id": "project"},
+		"description": "some description",
+		"activationContexts": ["project"],
+		"permissions": ["perm1"],
+		"visibilities": [{"contextType": "project", "contextId": "prjId"}],
+		"menu": {"id": "routeId", "labelIntl": {"en":"some label", "it": "qualche etichetta"}},
+		"category": {"id": "some-category"}
+	}`
+
+	testCases := map[string]struct {
+		companyID string
+		server    *httptest.Server
+		err       bool
+	}{
+		"valid response": {
+			companyID: "company-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions/%s", "company-1", "ext-1"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+				respBody:   validBodyString,
+			}),
+		},
+		"invalid response": {
+			companyID: "company-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions/%s", "company-1", "ext-1"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+				err:        true,
+			}),
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			clientConfig := &client.Config{
+				Transport: http.DefaultTransport,
+				Host:      testCase.server.URL,
+			}
+
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+
+			data, err := New(client).GetOne(context.TODO(), testCase.companyID, "ext-1")
+			if testCase.err {
+				require.Error(t, err)
+				require.Nil(t, data)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, &extensibility.ExtensionInfo{
+					ExtensionID:        "mocked-id",
+					ExtensionName:      "mocked-name",
+					Entry:              "http://example.com/",
+					Type:               "iframe",
+					Destination:        extensibility.DestinationArea{ID: "project"},
+					Description:        "some description",
+					ActivationContexts: []extensibility.Context{"project"},
+					Permissions:        []string{"perm1"},
+					Visibilities:       []extensibility.Visibility{{ContextType: "project", ContextID: "prjId"}},
+					Menu: extensibility.Menu{
+						ID: "routeId",
+						LabelIntl: extensibility.IntlMessages{
+							"en": "some label",
+							"it": "qualche etichetta",
+						},
+					},
+					Category: extensibility.Category{
+						ID: "some-category",
 					},
 				}, data)
 			}
@@ -188,7 +274,7 @@ func TestE11yClientDelete(t *testing.T) {
 			companyID:   "company-1",
 			extensionID: "ext-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(deleteAPIFmt, "company-1", "ext-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions/%s", "company-1", "ext-1"),
 				verb: http.MethodDelete,
 			}, MockResponse{
 				statusCode: http.StatusNoContent,
@@ -198,7 +284,7 @@ func TestE11yClientDelete(t *testing.T) {
 			companyID:   "company-1",
 			extensionID: "ext-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(deleteAPIFmt, "company-1", "ext-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions/%s", "company-1", "ext-1"),
 				verb: http.MethodDelete,
 			}, MockResponse{
 				statusCode: http.StatusInternalServerError,

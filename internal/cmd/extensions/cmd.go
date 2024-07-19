@@ -43,6 +43,7 @@ func NewCommand(o *clioptions.CLIOptions) *cobra.Command {
 
 	cmd.AddCommand(
 		ListCmd(o),
+		GetOneCmd(o),
 		ApplyCmd(o),
 		DeleteCmd(o),
 		ActivateCmd(o),
