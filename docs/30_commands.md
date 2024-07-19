@@ -570,7 +570,7 @@ Available subcommands are the following ones:
 
 ```sh
   list        List registered extensions
-	get					Retrieve data of a specific extension
+  get         Retrieve data of a specific extension
   apply       Create or update an extension
   activate    Activate an extension
   deactivate  Deactivate an extension
