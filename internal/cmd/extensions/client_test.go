@@ -52,7 +52,7 @@ func TestE11yClientList(t *testing.T) {
 		"valid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(listAPIFmt, "company-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions", "company-1"),
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusOK,
@@ -62,7 +62,7 @@ func TestE11yClientList(t *testing.T) {
 		"invalid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(listAPIFmt, "company-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions", "company-1"),
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusInternalServerError,
@@ -129,7 +129,7 @@ func TestE11yClientGetOne(t *testing.T) {
 		"valid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(getOneAPIFmt, "company-1", "ext-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions/%s", "company-1", "ext-1"),
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusOK,
@@ -139,7 +139,7 @@ func TestE11yClientGetOne(t *testing.T) {
 		"invalid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(getOneAPIFmt, "company-1", "ext-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions/%s", "company-1", "ext-1"),
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusInternalServerError,
@@ -274,7 +274,7 @@ func TestE11yClientDelete(t *testing.T) {
 			companyID:   "company-1",
 			extensionID: "ext-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(deleteAPIFmt, "company-1", "ext-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions/%s", "company-1", "ext-1"),
 				verb: http.MethodDelete,
 			}, MockResponse{
 				statusCode: http.StatusNoContent,
@@ -284,7 +284,7 @@ func TestE11yClientDelete(t *testing.T) {
 			companyID:   "company-1",
 			extensionID: "ext-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf(deleteAPIFmt, "company-1", "ext-1"),
+				path: fmt.Sprintf("/api/extensibilty/tenants/%s/extensions/%s", "company-1", "ext-1"),
 				verb: http.MethodDelete,
 			}, MockResponse{
 				statusCode: http.StatusInternalServerError,
