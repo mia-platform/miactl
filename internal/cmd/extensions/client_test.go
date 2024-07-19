@@ -89,16 +89,16 @@ func TestE11yClientList(t *testing.T) {
 				require.Nil(t, data)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, []*extensibility.Extension{
+				require.Equal(t, []*extensibility.ExtensionInfo{
 					{
-						ExtensionID: "ext-1",
-						Name:        "Extension 1",
-						Description: "Description 1",
+						ExtensionID:   "ext-1",
+						ExtensionName: "Extension 1",
+						Description:   "Description 1",
 					},
 					{
-						ExtensionID: "ext-2",
-						Name:        "Extension 2",
-						Description: "Description 2",
+						ExtensionID:   "ext-2",
+						ExtensionName: "Extension 2",
+						Description:   "Description 2",
 					},
 				}, data)
 			}
@@ -109,7 +109,7 @@ func TestE11yClientList(t *testing.T) {
 func TestE11yClientGetOne(t *testing.T) {
 	validBodyString := `{
 		"extensionId": "mocked-id",
-		"extensionName": "mocked-name",
+		"name": "mocked-name",
 		"entry": "http://example.com/",
 		"type": "iframe",
 		"destination": {"id": "project"},

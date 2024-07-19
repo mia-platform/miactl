@@ -33,16 +33,23 @@ func TestListCommandBuilder(t *testing.T) {
 }
 
 func TestPrintExtensionsList(t *testing.T) {
-	data := []*extensibility.Extension{
+	data := []*extensibility.ExtensionInfo{
 		{
-			ExtensionID: "ext-1",
-			Name:        "Extension 1",
-			Description: "Description 1",
+			ExtensionID:   "ext-1",
+			ExtensionName: "Extension 1",
+			Entry:         "https://docs.mia-platform.eu",
+			Destination:   extensibility.DestinationArea{ID: "d1"},
+			Menu:          extensibility.Menu{ID: "menu-id", LabelIntl: extensibility.IntlMessages{"en": "Ex 1"}},
+			Category:      extensibility.Category{ID: "cat-1", LabelIntl: extensibility.IntlMessages{"en": "Cat 1"}},
+			Description:   "Description 1",
 		},
 		{
-			ExtensionID: "ext-2",
-			Name:        "Extension 2",
-			Description: "Description 2",
+			ExtensionID:   "ext-2",
+			ExtensionName: "Extension 2",
+			Entry:         "https://mia-platform.eu",
+			Destination:   extensibility.DestinationArea{ID: "d2"},
+			Menu:          extensibility.Menu{ID: "menu-id-2", LabelIntl: extensibility.IntlMessages{"en": "Ex 2"}},
+			Description:   "Description 2",
 		},
 	}
 
@@ -53,9 +60,9 @@ func TestPrintExtensionsList(t *testing.T) {
 	)
 
 	expectedTokens := []string{
-		"ID", "NAME", "DESCRIPTION",
-		"ext-1", "Extension 1", "Description 1",
-		"ext-2", "Extension 2", "Description 2",
+		"ID", "NAME", "ENTRY", "DESTINATION", "MENU (ID) / CATEGORY (ID)", "DESCRIPTION",
+		"ext-1", "Extension 1", "https://docs.mia-platform.eu", "d1", "Ex 1 (menu-id) / Cat 1 (cat-1)", "Description 1",
+		"ext-2", "Extension 2", "https://mia-platform.eu", "d2", "Ex 2 (menu-id-2)", "Description 2",
 	}
 
 	for _, expected := range expectedTokens {
