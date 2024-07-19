@@ -26,10 +26,6 @@ type Extension struct {
 	Routes        []*ExtensionRoute `yaml:"routes,omitempty" json:"routes,omitempty"`
 }
 
-type ExtensionInfo struct {
-	ExtensionID string `yaml:"extensionId" json:"extensionId"`
-}
-
 type Icon struct {
 	Name string `json:"name"`
 }

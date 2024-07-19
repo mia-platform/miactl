@@ -605,6 +605,7 @@ Available flags for the command:
 
 - `--company-id` to set the ID of the desired Company
 - `--extension-id` to set the ID of the desired extension.
+- `--output=json|yaml` to control the printed output format.
 
 ### apply
 

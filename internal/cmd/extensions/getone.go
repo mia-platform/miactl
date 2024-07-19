@@ -20,16 +20,17 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/encoding"
 
 	"github.com/spf13/cobra"
 )
 
 // GetOneCmd return a new cobra command to get a single extension
 func GetOneCmd(options *clioptions.CLIOptions) *cobra.Command {
-	return &cobra.Command{
-		Use:   "list",
-		Short: "List registered extensions",
-		Long:  "List registered extensions for the company.",
+	cmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get a registered extension",
+		Long:  "Get details for a single registered extension for the company.",
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
@@ -48,8 +49,16 @@ func GetOneCmd(options *clioptions.CLIOptions) *cobra.Command {
 			extension, err := extensibilityClient.GetOne(cmd.Context(), restConfig.CompanyID, options.EntityID)
 			cobra.CheckErr(err)
 
-			fmt.Printf("%+v", extension)
+			serialized, err := encoding.MarshalData(extension, options.OutputFormat, encoding.MarshalOptions{Indent: true})
+			if err != nil {
+				return err
+			}
+			fmt.Println(string(serialized))
 			return nil
 		},
 	}
+
+	options.AddOutputFormatFlag(cmd.Flags(), encoding.JSON)
+	addExtensionIDFlag(options, cmd)
+	return cmd
 }
