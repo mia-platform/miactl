@@ -42,6 +42,7 @@ func NewCommand(o *clioptions.CLIOptions) *cobra.Command {
 	o.AddProjectFlags(flags)
 
 	cmd.AddCommand(
+		GetByIDCmd(o),
 		ListCmd(o),
 		ApplyCmd(o),
 		DeleteCmd(o),
