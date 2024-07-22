@@ -50,7 +50,7 @@ type Menu struct {
 
 type ExtensionInfo struct {
 	ExtensionID        string          `json:"extensionId" yaml:"extensionId"`
-	ExtensionName      string          `json:"extensionName" yaml:"extensionName"`
+	Name               string          `json:"name" yaml:"name"`
 	Entry              string          `json:"entry" yaml:"entry"`
 	Type               string          `json:"type" yaml:"type"`
 	Destination        DestinationArea `json:"destination" yaml:"destination"`

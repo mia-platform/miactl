@@ -16,6 +16,8 @@
 package extensions
 
 import (
+	"fmt"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/printer"
@@ -44,20 +46,59 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 			extensions, err := extensibilityClient.List(cmd.Context(), restConfig.CompanyID)
 			cobra.CheckErr(err)
 
-			printExtensionsList(extensions, options.Printer())
+			printExtensionsList(extensions, options.Printer(clioptions.DisableWrapLines(true)))
 			return nil
 		},
 	}
 }
 
-func printExtensionsList(extensions []*extensibility.Extension, p printer.IPrinter) {
-	p.Keys("ID", "Name", "Description")
+func printExtensionsList(extensions []*extensibility.ExtensionInfo, p printer.IPrinter) {
+	p.Keys("ID", "Name", "Entry", "Destination", "Menu (id) / Category (id)", "Description")
 	for _, extension := range extensions {
 		p.Record(
 			extension.ExtensionID,
 			extension.Name,
+			extension.Entry,
+			extension.Destination.ID,
+			menucolumn(extension),
 			extension.Description,
 		)
 	}
 	p.Print()
+}
+
+func menucolumn(extension *extensibility.ExtensionInfo) string {
+	if extension.Menu.ID == "" {
+		return ""
+	}
+
+	menuLabel := getTranslation(extension.Menu.LabelIntl, extensibility.En)
+	if menuLabel == "" {
+		return ""
+	}
+
+	menu := fmt.Sprintf("%s (%s)", menuLabel, extension.Menu.ID)
+
+	categoryLabel := getTranslation(extension.Category.LabelIntl, extensibility.En)
+	if categoryLabel != "" {
+		menu += fmt.Sprintf(" / %s (%s)", categoryLabel, extension.Category.ID)
+	}
+
+	return menu
+}
+
+func getTranslation(messages extensibility.IntlMessages, defaultLang extensibility.Languages) string {
+	if len(messages) == 0 {
+		return ""
+	}
+
+	defaultMessage, ok := messages[defaultLang]
+	if !ok {
+		for _, msg := range messages {
+			if msg != "" {
+				return msg
+			}
+		}
+	}
+	return defaultMessage
 }

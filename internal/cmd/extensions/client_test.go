@@ -89,7 +89,7 @@ func TestE11yClientList(t *testing.T) {
 				require.Nil(t, data)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, []*extensibility.Extension{
+				require.Equal(t, []*extensibility.ExtensionInfo{
 					{
 						ExtensionID: "ext-1",
 						Name:        "Extension 1",
@@ -109,7 +109,7 @@ func TestE11yClientList(t *testing.T) {
 func TestE11yClientGetOne(t *testing.T) {
 	validBodyString := `{
 		"extensionId": "mocked-id",
-		"extensionName": "mocked-name",
+		"name": "mocked-name",
 		"entry": "http://example.com/",
 		"type": "iframe",
 		"destination": {"id": "project"},
@@ -168,7 +168,7 @@ func TestE11yClientGetOne(t *testing.T) {
 				require.NoError(t, err)
 				require.Equal(t, &extensibility.ExtensionInfo{
 					ExtensionID:        "mocked-id",
-					ExtensionName:      "mocked-name",
+					Name:               "mocked-name",
 					Entry:              "http://example.com/",
 					Type:               "iframe",
 					Destination:        extensibility.DestinationArea{ID: "project"},
