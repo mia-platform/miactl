@@ -52,9 +52,9 @@ func NewCommand(o *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func addExtensionIDFlag(options *clioptions.CLIOptions, cmd *cobra.Command) {
+func addExtensionIDFlag(options *clioptions.CLIOptions, cmd *cobra.Command, description string) {
 	flags := cmd.Flags()
-	flags.StringVar(&options.EntityID, "extension-id", "", "the extension id that should be deleted")
+	flags.StringVar(&options.EntityID, "extension-id", "", description)
 }
 
 func requireFilePathFlag(o *clioptions.CLIOptions, cmd *cobra.Command) {

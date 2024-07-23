@@ -72,7 +72,7 @@ If an extension-id is found an updated is performed, if not instead a new extens
 		},
 	}
 
-	addExtensionIDFlag(o, cmd)
+	addExtensionIDFlag(o, cmd, "the extension id that should be edited")
 	requireFilePathFlag(o, cmd)
 
 	return cmd

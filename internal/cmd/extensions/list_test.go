@@ -33,39 +33,91 @@ func TestListCommandBuilder(t *testing.T) {
 }
 
 func TestPrintExtensionsList(t *testing.T) {
-	data := []*extensibility.ExtensionInfo{
-		{
-			ExtensionID: "ext-1",
-			Name:        "Extension 1",
-			Entry:       "https://docs.mia-platform.eu",
-			Destination: extensibility.DestinationArea{ID: "d1"},
-			Menu:        extensibility.Menu{ID: "menu-id", LabelIntl: extensibility.IntlMessages{"en": "Ex 1"}},
-			Category:    extensibility.Category{ID: "cat-1", LabelIntl: extensibility.IntlMessages{"en": "Cat 1"}},
-			Description: "Description 1",
-		},
-		{
-			ExtensionID: "ext-2",
-			Name:        "Extension 2",
-			Entry:       "https://mia-platform.eu",
-			Destination: extensibility.DestinationArea{ID: "d2"},
-			Menu:        extensibility.Menu{ID: "menu-id-2", LabelIntl: extensibility.IntlMessages{"en": "Ex 2"}},
-			Description: "Description 2",
-		},
-	}
+	t.Run("without resolve details", func(t *testing.T) {
+		data := []*extensibility.ExtensionInfo{
+			{
+				ExtensionID: "ext-1",
+				Name:        "Extension 1",
+				Entry:       "https://docs.mia-platform.eu",
+				Destination: extensibility.DestinationArea{ID: "d1"},
+				Menu:        &extensibility.Menu{ID: "menu-id", LabelIntl: extensibility.IntlMessages{"en": "Ex 1"}},
+				Category:    &extensibility.Category{ID: "cat-1", LabelIntl: extensibility.IntlMessages{"en": "Cat 1"}},
+				Description: "Description 1",
+			},
+			{
+				ExtensionID: "ext-2",
+				Name:        "Extension 2",
+				Entry:       "https://mia-platform.eu",
+				Destination: extensibility.DestinationArea{ID: "d2"},
+				Menu:        &extensibility.Menu{ID: "menu-id-2", LabelIntl: extensibility.IntlMessages{"en": "Ex 2"}},
+				Description: "Description 2",
+			},
+		}
 
-	str := &strings.Builder{}
-	printExtensionsList(
-		data,
-		printer.NewTablePrinter(printer.TablePrinterOptions{}, str),
-	)
+		str := &strings.Builder{}
+		printExtensionsList(
+			data,
+			printer.NewTablePrinter(printer.TablePrinterOptions{}, str),
+			false,
+		)
 
-	expectedTokens := []string{
-		"ID", "NAME", "ENTRY", "DESTINATION", "MENU (ID) / CATEGORY (ID)", "DESCRIPTION",
-		"ext-1", "Extension 1", "https://docs.mia-platform.eu", "d1", "Ex 1 (menu-id) / Cat 1 (cat-1)", "Description 1",
-		"ext-2", "Extension 2", "https://mia-platform.eu", "d2", "Ex 2 (menu-id-2)", "Description 2",
-	}
+		expectedTokens := []string{
+			"ID", "NAME", "ENTRY", "DESTINATION", "DESCRIPTION",
+			"ext-1", "Extension 1", "https://docs.mia-platform.eu", "d1", "Description 1",
+			"ext-2", "Extension 2", "https://mia-platform.eu", "d2", "Description 2",
+		}
 
-	for _, expected := range expectedTokens {
-		require.Contains(t, str.String(), expected)
-	}
+		for _, expected := range expectedTokens {
+			require.Contains(t, str.String(), expected)
+		}
+	})
+
+	t.Run("resolving details", func(t *testing.T) {
+		data := []*extensibility.ExtensionInfo{
+			{
+				ExtensionID: "ext-1",
+				Name:        "Extension 1",
+				Entry:       "https://docs.mia-platform.eu",
+				Destination: extensibility.DestinationArea{ID: "d1"},
+				Menu:        &extensibility.Menu{ID: "menu-id", LabelIntl: extensibility.IntlMessages{"en": "Ex 1"}},
+				Category:    &extensibility.Category{ID: "cat-1", LabelIntl: extensibility.IntlMessages{"en": "Cat 1"}},
+				Description: "Description 1",
+			},
+			{
+				ExtensionID: "ext-2",
+				Name:        "Extension 2",
+				Entry:       "https://mia-platform.eu",
+				Destination: extensibility.DestinationArea{ID: "d2"},
+				Menu:        &extensibility.Menu{ID: "menu-id-2", LabelIntl: extensibility.IntlMessages{"en": "Ex 2"}},
+				Description: "Description 2",
+			},
+			{
+				ExtensionID: "ext-3",
+				Name:        "Extension 3",
+				Entry:       "https://docs.mia-platform.eu",
+				Destination: extensibility.DestinationArea{ID: "d3"},
+				Menu:        &extensibility.Menu{ID: "menu-id", LabelIntl: extensibility.IntlMessages{"en": "Ex 3"}},
+				Category:    &extensibility.Category{ID: "cat-3"},
+				Description: "Description 3",
+			},
+		}
+
+		str := &strings.Builder{}
+		printExtensionsList(
+			data,
+			printer.NewTablePrinter(printer.TablePrinterOptions{}, str),
+			true,
+		)
+
+		expectedTokens := []string{
+			"ID", "NAME", "ENTRY", "DESTINATION", "DESCRIPTION", "MENU (ID)", "CATEGORY (ID)",
+			"ext-1", "Extension 1", "https://docs.mia-platform.eu", "d1", "Description 1", "Ex 1 (menu-id)", "Cat 1 (cat-1)",
+			"ext-2", "Extension 2", "https://mia-platform.eu", "d2", "Description 2", "Ex 2 (menu-id-2)",
+			"ext-3", "Extension 3", "https://docs.mia-platform.eu", "d3", "Description 3", "Ex 3 (menu-id)", "NO LABEL (cat-3)",
+		}
+
+		for _, expected := range expectedTokens {
+			require.Contains(t, str.String(), expected)
+		}
+	})
 }

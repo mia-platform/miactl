@@ -56,6 +56,6 @@ context to select where you want to activate it.`,
 		},
 	}
 
-	addExtensionIDFlag(o, cmd)
+	addExtensionIDFlag(o, cmd, "the extension id that should be activated")
 	return cmd
 }

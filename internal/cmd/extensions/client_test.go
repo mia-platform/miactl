@@ -83,7 +83,7 @@ func TestE11yClientList(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			data, err := New(client).List(context.TODO(), testCase.companyID)
+			data, err := New(client).List(context.TODO(), testCase.companyID, false)
 			if testCase.err {
 				require.Error(t, err)
 				require.Nil(t, data)
@@ -176,14 +176,14 @@ func TestE11yClientGetOne(t *testing.T) {
 					ActivationContexts: []extensibility.Context{"project"},
 					Permissions:        []string{"perm1"},
 					Visibilities:       []extensibility.Visibility{{ContextType: "project", ContextID: "prjId"}},
-					Menu: extensibility.Menu{
+					Menu: &extensibility.Menu{
 						ID: "routeId",
 						LabelIntl: extensibility.IntlMessages{
 							"en": "some label",
 							"it": "qualche etichetta",
 						},
 					},
-					Category: extensibility.Category{
+					Category: &extensibility.Category{
 						ID: "some-category",
 					},
 				}, data)
