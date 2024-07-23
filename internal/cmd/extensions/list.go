@@ -26,6 +26,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+const noLabel = "NO LABEL"
+
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -76,35 +78,30 @@ func printExtensionsList(extensions []*extensibility.ExtensionInfo, p printer.IP
 			extension.Description,
 		}
 		if resolveDetails {
-			tableRow = append(tableRow, menucolumn(extension)...)
+			if extension.Menu == nil {
+				tableRow = append(tableRow, "")
+			} else {
+				tableRow = append(tableRow, menucolumn(extension.Menu.ID, extension.Menu.LabelIntl))
+			}
+
+			if extension.Category == nil {
+				tableRow = append(tableRow, "")
+			} else {
+				tableRow = append(tableRow, menucolumn(extension.Category.ID, extension.Category.LabelIntl))
+			}
 		}
 		p.Record(tableRow...)
 	}
 	p.Print()
 }
 
-func menucolumn(extension *extensibility.ExtensionInfo) []string {
-	if extension.Menu == nil {
-		return []string{"", ""}
-	}
-
-	menuID := extension.Menu.ID
-	menuLabel := getTranslation(extension.Menu.LabelIntl, extensibility.En)
-	menuCellValue := fmt.Sprintf("%s (%s)", menuLabel, menuID)
-
-	if extension.Category == nil {
-		return []string{menuCellValue, ""}
-	}
-	categoryID := extension.Category.ID
-	categoryLabel := getTranslation(extension.Category.LabelIntl, extensibility.En)
-	categoryCellValue := fmt.Sprintf("%s (%s)", categoryLabel, categoryID)
-
-	return []string{menuCellValue, categoryCellValue}
+func menucolumn(id string, labelIntl extensibility.IntlMessages) string {
+	return fmt.Sprintf("%s (%s)", getTranslation(labelIntl, extensibility.En), id)
 }
 
 func getTranslation(messages extensibility.IntlMessages, defaultLang extensibility.Languages) string {
 	if len(messages) == 0 {
-		return "NO LABEL"
+		return noLabel
 	}
 
 	defaultMessage, ok := messages[defaultLang]
