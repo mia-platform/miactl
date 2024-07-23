@@ -59,6 +59,6 @@ func GetOneCmd(options *clioptions.CLIOptions) *cobra.Command {
 	}
 
 	options.AddOutputFormatFlag(cmd.Flags(), encoding.JSON)
-	addExtensionIDFlag(options, cmd)
+	addExtensionIDFlag(options, cmd, "the extension id that should be retrieved")
 	return cmd
 }

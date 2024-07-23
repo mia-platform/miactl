@@ -27,7 +27,7 @@ import (
 )
 
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
-	return &cobra.Command{
+	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List registered extensions",
 		Long:  "List registered extensions for the company.",
@@ -43,53 +43,68 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 			}
 
 			extensibilityClient := New(client)
-			extensions, err := extensibilityClient.List(cmd.Context(), restConfig.CompanyID)
+			extensions, err := extensibilityClient.List(cmd.Context(), restConfig.CompanyID, options.ResolveExtensionsDetails)
 			cobra.CheckErr(err)
 
-			printExtensionsList(extensions, options.Printer(clioptions.DisableWrapLines(true)))
+			printExtensionsList(extensions, options.Printer(clioptions.DisableWrapLines(true)), options.ResolveExtensionsDetails)
 			return nil
 		},
 	}
+
+	addResolveDetailsFlag(options, cmd)
+	return cmd
 }
 
-func printExtensionsList(extensions []*extensibility.ExtensionInfo, p printer.IPrinter) {
-	p.Keys("ID", "Name", "Entry", "Destination", "Menu (id) / Category (id)", "Description")
+func addResolveDetailsFlag(options *clioptions.CLIOptions, cmd *cobra.Command) {
+	flags := cmd.Flags()
+	flags.BoolVar(&options.ResolveExtensionsDetails, "resolve-details", false, "Retrieve also menu and category info")
+}
+
+func printExtensionsList(extensions []*extensibility.ExtensionInfo, p printer.IPrinter, resolveDetails bool) {
+	tableColumnLabel := []string{"ID", "Name", "Entry", "Destination", "Description"}
+	if resolveDetails {
+		tableColumnLabel = append(tableColumnLabel, "Menu (id)")
+		tableColumnLabel = append(tableColumnLabel, "Category (id)")
+	}
+	p.Keys(tableColumnLabel...)
 	for _, extension := range extensions {
-		p.Record(
+		tableRow := []string{
 			extension.ExtensionID,
 			extension.Name,
 			extension.Entry,
 			extension.Destination.ID,
-			menucolumn(extension),
 			extension.Description,
-		)
+		}
+		if resolveDetails {
+			tableRow = append(tableRow, menucolumn(extension)...)
+		}
+		p.Record(tableRow...)
 	}
 	p.Print()
 }
 
-func menucolumn(extension *extensibility.ExtensionInfo) string {
-	if extension.Menu.ID == "" {
-		return ""
+func menucolumn(extension *extensibility.ExtensionInfo) []string {
+	if extension.Menu == nil {
+		return []string{"", ""}
 	}
 
+	menuID := extension.Menu.ID
 	menuLabel := getTranslation(extension.Menu.LabelIntl, extensibility.En)
-	if menuLabel == "" {
-		return ""
+	menuCellValue := fmt.Sprintf("%s (%s)", menuLabel, menuID)
+
+	if extension.Category == nil {
+		return []string{menuCellValue, ""}
 	}
-
-	menu := fmt.Sprintf("%s (%s)", menuLabel, extension.Menu.ID)
-
+	categoryID := extension.Category.ID
 	categoryLabel := getTranslation(extension.Category.LabelIntl, extensibility.En)
-	if categoryLabel != "" {
-		menu += fmt.Sprintf(" / %s (%s)", categoryLabel, extension.Category.ID)
-	}
+	categoryCellValue := fmt.Sprintf("%s (%s)", categoryLabel, categoryID)
 
-	return menu
+	return []string{menuCellValue, categoryCellValue}
 }
 
 func getTranslation(messages extensibility.IntlMessages, defaultLang extensibility.Languages) string {
 	if len(messages) == 0 {
-		return ""
+		return "NO LABEL"
 	}
 
 	defaultMessage, ok := messages[defaultLang]

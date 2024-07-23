@@ -59,6 +59,6 @@ type ExtensionInfo struct {
 	ActivationContexts []Context       `json:"activationContexts" yaml:"activationContexts"`
 	Permissions        []string        `json:"permissions,omitempty" yaml:"permissions,omitempty"`
 	Visibilities       []Visibility    `json:"visibilities,omitempty" yaml:"visibilities,omitempty"`
-	Category           Category        `json:"category,omitempty" yaml:"category,omitempty"`
-	Menu               Menu            `json:"menu" yaml:"menu"`
+	Category           *Category       `json:"category,omitempty" yaml:"category,omitempty"`
+	Menu               *Menu           `json:"menu,omitempty" yaml:"menu"`
 }

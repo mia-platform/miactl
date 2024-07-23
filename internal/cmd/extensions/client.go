@@ -36,7 +36,7 @@ const (
 const IFrameExtensionType = "iframe"
 
 type IE11yClient interface {
-	List(ctx context.Context, companyID string) ([]*extensibility.ExtensionInfo, error)
+	List(ctx context.Context, companyID string, resolveDetails bool) ([]*extensibility.ExtensionInfo, error)
 	GetOne(ctx context.Context, companyID string, extensionID string) (*extensibility.ExtensionInfo, error)
 	Apply(ctx context.Context, companyID string, extensionData *extensibility.Extension) (string, error)
 	Delete(ctx context.Context, companyID string, extensionID string) error
@@ -52,9 +52,15 @@ func New(c *client.APIClient) IE11yClient {
 	return &E11yClient{c: c}
 }
 
-func (e *E11yClient) List(ctx context.Context, companyID string) ([]*extensibility.ExtensionInfo, error) {
+func (e *E11yClient) List(ctx context.Context, companyID string, resolveDetails bool) ([]*extensibility.ExtensionInfo, error) {
 	apiPath := fmt.Sprintf(tenantsExtensionsAPIFmt, companyID)
-	resp, err := e.c.Get().APIPath(apiPath).Do(ctx)
+
+	clientReq := e.c.Get().APIPath(apiPath)
+	if resolveDetails {
+		clientReq = clientReq.SetParam("resolveDetails", "true")
+	}
+	resp, err := clientReq.Do(ctx)
+
 	if err != nil {
 		return nil, fmt.Errorf("error executing request: %w", err)
 	}

@@ -52,6 +52,6 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 		},
 	}
 
-	addExtensionIDFlag(options, cmd)
+	addExtensionIDFlag(options, cmd, "the extension id that should be deleted")
 	return cmd
 }

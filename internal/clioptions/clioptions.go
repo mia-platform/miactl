@@ -85,6 +85,8 @@ type CLIOptions struct {
 	ShowUsers           bool
 	ShowGroups          bool
 	ShowServiceAccounts bool
+
+	ResolveExtensionsDetails bool
 }
 
 // NewCLIOptions return a new CLIOptions instance
