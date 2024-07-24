@@ -84,7 +84,7 @@ func run(ctx context.Context, environmentName string, options *clioptions.CLIOpt
 	}
 	fmt.Printf("Deploying project %s in the environment '%s'\n", projectID, environmentName)
 
-	status, err := waitStatus(ctx, client, projectID, resp.ID)
+	status, err := waitStatus(ctx, client, projectID, resp.ID, environmentName)
 	if err != nil {
 		return fmt.Errorf("error retrieving the pipeline status: %w", err)
 	}
@@ -136,13 +136,14 @@ func triggerPipeline(ctx context.Context, client *client.APIClient, environmentN
 // Declared here to override it during tests
 var sleepDuration = (1 * time.Second) + (500 * time.Millisecond)
 
-func waitStatus(ctx context.Context, client *client.APIClient, projectID string, deployID int) (string, error) {
+func waitStatus(ctx context.Context, client *client.APIClient, projectID string, deployID int, environmentName string) (string, error) {
 	var outStatus *resources.PipelineStatus
 	for {
 		time.Sleep(sleepDuration)
 		resp, err := client.
 			Get().
 			APIPath(fmt.Sprintf(pipelineStatusEndpointTemplate, projectID, deployID)).
+			SetParam("environment", environmentName).
 			Do(ctx)
 
 		if err != nil {

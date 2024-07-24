@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `extensions get` command
 
+### Fixed
+
+- deploy status now sends the environment query params
+
 ## [0.13.0] - 2024-06-26
 
 ### Added

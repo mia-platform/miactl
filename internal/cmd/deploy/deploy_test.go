@@ -80,7 +80,7 @@ func testServer(t *testing.T) *httptest.Server {
 
 			require.NoError(t, err)
 			w.Write(data)
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "correct", 1):
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "correct", 1) && r.URL.Query().Get("environment") == "environmentName":
 			data, err := resources.EncodeResourceToJSON(&resources.PipelineStatus{
 				ID:     1,
 				Status: "succeeded",
