@@ -21,4 +21,4 @@ generate-deps:
 .PHONY: generate
 generate: generate-deps
 	go generate -x -ldflags "$(GO_LDFLAGS)" ./...
-	${TOOLS_BIN}/deepcopy-gen -i ./internal/cliconfig/api -o ${PROJECT_DIR} -O zz_generated.deepcopy --go-header-file ${TOOLS_DIR}/boilerplate.go.txt
+	${TOOLS_BIN}/deepcopy-gen --output-file zz_generated.deepcopy.go --go-header-file ${TOOLS_DIR}/boilerplate.go.txt ./internal/cliconfig/api
