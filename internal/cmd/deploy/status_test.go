@@ -33,34 +33,34 @@ func TestAddStatus(t *testing.T) {
 	testCases := map[string]struct {
 		server             *httptest.Server
 		status             string
-		triggerId          string
-		projectId          string
+		triggerID          string
+		projectID          string
 		expectErr          bool
 		expectedErrMessage string
 	}{
 		"add status succeed": {
 			server:    testAddStatusServer(t),
-			triggerId: "trigger-id",
-			projectId: "project-id",
+			triggerID: "trigger-id",
+			projectID: "project-id",
 		},
 		"add status fails": {
 			server:             testAddStatusServer(t),
-			triggerId:          "fails-bad-request",
-			projectId:          "project-id",
+			triggerID:          "fails-bad-request",
+			projectID:          "project-id",
 			expectErr:          true,
 			expectedErrMessage: "some bad request",
 		},
 		"without project id": {
 			server:             testAddStatusServer(t),
-			projectId:          "",
-			triggerId:          "trigger-id",
+			projectID:          "",
+			triggerID:          "trigger-id",
 			expectErr:          true,
 			expectedErrMessage: fmt.Sprintf(deployStatusErrorRequiredTemplate, "projectId"),
 		},
 		"without trigger id": {
 			server:             testAddStatusServer(t),
-			projectId:          "project-id",
-			triggerId:          "",
+			projectID:          "project-id",
+			triggerID:          "",
 			expectErr:          true,
 			expectedErrMessage: fmt.Sprintf(deployStatusErrorRequiredTemplate, "triggerId"),
 		},
@@ -72,8 +72,8 @@ func TestAddStatus(t *testing.T) {
 			defer server.Close()
 			options := &clioptions.CLIOptions{
 				Endpoint:  server.URL,
-				TriggerID: testCase.triggerId,
-				ProjectID: testCase.projectId,
+				TriggerID: testCase.triggerID,
+				ProjectID: testCase.projectID,
 			}
 			err := runAddDeployStatus(context.TODO(), options, testCase.status)
 			if testCase.expectErr {

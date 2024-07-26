@@ -1,3 +1,18 @@
+// Copyright Mia srl
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package deploy
 
 import (
@@ -53,10 +68,6 @@ At the moment, the only deploy trigger which creates a trigger ID is the integra
 	return cmd
 }
 
-type DeployStatus struct {
-	Status string `json:"status"`
-}
-
 func runAddDeployStatus(ctx context.Context, options *clioptions.CLIOptions, status string) error {
 	restConfig, err := options.ToRESTConfig()
 	if err != nil {
@@ -73,12 +84,12 @@ func runAddDeployStatus(ctx context.Context, options *clioptions.CLIOptions, sta
 		return err
 	}
 
-	triggerId := options.TriggerID
-	if len(triggerId) == 0 {
+	triggerID := options.TriggerID
+	if len(triggerID) == 0 {
 		return fmt.Errorf(deployStatusErrorRequiredTemplate, "triggerId")
 	}
 
-	requestBody := deploy.AddStatusRequest{
+	requestBody := deploy.AddPipelineStatusRequest{
 		Status: status,
 	}
 	payload, err := resources.EncodeResourceToJSON(requestBody)
@@ -87,7 +98,7 @@ func runAddDeployStatus(ctx context.Context, options *clioptions.CLIOptions, sta
 	}
 
 	resp, err := client.Post().
-		APIPath(fmt.Sprintf(deployStatusTriggerEndpointTemplate, projectID, triggerId)).
+		APIPath(fmt.Sprintf(deployStatusTriggerEndpointTemplate, projectID, triggerID)).
 		Body(payload).
 		Do(ctx)
 	if err != nil {
@@ -98,7 +109,7 @@ func runAddDeployStatus(ctx context.Context, options *clioptions.CLIOptions, sta
 		return err
 	}
 
-	fmt.Printf("Deploy status updated for pipeline with triggerId %s to %s\n", triggerId, status)
+	fmt.Printf("Deploy status updated for pipeline with triggerId %s to %s\n", triggerID, status)
 
 	return nil
 }
