@@ -35,7 +35,7 @@ listening on updates of the status for keep the user informed on the updates. Th
 will exit with error if the pipeline will not end with a success.`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Println("Deprecation Warning: The 'deploy' command is deprecated. Use 'deploy trigger' instead.")
+			fmt.Println("Deprecation Warning: The 'deploy' command is deprecated. Use 'deploy trigger' instead.\n")
 
 			environmentName := args[0]
 			return runDeployTrigger(cmd.Context(), environmentName, options)
