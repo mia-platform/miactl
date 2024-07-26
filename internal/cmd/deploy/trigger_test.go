@@ -57,7 +57,7 @@ func TestDeploy(t *testing.T) {
 				ProjectID:    testCase.projectID,
 				MiactlConfig: filepath.Join(t.TempDir(), "nofile"),
 			}
-			err := run(context.TODO(), "environmentName", options)
+			err := runDeployTrigger(context.TODO(), "environmentName", options)
 			if testCase.expectErr {
 				require.Error(t, err)
 				return
