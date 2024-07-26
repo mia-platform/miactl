@@ -16,8 +16,6 @@
 package deploy
 
 import (
-	"fmt"
-
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
 )
@@ -33,10 +31,9 @@ Trigger the deploy of the target environment in the selected project.
 The deploy will be performed by the pipeline setup in project, the command will then keep
 listening on updates of the status for keep the user informed on the updates. The command
 will exit with error if the pipeline will not end with a success.`,
-		Args: cobra.ExactArgs(1),
+		Args:       cobra.ExactArgs(1),
+		Deprecated: "use 'deploy trigger' instead.",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Print("Deprecation Warning: The 'deploy' command is deprecated. Use 'deploy trigger' instead.\n\n")
-
 			environmentName := args[0]
 			return runDeployTrigger(cmd.Context(), environmentName, options)
 		},
