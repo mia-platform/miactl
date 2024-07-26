@@ -32,7 +32,7 @@ The deploy will be performed by the pipeline setup in project, the command will 
 listening on updates of the status for keep the user informed on the updates. The command
 will exit with error if the pipeline will not end with a success.`,
 		Args:       cobra.ExactArgs(1),
-		Deprecated: "use 'deploy trigger' instead.",
+		Deprecated: "use 'deploy trigger' instead",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			environmentName := args[0]
 			return runDeployTrigger(cmd.Context(), environmentName, options)
