@@ -547,8 +547,8 @@ The `deploy` command allows you to manage the deployment of your Projects.
 Available subcommands are the following ones:
 
 ```sh
-	trigger       Trigger a deploy pipeline
-	add status    Add a new deploy status
+  trigger       Trigger a deploy pipeline
+  add status    Add a new deploy status
 ```
 
 ### trigger
