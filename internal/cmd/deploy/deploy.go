@@ -45,9 +45,19 @@ will exit with error if the pipeline will not end with a success.`,
 	deployTriggerOptions(cmd, options)
 
 	cmd.AddCommand(
-		triggerCmd(options),
+		addCmd(options),
 		newStatusAddCmd(options),
 	)
+
+	return cmd
+}
+
+func addCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use: "add",
+	}
+
+	cmd.AddCommand(newStatusAddCmd(options))
 
 	return cmd
 }

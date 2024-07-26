@@ -13,7 +13,7 @@ import (
 )
 
 const (
-	deployStatusTriggerEndpointTemplate = "/api/deploy/webhooks/projects/%s/trigger/pipelines/triggers/%s/status/"
+	deployStatusTriggerEndpointTemplate = "/api/deploy/webhooks/projects/%s/pipelines/triggers/%s/status/"
 	deployStatusErrorRequiredTemplate   = "%s is required to update the deploy trigger status"
 )
 
@@ -21,7 +21,7 @@ var allowedArgs = []string{"success", "failed", "canceled", "skipped"}
 
 func newStatusAddCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "add status" + "[" + strings.Join(allowedArgs, "|") + "]",
+		Use:   "status" + " [" + strings.Join(allowedArgs, "|") + "]",
 		Short: "Add status to deploy history record.",
 		Long: `This command is used to add a status to a deploy history record.
 
@@ -30,7 +30,10 @@ to the pipeline.
 
 At the moment, the only deploy trigger which creates a trigger ID is the integration with the Jenkins provider.`,
 		ValidArgs: allowedArgs,
-		Args:      cobra.MatchAll(cobra.ExactArgs(1), cobra.OnlyValidArgs),
+		Args: cobra.MatchAll(
+			cobra.ExactArgs(1),
+			cobra.OnlyValidArgs,
+		),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runAddDeployStatus(cmd.Context(), options, args[0])
 		},
