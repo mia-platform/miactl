@@ -44,7 +44,10 @@ will exit with error if the pipeline will not end with a success.`,
 
 	deployTriggerOptions(cmd, options)
 
-	cmd.AddCommand(triggerCmd(options))
+	cmd.AddCommand(
+		triggerCmd(options),
+		newStatusAddCmd(options),
+	)
 
 	return cmd
 }
