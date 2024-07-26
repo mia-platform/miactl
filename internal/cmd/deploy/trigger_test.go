@@ -38,11 +38,21 @@ func TestDeploy(t *testing.T) {
 		expectErr bool
 	}{
 		"pipeline succeed": {
-			server:    testServer(t),
+			server:    testTriggerServer(t),
 			projectID: "correct",
 		},
+		"pipeline fails": {
+			server:    testTriggerServer(t),
+			projectID: "fails-bad-request",
+			expectErr: true,
+		},
+		"wait status fails": {
+			server:    testTriggerServer(t),
+			projectID: "fails-wait-status",
+			expectErr: true,
+		},
 		"missing project ID": {
-			server:    testServer(t),
+			server:    testTriggerServer(t),
 			projectID: "",
 			expectErr: true,
 		},
@@ -57,7 +67,7 @@ func TestDeploy(t *testing.T) {
 				ProjectID:    testCase.projectID,
 				MiactlConfig: filepath.Join(t.TempDir(), "nofile"),
 			}
-			err := run(context.TODO(), "environmentName", options)
+			err := runDeployTrigger(context.TODO(), "environmentName", options)
 			if testCase.expectErr {
 				require.Error(t, err)
 				return
@@ -67,12 +77,12 @@ func TestDeploy(t *testing.T) {
 	}
 }
 
-func testServer(t *testing.T) *httptest.Server {
+func testTriggerServer(t *testing.T) *httptest.Server {
 	t.Helper()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		t.Helper()
 		switch {
-		case r.Method == http.MethodPost && r.URL.Path == fmt.Sprintf(deployProjectEndpointTemplate, "correct"):
+		case r.Method == http.MethodPost && (r.URL.Path == fmt.Sprintf(deployProjectEndpointTemplate, "correct") || r.URL.Path == fmt.Sprintf(deployProjectEndpointTemplate, "fails-wait-status")):
 			data, err := resources.EncodeResourceToJSON(&resources.DeployProject{
 				ID:  1,
 				URL: "http://example.com",
@@ -87,6 +97,16 @@ func testServer(t *testing.T) *httptest.Server {
 			})
 			require.NoError(t, err)
 			w.Write(data)
+		case r.Method == http.MethodPost && r.URL.Path == fmt.Sprintf(deployProjectEndpointTemplate, "fails-bad-request"):
+			respBody := `{"error": "Bad Request","message":"some bad request"}`
+
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(respBody))
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "fails-wait-status", 1) && r.URL.Query().Get("environment") == "environmentName":
+			respBody := `{"error": "Internal Server Error","message":"some error"}`
+
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(respBody))
 		default:
 			w.WriteHeader(http.StatusNotFound)
 			require.FailNowf(t, "unknown http request", "request method: %s request URL: %s", r.Method, r.URL)

@@ -45,6 +45,7 @@ type CLIOptions struct {
 	Revision   string
 	DeployType string
 	NoSemVer   bool
+	TriggerID  string
 
 	IAMRole            string
 	ProjectIAMRole     string
@@ -139,6 +140,10 @@ func (o *CLIOptions) AddDeployFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Revision, "revision", "HEAD", "revision of the commit to deploy")
 	flags.StringVar(&o.DeployType, "deploy-type", "smart_deploy", "deploy type")
 	flags.BoolVar(&o.NoSemVer, "no-semver", false, "force the deploy wihout semver")
+}
+
+func (o *CLIOptions) AddDeployAddStatusFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.TriggerID, "trigger-id", "", "trigger-id of the pipeline to update")
 }
 
 func (o *CLIOptions) AddContextAuthFlags(flags *pflag.FlagSet) {
