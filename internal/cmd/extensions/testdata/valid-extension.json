@@ -1,25 +1,24 @@
 {
     "name": "Extension 1",
-    "description": "My extension 1",
     "entry": "https://example.com/",
-    "contexts": [
+    "description": "My extension 1",
+    "activationContexts": [
         "project"
     ],
-    "routes": [
-        {
-            "id": "extension-1",
-            "parentId": "workloads",
-            "locationId": "runtime",
-            "renderType": "menu",
-            "labelIntl": {
-                "en": "SomeLabel",
-                "it": "SomeLabelInItalian"
-            },
-            "destinationPath": "/",
-            "order": 200.0,
-            "icon": {
-                "name": "PiHardDrives"
-            }
-        }
-    ]
+    "iconName": "PiHardDrives",
+    "destination": {
+        "id": "runtime",
+        "path": "/" 
+    },
+    "menu": {
+        "id": "extension-1",
+        "labelIntl": {
+            "en": "SomeLabel",
+            "it": "SomeLabelInItalian"
+        },
+        "order": 200.0
+    },
+    "category": {
+        "id": "workloads"
+    }
 }

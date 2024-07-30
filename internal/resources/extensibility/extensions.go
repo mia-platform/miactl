@@ -16,14 +16,17 @@
 package extensibility
 
 type Extension struct {
-	ExtensionID   string            `yaml:"extensionId,omitempty" json:"extensionId,omitempty"`
-	ExtensionType string            `yaml:"extensionType,omitempty" json:"extensionType,omitempty"`
-	Name          string            `yaml:"name" json:"name"`
-	Description   string            `yaml:"description" json:"description"`
-	Entry         string            `yaml:"entry" json:"entry"`
-	Contexts      []string          `yaml:"contexts" json:"contexts"`
-	Permissions   []string          `yaml:"permissions,omitempty" json:"permissions,omitempty"`
-	Routes        []*ExtensionRoute `yaml:"routes,omitempty" json:"routes,omitempty"`
+	ExtensionID        string          `yaml:"extensionId,omitempty" json:"extensionId,omitempty"`
+	Name               string          `yaml:"name" json:"name"`
+	Entry              string          `yaml:"entry" json:"entry"`
+	Type               string          `yaml:"type" json:"type"`
+	Destination        DestinationArea `yaml:"destination" json:"destination"`
+	Description        string          `yaml:"description,omitempty" json:"description,omitempty"`
+	IconName           string          `yaml:"iconName,omitempty" json:"iconName,omitempty"`
+	ActivationContexts []Context       `yaml:"activationContexts" json:"activationContexts"`
+	Permissions        []string        `yaml:"permissions,omitempty" json:"permissions,omitempty"`
+	Category           *Category       `yaml:"category,omitempty" json:"category,omitempty"`
+	Menu               Menu            `yaml:"menu" json:"menu"`
 }
 
 type Icon struct {
