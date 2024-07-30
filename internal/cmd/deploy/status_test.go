@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -71,9 +72,10 @@ func TestAddStatus(t *testing.T) {
 			server := testCase.server
 			defer server.Close()
 			options := &clioptions.CLIOptions{
-				Endpoint:  server.URL,
-				TriggerID: testCase.triggerID,
-				ProjectID: testCase.projectID,
+				Endpoint:     server.URL,
+				TriggerID:    testCase.triggerID,
+				ProjectID:    testCase.projectID,
+				MiactlConfig: filepath.Join(t.TempDir(), "nofile"),
 			}
 			err := runAddDeployStatus(context.TODO(), options, testCase.status)
 			if testCase.expectErr {
