@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - deprecate `deploy` command
+- update go version to 1.22.5
 
 ## [v0.14.0] - 2024-07-25
 
