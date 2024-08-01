@@ -23,26 +23,27 @@ import (
 )
 
 func TestReadExtensionFromFile(t *testing.T) {
-	order := 200.0
+	var order extensibility.Order = 200.0
 	expectedRecord := &extensibility.Extension{
-		Name:        "Extension 1",
-		Description: "My extension 1",
-		Entry:       "https://example.com/",
-		Contexts:    []string{"project"},
-		Routes: []*extensibility.ExtensionRoute{
-			{
-				ID:         "extension-1",
-				ParentID:   "workloads",
-				LocationID: "runtime",
-				LabelIntl: map[string]string{
-					"en": "SomeLabel",
-					"it": "SomeLabelInItalian",
-				},
-				DestinationPath: "/",
-				RenderType:      "menu",
-				Order:           &order,
-				Icon:            &extensibility.Icon{Name: "PiHardDrives"},
+		Name:               "Extension 1",
+		Description:        "My extension 1",
+		Entry:              "https://example.com/",
+		ActivationContexts: []extensibility.Context{"project"},
+		Destination: extensibility.DestinationArea{
+			ID:   "runtime",
+			Path: "/",
+		},
+		IconName: "PiHardDrives",
+		Menu: extensibility.Menu{
+			ID: "extension-1",
+			LabelIntl: extensibility.IntlMessages{
+				extensibility.En: "SomeLabel",
+				extensibility.It: "SomeLabelInItalian",
 			},
+			Order: &order,
+		},
+		Category: &extensibility.Category{
+			ID: "workloads",
 		},
 	}
 

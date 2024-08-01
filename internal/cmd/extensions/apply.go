@@ -60,8 +60,8 @@ If an extension-id is found an updated is performed, if not instead a new extens
 				extensionData.ExtensionID = o.EntityID
 			}
 
-			if extensionData.ExtensionType == "" {
-				extensionData.ExtensionType = IFrameExtensionType
+			if extensionData.Type == "" {
+				extensionData.Type = IFrameExtensionType
 			}
 
 			extensibilityClient := New(client)

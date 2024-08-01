@@ -20,7 +20,8 @@ type Order float64
 type Context string
 
 type DestinationArea struct {
-	ID string `json:"id" yaml:"id"`
+	ID   string `yaml:"id" json:"id" `
+	Path string `yaml:"path" json:"path"`
 }
 type Languages string
 
@@ -33,32 +34,33 @@ const (
 type IntlMessages map[Languages]string
 
 type Visibility struct {
-	ContextType Context `json:"contextType" yaml:"contextType"`
-	ContextID   string  `json:"contextId" yaml:"contextId"`
+	ContextType Context `yaml:"contextType" json:"contextType"`
+	ContextID   string  `yaml:"contextId" json:"contextId"`
 }
 
 type Category struct {
-	ID        string       `json:"id" yaml:"id"`
-	LabelIntl IntlMessages `json:"labelIntl,omitempty" yaml:"labelIntl,omitempty"`
+	ID        string       `yaml:"id" json:"id" `
+	LabelIntl IntlMessages `yaml:"labelIntl,omitempty" json:"labelIntl,omitempty"`
+	Order     *Order       `yaml:"order,omitempty" json:"order,omitempty"`
 }
 
 type Menu struct {
-	ID        string       `json:"id" yaml:"id"`
-	LabelIntl IntlMessages `json:"labelIntl" yaml:"labelIntl"`
-	Order     *Order       `json:"order,omitempty" yaml:"order,omitempty"`
+	ID        string       `yaml:"id" json:"id"`
+	LabelIntl IntlMessages `yaml:"labelIntl" json:"labelIntl"`
+	Order     *Order       `yaml:"order,omitempty" json:"order,omitempty"`
 }
 
 type ExtensionInfo struct {
-	ExtensionID        string          `json:"extensionId" yaml:"extensionId"`
-	Name               string          `json:"name" yaml:"name"`
-	Entry              string          `json:"entry" yaml:"entry"`
-	Type               string          `json:"type" yaml:"type"`
-	Destination        DestinationArea `json:"destination" yaml:"destination"`
-	Description        string          `json:"description,omitempty" yaml:"description,omitempty"`
-	IconName           string          `json:"iconName,omitempty" yaml:"iconName,omitempty"`
-	ActivationContexts []Context       `json:"activationContexts" yaml:"activationContexts"`
-	Permissions        []string        `json:"permissions,omitempty" yaml:"permissions,omitempty"`
-	Visibilities       []Visibility    `json:"visibilities,omitempty" yaml:"visibilities,omitempty"`
-	Category           *Category       `json:"category,omitempty" yaml:"category,omitempty"`
-	Menu               *Menu           `json:"menu,omitempty" yaml:"menu"`
+	ExtensionID        string          `yaml:"extensionId" json:"extensionId"`
+	Name               string          `yaml:"name" json:"name"`
+	Entry              string          `yaml:"entry" json:"entry"`
+	Type               string          `yaml:"type" json:"type"`
+	Destination        DestinationArea `yaml:"destination" json:"destination"`
+	Description        string          `yaml:"description,omitempty" json:"description,omitempty"`
+	IconName           string          `yaml:"iconName,omitempty" json:"iconName,omitempty"`
+	ActivationContexts []Context       `yaml:"activationContexts" json:"activationContexts"`
+	Permissions        []string        `yaml:"permissions,omitempty" json:"permissions,omitempty"`
+	Visibilities       []Visibility    `yaml:"visibilities,omitempty" json:"visibilities,omitempty"`
+	Category           *Category       `yaml:"category,omitempty" json:"category,omitempty"`
+	Menu               *Menu           `yaml:"menu" json:"menu,omitempty"`
 }
