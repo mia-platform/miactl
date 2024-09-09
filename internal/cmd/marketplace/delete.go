@@ -42,7 +42,7 @@ const (
 	Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
 	Otherwise, it is preferable to pass the tuple companyId-itemId-version.
 	`
-	cmdDeleteStableUse = "delete { --item-id item-id --version version } | --object-id object-id [flags]..."
+	cmdDeleteUse = "delete { --item-id item-id --version version } | --object-id object-id [flags]..."
 )
 
 var (
@@ -53,7 +53,7 @@ var (
 // DeleteCmd return a new cobra command for deleting a single marketplace resource
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:        cmdDeleteStableUse,
+		Use:        cmdDeleteUse,
 		Short:      "Delete a Marketplace item",
 		Long:       cmdDeleteStableLong,
 		SuggestFor: []string{"rm"},

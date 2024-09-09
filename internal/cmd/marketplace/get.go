@@ -30,7 +30,7 @@ const (
 	getItemByObjectIDEndpointTemplate         = "/api/backend/marketplace/%s"
 	getItemByItemIDAndVersionEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions/%s"
 
-	cmdGetStableLong = `Get a single Marketplace item
+	cmdGetLongDescription = `Get a single Marketplace item
 
 	You need to specify either:
 	- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
@@ -39,15 +39,15 @@ const (
 	Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
 	Otherwise, it is preferable to pass the tuple companyId-itemId-version.
 	`
-	cmdGetStableUse = "get { --item-id item-id --version version } | --object-id object-id [FLAGS]..."
+	cmdGetUse = "get { --item-id item-id --version version } | --object-id object-id [FLAGS]..."
 )
 
 // GetCmd return a new cobra command for getting a single marketplace resource
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   cmdGetStableUse,
+		Use:   cmdGetUse,
 		Short: "Get Marketplace item",
-		Long:  cmdGetStableLong,
+		Long:  cmdGetLongDescription,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
