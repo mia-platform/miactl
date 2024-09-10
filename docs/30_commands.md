@@ -624,6 +624,7 @@ miactl extensions list [flags]
 Available flags for the command:
 
 - `--company-id` to set the ID of the desired Company
+- `--resolve-details` to evaluate all the extension details including `visibilities`, `menu`, `category` and `permissions`
 
 ### get
 
@@ -652,29 +653,26 @@ It accepts an Extension Manifest either in `yaml` or `json` format
 
 ```json
 {
-    "name": "Extension 1",
-    "description": "My extension 1",
-    "entry": "https://example.com/",
-    "contexts": [
-        "project"
-    ],
-    "routes": [
-        {
-            "id": "extension-1",
-            "parentId": "workloads",
-            "locationId": "runtime",
-            "renderType": "menu",
-            "labelIntl": {
-                "en": "SomeLabel",
-                "it": "SomeLabelInItalian"
-            },
-            "destinationPath": "/",
-            "order": 200.0,
-            "icon": {
-                "name": "PiHardDrives"
-            }
-        }
-    ]
+  "name": "Extension 1",
+  "description": "My extension 1",
+  "entry": "https://example.com/",
+  "activationContexts": ["project"],
+  "destination": {
+    "id": "runtime",
+    "path": "/"
+  },
+  "iconName": "PiHardDrives",
+  "menu": {
+    "id": "extension-1",
+    "labelIntl": {
+        "en": "SomeLabel",
+        "it": "SomeLabelInItalian"
+    },
+    "order": 200.0,
+  },
+  "category": {
+    "id": "workloads",
+  }
 }
 ```
 
@@ -684,23 +682,23 @@ It accepts an Extension Manifest either in `yaml` or `json` format
 <summary>Example YAML Manifest</summary>
 
 ```yaml
-name: "Extension 1"
-description: "My extension 1"
-entry: "https://example.com/"
-contexts:
+name: Extension 1
+description: My extension 1
+entry: https://example.com/
+activationContexts:
   - project
-routes:
-  - id: "extension-1"
-    parentId: "workloads"
-    locationId: "runtime"
-    labelIntl:
-      en: "SomeLabel"
-      it: "SomeLabelInItalian"
-    destinationPath: "/"
-    renderType: "menu"
-    order: 200
-    icon:
-      name: "PiHardDrives"
+destination:
+  id: runtime
+  path: "/"
+iconName: PiHardDrives
+menu:
+  id: extension-1
+  labelIntl:
+    en: SomeLabel
+    it: SomeLabelInItalian
+  order: 200
+category:
+  id: workloads
 ```
 
 </details>
