@@ -33,7 +33,7 @@ const (
 	// deleteItemByTupleEndpointTemplate formatting template for item deletion by the tuple itemID versionID endpoint; specify companyID, itemID, version
 	deleteItemByTupleEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions/%s"
 
-	cmdDeleteStableLong = `Delete a single Marketplace item
+	cmdDeleteLongDescription = `Delete a single Marketplace item
 
 	You need to specify either:
 	- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
@@ -42,7 +42,7 @@ const (
 	Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
 	Otherwise, it is preferable to pass the tuple companyId-itemId-version.
 	`
-	cmdDeleteUse = "delete { --item-id item-id --version version } | --object-id object-id [flags]..."
+	cmdUse = "delete { --item-id item-id --version version } | --object-id object-id [flags]..."
 )
 
 var (
@@ -53,9 +53,9 @@ var (
 // DeleteCmd return a new cobra command for deleting a single marketplace resource
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:        cmdDeleteUse,
+		Use:        cmdUse,
 		Short:      "Delete a Marketplace item",
-		Long:       cmdDeleteStableLong,
+		Long:       cmdDeleteLongDescription,
 		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
