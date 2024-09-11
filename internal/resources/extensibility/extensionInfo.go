@@ -60,8 +60,9 @@ type ExtensionInfo struct {
 	IconName           string          `yaml:"iconName,omitempty" json:"iconName,omitempty"`
 	ActivationContexts []Context       `yaml:"activationContexts" json:"activationContexts"`
 	Permissions        []string        `yaml:"permissions,omitempty" json:"permissions,omitempty"`
-	RoleIDs            []string        `yaml:"roleIds,omitempty" json:"roleIds,omitempty"`
-	Visibilities       []Visibility    `yaml:"visibilities,omitempty" json:"visibilities,omitempty"`
-	Category           *Category       `yaml:"category,omitempty" json:"category,omitempty"`
-	Menu               *Menu           `yaml:"menu" json:"menu,omitempty"`
+	//nolint:tagliatelle
+	RoleIDs      []string     `yaml:"roleIds,omitempty" json:"roleIds,omitempty"`
+	Visibilities []Visibility `yaml:"visibilities,omitempty" json:"visibilities,omitempty"`
+	Category     *Category    `yaml:"category,omitempty" json:"category,omitempty"`
+	Menu         *Menu        `yaml:"menu" json:"menu,omitempty"`
 }
