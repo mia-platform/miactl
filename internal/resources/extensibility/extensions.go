@@ -25,10 +25,10 @@ type Extension struct {
 	IconName           string          `yaml:"iconName,omitempty" json:"iconName,omitempty"`
 	ActivationContexts []Context       `yaml:"activationContexts" json:"activationContexts"`
 	Permissions        []string        `yaml:"permissions,omitempty" json:"permissions,omitempty"`
+	Category           *Category       `yaml:"category,omitempty" json:"category,omitempty"`
+	Menu               Menu            `yaml:"menu" json:"menu"`
 	//nolint:tagliatelle
-	RoleIDs  []string  `yaml:"roleIds,omitempty" json:"roleIds,omitempty"`
-	Category *Category `yaml:"category,omitempty" json:"category,omitempty"`
-	Menu     Menu      `yaml:"menu" json:"menu"`
+	RoleIDs []string `yaml:"roleIds,omitempty" json:"roleIds,omitempty"`
 }
 
 type Icon struct {
