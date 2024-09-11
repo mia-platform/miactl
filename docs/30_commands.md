@@ -45,7 +45,6 @@ Available flags for the command:
 - `--project-id`, to set the ID of the desired Project
 - `--environment`, to set the environment scope for the command
 
-
 :::warning
 If you want to use `miactl` with a _Service Account_, **remember to specify** the  `--auth-name` flag, otherwise _miactl_ will try to perform a _User Login_, opening the browser for authentication the user.
 :::
@@ -79,6 +78,7 @@ miactl context auth NAME [flags]
 ```
 
 Available flags:
+
 - `--client-id string`: the client ID of the service account
 - `--client-secret string`: the client secret of the service account
 - `-h, --help`: help for auth
@@ -624,6 +624,7 @@ miactl extensions list [flags]
 Available flags for the command:
 
 - `--company-id` to set the ID of the desired Company
+- `--resolve-details` to evaluate all the extension details including `visibilities`, `menu`, `category` and `permissions`
 
 ### get
 
@@ -652,29 +653,26 @@ It accepts an Extension Manifest either in `yaml` or `json` format
 
 ```json
 {
-    "name": "Extension 1",
-    "description": "My extension 1",
-    "entry": "https://example.com/",
-    "contexts": [
-        "project"
-    ],
-    "routes": [
-        {
-            "id": "extension-1",
-            "parentId": "workloads",
-            "locationId": "runtime",
-            "renderType": "menu",
-            "labelIntl": {
-                "en": "SomeLabel",
-                "it": "SomeLabelInItalian"
-            },
-            "destinationPath": "/",
-            "order": 200.0,
-            "icon": {
-                "name": "PiHardDrives"
-            }
-        }
-    ]
+  "name": "Extension 1",
+  "description": "My extension 1",
+  "entry": "https://example.com/",
+  "activationContexts": ["project"],
+  "destination": {
+    "id": "runtime",
+    "path": "/"
+  },
+  "iconName": "PiHardDrives",
+  "menu": {
+    "id": "extension-1",
+    "labelIntl": {
+        "en": "SomeLabel",
+        "it": "SomeLabelInItalian"
+    },
+    "order": 200.0,
+  },
+  "category": {
+    "id": "workloads",
+  }
 }
 ```
 
@@ -684,23 +682,23 @@ It accepts an Extension Manifest either in `yaml` or `json` format
 <summary>Example YAML Manifest</summary>
 
 ```yaml
-name: "Extension 1"
-description: "My extension 1"
-entry: "https://example.com/"
-contexts:
+name: Extension 1
+description: My extension 1
+entry: https://example.com/
+activationContexts:
   - project
-routes:
-  - id: "extension-1"
-    parentId: "workloads"
-    locationId: "runtime"
-    labelIntl:
-      en: "SomeLabel"
-      it: "SomeLabelInItalian"
-    destinationPath: "/"
-    renderType: "menu"
-    order: 200
-    icon:
-      name: "PiHardDrives"
+destination:
+  id: runtime
+  path: "/"
+iconName: PiHardDrives
+menu:
+  id: extension-1
+  labelIntl:
+    en: SomeLabel
+    it: SomeLabelInItalian
+  order: 200
+category:
+  id: workloads
 ```
 
 </details>
@@ -939,7 +937,7 @@ List Marketplace items
 
 #### Synopsis
 
-List the Marketplace items that the current user can access. 
+List the Marketplace items that the current user can access.
 
 #### Usage
 
@@ -949,7 +947,7 @@ miactl marketplace list --company-id company-id [FLAGS]...
 
 #### Flags
 
-*   `--public` - if this flag is set, the command fetches not only the items from the requested company, but also the public Marketplace items from other companies.
+- `--public` - if this flag is set, the command fetches not only the items from the requested company, but also the public Marketplace items from other companies.
 
 ### get
 
@@ -957,27 +955,10 @@ Get a Marketplace item
 
 #### Synopsis
 
-##### Stable version
-
-Get a single Marketplace item
-
-You need to specify the ObjectID of the item with the flag object-id
-
-```bash
-miactl marketplace get --object-id object-id [FLAGS]...
-```
-
-##### Alpha version
-
-:::warning
-
-This command is in ALPHA state. This means that it can be subject to breaking changes in the next versions of miactl.
-
-:::
-
 Get a single Marketplace item
 
 You need to specify either:
+
 - the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 - the ObjectID of the item with the flag object-id
 
@@ -985,7 +966,7 @@ Passing the ObjectID is expected only when dealing with deprecated Marketplace i
 Otherwise, it is preferable to pass the tuple companyId-itemId-version.
 
 ```bash
-miactl marketplace get { --item-id item-id --version version } | --object-id object-id [FLAGS]...
+miactl marketplace get { --item-id item-id --version version } | --object-id objectID [FLAGS]...
 ```
 
 ### delete
@@ -994,27 +975,10 @@ Delete a Marketplace item
 
 #### Synopsis
 
-##### Stable version
-
-Delete a single Marketplace item
-
-You need to specify the ObjectID of the item with the flag object-id
-
-```bash
-miactl marketplace get --object-id object-id [FLAGS]...
-```
-
-#### ALPHA version
-
-:::warning
-
-This command is in ALPHA state. This means that it can be subject to breaking changes in the next versions of miactl.
-
-:::
-
 Delete a single Marketplace item
 
 You need to specify either:
+
 - the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 - the ObjectID of the item with the flag object-id
 
@@ -1052,16 +1016,15 @@ You can retrieve the updated item with the "get" command.
 
 You can also specify the "supportedByImage" in a similar way.
 
-Be aware that the presence of both "image" and "imageUrl" and/or of both "supportedByImage" and "supportedByImageUrl" is ambiguous and raises an error .
+Be aware that the presence of both "image" and "imageUrl" and/or of both "supportedByImage" and "supportedByImageUrl" is ambiguous and raises an error.
 
-```
+```bash
 miactl marketplace apply { -f file-path }... } [flags]
 ```
 
 #### Examples
 
-
-```
+```bash
 
 # Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Marketplace
 miactl marketplace apply -f myFantasticGoTemplate.json
@@ -1075,18 +1038,12 @@ miactl marketplace apply -f myFantasticGoTemplates
 
 #### Options
 
-```
+```bash
   -f, --file stringArray   paths to JSON/YAML files or folder of files containing a Marketplace item definition
   -h, --help               help for apply
 ```
 
-### list-versions (ALPHA)
-
-:::warning
-
-This command is in ALPHA state. This means that it can be subject to breaking changes in the next versions of miactl.
-
-:::
+### list-versions
 
 List all the available versions of a specific Marketplace item.
 
@@ -1094,6 +1051,6 @@ List all the available versions of a specific Marketplace item.
 
 The flag `--item-id` or `-i` accepts the `itemId` of the Item.
 
-```
+```bash
 miactl marketplace list-versions -i some-item
 ```

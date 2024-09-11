@@ -23,7 +23,6 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +30,7 @@ const (
 	getItemByObjectIDEndpointTemplate         = "/api/backend/marketplace/%s"
 	getItemByItemIDAndVersionEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions/%s"
 
-	cmdGetAlphaLong = `Get a single Marketplace item
+	cmdGetLongDescription = `Get a single Marketplace item
 
 	You need to specify either:
 	- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
@@ -40,29 +39,15 @@ const (
 	Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
 	Otherwise, it is preferable to pass the tuple companyId-itemId-version.
 	`
-	cmdGetStableLong = `Get a single Marketplace item
-
-	You need to specify the ObjectID of the item with the flag object-id
-	`
-	cmdGetAlphaUse  = "get { --item-id item-id --version version } | --object-id object-id [FLAGS]..."
-	cmdGetStableUse = "get --object-id object-id [FLAGS]..."
+	cmdGetUse = "get { --item-id item-id --version version } | --object-id object-id [FLAGS]..."
 )
 
 // GetCmd return a new cobra command for getting a single marketplace resource
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
-	var long, use string
-	if util.AlphaCommandsEnabled() {
-		long = cmdGetAlphaLong
-		use = cmdGetAlphaUse
-	} else {
-		long = cmdGetStableLong
-		use = cmdGetStableUse
-	}
-
 	cmd := &cobra.Command{
-		Use:   use,
+		Use:   cmdGetUse,
 		Short: "Get Marketplace item",
-		Long:  long,
+		Long:  cmdGetLongDescription,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
@@ -89,17 +74,13 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
 
-	if util.AlphaCommandsEnabled() {
-		itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
-		versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
+	itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
+	versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
 
-		cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
-		cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, itemIDFlagName)
-		cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, versionFlagName)
-		cmd.MarkFlagsOneRequired(itemObjectIDFlagName, itemIDFlagName, versionFlagName)
-	} else {
-		cmd.MarkFlagsOneRequired(itemObjectIDFlagName)
-	}
+	cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
+	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, itemIDFlagName)
+	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, versionFlagName)
+	cmd.MarkFlagsOneRequired(itemObjectIDFlagName, itemIDFlagName, versionFlagName)
 
 	return cmd
 }
