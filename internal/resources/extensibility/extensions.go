@@ -28,6 +28,9 @@ type Extension struct {
 	Category           *Category       `yaml:"category,omitempty" json:"category,omitempty"`
 	Menu               Menu            `yaml:"menu" json:"menu"`
 	//nolint:tagliatelle
+	// tagliatelle requires the json tag to be roleIDs or the field to be
+	// roleIds, we can't change the tag, but using roleIds breaks other
+	// lint rules for field names
 	RoleIDs []string `yaml:"roleIds,omitempty" json:"roleIds,omitempty"`
 }
 
