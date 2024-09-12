@@ -200,7 +200,8 @@ func rsaPublicKeyToBytes(key *rsa.PublicKey) ([]byte, []byte) {
 
 	// convert exponent in 8 byte and then truncate until the first byte set to 1
 	exponentData := make([]byte, 8)
-	binary.BigEndian.PutUint64(exponentData, uint64(key.E))
+	//nolint:gosec
+	binary.BigEndian.PutUint64(exponentData, uint64(key.E)) // avoid warning for casting int in uint64
 	i := 0
 	var emptyByte byte = 0x0
 	for ; i < len(exponentData); i++ {

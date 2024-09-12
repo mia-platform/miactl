@@ -16,12 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - updated `extension apply` command to support new request body schema
 - deprecate `deploy` command
-- update go version to 1.22.5
+- update go version to 1.23.1
 - `marketplace list-versions` command removed from alpha build
+- update mergo to v1.0.1
+- update cobra to v1.8.1
+- update oauth2 to v0.23.0
+- update sync to v0.8.0
+- update text to v0.18.0
 
 ### BREAKING
 
-- updated `extension apply` command to support new request body schema. The older version of miactl will not be compatible with the Console version upper or equal to 13.2.0.
+- updated `extension apply` command to support new request body schema. The older version of miactl will not be
+	compatible with the Console version upper or equal to 13.2.0.
 
 ## [v0.14.0] - 2024-07-25
 

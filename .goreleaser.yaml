@@ -44,7 +44,7 @@ checksum:
   name_template: checksums.txt
 
 snapshot:
-  name_template: "{{ .ShortCommit }}"
+  version_template: "{{ .ShortCommit }}"
 
 changelog:
   sort: asc
