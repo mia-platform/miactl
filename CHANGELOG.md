@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.15.0] - 2024-09-12
+
 ### Added
 
 - `deploy add status` command
@@ -297,7 +299,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - create cli sdk
 - create cli renderer
 
-[unreleased]: https://github.com/mia-platform/miactl/compare/v0.14.0...HEAD
+[unreleased]: https://github.com/mia-platform/miactl/compare/v0.15.0...HEAD
+[v0.15.0]: https://github.com/mia-platform/miactl/compare/v0.14.0...v0.15.0
 [v0.14.0]: https://github.com/mia-platform/miactl/compare/v0.13.0...v0.14.0
 [v0.13.0]: https://github.com/mia-platform/miactl/compare/v0.12.2...v0.13.0
 [v0.12.2]: https://github.com/mia-platform/miactl/compare/v0.12.1...v0.12.2
