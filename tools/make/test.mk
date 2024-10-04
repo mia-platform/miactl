@@ -24,36 +24,31 @@ endif
 
 ENVTEST_K8S_VERSION?= $(shell cat $(TOOLS_DIR)/ENVTEST_K8S_VERSION)
 
-# needed until the linker warning on macos are fixed
-ifeq (Darwin,$(shell uname -s))
-MACOS_LINKER_FLAGS ?= -extldflags=-Wl,-ld_classic
-endif
-
 .PHONY: test/unit
 test/unit:
 	$(info Running tests...)
-	go test $(GO_TEST_DEBUG_FLAG) -ldflags="$(MACOS_LINKER_FLAGS)" -race ./...
+	go test $(GO_TEST_DEBUG_FLAG) -race ./...
 
 .PHONY: test/integration
 test/integration:
 	$(info Running integration tests...)
-	go test $(GO_TEST_DEBUG_FLAG) -ldflags="$(MACOS_LINKER_FLAGS)" -tags=integration -race ./...
+	go test $(GO_TEST_DEBUG_FLAG) -tags=integration -race ./...
 
 .PHONY: test/coverage
 test/coverage:
 	$(info Running tests with coverage on...)
-	go test $(GO_TEST_DEBUG_FLAG) -ldflags="$(MACOS_LINKER_FLAGS)" -race -coverprofile=coverage.txt -covermode=atomic ./...
+	go test $(GO_TEST_DEBUG_FLAG) -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 .PHONY: test/integration/coverage
 test/integration/coverage:
 	$(info Running ci tests with coverage on...)
-	go test $(GO_TEST_DEBUG_FLAG) -ldflags="$(MACOS_LINKER_FLAGS)" -tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
+	go test $(GO_TEST_DEBUG_FLAG) -tags=integration -race -coverprofile=coverage.txt -covermode=atomic ./...
 
 .PHONY: test/conformance test/conformance/setup test/conformance/teardown
 test/conformance/setup:
 test/conformance:
 	$(info Running conformance tests...)
-	go test $(GO_TEST_DEBUG_FLAG) -ldflags="$(MACOS_LINKER_FLAGS)" -tags=conformance -race -count=1 $(CONFORMANCE_TEST_PATH)
+	go test $(GO_TEST_DEBUG_FLAG) -tags=conformance -race -count=1 $(CONFORMANCE_TEST_PATH)
 test/conformance/teardown:
 
 test/show/coverage:
