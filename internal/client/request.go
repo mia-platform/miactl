@@ -257,6 +257,7 @@ func parseRequestAndResponse(req *http.Request, resp *http.Response) *Response {
 		rawResponse: resp,
 		rawRequest:  req,
 		body:        body,
+		header:      resp.Header,
 		statusCode:  resp.StatusCode,
 	}
 }

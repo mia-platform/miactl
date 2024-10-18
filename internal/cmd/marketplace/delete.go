@@ -126,7 +126,13 @@ func deleteItemByItemIDAndVersion(ctx context.Context, client *client.APIClient,
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
-	return checkDeleteResponseErrors(resp)
+	if err := checkDeleteResponseErrors(resp); err != nil {
+		return err
+	}
+
+	asd := resp.Header().Get("X-Marketplace-Item-Latest-Version:")
+	fmt.Printf("\nasd %s\n", asd)
+	return nil
 }
 
 func checkDeleteResponseErrors(resp *client.Response) error {

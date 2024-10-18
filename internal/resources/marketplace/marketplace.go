@@ -67,6 +67,7 @@ type UploadImageResponse struct {
 type Release struct {
 	Version     string `json:"version"`
 	Name        string `json:"name"`
+	Latest      bool   `json:"isLatest"`
 	Description string `json:"description"`
 }
 
