@@ -26,5 +26,5 @@ jobs:
       uses: actions/dependency-review-action@4081bf99e2866ebe428fc0477b69eb4fcda7220a # v4.4.0
       with:
         fail-on-severity: high
-        fail-on-scope: development,runtime,unknown
+        fail-on-scopes: development,runtime,unknown
         comment-summary-in-pr: on-failure
