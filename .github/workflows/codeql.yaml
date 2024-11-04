@@ -15,13 +15,16 @@ on:
   schedule:
   - cron: 0 5 * * 1 # Run every monday at 5 UTC
 
+permissions: {}
+
 env:
-  GORELEASER_VERSION: v2.3.2
+  GORELEASER_VERSION: v2.4.1
 
 jobs:
   codeql:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     permissions:
+      contents: read
       security-events: write
     steps:
     - name: Checkout repository
@@ -41,7 +44,10 @@ jobs:
       uses: github/codeql-action/init@662472033e021d55d94146f66f6058822b0b39fd # v3.27.0
       with:
         languages: go
+        build-mode: manual
     - name: Run Build
       run: make build
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@662472033e021d55d94146f66f6058822b0b39fd # v3.27.0
+      with:
+        category: "/language:go"
