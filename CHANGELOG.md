@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - update go version to 1.23.2
+- update text to v0.19.0
 
 ## [v0.15.0] - 2024-09-12
 
