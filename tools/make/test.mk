@@ -22,17 +22,17 @@ else
 GO_TEST_DEBUG_FLAG:=
 endif
 
-ENVTEST_K8S_VERSION?= $(shell cat $(TOOLS_DIR)/ENVTEST_K8S_VERSION)
-
 .PHONY: test/unit
 test/unit:
 	$(info Running tests...)
 	go test $(GO_TEST_DEBUG_FLAG) -race ./...
 
-.PHONY: test/integration
+.PHONY: test/integration/setup test/integration test/integration/teardown
+test/integration/setup:
 test/integration:
 	$(info Running integration tests...)
 	go test $(GO_TEST_DEBUG_FLAG) -tags=integration -race ./...
+test/integration/teardown:
 
 .PHONY: test/coverage
 test/coverage:
@@ -61,10 +61,10 @@ test: test/unit
 test-coverage: test/coverage
 
 .PHONY: test-integration
-test-integration: $(TOOLS_BIN)/setup-envtest envtest/assets test/integration
+test-integration: test/integration/setup test/integration test/integration/teardown
 
 .PHONY: test-integration-coverage
-test-integration-coverage: $(TOOLS_BIN)/setup-envtest envtest/assets test/integration/coverage
+test-integration-coverage: test/integration/setup test/integration/coverage test/integration/teardown
 
 .PHONY: test-conformance
 test-conformance: test/conformance/setup test/conformance test/conformance/teardown
@@ -74,14 +74,3 @@ show-coverage: test-coverage test/show/coverage
 
 .PHONY: show-integration-coverage
 show-integration-coverage: test-integration-coverage test/show/coverage
-
-$(TOOLS_BIN)/setup-envtest: $(TOOLS_DIR)/ENVTEST_VERSION
-	$(eval ENVTEST_VERSION:= $(shell cat $<))
-	mkdir -p $(TOOLS_BIN)
-	$(info Installing testenv $(ENVTEST_VERSION) bin in $(TOOLS_BIN)...)
-	GOBIN=$(TOOLS_BIN) go install sigs.k8s.io/controller-runtime/tools/setup-envtest@$(ENVTEST_VERSION)
-
-.PHONY: envtest/assets
-envtest/assets:
-	$(info Setup testenv with k8s $(ENVTEST_K8S_VERSION) version...)
-	$(eval KUBEBUILDER_ASSETS:= $(shell $(TOOLS_BIN)/setup-envtest use $(ENVTEST_K8S_VERSION) --bin-dir $(TOOLS_BIN) -p path))
