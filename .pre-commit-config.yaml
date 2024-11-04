@@ -14,7 +14,7 @@ repos:
     language: system
     pass_filenames: false
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
   - id: check-case-conflict
     name: Check filename case conflicts
@@ -30,7 +30,7 @@ repos:
     name: Trims trailing whitespace
     args: [--markdown-linebreak-ext=md] # add exception for markdown linebreaks
 - repo: https://github.com/gitleaks/gitleaks
-  rev: v8.20.0
+  rev: v8.21.2
   hooks:
   - id: gitleaks
     name: Protect and discover secrets using Gitleaks
