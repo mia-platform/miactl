@@ -49,7 +49,7 @@ endif
 
 # Set here the name of the package you want to build
 CMDNAME:= miactl
-BUILD_PATH:= ./cmd/$(CMDNAME)
+BUILD_PATH:= .
 CONFORMANCE_TEST_PATH:= $(PROJECT_DIR)/tests/e2e
 IS_LIBRARY:=
 
