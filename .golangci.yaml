@@ -89,6 +89,7 @@ linters-settings:
 issues:
   exclude-dirs:
   - internal/jws
+  - client/plugin/pkg/client/auth/serviceaccount/jws
   exclude-rules:
   - path: zz_generated
     linters:
