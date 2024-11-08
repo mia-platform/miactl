@@ -19,13 +19,13 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/go-logr/logr"
-	"github.com/mia-platform/miactl/internal/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -231,7 +231,7 @@ func TestDebugRoundTripper(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			// execute the round tripper
 			buffer := bytes.NewBuffer(nil)
-			logger := logger.NewTestLogger(buffer, testCase.logLevel)
+			logger := newTestLogger(buffer, testCase.logLevel)
 			rt := &testRoundTripper{}
 			contextRequest := request.Clone(logr.NewContext(context.TODO(), logger))
 			NewDebugRoundTripper(rt).RoundTrip(contextRequest) //nolint: bodyclose
@@ -295,4 +295,53 @@ func TestWrappers(t *testing.T) {
 			}
 		})
 	}
+}
+
+func newTestLogger(w io.Writer, level int) logr.Logger {
+	sink := &testSink{
+		writer: w,
+		level:  level,
+	}
+
+	return logr.New(sink)
+}
+
+var _ logr.LogSink = &testSink{}
+
+type testSink struct {
+	writer    io.Writer
+	level     int
+	callDepth int
+}
+
+func (sink *testSink) Init(info logr.RuntimeInfo) {
+	sink.callDepth = info.CallDepth
+}
+
+func (sink *testSink) WithName(string) logr.LogSink {
+	return &testSink{
+		writer:    sink.writer,
+		callDepth: sink.callDepth,
+	}
+}
+
+func (sink *testSink) WithValues(_ ...any) logr.LogSink {
+	return &testSink{
+		writer:    sink.writer,
+		callDepth: sink.callDepth,
+	}
+}
+
+func (sink *testSink) Enabled(level int) bool {
+	return sink.level >= level
+}
+
+func (sink *testSink) Error(err error, msg string, kvs ...any) {
+	newMsg := fmt.Sprintf("%s: %s", msg, err)
+	sink.Info(0, newMsg, kvs...)
+}
+
+func (sink *testSink) Info(_ int, msg string, _ ...any) {
+	fmt.Fprintf(sink.writer, "%s", msg)
+	fmt.Fprintln(sink.writer)
 }

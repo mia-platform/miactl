@@ -24,7 +24,7 @@ import (
 	"github.com/mia-platform/miactl/client/rest"
 	"golang.org/x/oauth2"
 
-	"github.com/mia-platform/miactl/internal/netutil"
+	netutil "github.com/mia-platform/miactl/client/net/util"
 )
 
 const (
