@@ -25,8 +25,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/mia-platform/miactl/api/auth"
+	"github.com/mia-platform/miactl/api/serializer/json"
 	"github.com/mia-platform/miactl/client/rest"
-	"github.com/mia-platform/miactl/internal/resources"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
 )
@@ -180,7 +181,7 @@ func providerIDForApplication(ctx context.Context, appID string, client rest.Int
 		return "", err
 	}
 
-	providers := make([]*resources.AuthProvider, 0)
+	providers := make([]*auth.Provider, 0)
 	if err := response.ParseResponse(&providers); err != nil {
 		return "", err
 	}
@@ -263,8 +264,8 @@ func startLocalServerForToken(ctx context.Context, startFlowURL string, listener
 
 // jwtToken exhange code and status of the authorization response for a jwt token
 func jwtToken(ctx context.Context, response *authResponse, client rest.Interface) (*oauth2.Token, error) {
-	request := &resources.JWTTokenRequest{Code: response.Code, State: response.State}
-	bodydata, err := resources.EncodeResourceToJSON(&request)
+	request := &auth.JWTTokenRequest{Code: response.Code, State: response.State}
+	bodydata, err := json.DefaultEncoding(&request)
 	if err != nil {
 		return nil, err
 	}
@@ -334,16 +335,16 @@ func parseJWTResponse(jwtResponse *rest.Response) (*oauth2.Token, error) {
 		return nil, jwtResponse.Error()
 	}
 
-	jwt := new(resources.UserToken)
+	jwt := new(userToken)
 	if err := jwtResponse.ParseResponse(&jwt); err != nil {
 		return nil, err
 	}
 
-	return jwt.JWTToken(), nil
+	return jwt.jwtToken(), nil
 }
 
 func (c *Config) startRefreshFlow(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
-	bodydata, err := resources.EncodeResourceToJSON(&resources.RefreshTokenRequest{RefreshToken: refreshToken})
+	bodydata, err := json.DefaultEncoding(&auth.RefreshTokenRequest{RefreshToken: refreshToken})
 	if err != nil {
 		return nil, err
 	}

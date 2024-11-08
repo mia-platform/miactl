@@ -16,12 +16,11 @@
 package rest
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 
-	"github.com/mia-platform/miactl/internal/resources"
+	apimeta "github.com/mia-platform/miactl/api/meta"
+	"github.com/mia-platform/miactl/api/serializer/json"
 )
 
 // ResponseError represent an error from an api call
@@ -32,8 +31,8 @@ type ResponseError struct {
 
 // Error return the message of the api call error
 func (r *ResponseError) Error() string {
-	var out *resources.APIError
-	err := parseBody(r.body, &out)
+	var out *apimeta.Error
+	err := json.DefaultDecoding(r.body, &out)
 	if err != nil {
 		return fmt.Sprintf("error parsing error response from server: %s", err)
 	}
@@ -90,14 +89,5 @@ func (r *Response) ParseResponse(obj interface{}) error {
 		return r.err
 	}
 
-	return parseBody(r.body, obj)
-}
-
-func parseBody(body []byte, obj interface{}) error {
-	err := json.Unmarshal(body, obj)
-	if err != nil && err != io.EOF {
-		return fmt.Errorf("error during response parsing: %w", err)
-	}
-
-	return nil
+	return json.DefaultDecoding(r.body, obj)
 }

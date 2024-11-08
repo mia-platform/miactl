@@ -25,8 +25,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/mia-platform/miactl/api/auth"
 	"github.com/mia-platform/miactl/client/rest"
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -51,7 +51,7 @@ func TestUserAuthenticator(t *testing.T) {
 			testServer: testServer(t, func(w http.ResponseWriter, r *http.Request) {
 				switch {
 				case r.Method == http.MethodPost && r.RequestURI == refreshTokenEndpointString:
-					testUserToken := resources.UserToken{
+					testUserToken := auth.UserToken{
 						AccessToken:  "refresh",
 						RefreshToken: "refresh",
 						ExpiresAt:    time.Now().Add(1 * time.Hour).Unix(),

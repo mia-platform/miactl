@@ -20,7 +20,6 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/base64"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -32,6 +31,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/mia-platform/miactl/api/serializer/json"
 	netutil "github.com/mia-platform/miactl/client/net/util"
 	"github.com/mia-platform/miactl/client/plugin/pkg/client/auth/serviceaccount/jws"
 	"github.com/mia-platform/miactl/client/transport"
@@ -247,18 +247,9 @@ func rsaKeyFromBase64(base64Data string) (*rsa.PrivateKey, error) {
 	return rsaKey, err
 }
 
-func parseBody(body []byte, obj interface{}) error {
-	err := json.Unmarshal(body, obj)
-	if err != nil && err != io.EOF {
-		return fmt.Errorf("error during response parsing: %w", err)
-	}
-
-	return nil
-}
-
 func parseErrorResponse(bodyData []byte) error {
 	responseData := make(map[string]any)
-	if err := parseBody(bodyData, &responseData); err != nil {
+	if err := json.DefaultDecoding(bodyData, &responseData); err != nil {
 		return err
 	}
 	return errors.New(responseData["message"].(string))
@@ -272,7 +263,7 @@ func parseToken(bodyData []byte) (*oauth2.Token, error) {
 	}
 
 	jwtToken := new(tempToken)
-	if err := parseBody(bodyData, &jwtToken); err != nil {
+	if err := json.DefaultDecoding(bodyData, &jwtToken); err != nil {
 		return nil, err
 	}
 

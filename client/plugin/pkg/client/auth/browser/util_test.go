@@ -23,7 +23,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mia-platform/miactl/internal/resources"
+	"github.com/mia-platform/miactl/api/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2"
@@ -60,13 +60,13 @@ func testServerForCompleteFlow(t *testing.T) *httptest.Server {
 	return testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		switch {
 		case r.Method == http.MethodGet && r.RequestURI == fmt.Sprintf(providerEndpointStringTemplate, appID):
-			testProvider := resources.AuthProvider{
+			testProvider := auth.Provider{
 				ID:    "foo",
 				Label: "Foo",
 				Type:  "foo-type",
 			}
 			encoder := json.NewEncoder(w)
-			err := encoder.Encode([]*resources.AuthProvider{&testProvider})
+			err := encoder.Encode([]*auth.Provider{&testProvider})
 			require.NoError(t, err)
 		case r.Method == http.MethodGet && r.RequestURI == authorizeEndpointString:
 			w.WriteHeader(http.StatusInternalServerError)
@@ -77,7 +77,7 @@ func testServerForCompleteFlow(t *testing.T) *httptest.Server {
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("{\"statusCode\":500,\"message\":\"not implemented\"}"))
 		case r.Method == http.MethodPost && r.RequestURI == getTokenEndpointString:
-			testUserToken := resources.UserToken{
+			testUserToken := auth.UserToken{
 				AccessToken:  accessToken,
 				RefreshToken: "refresh",
 				ExpiresAt:    time.Now().Add(1 * time.Hour).Unix(),
