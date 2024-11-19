@@ -20,6 +20,12 @@ type SaveChangesRules struct {
 	DisallowedRuleSet []RuleSet `yaml:"disallowedRuleSet,omitempty" json:"disallowedRuleSet,omitempty"`
 }
 
+type ProjectSaveChangesRules struct {
+	RoleIDs               []string  `yaml:"roleIds,omitempty" json:"roleIds,omitempty"`
+	DisallowedRuleSet     []RuleSet `yaml:"disallowedRuleSet,omitempty" json:"disallowedRuleSet,omitempty"`
+	IsInheritedFromTenant bool      `yaml:"isInheritedFromTenant,omitempty" json:"isInheritedFromTenant,omitempty"`
+}
+
 type RuleSet struct {
 	JSONPath string       `yaml:"jsonPath,omitempty" json:"jsonPath,omitempty"`
 	Options  *RuleOptions `yaml:"processingOptions,omitempty" json:"processingOptions,omitempty"`

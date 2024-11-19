@@ -26,18 +26,19 @@ import (
 	rulesentities "github.com/mia-platform/miactl/internal/resources/rules"
 )
 
-var (
-	ErrRequiredCompanyID = fmt.Errorf("company id is required, please set it via flag or context")
-)
-
 const (
-	tenantsAPIPrefix    = "/api/backend/tenants/"
-	patchTenantRulesFmt = tenantsAPIPrefix + "%s/rules"
+	tenantsAPIPrefix     = "/api/backend/tenants/"
+	projectsAPIPrefix    = "/api/backend/projects/"
+	getProjectAPIFmt     = projectsAPIPrefix + "%s"
+	patchTenantRulesFmt  = tenantsAPIPrefix + "%s/rules"
+	patchProjectRulesFmt = projectsAPIPrefix + "%s/rules"
 )
 
 type IRulesClient interface {
 	ListTenantRules(ctx context.Context, companyID string) ([]*rulesentities.SaveChangesRules, error)
+	ListProjectRules(ctx context.Context, projectID string) ([]*rulesentities.ProjectSaveChangesRules, error)
 	UpdateTenantRules(ctx context.Context, companyID string, rules []*rulesentities.SaveChangesRules) error
+	UpdateProjectRules(ctx context.Context, projectId string, rules []*rulesentities.SaveChangesRules) error
 }
 
 type RulesClient struct {
@@ -84,6 +85,30 @@ func (e *RulesClient) ListTenantRules(ctx context.Context, companyID string) ([]
 	return tenant.ConfigurationManagement.SaveChangesRules, nil
 }
 
+func (e *RulesClient) ListProjectRules(ctx context.Context, projectID string) ([]*rulesentities.ProjectSaveChangesRules, error) {
+	request := e.c.Get().APIPath(fmt.Sprintf(getProjectAPIFmt, projectID))
+	request.SetParam("withTenant", "true")
+
+	resp, err := request.Do(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("error executing request: %w", err)
+	}
+	if err := e.assertSuccessResponse(resp); err != nil {
+		return nil, err
+	}
+
+	var project resources.Project
+	if err := resp.ParseResponse(&project); err != nil {
+		return nil, fmt.Errorf("error parsing response body: %w", err)
+	}
+
+	if len(project.ConfigurationManagement.SaveChangesRules) == 0 {
+		return []*rulesentities.ProjectSaveChangesRules{}, nil
+	}
+
+	return project.ConfigurationManagement.SaveChangesRules, nil
+}
+
 type UpdateRequestBody struct {
 	ConfigurationManagement *resources.ConfigurationManagement `json:"configurationManagement"`
 }
@@ -114,7 +139,34 @@ func (e *RulesClient) UpdateTenantRules(ctx context.Context, companyID string, r
 	}
 
 	return nil
+}
 
+func (e *RulesClient) UpdateProjectRules(ctx context.Context, projectID string, rules []*rulesentities.SaveChangesRules) error {
+	requestBody := UpdateRequestBody{
+		ConfigurationManagement: &resources.ConfigurationManagement{
+			SaveChangesRules: rules,
+		},
+	}
+	bodyData, err := json.Marshal(requestBody)
+	if err != nil {
+		return err
+	}
+
+	request := e.c.Patch().
+		APIPath(
+			fmt.Sprintf(patchProjectRulesFmt, projectID),
+		).
+		Body(bodyData)
+
+	resp, err := request.Do(ctx)
+	if err != nil {
+		return fmt.Errorf("error executing request: %w", err)
+	}
+	if err := e.assertSuccessResponse(resp); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (e *RulesClient) assertSuccessResponse(resp *client.Response) error {

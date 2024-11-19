@@ -30,7 +30,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestClientList(t *testing.T) {
+func TestClientListTenantRules(t *testing.T) {
 	validBodyString := `[{
 	"tenantId": "company-1",
 	"configurationManagement": {
@@ -117,7 +117,97 @@ func TestClientList(t *testing.T) {
 	}
 }
 
-func TestClientPatch(t *testing.T) {
+func TestClientListProjectRules(t *testing.T) {
+	validBodyString := `{
+	"_id": "myproject",
+	"tenantId": "company-1",
+	"configurationManagement": {
+		"saveChangesRules": [
+			{
+				"roleIds": ["maintainer"],
+				"disallowedRuleSet": [
+					{"jsonPath": "$.services.*.description"},
+					{"jsonPath": "$.services", "processingOptions": {"action": "create"}}
+				]
+			},
+			{
+				"roleIds": ["developer"],
+				"disallowedRuleSet": [
+					{"ruleId": "endpoint.security.edit"}
+				],
+				"isInheritedFromTenant": true
+			}
+		]
+	}
+}`
+
+	testCases := map[string]struct {
+		companyID string
+		server    *httptest.Server
+		err       bool
+	}{
+		"valid response": {
+			companyID: "company-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf("/api/backend/projects/%s", "my-project"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+				respBody:   validBodyString,
+			}),
+		},
+		"invalid response": {
+			companyID: "company-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf("/api/backend/projects/%s", "my-project"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+				err:        true,
+			}),
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			clientConfig := &client.Config{
+				Transport: http.DefaultTransport,
+				Host:      testCase.server.URL,
+			}
+
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+
+			data, err := New(client).ListProjectRules(context.TODO(), testCase.companyID)
+			if testCase.err {
+				require.Error(t, err)
+				require.Nil(t, data)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, []*rulesentities.ProjectSaveChangesRules{
+					{
+						RoleIDs: []string{"maintainer"},
+						DisallowedRuleSet: []rulesentities.RuleSet{
+							{JSONPath: "$.services.*.description"},
+							{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Action: "create"}},
+						},
+					},
+					{
+						RoleIDs: []string{"developer"},
+						DisallowedRuleSet: []rulesentities.RuleSet{
+							{RuleID: "endpoint.security.edit"},
+						},
+						IsInheritedFromTenant: true,
+					},
+				}, data)
+			}
+		})
+	}
+}
+
+func TestClientTenantPatch(t *testing.T) {
 	testCases := map[string]struct {
 		companyID string
 		PatchData []*rulesentities.SaveChangesRules
@@ -158,6 +248,56 @@ func TestClientPatch(t *testing.T) {
 			require.NoError(t, err)
 
 			err = New(client).UpdateTenantRules(context.TODO(), testCase.companyID, testCase.PatchData)
+			if testCase.err {
+				require.Error(t, err)
+			} else {
+				require.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestClientProjectPatch(t *testing.T) {
+	testCases := map[string]struct {
+		projectID string
+		PatchData []*rulesentities.SaveChangesRules
+		server    *httptest.Server
+		err       bool
+	}{
+		"valid response": {
+			projectID: "project-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf("/api/backend/projects/%s/rules", "project-1"),
+				verb: http.MethodPatch,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+			}),
+		},
+		"invalid response": {
+			projectID: "project-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf("/api/backend/projects/%s/rules", "project-1"),
+				verb: http.MethodPatch,
+			}, MockResponse{
+				statusCode: http.StatusInternalServerError,
+				err:        true,
+			}),
+			err: true,
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			defer testCase.server.Close()
+			clientConfig := &client.Config{
+				Transport: http.DefaultTransport,
+				Host:      testCase.server.URL,
+			}
+
+			client, err := client.APIClientForConfig(clientConfig)
+			require.NoError(t, err)
+
+			err = New(client).UpdateTenantRules(context.TODO(), testCase.projectID, testCase.PatchData)
 			if testCase.err {
 				require.Error(t, err)
 			} else {

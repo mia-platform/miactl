@@ -33,6 +33,7 @@ func RulesCmd(o *clioptions.CLIOptions) *cobra.Command {
 	o.AddConnectionFlags(flags)
 	o.AddContextFlags(flags)
 	o.AddCompanyFlags(flags)
+	o.AddProjectFlags(flags)
 
 	cmd.AddCommand(
 		rules.ListCmd(o),

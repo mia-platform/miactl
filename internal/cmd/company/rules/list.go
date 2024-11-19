@@ -27,6 +27,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	ErrRequiredCompanyIDOrProjectID = fmt.Errorf("at least one of company id or project id is required, please set it via flag or context")
+)
+
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -40,14 +44,20 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			if restConfig.CompanyID == "" {
-				return ErrRequiredCompanyID
+			if restConfig.CompanyID == "" && restConfig.ProjectID == "" {
+				return ErrRequiredCompanyIDOrProjectID
+			}
+
+			if restConfig.ProjectID != "" {
+				rules, err := New(client).ListProjectRules(cmd.Context(), restConfig.ProjectID)
+				cobra.CheckErr(err)
+				printProjectList(rules, options.Printer(clioptions.DisableWrapLines(true)))
+				return nil
 			}
 
 			rules, err := New(client).ListTenantRules(cmd.Context(), restConfig.CompanyID)
 			cobra.CheckErr(err)
-
-			printList(rules, options.Printer(clioptions.DisableWrapLines(true)))
+			printTenantList(rules, options.Printer(clioptions.DisableWrapLines(true)))
 			return nil
 		},
 	}
@@ -55,28 +65,48 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func printList(rules []*rulesentities.SaveChangesRules, p printer.IPrinter) {
+func createRecord(rules []rulesentities.RuleSet) []string {
+	ruleInfo := []string{}
+	for _, ruleset := range rules {
+		if ruleset.RuleID != "" {
+			ruleInfo = append(ruleInfo, fmt.Sprintf("Rule ID: '%s'", ruleset.RuleID))
+			continue
+		}
+		if ruleset.JSONPath != "" {
+			ruleInfo = append(ruleInfo, fmt.Sprintf("JSON Path: '%s'", ruleset.JSONPath))
+			continue
+		}
+	}
+	return ruleInfo
+}
+
+func printTenantList(rules []*rulesentities.SaveChangesRules, p printer.IPrinter) {
 	tableColumnLabel := []string{"#", "Roles", "Ruleset"}
 
 	p.Keys(tableColumnLabel...)
 	for i, rule := range rules {
-
-		ruleInfo := []string{}
-		for _, ruleset := range rule.DisallowedRuleSet {
-			if ruleset.RuleID != "" {
-				ruleInfo = append(ruleInfo, fmt.Sprintf("Rule ID: '%s'", ruleset.RuleID))
-				continue
-			}
-			if ruleset.JSONPath != "" {
-				ruleInfo = append(ruleInfo, fmt.Sprintf("JSON Path: '%s'", ruleset.JSONPath))
-				continue
-			}
-		}
-
+		ruleInfo := createRecord(rule.DisallowedRuleSet)
 		p.Record(
 			strconv.Itoa(i),
 			strings.Join(rule.RoleIDs, ", "),
 			strings.Join(ruleInfo, ", "),
+		)
+	}
+	p.Print()
+}
+
+func printProjectList(rules []*rulesentities.ProjectSaveChangesRules, p printer.IPrinter) {
+	tableColumnLabel := []string{"#", "Roles", "Ruleset", "Inherited"}
+
+	p.Keys(tableColumnLabel...)
+	for i, rule := range rules {
+
+		ruleInfo := createRecord(rule.DisallowedRuleSet)
+		p.Record(
+			strconv.Itoa(i),
+			strings.Join(rule.RoleIDs, ", "),
+			strings.Join(ruleInfo, ", "),
+			strconv.FormatBool(rule.IsInheritedFromTenant),
 		)
 	}
 	p.Print()

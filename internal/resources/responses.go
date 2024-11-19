@@ -52,6 +52,10 @@ type ConfigurationManagement struct {
 	SaveChangesRules []*rulesentities.SaveChangesRules `json:"saveChangesRules"`
 }
 
+type ProjectConfigurationManagement struct {
+	SaveChangesRules []*rulesentities.ProjectSaveChangesRules `json:"saveChangesRules"`
+}
+
 type Company struct {
 	ID                      string                  `json:"_id"` //nolint:tagliatelle
 	Name                    string                  `json:"name"`
@@ -94,6 +98,8 @@ type Project struct {
 	ProjectID            string        `json:"projectId"`
 	Pipelines            Pipelines     `json:"pipelines"`
 	CompanyID            string        `json:"tenantId"` //nolint:tagliatelle
+
+	ConfigurationManagement ProjectConfigurationManagement `json:"configurationManagement"`
 }
 
 type Environment struct {

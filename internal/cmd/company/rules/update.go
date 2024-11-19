@@ -20,14 +20,23 @@ func UpdateRules(o *clioptions.CLIOptions) *cobra.Command {
 			restConfig, err := o.ToRESTConfig()
 			cobra.CheckErr(err)
 
+			if restConfig.CompanyID == "" && restConfig.ProjectID == "" {
+				return ErrRequiredCompanyIDOrProjectID
+			}
+
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
 			rules, err := readFile(o.InputFilePath)
 			cobra.CheckErr(err)
 
-			err = New(client).UpdateTenantRules(cmd.Context(), restConfig.CompanyID, rules)
-			cobra.CheckErr(err)
+			if restConfig.ProjectID != "" {
+				err = New(client).UpdateProjectRules(cmd.Context(), restConfig.ProjectID, rules)
+				cobra.CheckErr(err)
+			} else {
+				err = New(client).UpdateTenantRules(cmd.Context(), restConfig.CompanyID, rules)
+				cobra.CheckErr(err)
+			}
 
 			fmt.Printf("Rules updated successfully")
 			return nil
