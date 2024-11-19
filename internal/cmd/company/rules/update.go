@@ -13,8 +13,8 @@ import (
 func UpdateRules(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
-		Short: "Update Company rules",
-		Long:  "Update company rules from file",
+		Short: "Update rules",
+		Long:  "Update company or project rules from file  (this command is related to a closed preview feature, it may be subject to breaking changes!)",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := o.ToRESTConfig()

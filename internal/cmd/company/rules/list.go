@@ -35,7 +35,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List configured rules",
-		Long:  "List all the rules configured for the specified company",
+		Long:  "List all the rules configured for the specified company or project (this command is related to a closed preview feature, it may be subject to breaking changes!)",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
