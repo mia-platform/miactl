@@ -101,17 +101,22 @@ func getItemVersions(ctx context.Context, client *client.APIClient, companyID, i
 }
 
 func printItemVersionList(releases *[]marketplace.Release, p printer.IPrinter) {
-	p.Keys("Version", "Name", "Description")
+	p.Keys("Version", "Name", "Description", "Latest")
 
 	for _, release := range *releases {
 		description := "-"
 		if release.Description != "" {
 			description = release.Description
 		}
+		latestCheck := ""
+		if release.Latest {
+			latestCheck = "✅"
+		}
 		p.Record(
 			release.Version,
 			release.Name,
 			description,
+			latestCheck,
 		)
 	}
 	p.Print()
