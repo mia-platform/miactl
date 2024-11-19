@@ -44,7 +44,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 				return ErrRequiredCompanyID
 			}
 
-			rules, err := New(client).List(cmd.Context(), restConfig.CompanyID)
+			rules, err := New(client).ListTenantRules(cmd.Context(), restConfig.CompanyID)
 			cobra.CheckErr(err)
 
 			printList(rules, options.Printer(clioptions.DisableWrapLines(true)))

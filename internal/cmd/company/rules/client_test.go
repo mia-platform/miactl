@@ -91,7 +91,7 @@ func TestClientList(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			data, err := New(client).List(context.TODO(), testCase.companyID)
+			data, err := New(client).ListTenantRules(context.TODO(), testCase.companyID)
 			if testCase.err {
 				require.Error(t, err)
 				require.Nil(t, data)

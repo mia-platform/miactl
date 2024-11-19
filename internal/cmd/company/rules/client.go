@@ -36,7 +36,7 @@ const (
 )
 
 type IRulesClient interface {
-	List(ctx context.Context, companyID string) ([]*rulesentities.SaveChangesRules, error)
+	ListTenantRules(ctx context.Context, companyID string) ([]*rulesentities.SaveChangesRules, error)
 	UpdateTenantRules(ctx context.Context, companyID string, rules []*rulesentities.SaveChangesRules) error
 }
 
@@ -48,7 +48,7 @@ func New(c *client.APIClient) IRulesClient {
 	return &RulesClient{c: c}
 }
 
-func (e *RulesClient) List(ctx context.Context, companyID string) ([]*rulesentities.SaveChangesRules, error) {
+func (e *RulesClient) ListTenantRules(ctx context.Context, companyID string) ([]*rulesentities.SaveChangesRules, error) {
 	request := e.c.Get().APIPath(tenantsAPIPrefix)
 	request.SetParam("search", companyID)
 
