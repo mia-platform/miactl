@@ -130,8 +130,8 @@ func deleteItemByItemIDAndVersion(ctx context.Context, client *client.APIClient,
 		return err
 	}
 
-	asd := resp.Header().Get("X-Marketplace-Item-Latest-Version:")
-	fmt.Printf("\nasd %s\n", asd)
+	latestVersion := resp.Header().Get("X-Marketplace-Item-Latest-Version")
+	fmt.Printf("\nasd %s\n", latestVersion)
 	return nil
 }
 
