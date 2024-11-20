@@ -100,7 +100,6 @@ func printProjectList(rules []*rulesentities.ProjectSaveChangesRules, p printer.
 
 	p.Keys(tableColumnLabel...)
 	for i, rule := range rules {
-
 		ruleInfo := createRecord(rule.DisallowedRuleSet)
 		p.Record(
 			strconv.Itoa(i),

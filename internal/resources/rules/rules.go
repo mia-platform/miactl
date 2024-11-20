@@ -16,20 +16,20 @@
 package rules
 
 type SaveChangesRules struct {
-	RoleIDs           []string  `yaml:"roleIds,omitempty" json:"roleIds,omitempty"`
+	RoleIDs           []string  `yaml:"roleIds,omitempty" json:"roleIds,omitempty"` //nolint:tagliatelle
 	DisallowedRuleSet []RuleSet `yaml:"disallowedRuleSet,omitempty" json:"disallowedRuleSet,omitempty"`
 }
 
 type ProjectSaveChangesRules struct {
-	RoleIDs               []string  `yaml:"roleIds,omitempty" json:"roleIds,omitempty"`
+	RoleIDs               []string  `yaml:"roleIds,omitempty" json:"roleIds,omitempty"` //nolint:tagliatelle
 	DisallowedRuleSet     []RuleSet `yaml:"disallowedRuleSet,omitempty" json:"disallowedRuleSet,omitempty"`
 	IsInheritedFromTenant bool      `yaml:"isInheritedFromTenant,omitempty" json:"isInheritedFromTenant,omitempty"`
 }
 
 type RuleSet struct {
 	JSONPath string       `yaml:"jsonPath,omitempty" json:"jsonPath,omitempty"`
-	Options  *RuleOptions `yaml:"processingOptions,omitempty" json:"processingOptions,omitempty"`
-	RuleID   string       `yaml:"ruleId,omitempty" json:"ruleId,omitempty"`
+	Options  *RuleOptions `yaml:"processingOptions,omitempty" json:"processingOptions,omitempty"` //nolint:tagliatelle
+	RuleID   string       `yaml:"ruleId,omitempty" json:"ruleId,omitempty"`                       //nolint:tagliatelle
 }
 
 type RuleOptions struct {

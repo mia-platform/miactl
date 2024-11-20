@@ -38,18 +38,18 @@ type IRulesClient interface {
 	ListTenantRules(ctx context.Context, companyID string) ([]*rulesentities.SaveChangesRules, error)
 	ListProjectRules(ctx context.Context, projectID string) ([]*rulesentities.ProjectSaveChangesRules, error)
 	UpdateTenantRules(ctx context.Context, companyID string, rules []*rulesentities.SaveChangesRules) error
-	UpdateProjectRules(ctx context.Context, projectId string, rules []*rulesentities.SaveChangesRules) error
+	UpdateProjectRules(ctx context.Context, projectID string, rules []*rulesentities.SaveChangesRules) error
 }
 
-type RulesClient struct {
+type rulesClient struct {
 	c *client.APIClient
 }
 
 func New(c *client.APIClient) IRulesClient {
-	return &RulesClient{c: c}
+	return &rulesClient{c: c}
 }
 
-func (e *RulesClient) ListTenantRules(ctx context.Context, companyID string) ([]*rulesentities.SaveChangesRules, error) {
+func (e *rulesClient) ListTenantRules(ctx context.Context, companyID string) ([]*rulesentities.SaveChangesRules, error) {
 	request := e.c.Get().APIPath(tenantsAPIPrefix)
 	request.SetParam("search", companyID)
 
@@ -85,7 +85,7 @@ func (e *RulesClient) ListTenantRules(ctx context.Context, companyID string) ([]
 	return tenant.ConfigurationManagement.SaveChangesRules, nil
 }
 
-func (e *RulesClient) ListProjectRules(ctx context.Context, projectID string) ([]*rulesentities.ProjectSaveChangesRules, error) {
+func (e *rulesClient) ListProjectRules(ctx context.Context, projectID string) ([]*rulesentities.ProjectSaveChangesRules, error) {
 	request := e.c.Get().APIPath(fmt.Sprintf(getProjectAPIFmt, projectID))
 	request.SetParam("withTenant", "true")
 
@@ -113,7 +113,7 @@ type UpdateRequestBody struct {
 	ConfigurationManagement *resources.ConfigurationManagement `json:"configurationManagement"`
 }
 
-func (e *RulesClient) UpdateTenantRules(ctx context.Context, companyID string, rules []*rulesentities.SaveChangesRules) error {
+func (e *rulesClient) UpdateTenantRules(ctx context.Context, companyID string, rules []*rulesentities.SaveChangesRules) error {
 	requestBody := UpdateRequestBody{
 		ConfigurationManagement: &resources.ConfigurationManagement{
 			SaveChangesRules: rules,
@@ -141,7 +141,7 @@ func (e *RulesClient) UpdateTenantRules(ctx context.Context, companyID string, r
 	return nil
 }
 
-func (e *RulesClient) UpdateProjectRules(ctx context.Context, projectID string, rules []*rulesentities.SaveChangesRules) error {
+func (e *rulesClient) UpdateProjectRules(ctx context.Context, projectID string, rules []*rulesentities.SaveChangesRules) error {
 	requestBody := UpdateRequestBody{
 		ConfigurationManagement: &resources.ConfigurationManagement{
 			SaveChangesRules: rules,
@@ -169,7 +169,7 @@ func (e *RulesClient) UpdateProjectRules(ctx context.Context, projectID string, 
 	return nil
 }
 
-func (e *RulesClient) assertSuccessResponse(resp *client.Response) error {
+func (e *rulesClient) assertSuccessResponse(resp *client.Response) error {
 	if resp.StatusCode() >= http.StatusBadRequest {
 		return resp.Error()
 	}
