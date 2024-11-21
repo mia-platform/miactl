@@ -13,33 +13,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package cmd
+package company
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/company"
+	"github.com/mia-platform/miactl/internal/cmd/company/rules"
 	"github.com/spf13/cobra"
 )
 
-func CompanyCmd(options *clioptions.CLIOptions) *cobra.Command {
+func RulesCmd(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "company",
-		Short: "View and manage Mia-Platform companies",
+		Use:   "rules",
+		Short: "Manage Company rules",
+		Long:  ``,
 	}
 
 	// add cmd flags
 	flags := cmd.PersistentFlags()
-	options.AddConnectionFlags(flags)
-	options.AddContextFlags(flags)
-
-	// add sub commands
-	cmd.AddCommand(
-		company.ListCmd(options),
-		company.IAMCmd(options),
-	)
+	o.AddConnectionFlags(flags)
+	o.AddContextFlags(flags)
+	o.AddCompanyFlags(flags)
+	o.AddProjectFlags(flags)
 
 	cmd.AddCommand(
-		company.RulesCmd(options),
+		rules.ListCmd(o),
+		rules.UpdateRules(o),
 	)
 
 	return cmd

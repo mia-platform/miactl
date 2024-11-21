@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"time"
 
+	rulesentities "github.com/mia-platform/miactl/internal/resources/rules"
 	"golang.org/x/oauth2"
 )
 
@@ -47,12 +48,21 @@ func (ut *UserToken) JWTToken() *oauth2.Token {
 	}
 }
 
+type ConfigurationManagement struct {
+	SaveChangesRules []*rulesentities.SaveChangesRules `json:"saveChangesRules"`
+}
+
+type ProjectConfigurationManagement struct {
+	SaveChangesRules []*rulesentities.ProjectSaveChangesRules `json:"saveChangesRules"`
+}
+
 type Company struct {
-	ID         string     `json:"_id"` //nolint:tagliatelle
-	Name       string     `json:"name"`
-	TenantID   string     `json:"tenantId"`
-	Pipelines  Pipelines  `json:"pipelines"`
-	Repository Repository `json:"repository"`
+	ID                      string                  `json:"_id"` //nolint:tagliatelle
+	Name                    string                  `json:"name"`
+	TenantID                string                  `json:"tenantId"`
+	Pipelines               Pipelines               `json:"pipelines"`
+	Repository              Repository              `json:"repository"`
+	ConfigurationManagement ConfigurationManagement `json:"configurationManagement"`
 }
 
 type MarketplaceItem struct {
@@ -88,6 +98,8 @@ type Project struct {
 	ProjectID            string        `json:"projectId"`
 	Pipelines            Pipelines     `json:"pipelines"`
 	CompanyID            string        `json:"tenantId"` //nolint:tagliatelle
+
+	ConfigurationManagement ProjectConfigurationManagement `json:"configurationManagement"`
 }
 
 type Environment struct {
