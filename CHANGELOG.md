@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.16.0] - 2024-11-21
+
+### Added
+
+- `company rules list` command
+- `company rules update` command
+
 ### Changed
 
 - update go version to 1.23.2
@@ -304,7 +311,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - create cli sdk
 - create cli renderer
 
-[unreleased]: https://github.com/mia-platform/miactl/compare/v0.15.0...HEAD
+[unreleased]: https://github.com/mia-platform/miactl/compare/v0.16.0...HEAD
+[v0.16.0]: https://github.com/mia-platform/miactl/compare/v0.15.0...v0.16.0
 [v0.15.0]: https://github.com/mia-platform/miactl/compare/v0.14.0...v0.15.0
 [v0.14.0]: https://github.com/mia-platform/miactl/compare/v0.13.0...v0.14.0
 [v0.13.0]: https://github.com/mia-platform/miactl/compare/v0.12.2...v0.13.0
