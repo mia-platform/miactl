@@ -1,10 +1,10 @@
 {
 	"name": "Go",
-	"image": "golang:1.23.2",
+	"image": "golang:1.23.3",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {"username": "golang"},
 		"ghcr.io/devcontainers/features/git:1": {"version": "latest","ppa": "false"},
-		"ghcr.io/devcontainers/features/go:1": {"version": "none", "golangciLintVersion": "1.61.0"}
+		"ghcr.io/devcontainers/features/go:1": {"version": "none", "golangciLintVersion": "1.62.2"}
 	},
 	"runArgs": [
 		"--security-opt",
