@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- update testify to v1.10.0
+- update oauth2 to v0.24.0
+- update sync to v0.9.0
+- update text to v0.20.0
+
 ## [v0.16.0] - 2024-11-21
 
 ### Added
