@@ -30,15 +30,7 @@ func TestTablePrinter(t *testing.T) {
 			Record("d1", "d2")
 		p.Print()
 
-		expected := `  K1  K2  
-
-  d1  d2  
-`
-
-		require.Equal(
-			t,
-			expected,
-			str.String(),
-		)
+		expected := "  K1  K2  \n\n  d1  d2  \n"
+		require.Equal(t, expected, str.String())
 	})
 }

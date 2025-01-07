@@ -8,7 +8,7 @@
     "iconName": "PiHardDrives",
     "destination": {
         "id": "runtime",
-        "path": "/" 
+        "path": "/"
     },
     "menu": {
         "id": "extension-1",
