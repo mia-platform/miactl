@@ -45,10 +45,10 @@ func TestGetProjects(t *testing.T) {
 	}{
 		"valid config, successful get": {
 			companyID:  "foo-company",
-			testServer: testServer(t),
+			testServer: listTestServer(t),
 		},
 		"company ID unset": {
-			testServer:  testServer(t),
+			testServer:  listTestServer(t),
 			expectError: true,
 		},
 	}
@@ -73,7 +73,7 @@ func TestGetProjects(t *testing.T) {
 	}
 }
 
-func testServer(t *testing.T) *httptest.Server {
+func listTestServer(t *testing.T) *httptest.Server {
 	t.Helper()
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch {
