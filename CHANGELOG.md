@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update sync to v0.10.0
 - update text to v0.21.0
 
+### Added
+
+- `project import` command
+
 ## [v0.16.0] - 2024-11-21
 
 ### Added
