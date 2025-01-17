@@ -29,7 +29,7 @@ import (
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
 func TestApplyBuildPathsFromDir(t *testing.T) {

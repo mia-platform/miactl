@@ -35,7 +35,7 @@ func (r *ResponseError) Error() string {
 	var out *resources.APIError
 	err := parseBody(r.body, &out)
 	if err != nil {
-		return fmt.Sprintf("error parsing error response from server: %s", err)
+		return fmt.Sprintf("cannot parse server response: %s", err)
 	}
 
 	if len(out.Message) > 0 {
@@ -96,7 +96,7 @@ func (r *Response) ParseResponse(obj interface{}) error {
 func parseBody(body []byte, obj interface{}) error {
 	err := json.Unmarshal(body, obj)
 	if err != nil && err != io.EOF {
-		return fmt.Errorf("error during response parsing: %w", err)
+		return fmt.Errorf("cannot parse server response: %w", err)
 	}
 
 	return nil

@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 
 	"github.com/mia-platform/miactl/internal/cliconfig/api"
-	"gopkg.in/yaml.v3"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
 const ConfigPathEnvVarName = "MIACONFIG"
