@@ -93,6 +93,10 @@ func runDeployTrigger(ctx context.Context, environmentName string, options *clio
 		return fmt.Errorf("error retrieving the pipeline status: %w", err)
 	}
 
+	if status == "failed" {
+		return fmt.Errorf("Pipeline failed")
+	}
+
 	fmt.Printf("Pipeline ended with %s\n", status)
 	return nil
 }
