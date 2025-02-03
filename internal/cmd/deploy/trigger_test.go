@@ -41,6 +41,11 @@ func TestDeploy(t *testing.T) {
 			server:    testTriggerServer(t),
 			projectID: "correct",
 		},
+		"pipeline failed": {
+			server:    testFailedTriggerServer(t),
+			projectID: "failed",
+			expectErr: true,
+		},
 		"pipeline fails": {
 			server:    testTriggerServer(t),
 			projectID: "fails-bad-request",
@@ -107,6 +112,35 @@ func testTriggerServer(t *testing.T) *httptest.Server {
 
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte(respBody))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+			require.FailNowf(t, "unknown http request", "request method: %s request URL: %s", r.Method, r.URL)
+		}
+	}))
+
+	return server
+}
+
+func testFailedTriggerServer(t *testing.T) *httptest.Server {
+	t.Helper()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		t.Helper()
+		switch {
+		case r.Method == http.MethodPost && r.URL.Path == fmt.Sprintf(deployProjectEndpointTemplate, "failed"):
+			data, err := resources.EncodeResourceToJSON(&resources.DeployProject{
+				ID:  1,
+				URL: "http://example.com",
+			})
+
+			require.NoError(t, err)
+			w.Write(data)
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "failed", 1) && r.URL.Query().Get("environment") == "environmentName":
+			data, err := resources.EncodeResourceToJSON(&resources.PipelineStatus{
+				ID:     1,
+				Status: "failed",
+			})
+			require.NoError(t, err)
+			w.Write(data)
 		default:
 			w.WriteHeader(http.StatusNotFound)
 			require.FailNowf(t, "unknown http request", "request method: %s request URL: %s", r.Method, r.URL)
