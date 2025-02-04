@@ -10,9 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - update go version to 1.23.4
-- update testify to v1.10.0
 - update oauth2 to v0.25.0
+- update pflag to v1.0.6
 - update sync to v0.10.0
+- update testify to v1.10.0
 - update text to v0.21.0
 - update `deploy trigger` command to handle deployment pipeline failure
 
