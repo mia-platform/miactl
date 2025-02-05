@@ -1,0 +1,294 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-leader
+  annotations:
+    mia-platform.eu/version: 13.0.0
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+    apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+  labels:
+    app: redis-leader
+    app.kubernetes.io/name: redis-leader
+    app.kubernetes.io/version: 6.0.5
+    app.kubernetes.io/component: custom
+    app.kubernetes.io/part-of: brownfield
+    app.kubernetes.io/managed-by: mia-platform
+    mia-platform.eu/stage: development
+    mia-platform.eu/tenant: 390f60bf-7d4f-45f3-86eb-9d8a20957819
+    role: leader
+    tier: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis-leader
+  strategy:
+    type: RollingUpdate
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      annotations:
+        mia-platform.eu/version: 13.0.0
+        apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+        apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+      labels:
+        app: redis-leader
+        app.kubernetes.io/name: redis-leader
+        app.kubernetes.io/version: 6.0.5
+        app.kubernetes.io/component: custom
+        app.kubernetes.io/part-of: brownfield
+        app.kubernetes.io/managed-by: mia-platform
+        mia-platform.eu/stage: development
+        mia-platform.eu/tenant: 390f60bf-7d4f-45f3-86eb-9d8a20957819
+        role: leader
+        tier: backend
+    spec:
+      imagePullSecrets:
+        - name: nexus-gcloud
+      containers:
+        - name: redis-leader
+          image: docker.io/redis:6.0.5
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
+          volumeMounts: []
+          ports:
+            - name: tcp6379
+              containerPort: 6379
+              protocol: TCP
+          args: []
+          env: []
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+      volumes: []
+      hostIPC: false
+      hostNetwork: false
+      hostPID: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-leader
+  annotations:
+    mia-platform.eu/version: 13.0.0
+  labels:
+    app: redis-leader
+    app.kubernetes.io/name: redis-leader
+    app.kubernetes.io/version: 6.0.5
+    app.kubernetes.io/component: custom
+    app.kubernetes.io/part-of: brownfield
+    app.kubernetes.io/managed-by: mia-platform
+    mia-platform.eu/stage: development
+    mia-platform.eu/tenant: 390f60bf-7d4f-45f3-86eb-9d8a20957819
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp6379
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+      nodePort: null
+  selector:
+    app: redis-leader
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-follower
+  annotations:
+    mia-platform.eu/version: 13.0.0
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+    apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+  labels:
+    app: redis-follower
+    app.kubernetes.io/name: redis-follower
+    app.kubernetes.io/version: v2
+    app.kubernetes.io/component: custom
+    app.kubernetes.io/part-of: brownfield
+    app.kubernetes.io/managed-by: mia-platform
+    mia-platform.eu/stage: development
+    mia-platform.eu/tenant: 390f60bf-7d4f-45f3-86eb-9d8a20957819
+    role: follower
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: redis-follower
+  strategy:
+    type: RollingUpdate
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      annotations:
+        mia-platform.eu/version: 13.0.0
+        apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+        apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+      labels:
+        app: redis-follower
+        app.kubernetes.io/name: redis-follower
+        app.kubernetes.io/version: v2
+        app.kubernetes.io/component: custom
+        app.kubernetes.io/part-of: brownfield
+        app.kubernetes.io/managed-by: mia-platform
+        mia-platform.eu/stage: development
+        mia-platform.eu/tenant: 390f60bf-7d4f-45f3-86eb-9d8a20957819
+        role: follower
+        tier: backend
+    spec:
+      imagePullSecrets:
+        - name: nexus-gcloud
+      containers:
+        - name: redis-follower
+          image: us-docker.pkg.dev/google-samples/containers/gke/gb-redis-follower:v2
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
+          volumeMounts: []
+          ports:
+            - name: tcp6379
+              containerPort: 6379
+              protocol: TCP
+          args: []
+          env: []
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+      volumes: []
+      hostIPC: false
+      hostNetwork: false
+      hostPID: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-follower
+  annotations:
+    mia-platform.eu/version: 13.0.0
+  labels:
+    app: redis-follower
+    app.kubernetes.io/name: redis-follower
+    app.kubernetes.io/version: v2
+    app.kubernetes.io/component: custom
+    app.kubernetes.io/part-of: brownfield
+    app.kubernetes.io/managed-by: mia-platform
+    mia-platform.eu/stage: development
+    mia-platform.eu/tenant: 390f60bf-7d4f-45f3-86eb-9d8a20957819
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp6379
+      protocol: TCP
+      port: 6379
+      targetPort: 6379
+      nodePort: null
+  selector:
+    app: redis-follower
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  annotations:
+    mia-platform.eu/version: 13.0.0
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+    apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+  labels:
+    app: frontend
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/version: v5
+    app.kubernetes.io/component: custom
+    app.kubernetes.io/part-of: brownfield
+    app.kubernetes.io/managed-by: mia-platform
+    mia-platform.eu/stage: development
+    mia-platform.eu/tenant: 390f60bf-7d4f-45f3-86eb-9d8a20957819
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: frontend
+  strategy:
+    type: RollingUpdate
+  revisionHistoryLimit: 1
+  template:
+    metadata:
+      annotations:
+        mia-platform.eu/version: 13.0.0
+        apparmor.security.beta.kubernetes.io/allowedProfileNames: runtime/default
+        apparmor.security.beta.kubernetes.io/defaultProfileName: runtime/default
+      labels:
+        app: frontend
+        app.kubernetes.io/name: frontend
+        app.kubernetes.io/version: v5
+        app.kubernetes.io/component: custom
+        app.kubernetes.io/part-of: brownfield
+        app.kubernetes.io/managed-by: mia-platform
+        mia-platform.eu/stage: development
+        mia-platform.eu/tenant: 390f60bf-7d4f-45f3-86eb-9d8a20957819
+    spec:
+      imagePullSecrets:
+        - name: nexus-gcloud
+      containers:
+        - name: frontend
+          image: us-docker.pkg.dev/google-samples/containers/gke/gb-frontend:v5
+          imagePullPolicy: Always
+          resources:
+            requests:
+              memory: 100Mi
+              cpu: 100m
+          volumeMounts: []
+          ports:
+            - name: tcp80
+              containerPort: 80
+              protocol: TCP
+          args: []
+          env:
+            - name: GET_HOSTS_FROM
+              value: dns
+          securityContext:
+            allowPrivilegeEscalation: false
+            privileged: false
+      volumes: []
+      hostIPC: false
+      hostNetwork: false
+      hostPID: false
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+  annotations:
+    mia-platform.eu/version: 13.0.0
+  labels:
+    app: frontend
+    app.kubernetes.io/name: frontend
+    app.kubernetes.io/version: v5
+    app.kubernetes.io/component: custom
+    app.kubernetes.io/part-of: brownfield
+    app.kubernetes.io/managed-by: mia-platform
+    mia-platform.eu/stage: development
+    mia-platform.eu/tenant: 390f60bf-7d4f-45f3-86eb-9d8a20957819
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp80
+      protocol: TCP
+      port: 80
+      targetPort: 80
+      nodePort: null
+  selector:
+    app: frontend

@@ -271,6 +271,12 @@ func (o *CLIOptions) AddRemoveProjectIAMRoleFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.Environment, "environment", "", "set the flag to the environment name for deleting the role for that environment")
 }
 
+func (o *CLIOptions) AddImportFlags(flags *pflag.FlagSet) {
+	o.AddProjectFlags(flags)
+	flags.StringVar(&o.Revision, "revision", "HEAD", "revision of the commit to deploy")
+	flags.StringVar(&o.InputFilePath, "filename", "", "file or folder containing the resources to import")
+}
+
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
 	locator := cliconfig.NewConfigPathLocator()
 	locator.ExplicitPath = o.MiactlConfig
