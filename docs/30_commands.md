@@ -600,10 +600,10 @@ Available flags for the command:
 
 ### import
 
-The `project import` subcommand allows you to import kuberntes resource yaml definition in an empty Mia-Platform Console
+The `project import` subcommand allows you to import kubernetes resource yaml definition in an empty Mia-Platform Console
 project.
 
-The import function is lossy and some advanced configuration can be lost. We reccomend to check the generated file
+The import function is lossy and some advanced configuration can be lost. We recomend to check the generated file
 before trying a deploy to check if anything is amiss.
 
 Usage:
