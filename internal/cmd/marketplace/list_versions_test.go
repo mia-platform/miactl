@@ -40,6 +40,7 @@ const (
 		"version": "1.0.0",
 		"reference": "655342ce0f991db238fd73e4",
 		"security": false,
+		"isLatest": true,
 		"releaseNote": "-",
 		"visibility": {
 		  "public": true
@@ -89,6 +90,7 @@ func TestGetItemVersions(t *testing.T) {
 				{
 					Name:        "Some Awesome Service",
 					Description: "The Awesome Service allows to do some amazing stuff.",
+					Latest:      true,
 					Version:     "1.0.0",
 				},
 				{

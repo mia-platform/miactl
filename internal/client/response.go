@@ -58,6 +58,7 @@ type Response struct {
 	rawRequest  *http.Request
 
 	body       []byte
+	header     http.Header
 	statusCode int
 	err        error
 }
@@ -65,6 +66,10 @@ type Response struct {
 // RawRequest return the original request if you need to access things not exposed by the other functions
 func (r *Response) RawRequest() *http.Request {
 	return r.rawRequest
+}
+
+func (r *Response) Header() http.Header {
+	return r.header
 }
 
 // Error return the response status code
