@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- remove the default `HEAD` value for `--revision` flags because it is not valid anymore for enhanced projects
+
 ## [v0.17.0] - 2025-02-05
 
 ### Changed

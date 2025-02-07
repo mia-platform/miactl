@@ -70,6 +70,7 @@ func TestDeploy(t *testing.T) {
 			options := &clioptions.CLIOptions{
 				Endpoint:     server.URL,
 				ProjectID:    testCase.projectID,
+				Revision:     "revision",
 				MiactlConfig: filepath.Join(t.TempDir(), "nofile"),
 			}
 			err := runDeployTrigger(context.TODO(), "environmentName", options)

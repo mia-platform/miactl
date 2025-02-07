@@ -17,6 +17,7 @@ package deploy
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -67,6 +68,10 @@ func deployTriggerOptions(cmd *cobra.Command, options *clioptions.CLIOptions) {
 }
 
 func runDeployTrigger(ctx context.Context, environmentName string, options *clioptions.CLIOptions) error {
+	if len(options.Revision) == 0 {
+		return errors.New("a valid revision is required to start a deploy")
+	}
+
 	restConfig, err := options.ToRESTConfig()
 	if err != nil {
 		return err

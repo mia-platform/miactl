@@ -137,7 +137,7 @@ func (o *CLIOptions) AddEnvironmentFlags(flags *pflag.FlagSet) {
 }
 
 func (o *CLIOptions) AddDeployFlags(flags *pflag.FlagSet) {
-	flags.StringVar(&o.Revision, "revision", "HEAD", "revision of the commit to deploy")
+	flags.StringVar(&o.Revision, "revision", "", "revision of the commit to deploy")
 	flags.StringVar(&o.DeployType, "deploy-type", "smart_deploy", "deploy type")
 	flags.BoolVar(&o.NoSemVer, "no-semver", false, "force the deploy wihout semver")
 }
@@ -273,7 +273,7 @@ func (o *CLIOptions) AddRemoveProjectIAMRoleFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddImportFlags(flags *pflag.FlagSet) {
 	o.AddProjectFlags(flags)
-	flags.StringVar(&o.Revision, "revision", "HEAD", "revision of the commit to deploy")
+	flags.StringVar(&o.Revision, "revision", "", "revision of the commit to deploy")
 	flags.StringVar(&o.InputFilePath, "filename", "", "file or folder containing the resources to import")
 }
 
