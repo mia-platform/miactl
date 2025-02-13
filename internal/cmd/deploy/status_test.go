@@ -16,7 +16,6 @@
 package deploy
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -77,7 +76,7 @@ func TestAddStatus(t *testing.T) {
 				ProjectID:    testCase.projectID,
 				MiactlConfig: filepath.Join(t.TempDir(), "nofile"),
 			}
-			err := runAddDeployStatus(context.TODO(), options, testCase.status)
+			err := runAddDeployStatus(t.Context(), options, testCase.status)
 			if testCase.expectErr {
 				require.Error(t, err)
 				return

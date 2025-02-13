@@ -16,7 +16,6 @@
 package iam
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -66,7 +65,7 @@ func TestListAllIAMIdentities(t *testing.T) {
 
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
-			err = listAllIAMEntities(context.TODO(), client, testCase.companyID, testCase.searchParams, &printer.NopPrinter{})
+			err = listAllIAMEntities(t.Context(), client, testCase.companyID, testCase.searchParams, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
@@ -105,7 +104,7 @@ func TestListUsersIdentities(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			err = listSpecificEntities(context.TODO(), client, testCase.companyID, iam.UsersEntityName, &printer.NopPrinter{})
+			err = listSpecificEntities(t.Context(), client, testCase.companyID, iam.UsersEntityName, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
@@ -147,7 +146,7 @@ func TestListGroupsIdentities(t *testing.T) {
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
 
-			err = listSpecificEntities(context.TODO(), client, testCase.companyID, iam.GroupsEntityName, &printer.NopPrinter{})
+			err = listSpecificEntities(t.Context(), client, testCase.companyID, iam.GroupsEntityName, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {
@@ -189,7 +188,7 @@ func TestServiceAccountGroupsIdentities(t *testing.T) {
 			client, err := client.APIClientForConfig(testCase.clientConfig)
 			require.NoError(t, err)
 
-			err = listSpecificEntities(context.TODO(), client, testCase.companyID, iam.ServiceAccountsEntityName, &printer.NopPrinter{})
+			err = listSpecificEntities(t.Context(), client, testCase.companyID, iam.ServiceAccountsEntityName, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

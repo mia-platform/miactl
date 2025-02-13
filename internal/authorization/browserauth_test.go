@@ -16,7 +16,6 @@
 package authorization
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -27,20 +26,20 @@ import (
 
 func TestGetTokenError(t *testing.T) {
 	config := Config{}
-	_, err := config.GetToken(context.TODO())
+	_, err := config.GetToken(t.Context())
 	assert.Error(t, err, "error expected from config without appIOd")
 
 	config.AppID = "appid"
-	_, err = config.GetToken(context.TODO())
+	_, err = config.GetToken(t.Context())
 	assert.Error(t, err, "error expected from config without client")
 }
 
 func TestRefreshTokenError(t *testing.T) {
 	config := Config{}
-	_, err := config.RefreshToken(context.TODO(), "")
+	_, err := config.RefreshToken(t.Context(), "")
 	assert.Error(t, err, "error expected from config without refreshToken")
 
-	_, err = config.RefreshToken(context.TODO(), "refresh-token")
+	_, err = config.RefreshToken(t.Context(), "refresh-token")
 	assert.Error(t, err, "error expected from config without client")
 }
 

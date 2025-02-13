@@ -16,7 +16,6 @@
 package iam
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -61,7 +60,7 @@ func TestListAllIAMEntitites(t *testing.T) {
 			client, err := client.APIClientForConfig(config)
 			require.NoError(t, err)
 
-			response, err := ListAllIAMEntities(context.TODO(), client, companyID, testCase.projectIDs, nil)
+			response, err := ListAllIAMEntities(t.Context(), client, companyID, testCase.projectIDs, nil)
 			require.NoError(t, err)
 			if testCase.expectErr {
 				assert.Error(t, response.Error())
@@ -108,7 +107,7 @@ func TestSpecificIAMList(t *testing.T) {
 			client, err := client.APIClientForConfig(config)
 			require.NoError(t, err)
 
-			response, err := ListSpecificEntities(context.TODO(), client, companyID, testCase.iamType)
+			response, err := ListSpecificEntities(t.Context(), client, companyID, testCase.iamType)
 			require.NoError(t, err)
 			if testCase.expectErr {
 				assert.Error(t, response.Error())

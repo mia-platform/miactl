@@ -16,7 +16,6 @@
 package group
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -68,7 +67,7 @@ func TestRemoveGroup(t *testing.T) {
 			})
 			require.NoError(t, err)
 			err = removeCompanyGroup(
-				context.TODO(),
+				t.Context(),
 				client,
 				testCase.companyID,
 				testCase.groupID,

@@ -16,7 +16,6 @@
 package group
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -80,7 +79,7 @@ func TestAddGroupMember(t *testing.T) {
 			})
 			require.NoError(t, err)
 			err = addMemberToGroup(
-				context.TODO(),
+				t.Context(),
 				client,
 				testCase.companyID,
 				testCase.groupID,

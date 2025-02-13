@@ -16,7 +16,6 @@
 package user
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -81,7 +80,7 @@ func TestAddUser(t *testing.T) {
 			})
 			require.NoError(t, err)
 			err = addUserToCompany(
-				context.TODO(),
+				t.Context(),
 				client,
 				testCase.companyID,
 				testCase.userEmail,

@@ -17,7 +17,6 @@ package client
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -72,7 +71,7 @@ func TestStreamRequest(t *testing.T) {
 	defer testServer.Close()
 
 	s := testAPIServer(t, testServer)
-	readCloser, err := s.Get().APIPath("path/to/stream/thing").Stream(context.TODO())
+	readCloser, err := s.Get().APIPath("path/to/stream/thing").Stream(t.Context())
 	require.NoError(t, err)
 
 	defer readCloser.Close()

@@ -16,7 +16,6 @@
 package marketplace
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -147,7 +146,7 @@ func TestApplyUploadImage(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := uploadSingleFileWithMultipart(
-			context.TODO(),
+			t.Context(),
 			client,
 			mockTenantID,
 			"image/png",
@@ -177,7 +176,7 @@ func TestApplyUploadImage(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := uploadSingleFileWithMultipart(
-			context.TODO(),
+			t.Context(),
 			client,
 			"",
 			"image/png",

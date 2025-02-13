@@ -16,7 +16,6 @@
 package basic
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -77,7 +76,7 @@ func TestCreateBasicServiceAccount(t *testing.T) {
 			})
 			require.NoError(t, err)
 			credentials, err := createBasicServiceAccount(
-				context.TODO(),
+				t.Context(),
 				client,
 				testCase.serviceAccountName,
 				testCase.companyID,

@@ -16,7 +16,6 @@
 package iam
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -142,7 +141,7 @@ func TestEditRoleForEntity(t *testing.T) {
 			}
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
-			err = editRoleForEntity(context.TODO(), client, testCase.roleChange)
+			err = editRoleForEntity(t.Context(), client, testCase.roleChange)
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

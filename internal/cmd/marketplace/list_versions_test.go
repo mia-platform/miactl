@@ -16,7 +16,6 @@
 package marketplace
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -154,7 +153,7 @@ func TestGetItemVersions(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			found, err := getItemVersions(context.TODO(), client, testCase.companyID, testCase.itemID)
+			found, err := getItemVersions(t.Context(), client, testCase.companyID, testCase.itemID)
 			if testCase.expectedErr != nil {
 				require.ErrorIs(t, err, testCase.expectedErr)
 				require.Nil(t, found)

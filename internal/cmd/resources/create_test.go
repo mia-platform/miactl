@@ -16,7 +16,6 @@
 package resources
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -70,7 +69,7 @@ func TestCreateJob(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = createJob(context.TODO(), client, testCase.projectID, testCase.environment, "cronjob-name")
+			err = createJob(t.Context(), client, testCase.projectID, testCase.environment, "cronjob-name")
 			if testCase.err {
 				require.Error(t, err)
 			} else {

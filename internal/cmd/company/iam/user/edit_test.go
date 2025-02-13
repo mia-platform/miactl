@@ -16,7 +16,6 @@
 package user
 
 import (
-	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -82,7 +81,7 @@ func TestEditUser(t *testing.T) {
 			})
 			require.NoError(t, err)
 			err = editCompanyUser(
-				context.TODO(),
+				t.Context(),
 				client,
 				testCase.companyID,
 				testCase.userID,

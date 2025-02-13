@@ -16,7 +16,6 @@
 package iam
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -62,7 +61,7 @@ func TestListAllIAMIdentities(t *testing.T) {
 			}
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
-			err = listAllIAMEntities(context.TODO(), client, companyID, projectID, testCase.searchParams, &printer.NopPrinter{})
+			err = listAllIAMEntities(t.Context(), client, companyID, projectID, testCase.searchParams, &printer.NopPrinter{})
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

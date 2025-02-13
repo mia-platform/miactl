@@ -17,7 +17,6 @@ package transport
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -232,7 +231,7 @@ func TestDebugRoundTripper(t *testing.T) {
 			buffer := bytes.NewBuffer(nil)
 			logger := logger.NewTestLogger(buffer, testCase.logLevel)
 			rt := &testRoundTripper{}
-			contextRequest := request.Clone(logr.NewContext(context.TODO(), logger))
+			contextRequest := request.Clone(logr.NewContext(t.Context(), logger))
 			NewDebugRoundTripper(rt).RoundTrip(contextRequest) //nolint: bodyclose
 			loggedOutput := buffer.String()
 

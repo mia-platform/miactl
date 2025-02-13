@@ -16,7 +16,6 @@
 package environments
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -30,13 +29,13 @@ import (
 )
 
 func TestPreconditions(t *testing.T) {
-	err := printEnvironments(context.TODO(), nil, "company-id", "", &printer.NopPrinter{})
+	err := printEnvironments(t.Context(), nil, "company-id", "", &printer.NopPrinter{})
 	assert.Error(t, err)
 
-	err = printEnvironments(context.TODO(), nil, "", "project-id", &printer.NopPrinter{})
+	err = printEnvironments(t.Context(), nil, "", "project-id", &printer.NopPrinter{})
 	assert.Error(t, err)
 
-	err = printEnvironments(context.TODO(), nil, "", "", &printer.NopPrinter{})
+	err = printEnvironments(t.Context(), nil, "", "", &printer.NopPrinter{})
 	assert.Error(t, err)
 }
 
@@ -133,7 +132,7 @@ func TestListEnvironments(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = printEnvironments(context.TODO(), client, testCase.companyID, testCase.projectID, &printer.NopPrinter{})
+			err = printEnvironments(t.Context(), client, testCase.companyID, testCase.projectID, &printer.NopPrinter{})
 			switch testCase.err {
 			case false:
 				require.NoError(t, err)

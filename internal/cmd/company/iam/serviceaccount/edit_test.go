@@ -16,7 +16,6 @@
 package serviceaccount
 
 import (
-	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -82,7 +81,7 @@ func TestEditServiceAccount(t *testing.T) {
 			})
 			require.NoError(t, err)
 			err = editCompanyServiceAccount(
-				context.TODO(),
+				t.Context(),
 				client,
 				testCase.companyID,
 				testCase.serviceAccountID,

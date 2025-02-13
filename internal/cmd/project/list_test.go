@@ -16,7 +16,6 @@
 package project
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -62,7 +61,7 @@ func TestGetProjects(t *testing.T) {
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			err = listProjects(context.TODO(), client, testCase.companyID, &printer.NopPrinter{})
+			err = listProjects(t.Context(), client, testCase.companyID, &printer.NopPrinter{})
 			if testCase.expectError {
 				assert.Error(t, err)
 				return

@@ -16,7 +16,6 @@
 package marketplace
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -258,7 +257,7 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyMarketplaceResource(
-			context.TODO(),
+			t.Context(),
 			client,
 			mockTenantID,
 			validReqMock,
@@ -283,7 +282,7 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyMarketplaceResource(
-			context.TODO(),
+			t.Context(),
 			client,
 			mockTenantID,
 			validReqMock,
@@ -539,7 +538,7 @@ func TestApplyIntegration(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyItemsFromPaths(
-			context.TODO(),
+			t.Context(),
 			client,
 			mockTenantID,
 			mockPaths,
@@ -647,7 +646,7 @@ func TestApplyIntegration(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyItemsFromPaths(
-			context.TODO(),
+			t.Context(),
 			client,
 			mockTenantID,
 			mockPaths,
@@ -702,7 +701,7 @@ func TestApplyIntegration(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyItemsFromPaths(
-			context.TODO(),
+			t.Context(),
 			client,
 			mockTenantID,
 			mockPaths,
@@ -785,7 +784,7 @@ func TestApplyIntegration(t *testing.T) {
 		require.NoError(t, err)
 
 		found, err := applyItemsFromPaths(
-			context.TODO(),
+			t.Context(),
 			client,
 			mockTenantID,
 			mockPaths,
@@ -963,7 +962,7 @@ func TestProcessItemImages(t *testing.T) {
 		require.NoError(t, err)
 
 		err = processItemImages(
-			context.TODO(),
+			t.Context(),
 			client,
 			mockTenantID,
 			mockItem,

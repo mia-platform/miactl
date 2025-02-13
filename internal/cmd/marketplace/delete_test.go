@@ -16,7 +16,6 @@
 package marketplace
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -125,7 +124,7 @@ func TestDeleteItemByObjectId(t *testing.T) {
 			client, err := client.APIClientForConfig(mockClientConfig)
 			require.NoError(t, err)
 			err = deleteItemByObjectID(
-				context.TODO(),
+				t.Context(),
 				client,
 				mockDeleteCompanyID,
 				mockDeleteObjectID,
@@ -213,7 +212,7 @@ func TestDeleteItemByItemIDAndVersion(t *testing.T) {
 			require.NoError(t, err)
 
 			err = deleteItemByItemIDAndVersion(
-				context.TODO(),
+				t.Context(),
 				client,
 				mockDeleteCompanyID,
 				tt.itemID,

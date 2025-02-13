@@ -16,7 +16,6 @@
 package iam
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -109,7 +108,7 @@ func TestRemoveRoleForEntity(t *testing.T) {
 			}
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
-			err = removeRoleForEntity(context.TODO(), client, testCase.roleChange)
+			err = removeRoleForEntity(t.Context(), client, testCase.roleChange)
 			if testCase.err {
 				assert.Error(t, err)
 			} else {

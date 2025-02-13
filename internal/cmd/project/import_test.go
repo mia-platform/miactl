@@ -147,13 +147,13 @@ func TestCmdCreation(t *testing.T) {
 
 func TestImportValidation(t *testing.T) {
 	t.Parallel()
-	ctx := context.TODO()
+	ctx := t.Context()
 	assert.ErrorContains(t, importResources(ctx, nil, "", "", "", nil), "missing project id")
 	assert.ErrorContains(t, importResources(ctx, nil, "projectID", "", "", nil), "missing revision")
 	assert.ErrorContains(t, importResources(ctx, nil, "projectID", "revision", "", nil), "missing file path")
 }
 
-func TestImportResources(t *testing.T) { //nolint: gocyclo
+func TestImportResources(t *testing.T) {
 	t.Parallel()
 	testdata := "testdata"
 	projectID := "projectID"
@@ -332,7 +332,7 @@ func TestImportResources(t *testing.T) { //nolint: gocyclo
 				Host: server.URL,
 			})
 			require.NoError(t, err)
-			ctx, cancel := context.WithTimeout(context.TODO(), 5*time.Second)
+			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
 			defer cancel()
 
 			outputBuffer := bytes.NewBuffer([]byte{})

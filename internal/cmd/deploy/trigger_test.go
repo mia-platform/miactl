@@ -16,7 +16,6 @@
 package deploy
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -73,7 +72,7 @@ func TestDeploy(t *testing.T) {
 				Revision:     "revision",
 				MiactlConfig: filepath.Join(t.TempDir(), "nofile"),
 			}
-			err := runDeployTrigger(context.TODO(), "environmentName", options)
+			err := runDeployTrigger(t.Context(), "environmentName", options)
 			if testCase.expectErr {
 				require.Error(t, err)
 				return

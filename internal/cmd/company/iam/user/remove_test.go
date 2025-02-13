@@ -16,7 +16,6 @@
 package user
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -74,7 +73,7 @@ func TestRemoveUser(t *testing.T) {
 			})
 			require.NoError(t, err)
 			err = removeCompanyUser(
-				context.TODO(),
+				t.Context(),
 				client,
 				testCase.companyID,
 				testCase.userID,

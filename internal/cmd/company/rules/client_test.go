@@ -16,7 +16,6 @@
 package rules
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -91,7 +90,7 @@ func TestClientListTenantRules(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			data, err := New(client).ListTenantRules(context.TODO(), testCase.companyID)
+			data, err := New(client).ListTenantRules(t.Context(), testCase.companyID)
 			if testCase.err {
 				require.Error(t, err)
 				require.Nil(t, data)
@@ -180,7 +179,7 @@ func TestClientListProjectRules(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			data, err := New(client).ListProjectRules(context.TODO(), testCase.companyID)
+			data, err := New(client).ListProjectRules(t.Context(), testCase.companyID)
 			if testCase.err {
 				require.Error(t, err)
 				require.Nil(t, data)
@@ -247,7 +246,7 @@ func TestClientTenantPatch(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			err = New(client).UpdateTenantRules(context.TODO(), testCase.companyID, testCase.PatchData)
+			err = New(client).UpdateTenantRules(t.Context(), testCase.companyID, testCase.PatchData)
 			if testCase.err {
 				require.Error(t, err)
 			} else {
@@ -297,7 +296,7 @@ func TestClientProjectPatch(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			err = New(client).UpdateTenantRules(context.TODO(), testCase.projectID, testCase.PatchData)
+			err = New(client).UpdateTenantRules(t.Context(), testCase.projectID, testCase.PatchData)
 			if testCase.err {
 				require.Error(t, err)
 			} else {

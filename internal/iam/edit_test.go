@@ -16,7 +16,6 @@
 package iam
 
 import (
-	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -77,7 +76,7 @@ func TestEditRoleForIdentity(t *testing.T) {
 			client, err := client.APIClientForConfig(config)
 			require.NoError(t, err)
 
-			response, err := EditIAMResourceRole(context.TODO(), client, companyID, entityID, testCase.iamType, testCase.iamRole)
+			response, err := EditIAMResourceRole(t.Context(), client, companyID, entityID, testCase.iamType, testCase.iamRole)
 			require.NoError(t, err)
 			if testCase.expectErr {
 				assert.Error(t, response.Error())

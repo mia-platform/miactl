@@ -16,7 +16,6 @@
 package extensions
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -83,7 +82,7 @@ func TestE11yClientList(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			data, err := New(client).List(context.TODO(), testCase.companyID, false)
+			data, err := New(client).List(t.Context(), testCase.companyID, false)
 			if testCase.err {
 				require.Error(t, err)
 				require.Nil(t, data)
@@ -160,7 +159,7 @@ func TestE11yClientGetOne(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			data, err := New(client).GetOne(context.TODO(), testCase.companyID, "ext-1")
+			data, err := New(client).GetOne(t.Context(), testCase.companyID, "ext-1")
 			if testCase.err {
 				require.Error(t, err)
 				require.Nil(t, data)
@@ -251,7 +250,7 @@ func TestE11yClientApply(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			id, err := New(client).Apply(context.TODO(), testCase.companyID, testCase.extension)
+			id, err := New(client).Apply(t.Context(), testCase.companyID, testCase.extension)
 			if testCase.err {
 				require.Error(t, err)
 				require.Zero(t, id)
@@ -305,7 +304,7 @@ func TestE11yClientDelete(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			err = New(client).Delete(context.TODO(), testCase.companyID, testCase.extensionID)
+			err = New(client).Delete(t.Context(), testCase.companyID, testCase.extensionID)
 			if testCase.err {
 				require.Error(t, err)
 			} else {
@@ -372,7 +371,7 @@ func TestE11yClientActivate(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			err = New(client).Activate(context.TODO(), testCase.companyID, testCase.extensionID, testCase.activationScopeRequest)
+			err = New(client).Activate(t.Context(), testCase.companyID, testCase.extensionID, testCase.activationScopeRequest)
 			if testCase.err {
 				require.Error(t, err)
 			} else {
@@ -437,7 +436,7 @@ func TestE11yClientDeactivate(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 
-			err = New(client).Deactivate(context.TODO(), testCase.companyID, testCase.extensionID, testCase.deactivationScopeRequest)
+			err = New(client).Deactivate(t.Context(), testCase.companyID, testCase.extensionID, testCase.deactivationScopeRequest)
 			if testCase.err {
 				require.Error(t, err)
 			} else {

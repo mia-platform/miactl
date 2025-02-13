@@ -16,7 +16,6 @@
 package marketplace
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -178,7 +177,7 @@ func TestGetItemEncodedByObjectId(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 			found, err := getItemEncodedWithFormat(
-				context.TODO(),
+				t.Context(),
 				client,
 				mockObjectID,
 				"",
@@ -303,7 +302,7 @@ func TestGetItemEncodedByTuple(t *testing.T) {
 			client, err := client.APIClientForConfig(clientConfig)
 			require.NoError(t, err)
 			found, err := getItemEncodedWithFormat(
-				context.TODO(),
+				t.Context(),
 				client,
 				"",
 				testCase.companyID,

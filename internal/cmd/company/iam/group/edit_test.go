@@ -16,7 +16,6 @@
 package group
 
 import (
-	"context"
 	"net/http/httptest"
 	"testing"
 
@@ -82,7 +81,7 @@ func TestEditGroup(t *testing.T) {
 			})
 			require.NoError(t, err)
 			err = editCompanyGroup(
-				context.TODO(),
+				t.Context(),
 				client,
 				testCase.companyID,
 				testCase.groupID,

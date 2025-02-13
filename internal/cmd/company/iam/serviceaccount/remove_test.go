@@ -16,7 +16,6 @@
 package serviceaccount
 
 import (
-	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -68,7 +67,7 @@ func TestRemoveServiceAccount(t *testing.T) {
 			})
 			require.NoError(t, err)
 			err = removeCompanyServiceAccount(
-				context.TODO(),
+				t.Context(),
 				client,
 				testCase.companyID,
 				testCase.serviceAccountID,
