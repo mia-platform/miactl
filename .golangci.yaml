@@ -37,12 +37,12 @@ linters:
   - revive
   - staticcheck
   - tagliatelle
-  - tenv
   - thelper
   - unconvert
   - unparam
   - unused
   - usestdlibvars
+  - usetesting
   - whitespace
   - zerologlint
 linters-settings:
@@ -57,8 +57,14 @@ linters-settings:
       use-field-name: true
       rules:
         yaml: camel
-  tenv:
-    all: true
+  usetesting:
+    os-create-temp: true
+    os-mkdir-temp: true
+    os-setenv: true
+    os-temp-dir: true
+    os-chdir: true
+    context-background: true
+    context-todo: true
   unparam:
     check-exported: false
   mnd:
@@ -98,3 +104,4 @@ issues:
     - errcheck
     - gosec
     - tagliatelle
+    - gocyclo

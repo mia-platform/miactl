@@ -32,7 +32,8 @@ builds:
   - "7"
 
 archives:
-- format: binary
+- formats:
+  - binary
   name_template: >-
     {{ .Binary }}-
     {{- .Os }}-
