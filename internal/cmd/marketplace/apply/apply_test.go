@@ -334,20 +334,40 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 						},
 					},
 				},
+				{
+					ID:       "id5",
+					ItemID:   "item-id-5",
+					Done:     false,
+					Inserted: false,
+					Updated:  false,
+					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
+						{
+							Message: "some validation error",
+						},
+					},
+					Errors: []marketplace.ApplyResponseItemValidationError{
+						{
+							Message: "some validation error in errors field",
+						},
+					},
+				},
 			},
 		}
 		found := buildOutcomeSummaryAsTables(mockOutcome)
-		require.Contains(t, found, "3 of 4 items have been successfully applied:")
+		require.Contains(t, found, "3 of 5 items have been successfully applied:")
 		require.Contains(t, found, "id1")
 		require.Contains(t, found, "item-id-1")
 		require.Contains(t, found, "id2")
 		require.Contains(t, found, "item-id-2")
 		require.Contains(t, found, "id3")
 		require.Contains(t, found, "item-id-3")
-		require.Contains(t, found, "1 of 4 items have not been applied due to validation errors:")
+		require.Contains(t, found, "2 of 5 items have not been applied due to validation errors:")
 		require.Contains(t, found, "id4")
 		require.Contains(t, found, "item-id-4")
 		require.Contains(t, found, "some validation error")
+		require.Contains(t, found, "id5")
+		require.Contains(t, found, "item-id-5")
+		require.Contains(t, found, "some validation error in errors field")
 		require.Contains(t, found, "OBJECT ID")
 		require.Contains(t, found, "ITEM ID")
 	})

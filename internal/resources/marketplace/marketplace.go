@@ -46,6 +46,7 @@ type ApplyResponseItem struct {
 	Updated  bool `json:"updated"`
 
 	ValidationErrors []ApplyResponseItemValidationError `json:"validationErrors"`
+	Errors           []ApplyResponseItemValidationError `json:"errors"`
 }
 
 type ApplyResponseItemValidationError struct {
