@@ -30,7 +30,7 @@ repos:
     name: Trims trailing whitespace
     args: [--markdown-linebreak-ext=md] # add exception for markdown linebreaks
 - repo: https://github.com/gitleaks/gitleaks
-  rev: v8.23.3
+  rev: v8.24.0
   hooks:
   - id: gitleaks
     name: Protect and discover secrets using Gitleaks
