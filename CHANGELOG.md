@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - update go version to 1.24.0
+- better error description for `marketplace apply` command
 
 ## [v0.17.1] - 2025-02-07
 
