@@ -351,17 +351,26 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 						},
 					},
 				},
+				{
+					ID:       "id6",
+					ItemID:   "item-id-6",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+				},
 			},
 		}
 		found := buildOutcomeSummaryAsTables(mockOutcome)
-		require.Contains(t, found, "3 of 5 items have been successfully applied:")
+		require.Contains(t, found, "4 of 6 items have been successfully applied:")
 		require.Contains(t, found, "id1")
 		require.Contains(t, found, "item-id-1")
 		require.Contains(t, found, "id2")
 		require.Contains(t, found, "item-id-2")
 		require.Contains(t, found, "id3")
 		require.Contains(t, found, "item-id-3")
-		require.Contains(t, found, "2 of 5 items have not been applied due to validation errors:")
+		require.Contains(t, found, "id6")
+		require.Contains(t, found, "item-id-6")
+		require.Contains(t, found, "2 of 6 items have not been applied due to validation errors:")
 		require.Contains(t, found, "id4")
 		require.Contains(t, found, "item-id-4")
 		require.Contains(t, found, "some validation error")
