@@ -60,7 +60,12 @@ func buildFailureTable(items []marketplace.ApplyResponseItem) string {
 	headers := []string{"Object ID", "Item ID", "Validation Errors"}
 	columnTransform := func(item marketplace.ApplyResponseItem) []string {
 		var validationErrorsStr string
-		validationErrors := item.ValidationErrors
+		var validationErrors []marketplace.ApplyResponseItemValidationError
+		if len(item.Errors) > 0 {
+			validationErrors = item.Errors
+		} else {
+			validationErrors = item.ValidationErrors
+		}
 		for i, valErr := range validationErrors {
 			validationErrorsStr += valErr.Message
 			if len(validationErrors)-1 > i {
