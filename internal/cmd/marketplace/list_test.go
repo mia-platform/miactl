@@ -125,7 +125,7 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 func privateAndPublicMarketplaceHandler(t *testing.T) http.HandlerFunc {
 	t.Helper()
 	return func(w http.ResponseWriter, r *http.Request) {
-		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+		if strings.EqualFold(r.URL.Path, "/api/marketplace/") &&
 			r.Method == http.MethodGet &&
 			r.URL.Query().Get("includeTenantId") == "my-company" {
 			_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
@@ -140,7 +140,7 @@ func privateAndPublicMarketplaceHandler(t *testing.T) http.HandlerFunc {
 func privateCompanyMarketplaceHandler(t *testing.T) http.HandlerFunc {
 	t.Helper()
 	return func(w http.ResponseWriter, r *http.Request) {
-		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+		if strings.EqualFold(r.URL.Path, "/api/marketplace/") &&
 			r.Method == http.MethodGet &&
 			r.URL.Query().Get("tenantId") == "my-company" {
 			_, err := w.Write([]byte(marketplacePrivateCompanyBodyContent(t)))
@@ -155,7 +155,7 @@ func privateCompanyMarketplaceHandler(t *testing.T) http.HandlerFunc {
 func wrongPayloadHandler(t *testing.T) http.HandlerFunc {
 	t.Helper()
 	return func(w http.ResponseWriter, r *http.Request) {
-		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+		if strings.EqualFold(r.URL.Path, "/api/marketplace/") &&
 			r.Method == http.MethodGet &&
 			r.URL.Query().Get("tenantId") == "my-company" {
 			_, err := w.Write([]byte("{}")) // Incorrect payload

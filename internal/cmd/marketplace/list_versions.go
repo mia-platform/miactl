@@ -28,7 +28,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-const listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions"
+const listItemVersionsEndpointTemplate = "/api/marketplace/tenants/%s/resources/%s/versions"
 
 var (
 	ErrGenericServerError = errors.New("server error while fetching item versions")

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### BREAKING
+
+**Starting from this version, `miactl` is compatible only with Mia-Platform Console v13.2.1 or higher.**
+
+The breaking change consists of:
+
+- marketplace endpoints use `/api/marketplace` prefix instead of `/api/backend/marketplace`.
+
 ## [v0.17.2] - 2025-03-04
 
 ### Changed
