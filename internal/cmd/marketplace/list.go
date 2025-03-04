@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	listMarketplaceEndpoint = "/api/backend/marketplace/"
+	listMarketplaceEndpoint = "/api/marketplace/"
 	listCmdLong             = `List Marketplace items
 
     This command lists the Marketplace items of a company.

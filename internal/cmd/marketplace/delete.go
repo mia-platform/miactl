@@ -29,9 +29,9 @@ import (
 
 const (
 	// deleteItemEndpointTemplate formatting template for item deletion by objectID backend endpoint; specify tenantID, objectID
-	deleteItemEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s"
+	deleteItemEndpointTemplate = "/api/marketplace/tenants/%s/resources/%s"
 	// deleteItemByTupleEndpointTemplate formatting template for item deletion by the tuple itemID versionID endpoint; specify companyID, itemID, version
-	deleteItemByTupleEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions/%s"
+	deleteItemByTupleEndpointTemplate = "/api/marketplace/tenants/%s/resources/%s/versions/%s"
 
 	cmdDeleteLongDescription = `Delete a single Marketplace item
 
