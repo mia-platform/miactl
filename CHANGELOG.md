@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - update go version to 1.24.1
+- update cobra to 1.9.1
+- update oauth2 to 0.28.0
+- update sync to 0.12.0
+- update test to 0.23.0
 
 ## [v0.17.2] - 2025-03-04
 
