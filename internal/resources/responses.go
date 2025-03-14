@@ -28,6 +28,12 @@ type APIError struct {
 	Message    string `json:"message"`
 }
 
+type Version struct {
+	Version string `json:"version"`
+	Major   string `json:"major"`
+	Minor   string `json:"minor"`
+}
+
 type AuthProvider struct {
 	ID    string `json:"id"`
 	Label string `json:"label"`
