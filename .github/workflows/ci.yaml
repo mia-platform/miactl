@@ -14,7 +14,8 @@ on:
     - examples/**
 
 env:
-  GORELEASER_VERSION: v2.7.0
+  GORELEASER_VERSION: v2.8.1
+  GOLANGCI_LINT_VERSION: v1.64.8
 jobs:
   lint:
     name: Lint Code
@@ -29,20 +30,10 @@ jobs:
       with:
         go-version-file: go.mod
         cache: false
-    - name: Set golangci-lint Cache Key
-      id: create-sha
-      run: |
-        echo "GOLANGCILINT_SHA=$(cat ./tools/GOLANGCI_LINT_VERSION | sha256sum - | awk '{ print $1 }')" >> $GITHUB_ENV
-    - name: Setup golangci-lint Cache
-      uses: actions/cache@d4323d4df104b026a6aa633fdb11d772146be0bf # v4.2.2
+    - name: golangci-lint
+      uses: golangci/golangci-lint-action@4696ba8babb6127d732c3c6dde519db15edab9ea # v6.5.1
       with:
-        path: |
-          ./tools/bin
-        key: ${{ runner.os }}-go-${{ env.GOLANGCILINT_SHA }}
-        restore-keys: |
-          ${{ runner.os }}-go-${{ env.GOLANGCILINT_SHA }}
-    - name: Run Lint CI
-      run: make ci-lint GOLANGCI_LINT_MODE="github-actions"
+        version: ${{ env.GOLANGCI_LINT_VERSION }}
 
   test:
     name: Testing on ${{ matrix.os }}

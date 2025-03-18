@@ -15,8 +15,6 @@
 
 ##@ Lint Goals
 
-GOLANGCI_LINT_MODE?= colored-line-number
-
 # if not already installed in the system install a pinned version in tools folder
 GOLANGCI_PATH:= $(shell command -v golangci-lint 2> /dev/null)
 ifndef GOLANGCI_PATH
@@ -33,7 +31,7 @@ lint-deps:
 lint: golangci-lint
 golangci-lint: $(GOLANGCI_PATH)
 	$(info Running golangci-lint with .golangci.yaml config file...)
-	$(GOLANGCI_PATH) run --out-format=$(GOLANGCI_LINT_MODE) --config=.golangci.yaml
+	$(GOLANGCI_PATH) run --config=.golangci.yaml
 
 lint-deps: $(GOLANGCI_PATH)
 $(TOOLS_BIN)/golangci-lint: $(TOOLS_DIR)/GOLANGCI_LINT_VERSION

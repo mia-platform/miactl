@@ -38,6 +38,17 @@ DOCKER_LABELS+= --label "org.opencontainers.image.licenses=$(LICENSE)"
 DOCKER_LABELS+= --label "org.opencontainers.image.documentation=$(DOCUMENTATION_URL)"
 DOCKER_LABELS+= --label "org.opencontainers.image.vendor=$(VENDOR_NAME)"
 
+DOCKER_ANNOTATIONS:= --annotation "org.opencontainers.image.title=$(CMDNAME)"
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.description=$(DESCRIPTION)"
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.url=$(SOURCE_URL)"
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.source=$(SOURCE_URL)"
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.version=$(REPO_TAG)"
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.created=$(CONTAINER_BUILD_DATE)"
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.revision=$(shell git rev-parse HEAD 2>/dev/null)"
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.licenses=$(LICENSE)"
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.documentation=$(DOCUMENTATION_URL)"
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.vendor=$(VENDOR_NAME)"
+
 .PHONY: docker/%/multiarch
 docker/%/multiarch:
 	$(eval ACTION:= $(word 1,$(subst /, , $*)))
@@ -49,6 +60,7 @@ docker/%/multiarch:
 		--provenance=false \
 		$(IMAGE_TAGS) \
 		$(DOCKER_LABELS) \
+		$(DOCKER_ANNOTATIONS) \
 		--file ./Dockerfile $(OUTPUT_DIR) $(ADDITIONAL_PARAMETER)
 
 .PHONY: docker/build/%
@@ -59,8 +71,9 @@ docker/build/%:
 	$(info Building image for $(OS) $(ARCH) $(ARM))
 	$(DOCKER_CMD) build --platform $* \
 		--build-arg CMD_NAME=$(CMDNAME) \
-		$(DOCKER_LABELS) \
 		$(IMAGE_TAGS) \
+		$(DOCKER_LABELS) \
+		$(DOCKER_ANNOTATIONS) \
 		--file ./Dockerfile $(OUTPUT_DIR)
 
 .PHONY: docker/setup/multiarch
