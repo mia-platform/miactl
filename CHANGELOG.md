@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - update sync to 0.12.0
 - update test to 0.23.0
 
+### Added
+
+- new function to check remote console version to enable/disable functionality or feature of the cli
+
 ## [v0.17.2] - 2025-03-04
 
 ### Changed
