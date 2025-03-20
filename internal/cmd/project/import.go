@@ -48,10 +48,11 @@ type convertResourcesBody struct {
 }
 
 type convertedResourcesBody struct {
-	Services   map[string]any `json:"services"`
-	ConfigMaps map[string]any `json:"configMaps"`
-	Secrets    map[string]any `json:"secrets"`
-	Errors     []string       `json:"errors"`
+	Services        map[string]any `json:"services"`
+	ConfigMaps      map[string]any `json:"configMaps"`
+	Secrets         map[string]any `json:"secrets"`
+	ServiceAccounts map[string]any `json:"serviceAccounts"`
+	Errors          []string       `json:"errors"`
 }
 
 // ImportCmd return a cobra command for listing projects
@@ -235,6 +236,9 @@ func postBodyFromConfiguration(config map[string]any, newResources *convertedRes
 	config["services"] = newResources.Services
 	config["configMaps"] = newResources.ConfigMaps
 	config["serviceSecrets"] = newResources.Secrets
+	if len(newResources.ServiceAccounts) != 0 {
+		config["serviceAccounts"] = newResources.ServiceAccounts
+	}
 
 	postConfig["config"] = config
 	postConfig["previousSave"] = config["commitId"]

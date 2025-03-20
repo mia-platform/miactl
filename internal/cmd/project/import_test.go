@@ -60,6 +60,21 @@ const (
 	},
 	"errors": []
 }`
+	successConversionBodyWithServiceACcounts = `{
+	"services": {
+		"service1": {}
+	},
+	"configMaps": {
+		"configmap1": {}
+	},
+	"secrets": {
+		"secret1": {}
+	},
+	"serviceAccounts": {
+		"serviceAccount1": {}
+	},
+	"errors": []
+	}`
 	emptyConversionBody = `{
 	"services": {},
 	"configMaps": {},
@@ -137,6 +152,8 @@ const (
 }`
 	modifiedConfigurationBody = `{"config":{"apiVersions":[],"applications":{},"cmsAnalytics":{},"cmsCategories":{},"cmsDashboard":[],"cmsSettings":{"accessGroupsExpression":""},"collections":{},"commitId":"00000000-0000-0000-0000-000000000000","configMaps":{"configmap1":{}},"decorators":{"postDecorators":{},"preDecorators":{}},"enabledFeatures":{},"endpoints":{},"groups":[],"lastConfigFileCommitId":"00000000-0000-0000-0000-000000000000","listeners":{},"secrets":[],"serviceSecrets":{"secret1":{}},"services":{"service1":{}},"unsecretedVariables":[],"version":"version"},"deletedElements":{},"extensionsConfig":{"files":{}},"fastDataConfig":{},"microfrontendPluginsConfig":{},"previousSave":"00000000-0000-0000-0000-000000000000","title":"[CLI] Import resource from kubernetes"}
 `
+	modifiedConfigurationBodyWithServiceAccount = `{"config":{"apiVersions":[],"applications":{},"cmsAnalytics":{},"cmsCategories":{},"cmsDashboard":[],"cmsSettings":{"accessGroupsExpression":""},"collections":{},"commitId":"00000000-0000-0000-0000-000000000000","configMaps":{"configmap1":{}},"decorators":{"postDecorators":{},"preDecorators":{}},"enabledFeatures":{},"endpoints":{},"groups":[],"lastConfigFileCommitId":"00000000-0000-0000-0000-000000000000","listeners":{},"secrets":[],"serviceAccounts":{"serviceAccount1":{}},"serviceSecrets":{"secret1":{}},"services":{"service1":{}},"unsecretedVariables":[],"version":"version"},"deletedElements":{},"extensionsConfig":{"files":{}},"fastDataConfig":{},"microfrontendPluginsConfig":{},"previousSave":"00000000-0000-0000-0000-000000000000","title":"[CLI] Import resource from kubernetes"}
+`
 )
 
 func TestCmdCreation(t *testing.T) {
@@ -205,6 +222,31 @@ func TestImportResources(t *testing.T) {
 					bodyData, err := io.ReadAll(r.Body)
 					require.NoError(t, err)
 					require.Equal(t, modifiedConfigurationBody, string(bodyData))
+					_, err = w.Write([]byte(`{}`))
+					require.NoError(t, err)
+				default:
+					return false
+				}
+
+				return true
+			}),
+			outputText: "Configuration imported successfully\n",
+		},
+		"successfully import services with service accounts": {
+			inputPath: filepath.Join(testdata, "single-file.yaml"),
+			testServer: importTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				switch {
+				case r.URL.Path == fmt.Sprintf(convertEndpointTemplate, projectID) && r.Method == http.MethodPost:
+					_, err := w.Write([]byte(successConversionBodyWithServiceACcounts))
+					require.NoError(t, err)
+				case r.URL.Path == fmt.Sprintf(configurationEndpointTemplate, projectID, revision) && r.Method == http.MethodGet:
+					_, err := w.Write([]byte(getConfigurationBody))
+					require.NoError(t, err)
+				case r.URL.Path == fmt.Sprintf(configurationEndpointTemplate, projectID, revision) && r.Method == http.MethodPost:
+					defer r.Body.Close()
+					bodyData, err := io.ReadAll(r.Body)
+					require.NoError(t, err)
+					require.Equal(t, modifiedConfigurationBodyWithServiceAccount, string(bodyData))
 					_, err = w.Write([]byte(`{}`))
 					require.NoError(t, err)
 				default:
