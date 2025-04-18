@@ -1,0 +1,41 @@
+---
+categoryId: devportal
+description: Some description
+imageUrl: "/some/path/to/image.png"
+name: miactl test
+itemId: miactl-test
+releaseStage: ""
+repositoryUrl: https://example.com/repo
+resources:
+  services:
+    api-portal:
+      componentId: api-portal
+      containerPorts:
+        - from: 80
+          name: http
+          protocol: TCP
+          to: 8080
+      defaultEnvironmentVariables:
+        - name: HTTP_PORT
+          value: "8080"
+          valueType: plain
+        - name: ANTI_ZOMBIE_PORT
+          value: "090909"
+          valueType: plain
+      defaultLogParser: mia-nginx
+      defaultProbes:
+        liveness:
+          path: "/index.html"
+        readiness:
+          path: "/index.html"
+      defaultResources:
+        memoryLimits:
+          max: 25Mi
+          min: 5Mi
+      dockerImage: containers.example.com/some-image:latest
+      name: api-portal
+      repositoryUrl: https://example.com/repo
+      type: plugin
+supportedByImageUrl: "/some/path/to/image.png"
+tenantId: team-rocket-test
+type: plugin
