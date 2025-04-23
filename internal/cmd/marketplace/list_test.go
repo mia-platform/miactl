@@ -16,9 +16,12 @@
 package marketplace
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -34,6 +37,66 @@ func TestNewGetCmd(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		cmd := ListCmd(opts)
 		require.NotNil(t, cmd)
+	})
+
+	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(listCommandHandler(t, `{"major": "14", "minor":"0"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = "my-company"
+		opts.Endpoint = server.URL
+
+		cmd := ListCmd(opts)
+		cmd.SetArgs([]string{"list"})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "OBJECT ID                 ITEM ID               NAME                  TYPE    COMPANY ID       \n\n  43774c07d09ac6996ecfb3ef  space-travel-service  Space Travel Service  plugin  my-company       \n  43774c07d09ac6996ecfb3eg  a-public-service      A public service      plugin  another-company  \n")
+
+		outputErr := buffer.String()
+		assert.Contains(t, outputErr, "The command you are using is deprecated. Please use 'miactl catalog' instead.")
+	})
+
+	t.Run("test post run - does not show deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(listCommandHandler(t, `{"major": "13", "minor":"2"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = "my-company"
+		opts.Endpoint = server.URL
+
+		cmd := ListCmd(opts)
+		cmd.SetArgs([]string{"list"})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "OBJECT ID                 ITEM ID               NAME                  TYPE    COMPANY ID       \n\n  43774c07d09ac6996ecfb3ef  space-travel-service  Space Travel Service  plugin  my-company       \n  43774c07d09ac6996ecfb3eg  a-public-service      A public service      plugin  another-company  \n")
+
+		outputErr := buffer.String()
+		assert.Equal(t, outputErr, "")
 	})
 }
 
@@ -119,6 +182,25 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			runTestCase(t, tc)
 		})
+	}
+}
+
+func listCommandHandler(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
+			r.Method == http.MethodGet &&
+			r.URL.Query().Get("tenantId") == "my-company" {
+			_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
+			require.NoError(t, err)
+		} else if strings.EqualFold(r.URL.Path, "/api/version") &&
+			r.Method == http.MethodGet {
+			_, err := w.Write([]byte(consoleVersionResponse))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
 	}
 }
 

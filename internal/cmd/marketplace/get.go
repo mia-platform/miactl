@@ -23,6 +23,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -68,6 +69,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 			fmt.Println(serializedItem)
 			return nil
 		},
+		PostRun: util.ShowDeprecatedMessage(options),
 	}
 
 	options.AddOutputFormatFlag(cmd.Flags(), encoding.JSON)

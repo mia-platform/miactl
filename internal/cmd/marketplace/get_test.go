@@ -16,14 +16,19 @@
 package marketplace
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
@@ -82,6 +87,66 @@ func TestGetResourceCmd(t *testing.T) {
 		cmd := GetCmd(opts)
 		require.NotNil(t, cmd)
 	})
+
+	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(getItemCommandMockServer(t, `{"major": "14", "minor":"1"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = mockCompanyID
+		opts.Endpoint = server.URL
+
+		cmd := GetCmd(opts)
+		cmd.SetArgs([]string{"get", "--item-id", mockItemID, "--version", mockVersion})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "RocketScience 101: Hello Universe Example")
+
+		outputErr := buffer.String()
+		assert.Contains(t, outputErr, "The command you are using is deprecated. Please use 'miactl catalog' instead.")
+	})
+
+	t.Run("test post run - does not show deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(getItemCommandMockServer(t, `{"major": "13", "minor":"5"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = mockCompanyID
+		opts.Endpoint = server.URL
+
+		cmd := GetCmd(opts)
+		cmd.SetArgs([]string{"get", "--item-id", mockItemID, "--version", mockVersion})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "RocketScience 101: Hello Universe Example")
+
+		outputErr := buffer.String()
+		assert.Equal(t, outputErr, "")
+	})
 }
 
 func getItemByIDMockServer(t *testing.T, validResponse bool, statusCode int) *httptest.Server {
@@ -104,6 +169,24 @@ func getItemByIDMockServer(t *testing.T, validResponse bool, statusCode int) *ht
 		}
 		w.Write([]byte("invalid json"))
 	}))
+}
+
+func getItemCommandMockServer(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/tenants/some-company-id/resources/some-item-id/versions/1.0.0") &&
+			r.Method == http.MethodGet {
+			_, err := w.Write([]byte(validBodyJSONString))
+			require.NoError(t, err)
+		} else if strings.EqualFold(r.URL.Path, "/api/version") &&
+			r.Method == http.MethodGet {
+			_, err := w.Write([]byte(consoleVersionResponse))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
+	}
 }
 
 func getItemByTupleMockServer(

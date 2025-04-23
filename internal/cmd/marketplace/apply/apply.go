@@ -28,6 +28,7 @@ import (
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/files"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -124,6 +125,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			return nil
 		},
+		PostRun: util.ShowDeprecatedMessage(options),
 	}
 
 	options.AddMarketplaceApplyFlags(cmd)

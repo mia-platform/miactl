@@ -16,20 +16,120 @@
 package marketplace
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"os"
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
+
+func TestApplyCommand(t *testing.T) {
+
+	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(ApplyItemCommandMockServer(t, `{"major": "14", "minor":"1"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = "company-id"
+		opts.Endpoint = server.URL
+
+		cmd := ApplyCmd(opts)
+		cmd.SetArgs([]string{"apply", "-f", "testdata/validItem1.json"})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "1 of 1 items have been successfully applied")
+
+		outputErr := buffer.String()
+		assert.Contains(t, outputErr, "The command you are using is deprecated. Please use 'miactl catalog' instead.")
+	})
+
+	t.Run("test post run - does not show deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(ApplyItemCommandMockServer(t, `{"major": "13", "minor":"9"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = "company-id"
+		opts.Endpoint = server.URL
+
+		cmd := ApplyCmd(opts)
+		cmd.SetArgs([]string{"apply", "-f", "testdata/validItem1.json"})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "1 of 1 items have been successfully applied")
+
+		outputErr := buffer.String()
+		assert.Equal(t, outputErr, "")
+	})
+}
+
+func ApplyItemCommandMockServer(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/tenants/company-id/resources") &&
+			r.Method == http.MethodPost {
+			mockResponse := &marketplace.ApplyResponse{
+				Done: true,
+				Items: []marketplace.ApplyResponseItem{
+					{
+						ID:       "id1",
+						ItemID:   "some-item-id",
+						Done:     true,
+						Inserted: true,
+						Updated:  false,
+					},
+				},
+			}
+
+			w.WriteHeader(http.StatusOK)
+			resBytes, err := json.Marshal(mockResponse)
+			require.NoError(t, err)
+			w.Write(resBytes)
+		} else if strings.EqualFold(r.URL.Path, "/api/version") &&
+			r.Method == http.MethodGet {
+			_, err := w.Write([]byte(consoleVersionResponse))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
+	}
+}
 
 func TestApplyBuildPathsFromDir(t *testing.T) {
 	t.Run("should read all files in dir retrieving paths", func(t *testing.T) {

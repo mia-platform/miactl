@@ -16,10 +16,13 @@
 package marketplace
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 
@@ -63,6 +66,67 @@ func TestNewListVersionsCmd(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		cmd := ListVersionCmd(opts)
 		require.NotNil(t, cmd)
+	})
+
+	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(listVersionsCommandHandler(t, `{"major": "14", "minor":"0"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		// opts.MarketplaceItemID = "item-id"
+		opts.CompanyID = "my-company"
+		opts.Endpoint = server.URL
+
+		cmd := ListVersionCmd(opts)
+		cmd.SetArgs([]string{"list-versions", "--item-id", "item-id"})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "  VERSION  NAME                     DESCRIPTION                                           \n\n  1.0.0    Some Awesome Service     The Awesome Service allows to do some amazing stuff.  \n  2.0.0    Some Awesome Service v2  The Awesome Service allows to do some amazing stuff.  \n")
+
+		outputErr := buffer.String()
+		assert.Contains(t, outputErr, "The command you are using is deprecated. Please use 'miactl catalog' instead.")
+	})
+
+	t.Run("test post run - does not show deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(listVersionsCommandHandler(t, `{"major": "13", "minor":"5"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = "my-company"
+		opts.Endpoint = server.URL
+
+		cmd := ListVersionCmd(opts)
+		cmd.SetArgs([]string{"list-versions", "--item-id", "item-id"})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "  VERSION  NAME                     DESCRIPTION                                           \n\n  1.0.0    Some Awesome Service     The Awesome Service allows to do some amazing stuff.  \n  2.0.0    Some Awesome Service v2  The Awesome Service allows to do some amazing stuff.  \n")
+
+		outputErr := buffer.String()
+		assert.Equal(t, outputErr, "")
 	})
 }
 
@@ -207,6 +271,24 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 				assert.Contains(t, found, expected)
 			}
 		})
+	}
+}
+
+func listVersionsCommandHandler(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/tenants/my-company/resources/item-id/versions") &&
+			r.Method == http.MethodGet {
+			_, err := w.Write([]byte(listVersionsMockResponseBody))
+			require.NoError(t, err)
+		} else if strings.EqualFold(r.URL.Path, "/api/version") &&
+			r.Method == http.MethodGet {
+			_, err := w.Write([]byte(consoleVersionResponse))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
 	}
 }
 

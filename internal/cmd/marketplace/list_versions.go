@@ -25,6 +25,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -59,6 +60,7 @@ The command will output a table with each version of the item.`,
 				clioptions.DisableWrapLines(true),
 			))
 		},
+		PostRun: util.ShowDeprecatedMessage(options),
 	}
 
 	flagName := options.AddMarketplaceItemIDFlag(cmd.Flags())

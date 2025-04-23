@@ -24,6 +24,7 @@ import (
 	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -42,10 +43,11 @@ const (
 // ListCmd return a new cobra command for listing marketplace items
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   listCmdUse,
-		Short: "List marketplace items",
-		Long:  listCmdLong,
-		Run:   runListCmd(options),
+		Use:     listCmdUse,
+		Short:   "List marketplace items",
+		Long:    listCmdLong,
+		Run:     runListCmd(options),
+		PostRun: util.ShowDeprecatedMessage(options),
 	}
 
 	options.AddPublicFlag(cmd.Flags())

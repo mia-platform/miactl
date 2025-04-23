@@ -24,6 +24,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -88,6 +89,7 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			return errors.New("invalid input parameters")
 		},
+		PostRun: util.ShowDeprecatedMessage(options),
 	}
 
 	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
