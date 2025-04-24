@@ -25,7 +25,7 @@ import (
 func CatalogCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "catalog",
-		Short: "View and manage Catalog items",
+		Short: "View and manage Catalog items. This command is available from Mia-Platform Console v14.0.0.",
 	}
 
 	// add cmd flags

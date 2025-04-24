@@ -1003,7 +1003,7 @@ Available flags for the command:
 ## marketplace
 
 :::warning
-This command and its subcommands are deprecated from v14.0.0 Mia-Platform Console. Please use [catalog](#catalog) command instead.
+This command and its subcommands are deprecated from Mia-Platform Console v14.0.0. Please use [catalog](#catalog) command instead.
 :::
 
 View and manage Marketplace items
@@ -1148,7 +1148,7 @@ miactl marketplace list-versions -i some-item
 ## catalog
 
 :::info
-This command and its subcommands are available from v14.0.0 Mia-Plaftorm Console. If you are using a previous version, use [marketplace](#marketplace) instead.
+This command and its subcommands are available from Mia-Plaftorm Console v14.0.0. If you are using a previous version, use [marketplace](#marketplace) instead.
 :::
 
 View and manage Catalog items

@@ -25,7 +25,7 @@ import (
 func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "marketplace",
-		Short: "View and manage Marketplace items",
+		Short: "View and manage Marketplace items. This command is deprecated from Mia-Platform Console v14.0.0.",
 	}
 
 	// add cmd flags
