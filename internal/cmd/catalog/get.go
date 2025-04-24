@@ -27,7 +27,7 @@ import (
 )
 
 const (
-	getItemByItemIDAndVersionEndpointTemplate = "/api/marketplace/tenants/%s/resources/%s/versions/%s"
+	getItemByItemIDAndVersionEndpointTemplate = "/api/tenants/%s/marketplace/items/%s/versions/%s"
 
 	cmdGetLongDescription = `Get a single Catalog item
 

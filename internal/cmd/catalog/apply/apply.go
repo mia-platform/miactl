@@ -61,7 +61,7 @@ miactl catalog apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFant
 # Apply all the valid configuration files in the directory myFantasticGoTemplates to the Catalog
 miactl catalog apply -f myFantasticGoTemplates`
 
-	applyEndpointTemplate = "/api/marketplace/tenants/%s/resources"
+	applyEndpointTemplate = "/api/tenants/%s/marketplace/items"
 
 	imageAssetType = "imageAssetType"
 	imageKey       = "image"

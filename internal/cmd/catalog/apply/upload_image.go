@@ -32,7 +32,7 @@ import (
 )
 
 const (
-	uploadImageEndpointTemplate = "/api/marketplace/tenants/%s/files"
+	uploadImageEndpointTemplate = "/api/tenants/%s/marketplace/files"
 	multipartFieldName          = "marketplace_image"
 
 	localPathKey = "localPath"

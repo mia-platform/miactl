@@ -29,7 +29,7 @@ import (
 
 const (
 	// deleteItemByTupleEndpointTemplate formatting template for item deletion by the tuple itemID versionID endpoint; specify companyID, itemID, version
-	deleteItemByTupleEndpointTemplate = "/api/marketplace/tenants/%s/resources/%s/versions/%s"
+	deleteItemByTupleEndpointTemplate = "/api/tenants/%s/marketplace/items/%s/versions/%s"
 
 	cmdDeleteLongDescription = `Delete a single Catalog item
 
