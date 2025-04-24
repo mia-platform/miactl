@@ -27,19 +27,13 @@ import (
 )
 
 const (
-	getItemByObjectIDEndpointTemplate         = "/api/marketplace/%s"
 	getItemByItemIDAndVersionEndpointTemplate = "/api/marketplace/tenants/%s/resources/%s/versions/%s"
 
 	cmdGetLongDescription = `Get a single Catalog item
 
-	You need to specify either:
-	- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
-	- the ObjectID of the item with the flag object-id
-
-	Passing the ObjectID is expected only when dealing with deprecated Catalog items missing the itemId and/or version fields.
-	Otherwise, it is preferable to pass the tuple companyId-itemId-version.
+	You need to specify the companyId, itemId and version, via the respective flags. The company-id flag can be omitted if it is already set in the context.
 	`
-	cmdGetUse = "get { --item-id item-id --version version } | --object-id object-id [FLAGS]..."
+	cmdGetUse = "get { --item-id item-id --version version }"
 )
 
 // GetCmd return a new cobra command for getting a single catalog resource
@@ -57,7 +51,6 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 			serializedItem, err := getItemEncodedWithFormat(
 				cmd.Context(),
 				client,
-				options.MarketplaceItemObjectID,
 				restConfig.CompanyID,
 				options.MarketplaceItemID,
 				options.MarketplaceItemVersion,
@@ -72,20 +65,12 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 	options.AddOutputFormatFlag(cmd.Flags(), encoding.JSON)
 
-	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
-
 	itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
 	versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
 
 	cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
-	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, itemIDFlagName)
-	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, versionFlagName)
-	cmd.MarkFlagsOneRequired(itemObjectIDFlagName, itemIDFlagName, versionFlagName)
 
 	return cmd
-}
-func getItemByObjectID(ctx context.Context, client *client.APIClient, objectID string) (*catalog.Item, error) {
-	return performGetItemRequest(ctx, client, fmt.Sprintf(getItemByObjectIDEndpointTemplate, objectID))
 }
 
 func getItemByItemIDAndVersion(ctx context.Context, client *client.APIClient, companyID, itemID, version string) (*catalog.Item, error) {
@@ -117,17 +102,14 @@ func performGetItemRequest(ctx context.Context, client *client.APIClient, endpoi
 }
 
 // getItemEncodedWithFormat retrieves the catalog item corresponding to the specified identifier, serialized with the specified outputFormat
-func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, objectID, companyID, itemID, version, outputFormat string) (string, error) {
+func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, companyID, itemID, version, outputFormat string) (string, error) {
 	var item *catalog.Item
 	var err error
-	if objectID != "" {
-		item, err = getItemByObjectID(ctx, client, objectID)
-	} else {
-		if companyID == "" {
-			return "", catalog.ErrMissingCompanyID
-		}
-		item, err = getItemByItemIDAndVersion(ctx, client, companyID, itemID, version)
+	if companyID == "" {
+		return "", catalog.ErrMissingCompanyID
 	}
+	item, err = getItemByItemIDAndVersion(ctx, client, companyID, itemID, version)
+
 	if err != nil {
 		return "", err
 	}

@@ -28,7 +28,6 @@ import (
 )
 
 const (
-	mockDeleteObjectID  = "object-id"
 	mockDeleteCompanyID = "company-id"
 )
 
@@ -38,25 +37,6 @@ func TestDeleteResourceCmd(t *testing.T) {
 		cmd := DeleteCmd(opts)
 		require.NotNil(t, cmd)
 	})
-}
-
-func deleteByIDMockServer(t *testing.T, statusCode int) *httptest.Server {
-	t.Helper()
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t,
-			fmt.Sprintf(deleteItemEndpointTemplate, mockDeleteCompanyID, mockDeleteObjectID),
-			r.RequestURI,
-		)
-		require.Equal(t, http.MethodDelete, r.Method)
-		w.WriteHeader(statusCode)
-		if statusCode != http.StatusNoContent {
-			w.Write([]byte(`
-			{
-				"message": "some error message"
-			}
-			`))
-		}
-	}))
 }
 
 func deleteByItemIDAndVersionMockServer(t *testing.T,
@@ -81,61 +61,6 @@ func deleteByItemIDAndVersionMockServer(t *testing.T,
 		}
 		*callsCount++
 	}))
-}
-
-func TestDeleteItemByObjectId(t *testing.T) {
-	mockClientConfig := &client.Config{
-		Transport: http.DefaultTransport,
-	}
-	testCases := map[string]struct {
-		server      *httptest.Server
-		expectedErr error
-	}{
-		"valid delete response": {
-			server:      deleteByIDMockServer(t, http.StatusNoContent),
-			expectedErr: nil,
-		},
-		"resource not found": {
-			server:      deleteByIDMockServer(t, http.StatusNotFound),
-			expectedErr: catalog.ErrItemNotFound,
-		},
-		"internal server error": {
-			server:      deleteByIDMockServer(t, http.StatusInternalServerError),
-			expectedErr: errServerDeleteItem,
-		},
-		"unexpected server response error": {
-			server:      deleteByIDMockServer(t, http.StatusBadGateway),
-			expectedErr: errServerDeleteItem,
-		},
-		"unexpected server response 2xx": {
-			server:      deleteByIDMockServer(t, http.StatusAccepted),
-			expectedErr: errUnexpectedDeleteItem,
-		},
-		"unexpected server response 4xx": {
-			server:      deleteByIDMockServer(t, http.StatusBadRequest),
-			expectedErr: errUnexpectedDeleteItem,
-		},
-	}
-
-	for testName, testCase := range testCases {
-		t.Run(testName, func(t *testing.T) {
-			defer testCase.server.Close()
-			mockClientConfig.Host = testCase.server.URL
-			client, err := client.APIClientForConfig(mockClientConfig)
-			require.NoError(t, err)
-			err = deleteItemByObjectID(
-				t.Context(),
-				client,
-				mockDeleteCompanyID,
-				mockDeleteObjectID,
-			)
-			if testCase.expectedErr != nil {
-				require.ErrorIs(t, err, testCase.expectedErr)
-			} else {
-				require.NoError(t, err)
-			}
-		})
-	}
 }
 
 func TestDeleteItemByItemIDAndVersion(t *testing.T) {

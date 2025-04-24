@@ -28,21 +28,14 @@ import (
 )
 
 const (
-	// deleteItemEndpointTemplate formatting template for item deletion by objectID backend endpoint; specify tenantID, objectID
-	deleteItemEndpointTemplate = "/api/marketplace/tenants/%s/resources/%s"
 	// deleteItemByTupleEndpointTemplate formatting template for item deletion by the tuple itemID versionID endpoint; specify companyID, itemID, version
 	deleteItemByTupleEndpointTemplate = "/api/marketplace/tenants/%s/resources/%s/versions/%s"
 
 	cmdDeleteLongDescription = `Delete a single Catalog item
 
-	You need to specify either:
-	- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
-	- the ObjectID of the item with the flag object-id
-
-	Passing the ObjectID is expected only when dealing with deprecated Catalog items missing the itemId and/or version fields.
-	Otherwise, it is preferable to pass the tuple companyId-itemId-version.
+	You need to specify the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 	`
-	cmdUse = "delete { --item-id item-id --version version } | --object-id object-id [flags]..."
+	cmdUse = "delete { --item-id item-id --version version }"
 )
 
 var (
@@ -68,12 +61,6 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 				return catalog.ErrMissingCompanyID
 			}
 
-			if options.MarketplaceItemObjectID != "" {
-				err = deleteItemByObjectID(cmd.Context(), client, companyID, options.MarketplaceItemObjectID)
-				cobra.CheckErr(err)
-				return nil
-			}
-
 			if options.MarketplaceItemVersion != "" && options.MarketplaceItemID != "" {
 				err = deleteItemByItemIDAndVersion(
 					cmd.Context(),
@@ -90,30 +77,12 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 		},
 	}
 
-	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
-
 	itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
 	versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
 
 	cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
-	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, itemIDFlagName)
-	cmd.MarkFlagsMutuallyExclusive(itemObjectIDFlagName, versionFlagName)
-	cmd.MarkFlagsOneRequired(itemObjectIDFlagName, itemIDFlagName, versionFlagName)
 
 	return cmd
-}
-
-func deleteItemByObjectID(ctx context.Context, client *client.APIClient, companyID, objectID string) error {
-	resp, err := client.
-		Delete().
-		APIPath(fmt.Sprintf(deleteItemEndpointTemplate, companyID, objectID)).
-		Do(ctx)
-
-	if err != nil {
-		return fmt.Errorf("error executing request: %w", err)
-	}
-
-	return checkDeleteResponseErrors(resp)
 }
 
 func deleteItemByItemIDAndVersion(ctx context.Context, client *client.APIClient, companyID, itemID, version string) error {

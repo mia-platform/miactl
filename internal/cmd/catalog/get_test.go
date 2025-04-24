@@ -29,7 +29,6 @@ import (
 )
 
 const (
-	mockObjectID        = "object-id"
 	mockCompanyID       = "some-company-id"
 	mockItemID          = "some-item-id"
 	mockVersion         = "1.0.0"
@@ -84,28 +83,6 @@ func TestGetResourceCmd(t *testing.T) {
 	})
 }
 
-func getItemByIDMockServer(t *testing.T, validResponse bool, statusCode int) *httptest.Server {
-	t.Helper()
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t,
-			fmt.Sprintf(getItemByObjectIDEndpointTemplate, mockObjectID),
-			r.RequestURI,
-		)
-		require.Equal(t, http.MethodGet, r.Method)
-
-		w.WriteHeader(statusCode)
-		if statusCode == http.StatusNotFound || statusCode == http.StatusInternalServerError {
-			w.Write([]byte(`{"message":"some error"}`))
-			return
-		}
-		if validResponse {
-			w.Write([]byte(validBodyJSONString))
-			return
-		}
-		w.Write([]byte("invalid json"))
-	}))
-}
-
 func getItemByTupleMockServer(
 	t *testing.T,
 	validResponse bool,
@@ -132,80 +109,6 @@ func getItemByTupleMockServer(
 		}
 		w.Write([]byte("invalid response"))
 	}))
-}
-
-func TestGetItemEncodedByObjectId(t *testing.T) {
-	clientConfig := &client.Config{
-		Transport: http.DefaultTransport,
-	}
-
-	testCases := map[string]struct {
-		server        *httptest.Server
-		outputFormat  string
-		isExpectedErr bool
-	}{
-		"valid get response - json": {
-			server:       getItemByIDMockServer(t, true, http.StatusOK),
-			outputFormat: encoding.JSON,
-		},
-		"valid get response - yaml": {
-			server:       getItemByIDMockServer(t, true, http.StatusOK),
-			outputFormat: encoding.YAML,
-		},
-		"invalid body response": {
-			server:        getItemByIDMockServer(t, false, http.StatusOK),
-			isExpectedErr: true,
-			outputFormat:  encoding.JSON,
-		},
-		"resource not found": {
-			server: getItemByIDMockServer(t, true, http.StatusNotFound),
-
-			isExpectedErr: true,
-			outputFormat:  encoding.JSON,
-		},
-		"internal server error": {
-			server:        getItemByIDMockServer(t, true, http.StatusInternalServerError),
-			outputFormat:  encoding.JSON,
-			isExpectedErr: true,
-		},
-	}
-
-	for testName, testCase := range testCases {
-		t.Run(testName, func(t *testing.T) {
-			defer testCase.server.Close()
-			clientConfig.Host = testCase.server.URL
-			client, err := client.APIClientForConfig(clientConfig)
-			require.NoError(t, err)
-			found, err := getItemEncodedWithFormat(
-				t.Context(),
-				client,
-				mockObjectID,
-				"",
-				"",
-				"",
-				testCase.outputFormat,
-			)
-			if testCase.isExpectedErr {
-				require.Zero(t, found)
-				require.Error(t, err)
-			} else {
-				if testCase.outputFormat == encoding.JSON {
-					require.JSONEq(t, validBodyJSONString, found)
-				} else {
-					foundMap := map[string]interface{}{}
-					err := yaml.Unmarshal([]byte(found), &foundMap)
-					require.NoError(t, err)
-
-					expectedMap := map[string]interface{}{}
-					err = yaml.Unmarshal([]byte(found), &expectedMap)
-					require.NoError(t, err)
-
-					require.Equal(t, expectedMap, foundMap)
-				}
-				require.NoError(t, err)
-			}
-		})
-	}
 }
 
 func TestGetItemEncodedByTuple(t *testing.T) {
@@ -304,7 +207,6 @@ func TestGetItemEncodedByTuple(t *testing.T) {
 			found, err := getItemEncodedWithFormat(
 				t.Context(),
 				client,
-				"",
 				testCase.companyID,
 				testCase.itemID,
 				testCase.version,
