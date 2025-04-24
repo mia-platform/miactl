@@ -4,7 +4,8 @@ description: Some description
 imageUrl: "/some/path/to/image.png"
 name: miactl test
 itemId: miactl-test
-releaseStage: ""
+lifecycleStatus: "stable"
+releaseDate: "2025-03-28T15:54:57.563Z"
 repositoryUrl: https://example.com/repo
 resources:
   services:

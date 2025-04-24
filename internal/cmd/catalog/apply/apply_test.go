@@ -175,12 +175,12 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 	validReqMock := &catalog.ApplyRequest{
 		Resources: []*catalog.Item{
 			{
-				"categoryId":    "devportal",
-				"imageUrl":      "some/path/to/image.png",
-				"name":          "some name",
-				"itemId":        mockItemID,
-				"releaseStage":  "",
-				"repositoryUrl": "https://example.com/repo",
+				"categoryId":      "devportal",
+				"imageUrl":        "some/path/to/image.png",
+				"name":            "some name",
+				"itemId":          mockItemID,
+				"lifecycleStatus": "",
+				"repositoryUrl":   "https://example.com/repo",
 				"resources": map[string]interface{}{
 					"services": map[string]interface{}{
 						"api-portal": map[string]interface{}{

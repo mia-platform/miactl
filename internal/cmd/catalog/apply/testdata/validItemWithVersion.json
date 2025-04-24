@@ -10,7 +10,8 @@
 		"name": "1.0.0",
 		"releaseNotes": "a new release"
 	},
-	"releaseStage": "",
+	"lifecycleStatus": "stable",
+  "releaseDate": "2025-03-28T15:54:57.563Z",
 	"repositoryUrl": "https://example.com/repo",
 	"resources": {
 		"services": {
