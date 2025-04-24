@@ -3,7 +3,7 @@
 	"imageUrl": "path/to/image.png",
 	"name": "miactl test json",
 	"itemId": "miactl-test-json",
-	"lifecycleStatus": "stable",
+	"lifecycleStatus": "published",
   "releaseDate": "2025-03-28T15:54:57.563Z",
 	"repositoryUrl": "https://example.com/repo",
 	"resources": {
@@ -47,7 +47,6 @@
 				},
 				"dockerImage": "containers.example.com/some-image:latest",
 				"name": "api-portal",
-				"repositoryUrl": "https://example.com/repo",
 				"type": "plugin"
 			}
 		}

@@ -4,7 +4,7 @@ name: miactl test yaml with image
 itemId: miactl-test-yaml-with-image
 image:
   localPath: ./imageTest.png
-lifecycleStatus: "stable"
+lifecycleStatus: "published"
 releaseDate: "2025-03-28T15:54:57.563Z"
 repositoryUrl: https://example.com/repo
 resources:
