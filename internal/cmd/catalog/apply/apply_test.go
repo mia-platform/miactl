@@ -335,8 +335,8 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					},
 				},
 				{
-					ID:       "id6",
-					ItemID:   "item-id-6",
+					ID:       "id5",
+					ItemID:   "item-id-5",
 					Done:     true,
 					Inserted: true,
 					Updated:  false,
@@ -344,7 +344,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 			},
 		}
 		found := buildOutcomeSummaryAsTables(mockOutcome)
-		require.Contains(t, found, "4 of 6 items have been successfully applied:")
+		require.Contains(t, found, "4 of 5 items have been successfully applied:")
 		require.Contains(t, found, "id1")
 		require.Contains(t, found, "item-id-1")
 		require.Contains(t, found, "id2")
@@ -353,7 +353,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		require.Contains(t, found, "item-id-3")
 		require.Contains(t, found, "id5")
 		require.Contains(t, found, "item-id-5")
-		require.Contains(t, found, "1 of 5 items have not been applied due to validation errors:")
+		require.Contains(t, found, "1 of 5 items have not been applied due to errors:")
 		require.Contains(t, found, "id4")
 		require.Contains(t, found, "item-id-4")
 		require.Contains(t, found, "some validation error")
@@ -361,7 +361,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		require.Contains(t, found, "ITEM ID")
 	})
 
-	t.Run("should show validation errors only when input does not contain successful applies", func(t *testing.T) {
+	t.Run("should show errors only when input does not contain successful applies", func(t *testing.T) {
 		mockOutcome := &catalog.ApplyResponse{
 			Done: false,
 			Items: []catalog.ApplyResponseItem{
@@ -406,7 +406,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		}
 		found := buildOutcomeSummaryAsTables(mockOutcome)
 		require.NotContains(t, found, "items have been successfully applied:")
-		require.Contains(t, found, "3 of 3 items have not been applied due to validation errors:")
+		require.Contains(t, found, "3 of 3 items have not been applied due to errors:")
 		require.Contains(t, found, "some validation error")
 		require.Contains(t, found, "some other validation error")
 		require.Contains(t, found, "some other very very long validation error")
@@ -459,7 +459,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		require.Contains(t, found, "some-item-id-3")
 		require.Contains(t, found, "OBJECT ID")
 		require.Contains(t, found, "ITEM ID")
-		require.NotContains(t, found, "items have not been applied due to validation errors:")
+		require.NotContains(t, found, "items have not been applied due to errors:")
 	})
 }
 

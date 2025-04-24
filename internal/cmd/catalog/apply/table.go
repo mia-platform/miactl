@@ -57,7 +57,7 @@ func buildSuccessTable(items []catalog.ApplyResponseItem) string {
 }
 
 func buildFailureTable(items []catalog.ApplyResponseItem) string {
-	headers := []string{"Object ID", "Item ID", "Validation Errors"}
+	headers := []string{"Object ID", "Item ID", "Errors"}
 	columnTransform := func(item catalog.ApplyResponseItem) []string {
 		var errorsStr string
 		var errors []catalog.ApplyResponseItemError = item.Errors
@@ -97,7 +97,7 @@ func buildOutcomeSummaryAsTables(outcome *catalog.ApplyResponse) string {
 	}
 
 	if failedCount > 0 {
-		outcomeStr += fmt.Sprintf("%d of %d items have not been applied due to validation errors:\n\n", failedCount, len(outcome.Items))
+		outcomeStr += fmt.Sprintf("%d of %d items have not been applied due to errors:\n\n", failedCount, len(outcome.Items))
 		outcomeStr += buildFailureTable(failedItems)
 	}
 
