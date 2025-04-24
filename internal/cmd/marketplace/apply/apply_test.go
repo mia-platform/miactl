@@ -24,7 +24,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -36,7 +35,6 @@ import (
 )
 
 func TestApplyCommand(t *testing.T) {
-
 	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
 		storeStdout := os.Stdout
 		r, w, _ := os.Pipe()
@@ -101,30 +99,33 @@ func TestApplyCommand(t *testing.T) {
 func ApplyItemCommandMockServer(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
 	t.Helper()
 	return func(w http.ResponseWriter, r *http.Request) {
-		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/tenants/company-id/resources") &&
-			r.Method == http.MethodPost {
-			mockResponse := &marketplace.ApplyResponse{
-				Done: true,
-				Items: []marketplace.ApplyResponseItem{
-					{
-						ID:       "id1",
-						ItemID:   "some-item-id",
-						Done:     true,
-						Inserted: true,
-						Updated:  false,
+		switch r.URL.Path {
+		case "/api/backend/marketplace/tenants/company-id/resources":
+			if r.Method == http.MethodPost {
+				mockResponse := &marketplace.ApplyResponse{
+					Done: true,
+					Items: []marketplace.ApplyResponseItem{
+						{
+							ID:       "id1",
+							ItemID:   "some-item-id",
+							Done:     true,
+							Inserted: true,
+							Updated:  false,
+						},
 					},
-				},
-			}
+				}
 
-			w.WriteHeader(http.StatusOK)
-			resBytes, err := json.Marshal(mockResponse)
-			require.NoError(t, err)
-			w.Write(resBytes)
-		} else if strings.EqualFold(r.URL.Path, "/api/version") &&
-			r.Method == http.MethodGet {
-			_, err := w.Write([]byte(consoleVersionResponse))
-			require.NoError(t, err)
-		} else {
+				w.WriteHeader(http.StatusOK)
+				resBytes, err := json.Marshal(mockResponse)
+				require.NoError(t, err)
+				w.Write(resBytes)
+			}
+		case "/api/version":
+			if r.Method == http.MethodGet {
+				_, err := w.Write([]byte(consoleVersionResponse))
+				require.NoError(t, err)
+			}
+		default:
 			w.WriteHeader(http.StatusNotFound)
 			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
 		}

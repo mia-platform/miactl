@@ -188,16 +188,18 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 func listCommandHandler(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
 	t.Helper()
 	return func(w http.ResponseWriter, r *http.Request) {
-		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/") &&
-			r.Method == http.MethodGet &&
-			r.URL.Query().Get("tenantId") == "my-company" {
-			_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
-			require.NoError(t, err)
-		} else if strings.EqualFold(r.URL.Path, "/api/version") &&
-			r.Method == http.MethodGet {
-			_, err := w.Write([]byte(consoleVersionResponse))
-			require.NoError(t, err)
-		} else {
+		switch r.URL.Path {
+		case "/api/backend/marketplace/":
+			if r.Method == http.MethodGet {
+				_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
+				require.NoError(t, err)
+			}
+		case "/api/version":
+			if r.Method == http.MethodGet {
+				_, err := w.Write([]byte(consoleVersionResponse))
+				require.NoError(t, err)
+			}
+		default:
 			w.WriteHeader(http.StatusNotFound)
 			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
 		}

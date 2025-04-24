@@ -22,7 +22,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -108,14 +107,17 @@ func TestDeleteResourceCmd(t *testing.T) {
 func deleteItemCommandMockServer(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
 	t.Helper()
 	return func(w http.ResponseWriter, r *http.Request) {
-		if strings.EqualFold(r.URL.Path, "/api/backend/marketplace/tenants/company-id/resources/some-item-id/versions/1.0.0") &&
-			r.Method == http.MethodDelete {
-			w.WriteHeader(http.StatusNoContent)
-		} else if strings.EqualFold(r.URL.Path, "/api/version") &&
-			r.Method == http.MethodGet {
-			_, err := w.Write([]byte(consoleVersionResponse))
-			require.NoError(t, err)
-		} else {
+		switch r.URL.Path {
+		case "/api/backend/marketplace/tenants/company-id/resources/some-item-id/versions/1.0.0":
+			if r.Method == http.MethodDelete {
+				w.WriteHeader(http.StatusNoContent)
+			}
+		case "/api/version":
+			if r.Method == http.MethodGet {
+				_, err := w.Write([]byte(consoleVersionResponse))
+				require.NoError(t, err)
+			}
+		default:
 			w.WriteHeader(http.StatusNotFound)
 			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
 		}

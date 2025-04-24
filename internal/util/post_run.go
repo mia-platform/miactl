@@ -31,8 +31,8 @@ func ShowDeprecatedMessage(opts *clioptions.CLIOptions) func(cmd *cobra.Command,
 		client, err := client.APIClientForConfig(restConfig)
 		cobra.CheckErr(err)
 
-		canUseNewApi, error := VersionCheck(cmd.Context(), client, 14, 0)
-		if error == nil && canUseNewApi {
+		canUseNewAPI, versionError := VersionCheck(cmd.Context(), client, 14, 0)
+		if versionError == nil && canUseNewAPI {
 			writer := cmd.ErrOrStderr()
 			fmt.Fprint(writer, "\nThe command you are using is deprecated. Please use 'miactl catalog' instead.")
 		}
