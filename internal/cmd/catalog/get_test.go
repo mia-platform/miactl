@@ -24,6 +24,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
+	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
@@ -80,6 +81,21 @@ func TestGetResourceCmd(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		cmd := GetCmd(opts)
 		require.NotNil(t, cmd)
+	})
+
+	t.Run("should not run command when Console version is lower than 14.0.0", func(t *testing.T) {
+		server := httptest.NewServer(unexecutedCmdMockServer(t))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = mockCompanyID
+		opts.Endpoint = server.URL
+
+		cmd := GetCmd(opts)
+		cmd.SetArgs([]string{"get", "--item-id", mockItemID, "--version", mockVersion})
+
+		err := cmd.Execute()
+		require.ErrorIs(t, err, catalog.ErrUnsupportedCompanyVersion)
 	})
 }
 

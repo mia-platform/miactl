@@ -22,14 +22,33 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
+
+func TestApplyCommand(t *testing.T) {
+	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
+		server := httptest.NewServer(unexecutedCmdMockServer(t))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = "company-id"
+		opts.Endpoint = server.URL
+
+		cmd := ApplyCmd(opts)
+		cmd.SetArgs([]string{"apply", "-f", "testdata/validItem1.json"})
+
+		err := cmd.Execute()
+		require.ErrorIs(t, err, catalog.ErrUnsupportedCompanyVersion)
+	})
+}
 
 func TestApplyBuildPathsFromDir(t *testing.T) {
 	t.Run("should read all files in dir retrieving paths", func(t *testing.T) {
@@ -1068,4 +1087,17 @@ func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *ht
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		applyRequestHandler(t, w, r, statusCode, mockResponse)
 	}))
+}
+
+func unexecutedCmdMockServer(t *testing.T) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/version") && r.Method == http.MethodGet {
+			_, err := w.Write([]byte(`{"major": "13", "minor":"6"}`))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
+	}
 }

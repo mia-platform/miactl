@@ -28,11 +28,14 @@ import (
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/files"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
 const (
 	applyLong = `Create or update one or more Catalog items.
+
+This command works with Mia-Platform Console v14.0.0 or later.
 
 The flag -f accepts either files or directories. In case of directories, it explores them recursively.
 
@@ -106,6 +109,11 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
+
+			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
+			if !canUseNewAPI || versionError != nil {
+				return catalog.ErrUnsupportedCompanyVersion
+			}
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {

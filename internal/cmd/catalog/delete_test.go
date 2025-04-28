@@ -37,6 +37,21 @@ func TestDeleteResourceCmd(t *testing.T) {
 		cmd := DeleteCmd(opts)
 		require.NotNil(t, cmd)
 	})
+
+	t.Run("should not run command when Console version is lower than 14.0.0", func(t *testing.T) {
+		server := httptest.NewServer(unexecutedCmdMockServer(t))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = mockDeleteCompanyID
+		opts.Endpoint = server.URL
+
+		cmd := DeleteCmd(opts)
+		cmd.SetArgs([]string{"delete", "--item-id", "some-item-id", "--version", "1.0.0"})
+
+		err := cmd.Execute()
+		require.ErrorIs(t, err, catalog.ErrUnsupportedCompanyVersion)
+	})
 }
 
 func deleteByItemIDAndVersionMockServer(t *testing.T,

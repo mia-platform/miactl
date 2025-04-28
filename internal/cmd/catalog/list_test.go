@@ -25,6 +25,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/printer"
+	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -34,6 +35,21 @@ func TestNewGetCmd(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		cmd := ListCmd(opts)
 		require.NotNil(t, cmd)
+	})
+
+	t.Run("should not run command when Console version is lower than 14.0.0", func(t *testing.T) {
+		server := httptest.NewServer(unexecutedCmdMockServer(t))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = "my-company"
+		opts.Endpoint = server.URL
+
+		cmd := ListCmd(opts)
+		cmd.SetArgs([]string{"list"})
+
+		err := cmd.Execute()
+		require.ErrorIs(t, err, catalog.ErrUnsupportedCompanyVersion)
 	})
 }
 
@@ -119,6 +135,19 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			runTestCase(t, tc)
 		})
+	}
+}
+
+func unexecutedCmdMockServer(t *testing.T) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/version") && r.Method == http.MethodGet {
+			_, err := w.Write([]byte(`{"major": "13", "minor":"6"}`))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
 	}
 }
 

@@ -24,6 +24,7 @@ import (
 	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -31,7 +32,7 @@ const (
 	listMarketplaceEndpoint = "/api/marketplace/"
 	listCmdLong             = `List Catalog items
 
-    This command lists the Catalog items of a company.
+    This command lists the Catalog items of a company. It works with Mia-Platform Console v14.0.0 or later.
 
     you can also specify the following flags:
     - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Catalog items from other companies.
@@ -45,7 +46,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   listCmdUse,
 		Short: "List catalog items",
 		Long:  listCmdLong,
-		Run:   runListCmd(options),
+		RunE:  runListCmd(options),
 	}
 
 	options.AddPublicFlag(cmd.Flags())
@@ -53,12 +54,17 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []string) {
-	return func(cmd *cobra.Command, _ []string) {
+func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, _ []string) error {
 		restConfig, err := options.ToRESTConfig()
 		cobra.CheckErr(err)
 		apiClient, err := client.APIClientForConfig(restConfig)
 		cobra.CheckErr(err)
+
+		canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), apiClient, 14, 0)
+		if !canUseNewAPI || versionError != nil {
+			return catalog.ErrUnsupportedCompanyVersion
+		}
 
 		marketplaceItemsOptions := GetMarketplaceItemsOptions{
 			companyID: restConfig.CompanyID,
@@ -67,6 +73,8 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 
 		err = printMarketplaceItems(cmd.Context(), apiClient, marketplaceItemsOptions, options.Printer())
 		cobra.CheckErr(err)
+
+		return nil
 	}
 }
 

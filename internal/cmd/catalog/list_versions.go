@@ -25,6 +25,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -40,12 +41,17 @@ func ListVersionCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   "list-versions",
 		Short: "List versions of a Marketplace item",
 		Long: `List the currently available versions of a Marketplace item.
-The command will output a table with each version of the item.`,
-		Run: func(cmd *cobra.Command, _ []string) {
+The command will output a table with each version of the item. It works with Mia-Platform Console v14.0.0 or later.`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
+
+			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
+			if !canUseNewAPI || versionError != nil {
+				return catalog.ErrUnsupportedCompanyVersion
+			}
 
 			releases, err := getItemVersions(
 				cmd.Context(),
@@ -58,6 +64,8 @@ The command will output a table with each version of the item.`,
 			printItemVersionList(releases, options.Printer(
 				clioptions.DisableWrapLines(true),
 			))
+
+			return nil
 		},
 	}
 
