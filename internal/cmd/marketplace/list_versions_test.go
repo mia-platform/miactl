@@ -77,7 +77,6 @@ func TestNewListVersionsCmd(t *testing.T) {
 		defer server.Close()
 
 		opts := clioptions.NewCLIOptions()
-		// opts.MarketplaceItemID = "item-id"
 		opts.CompanyID = "my-company"
 		opts.Endpoint = server.URL
 
