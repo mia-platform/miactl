@@ -25,7 +25,7 @@ var (
 	ErrItemNotFound              = errors.New("item not found")
 	ErrVersionNameNotAString     = errors.New(`the field "version.name" must be a string`)
 	ErrMissingCompanyID          = errors.New("missing company id, please set one with the flag company-id or in the context")
-	ErrUnsupportedCompanyVersion = errors.New("you need Mia-Platform Console v14.0.0 or later to use this command.")
+	ErrUnsupportedCompanyVersion = errors.New("you need Mia-Platform Console v14.0.0 or later to use this command")
 )
 
 // Item is a Catalog item
