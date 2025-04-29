@@ -111,12 +111,10 @@ func performGetItemRequest(ctx context.Context, client *client.APIClient, endpoi
 
 // getItemEncodedWithFormat retrieves the catalog item corresponding to the specified identifier, serialized with the specified outputFormat
 func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, companyID, itemID, version, outputFormat string) (string, error) {
-	var item *catalog.Item
-	var err error
 	if companyID == "" {
 		return "", catalog.ErrMissingCompanyID
 	}
-	item, err = getItemByItemIDAndVersion(ctx, client, companyID, itemID, version)
+	item, err := getItemByItemIDAndVersion(ctx, client, companyID, itemID, version)
 
 	if err != nil {
 		return "", err

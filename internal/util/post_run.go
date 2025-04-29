@@ -24,17 +24,17 @@ import (
 	"github.com/spf13/cobra"
 )
 
-func ShowDeprecatedMessage(opts *clioptions.CLIOptions) func(cmd *cobra.Command, _ []string) {
+func CheckVersionAndShowMessage(opts *clioptions.CLIOptions, versionMajor, versionMinor int, message string) func(cmd *cobra.Command, _ []string) {
 	return func(cmd *cobra.Command, _ []string) {
 		restConfig, err := opts.ToRESTConfig()
 		cobra.CheckErr(err)
 		client, err := client.APIClientForConfig(restConfig)
 		cobra.CheckErr(err)
 
-		canUseNewAPI, versionError := VersionCheck(cmd.Context(), client, 14, 0)
+		canUseNewAPI, versionError := VersionCheck(cmd.Context(), client, versionMajor, versionMinor)
 		if versionError == nil && canUseNewAPI {
 			writer := cmd.ErrOrStderr()
-			fmt.Fprint(writer, "\nThe command you are using is deprecated. Please use 'miactl catalog' instead.")
+			fmt.Fprintln(writer, message)
 		}
 	}
 }

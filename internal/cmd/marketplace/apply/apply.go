@@ -125,7 +125,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			return nil
 		},
-		PostRun: util.ShowDeprecatedMessage(options),
+		PostRun: util.CheckVersionAndShowMessage(options, 14, 0, marketplace.DeprecatedMessage),
 	}
 
 	options.AddMarketplaceApplyFlags(cmd)

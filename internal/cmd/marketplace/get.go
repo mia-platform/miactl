@@ -69,7 +69,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 			fmt.Println(serializedItem)
 			return nil
 		},
-		PostRun: util.ShowDeprecatedMessage(options),
+		PostRun: util.CheckVersionAndShowMessage(options, 14, 0, marketplace.DeprecatedMessage),
 	}
 
 	options.AddOutputFormatFlag(cmd.Flags(), encoding.JSON)

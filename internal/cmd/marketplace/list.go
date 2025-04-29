@@ -47,7 +47,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Short:   "List marketplace items",
 		Long:    listCmdLong,
 		Run:     runListCmd(options),
-		PostRun: util.ShowDeprecatedMessage(options),
+		PostRun: util.CheckVersionAndShowMessage(options, 14, 0, marketplace.DeprecatedMessage),
 	}
 
 	options.AddPublicFlag(cmd.Flags())

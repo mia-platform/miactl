@@ -60,7 +60,7 @@ The command will output a table with each version of the item.`,
 				clioptions.DisableWrapLines(true),
 			))
 		},
-		PostRun: util.ShowDeprecatedMessage(options),
+		PostRun: util.CheckVersionAndShowMessage(options, 14, 0, marketplace.DeprecatedMessage),
 	}
 
 	flagName := options.AddMarketplaceItemIDFlag(cmd.Flags())

@@ -89,7 +89,7 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			return errors.New("invalid input parameters")
 		},
-		PostRun: util.ShowDeprecatedMessage(options),
+		PostRun: util.CheckVersionAndShowMessage(options, 14, 0, marketplace.DeprecatedMessage),
 	}
 
 	itemObjectIDFlagName := options.AddMarketplaceItemObjectIDFlag(cmd.Flags())
