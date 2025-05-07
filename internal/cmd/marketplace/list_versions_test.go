@@ -28,6 +28,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/assert"
@@ -181,7 +182,7 @@ func TestGetItemVersions(t *testing.T) {
 				"error": "Internal Server Error",
 			},
 			expected:    nil,
-			expectedErr: ErrGenericServerError,
+			expectedErr: commonMarketplace.ErrGenericServerError,
 		},
 		{
 			testName:    "should return error on missing companyID",
@@ -216,7 +217,7 @@ func TestGetItemVersions(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			found, err := getItemVersions(t.Context(), client, testCase.companyID, testCase.itemID)
+			found, err := commonMarketplace.GetItemVersions(t.Context(), client, listItemVersionsEndpointTemplate, testCase.companyID, testCase.itemID)
 			if testCase.expectedErr != nil {
 				require.ErrorIs(t, err, testCase.expectedErr)
 				require.Nil(t, found)
@@ -263,7 +264,7 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
 			strBuilder := &strings.Builder{}
-			printItemVersionList(&testCase.releases, printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}, strBuilder))
+			commonMarketplace.PrintItemVersionList(&testCase.releases, printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}, strBuilder))
 			found := strBuilder.String()
 			assert.NotZero(t, found)
 			for _, expected := range testCase.expectedContains {

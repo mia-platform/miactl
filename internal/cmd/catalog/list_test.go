@@ -24,6 +24,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/stretchr/testify/assert"
@@ -56,7 +57,7 @@ func TestNewGetCmd(t *testing.T) {
 func TestBuildMarketplaceItemsList(t *testing.T) {
 	type testCase struct {
 		name             string
-		options          GetMarketplaceItemsOptions
+		options          commonMarketplace.GetMarketplaceItemsOptions
 		responseHandler  http.HandlerFunc
 		clientConfig     *client.Config
 		expectError      bool
@@ -66,9 +67,9 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 	testCases := []testCase{
 		{
 			name: "private company marketplace",
-			options: GetMarketplaceItemsOptions{
-				companyID: "my-company",
-				public:    false,
+			options: commonMarketplace.GetMarketplaceItemsOptions{
+				CompanyID: "my-company",
+				Public:    false,
 			},
 			responseHandler: privateCompanyMarketplaceHandler(t),
 			clientConfig:    &client.Config{Transport: http.DefaultTransport},
@@ -80,9 +81,9 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		},
 		{
 			name: "wrong payload",
-			options: GetMarketplaceItemsOptions{
-				companyID: "my-company",
-				public:    false,
+			options: commonMarketplace.GetMarketplaceItemsOptions{
+				CompanyID: "my-company",
+				Public:    false,
 			},
 			responseHandler:  wrongPayloadHandler(t),
 			clientConfig:     &client.Config{Transport: http.DefaultTransport},
@@ -91,9 +92,9 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		},
 		{
 			name: "public marketplace with company set",
-			options: GetMarketplaceItemsOptions{
-				companyID: "my-company",
-				public:    true,
+			options: commonMarketplace.GetMarketplaceItemsOptions{
+				CompanyID: "my-company",
+				Public:    true,
 			},
 			responseHandler: privateAndPublicMarketplaceHandler(t),
 			clientConfig:    &client.Config{Transport: http.DefaultTransport},
@@ -117,7 +118,7 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 
 		strBuilder := &strings.Builder{}
 		mockPrinter := printer.NewTablePrinter(printer.TablePrinterOptions{}, strBuilder)
-		err = printMarketplaceItems(t.Context(), client, tc.options, mockPrinter)
+		err = commonMarketplace.PrintMarketplaceItems(t.Context(), client, tc.options, mockPrinter, listMarketplaceEndpoint)
 		found := strBuilder.String()
 		if tc.expectError {
 			assert.Error(t, err)

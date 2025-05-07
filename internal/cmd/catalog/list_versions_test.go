@@ -25,8 +25,10 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -91,7 +93,7 @@ func TestGetItemVersions(t *testing.T) {
 		statusCode    int
 		errorResponse map[string]string
 
-		expected    []catalog.Release
+		expected    []marketplace.Release
 		expectedErr error
 	}{
 		{
@@ -99,7 +101,7 @@ func TestGetItemVersions(t *testing.T) {
 			companyID:  "some-company",
 			itemID:     "some-item",
 			statusCode: http.StatusOK,
-			expected: []catalog.Release{
+			expected: []marketplace.Release{
 				{
 					Name:        "Some Awesome Service",
 					Description: "The Awesome Service allows to do some amazing stuff.",
@@ -122,7 +124,7 @@ func TestGetItemVersions(t *testing.T) {
 				"error": "Not Found",
 			},
 			expected:    nil,
-			expectedErr: catalog.ErrItemNotFound,
+			expectedErr: marketplace.ErrItemNotFound,
 		},
 		{
 			testName:   "should return generic error if item is not found",
@@ -133,13 +135,13 @@ func TestGetItemVersions(t *testing.T) {
 				"error": "Internal Server Error",
 			},
 			expected:    nil,
-			expectedErr: ErrGenericServerError,
+			expectedErr: commonMarketplace.ErrGenericServerError,
 		},
 		{
 			testName:    "should return error on missing companyID",
 			companyID:   "",
 			itemID:      "some-item",
-			expectedErr: catalog.ErrMissingCompanyID,
+			expectedErr: marketplace.ErrMissingCompanyID,
 		},
 	}
 
@@ -168,7 +170,7 @@ func TestGetItemVersions(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			found, err := getItemVersions(t.Context(), client, testCase.companyID, testCase.itemID)
+			found, err := commonMarketplace.GetItemVersions(t.Context(), client, listItemVersionsEndpointTemplate, testCase.companyID, testCase.itemID)
 			if testCase.expectedErr != nil {
 				require.ErrorIs(t, err, testCase.expectedErr)
 				require.Nil(t, found)
@@ -182,11 +184,11 @@ func TestGetItemVersions(t *testing.T) {
 
 func TestBuildMarketplaceItemVersionList(t *testing.T) {
 	testCases := map[string]struct {
-		releases         []catalog.Release
+		releases         []marketplace.Release
 		expectedContains []string
 	}{
 		"should show all fields": {
-			releases: []catalog.Release{
+			releases: []marketplace.Release{
 				{
 					Version:     "1.0.0",
 					Name:        "Some Awesome Service",
@@ -199,7 +201,7 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 			},
 		},
 		"should show - on empty description": {
-			releases: []catalog.Release{
+			releases: []marketplace.Release{
 				{
 					Version: "1.0.0",
 					Name:    "Some Awesome Service",
@@ -215,7 +217,7 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
 			strBuilder := &strings.Builder{}
-			printItemVersionList(&testCase.releases, printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}, strBuilder))
+			commonMarketplace.PrintItemVersionList(&testCase.releases, printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}, strBuilder))
 			found := strBuilder.String()
 			assert.NotZero(t, found)
 			for _, expected := range testCase.expectedContains {

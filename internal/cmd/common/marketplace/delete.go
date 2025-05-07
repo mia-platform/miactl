@@ -13,38 +13,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package catalog
+package marketplace
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 )
 
 var (
-	ErrUnsupportedCompanyVersion = errors.New("you need Mia-Platform Console v14.0.0 or later to use this command")
+	ErrServerDeleteItem     = errors.New("server error while deleting item")
+	ErrUnexpectedDeleteItem = errors.New("unexpected response while deleting item")
 )
 
-type ApplyResponse struct {
-	Done  bool                `json:"done"`
-	Items []ApplyResponseItem `json:"items"`
-}
-
-type ApplyResponseItem struct {
-	ID     string `json:"_id,omitempty"` //nolint: tagliatelle
-	ItemID string `json:"itemId,omitempty"`
-
-	Done     bool `json:"done"`
-	Inserted bool `json:"inserted"`
-	Updated  bool `json:"updated"`
-
-	Errors []ApplyResponseItemError `json:"errors"`
-}
-
-type ApplyResponseItemError struct {
-	Message string `json:"message"`
-}
-
-type ApplyRequest struct {
-	Resources []*marketplace.Item `json:"resources"`
+func CheckDeleteResponseErrors(resp *client.Response) error {
+	switch resp.StatusCode() {
+	case http.StatusNoContent:
+		fmt.Println("item deleted successfully")
+		return nil
+	case http.StatusNotFound:
+		return marketplace.ErrItemNotFound
+	default:
+		if resp.StatusCode() >= http.StatusInternalServerError {
+			return ErrServerDeleteItem
+		}
+		return fmt.Errorf("%w: %d", ErrUnexpectedDeleteItem, resp.StatusCode())
+	}
 }

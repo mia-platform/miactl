@@ -19,11 +19,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -39,11 +40,6 @@ const (
 	You need to specify the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 	`
 	cmdUse = "delete { --item-id item-id --version version }"
-)
-
-var (
-	errServerDeleteItem     = errors.New("server error while deleting item")
-	errUnexpectedDeleteItem = errors.New("unexpected response while deleting item")
 )
 
 // DeleteCmd return a new cobra command for deleting a single catalog resource
@@ -66,7 +62,7 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {
-				return catalog.ErrMissingCompanyID
+				return marketplace.ErrMissingCompanyID
 			}
 
 			if options.MarketplaceItemVersion != "" && options.MarketplaceItemID != "" {
@@ -103,20 +99,5 @@ func deleteItemByItemIDAndVersion(ctx context.Context, client *client.APIClient,
 		return fmt.Errorf("error executing request: %w", err)
 	}
 
-	return checkDeleteResponseErrors(resp)
-}
-
-func checkDeleteResponseErrors(resp *client.Response) error {
-	switch resp.StatusCode() {
-	case http.StatusNoContent:
-		fmt.Println("item deleted successfully")
-		return nil
-	case http.StatusNotFound:
-		return catalog.ErrItemNotFound
-	default:
-		if resp.StatusCode() >= http.StatusInternalServerError {
-			return errServerDeleteItem
-		}
-		return fmt.Errorf("%w: %d", errUnexpectedDeleteItem, resp.StatusCode())
-	}
+	return commonMarketplace.CheckDeleteResponseErrors(resp)
 }

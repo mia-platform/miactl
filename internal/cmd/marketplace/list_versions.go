@@ -16,24 +16,15 @@
 package marketplace
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"net/http"
-
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/printer"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
 const listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions"
-
-var (
-	ErrGenericServerError = errors.New("server error while fetching item versions")
-)
 
 // ListVersionCmd return a new cobra command for listing marketplace item versions
 func ListVersionCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -48,15 +39,16 @@ The command will output a table with each version of the item.`,
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			releases, err := getItemVersions(
+			releases, err := commonMarketplace.GetItemVersions(
 				cmd.Context(),
 				client,
+				listItemVersionsEndpointTemplate,
 				restConfig.CompanyID,
 				options.MarketplaceItemID,
 			)
 			cobra.CheckErr(err)
 
-			printItemVersionList(releases, options.Printer(
+			commonMarketplace.PrintItemVersionList(releases, options.Printer(
 				clioptions.DisableWrapLines(true),
 			))
 		},
@@ -71,50 +63,4 @@ The command will output a table with each version of the item.`,
 	}
 
 	return cmd
-}
-
-func getItemVersions(ctx context.Context, client *client.APIClient, companyID, itemID string) (*[]marketplace.Release, error) {
-	if companyID == "" {
-		return nil, marketplace.ErrMissingCompanyID
-	}
-	resp, err := client.
-		Get().
-		APIPath(
-			fmt.Sprintf(listItemVersionsEndpointTemplate, companyID, itemID),
-		).
-		Do(ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("error executing request: %w", err)
-	}
-
-	switch resp.StatusCode() {
-	case http.StatusOK:
-		releases := &[]marketplace.Release{}
-		err = resp.ParseResponse(releases)
-		if err != nil {
-			return nil, fmt.Errorf("error parsing response body: %w", err)
-		}
-		return releases, nil
-	case http.StatusNotFound:
-		return nil, fmt.Errorf("%w: %s", marketplace.ErrItemNotFound, itemID)
-	}
-	return nil, ErrGenericServerError
-}
-
-func printItemVersionList(releases *[]marketplace.Release, p printer.IPrinter) {
-	p.Keys("Version", "Name", "Description")
-
-	for _, release := range *releases {
-		description := "-"
-		if release.Description != "" {
-			description = release.Description
-		}
-		p.Record(
-			release.Version,
-			release.Name,
-			description,
-		)
-	}
-	p.Print()
 }

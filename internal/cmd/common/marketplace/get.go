@@ -13,38 +13,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package catalog
+package marketplace
 
 import (
-	"errors"
+	"context"
+	"fmt"
 
+	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 )
 
-var (
-	ErrUnsupportedCompanyVersion = errors.New("you need Mia-Platform Console v14.0.0 or later to use this command")
-)
+func PerformGetItemRequest(ctx context.Context, client *client.APIClient, endpoint string) (*marketplace.Item, error) {
+	resp, err := client.Get().APIPath(endpoint).Do(ctx)
 
-type ApplyResponse struct {
-	Done  bool                `json:"done"`
-	Items []ApplyResponseItem `json:"items"`
-}
+	if err != nil {
+		return nil, fmt.Errorf("error executing request: %w", err)
+	}
 
-type ApplyResponseItem struct {
-	ID     string `json:"_id,omitempty"` //nolint: tagliatelle
-	ItemID string `json:"itemId,omitempty"`
+	if err := resp.Error(); err != nil {
+		return nil, err
+	}
 
-	Done     bool `json:"done"`
-	Inserted bool `json:"inserted"`
-	Updated  bool `json:"updated"`
+	var marketplaceItem *marketplace.Item
+	if err := resp.ParseResponse(&marketplaceItem); err != nil {
+		return nil, fmt.Errorf("error parsing response body: %w", err)
+	}
 
-	Errors []ApplyResponseItemError `json:"errors"`
-}
+	if marketplaceItem == nil {
+		return nil, fmt.Errorf("no marketplace item returned in the response")
+	}
 
-type ApplyResponseItemError struct {
-	Message string `json:"message"`
-}
-
-type ApplyRequest struct {
-	Resources []*marketplace.Item `json:"resources"`
+	return marketplaceItem, nil
 }

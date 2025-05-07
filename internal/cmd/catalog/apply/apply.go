@@ -25,9 +25,11 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/files"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -65,36 +67,6 @@ miactl catalog apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFant
 miactl catalog apply -f myFantasticGoTemplates`
 
 	applyEndpointTemplate = "/api/tenants/%s/marketplace/items"
-
-	imageAssetType = "imageAssetType"
-	imageKey       = "image"
-	imageURLKey    = "imageUrl"
-
-	itemIDKey = "itemId"
-
-	supportedByImageAssetType = "supportedByImageAssetType"
-	supportedByImageKey       = "supportedByImage"
-	supportedByImageURLKey    = "supportedByImageUrl"
-)
-
-var (
-	errCompanyIDNotDefined = errors.New("companyID must be defined")
-
-	errResWithoutName       = errors.New(`the required field "name" was not found in the resource`)
-	errResWithoutItemID     = errors.New(`the required field "itemId" was not found in the resource`)
-	errNoValidFilesProvided = errors.New("no valid files were provided")
-
-	errResNameNotAString   = errors.New(`the field "name" must be a string`)
-	errResItemIDNotAString = errors.New(`the field "itemId" must be a string`)
-
-	errDuplicatedResIdentifier = errors.New("some resources have duplicated itemId-version tuple")
-	errUnknownAssetType        = errors.New("unknown asset type")
-
-	errUploadingImage    = errors.New("error while uploading image")
-	errBuildingFilesList = errors.New("error processing files")
-	errBuildingApplyReq  = errors.New("error preparing apply request")
-	errProcessingImages  = errors.New("error processing images")
-	errApplyingResources = errors.New("error applying items")
 )
 
 // ApplyCmd returns a new cobra command for adding or updating catalog resources
@@ -117,7 +89,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {
-				return catalog.ErrMissingCompanyID
+				return marketplace.ErrMissingCompanyID
 			}
 
 			outcome, err := applyItemsFromPaths(
@@ -142,23 +114,23 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyID string, filePaths []string) (string, error) {
 	resourceFilesPaths, err := buildFilePathsList(filePaths)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", errBuildingFilesList, err)
+		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrBuildingFilesList, err)
 	}
 
 	applyReq, identifierToFilePathMap, err := buildApplyRequest(resourceFilesPaths)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", errBuildingApplyReq, err)
+		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrBuildingApplyReq, err)
 	}
 
 	for _, item := range applyReq.Resources {
 		if err := processItemImages(ctx, client, companyID, item, identifierToFilePathMap); err != nil {
-			return "", fmt.Errorf("%w: %s", errProcessingImages, err)
+			return "", fmt.Errorf("%w: %s", commonMarketplace.ErrProcessingImages, err)
 		}
 	}
 
 	outcome, err := applyMarketplaceResource(ctx, client, companyID, applyReq)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", errApplyingResources, err)
+		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrApplyingResources, err)
 	}
 
 	return buildOutcomeSummaryAsTables(outcome), nil
@@ -178,13 +150,13 @@ func processItemImages(
 	ctx context.Context,
 	client *client.APIClient,
 	companyID string,
-	item *catalog.Item,
+	item *marketplace.Item,
 	itemIDToFilePathMap map[string]string,
 ) error {
 	processImage := func(imageObjKey, urlKey string, assetType string) error {
-		localPath, err := getAndValidateImageLocalPath(item, imageObjKey, urlKey)
-		if assetType != imageAssetType && assetType != supportedByImageAssetType {
-			return fmt.Errorf("%w: %s", errUnknownAssetType, assetType)
+		localPath, err := commonMarketplace.GetAndValidateImageLocalPath(item, imageObjKey, urlKey)
+		if assetType != commonMarketplace.ImageAssetType && assetType != commonMarketplace.SupportedByImageAssetType {
+			return fmt.Errorf("%w: %s", commonMarketplace.ErrUnknownAssetType, assetType)
 		}
 		if err != nil {
 			return err
@@ -192,7 +164,7 @@ func processItemImages(
 		if localPath == "" {
 			return nil
 		}
-		itemID := item.Get(itemIDKey).(string)
+		itemID := item.Get(commonMarketplace.ItemIDKey).(string)
 		identifier, err := buildItemIdentifier(item)
 		if err != nil {
 			return err
@@ -204,7 +176,7 @@ func processItemImages(
 		if err != nil {
 			return err
 		}
-		imageURL, err := uploadImageFileAndGetURL(
+		imageURL, err := commonMarketplace.UploadImageFileAndGetURL(
 			ctx,
 			client,
 			companyID,
@@ -214,7 +186,7 @@ func processItemImages(
 			versionName,
 		)
 		if err != nil {
-			return fmt.Errorf("%w: %s: %s", errUploadingImage, imageFilePath, err)
+			return fmt.Errorf("%w: %s: %s", commonMarketplace.ErrUploadingImage, imageFilePath, err)
 		}
 
 		item.Del(imageObjKey)
@@ -222,10 +194,10 @@ func processItemImages(
 		return nil
 	}
 
-	if err := processImage(imageKey, imageURLKey, imageAssetType); err != nil {
+	if err := processImage(commonMarketplace.ImageKey, commonMarketplace.ImageURLKey, commonMarketplace.ImageAssetType); err != nil {
 		return err
 	}
-	err := processImage(supportedByImageKey, supportedByImageURLKey, supportedByImageAssetType)
+	err := processImage(commonMarketplace.SupportedByImageKey, commonMarketplace.SupportedByImageURLKey, commonMarketplace.SupportedByImageAssetType)
 	return err
 }
 
@@ -253,11 +225,11 @@ func buildFilePathsList(paths []string) ([]string, error) {
 }
 
 func buildApplyRequest(pathList []string) (*catalog.ApplyRequest, map[string]string, error) {
-	resources := []*catalog.Item{}
+	resources := []*marketplace.Item{}
 	// the identifier is the concatenation of itemID and, if present, version.name
 	resIdentifierToFilePath := map[string]string{}
 	for _, filePath := range pathList {
-		marketplaceItem := &catalog.Item{}
+		marketplaceItem := &marketplace.Item{}
 		if err := files.ReadFile(filePath, marketplaceItem); err != nil {
 			if errors.Is(err, files.ErrUnsupportedFile) {
 				continue
@@ -279,7 +251,7 @@ func buildApplyRequest(pathList []string) (*catalog.ApplyRequest, map[string]str
 		}
 
 		if _, alreadyExists := resIdentifierToFilePath[resIdentifier]; alreadyExists {
-			return nil, nil, fmt.Errorf("%w: %s", errDuplicatedResIdentifier, itemID)
+			return nil, nil, fmt.Errorf("%w: %s", commonMarketplace.ErrDuplicatedResIdentifier, itemID)
 		}
 
 		resources = append(resources, marketplaceItem)
@@ -287,17 +259,17 @@ func buildApplyRequest(pathList []string) (*catalog.ApplyRequest, map[string]str
 		resIdentifierToFilePath[resIdentifier] = filePath
 	}
 	if len(resources) == 0 {
-		return nil, nil, errNoValidFilesProvided
+		return nil, nil, commonMarketplace.ErrNoValidFilesProvided
 	}
 	return &catalog.ApplyRequest{
 		Resources: resources,
 	}, resIdentifierToFilePath, nil
 }
 
-func buildItemIdentifier(item *catalog.Item) (string, error) {
-	itemID, ok := item.Get(itemIDKey).(string)
+func buildItemIdentifier(item *marketplace.Item) (string, error) {
+	itemID, ok := item.Get(commonMarketplace.ItemIDKey).(string)
 	if !ok {
-		return "", errResItemIDNotAString
+		return "", commonMarketplace.ErrResItemIDNotAString
 	}
 
 	versionName, err := item.GetVersionName()
@@ -308,26 +280,26 @@ func buildItemIdentifier(item *catalog.Item) (string, error) {
 	return itemID + versionName, nil
 }
 
-func validateItemName(marketplaceItem *catalog.Item, filePath string) (string, error) {
+func validateItemName(marketplaceItem *marketplace.Item, filePath string) (string, error) {
 	itemName, ok := (*marketplaceItem)["name"]
 	if !ok {
-		return "", fmt.Errorf("%w: %s", errResWithoutName, filePath)
+		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrResWithoutName, filePath)
 	}
 	itemNameStr, ok := itemName.(string)
 	if !ok {
-		return "", fmt.Errorf("%w: %s", errResNameNotAString, filePath)
+		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrResNameNotAString, filePath)
 	}
 	return itemNameStr, nil
 }
 
-func validateItemHumanReadableID(marketplaceItem *catalog.Item, filePath string) (string, error) {
-	itemID, ok := (*marketplaceItem)[itemIDKey]
+func validateItemHumanReadableID(marketplaceItem *marketplace.Item, filePath string) (string, error) {
+	itemID, ok := (*marketplaceItem)[commonMarketplace.ItemIDKey]
 	if !ok {
-		return "", fmt.Errorf("%w: %s", errResWithoutItemID, filePath)
+		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrResWithoutItemID, filePath)
 	}
 	itemIDStr, ok := itemID.(string)
 	if !ok {
-		return "", fmt.Errorf("%w: %s", errResItemIDNotAString, filePath)
+		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrResItemIDNotAString, filePath)
 	}
 	return itemIDStr, nil
 }
@@ -339,7 +311,7 @@ func applyMarketplaceResource(
 	request *catalog.ApplyRequest,
 ) (*catalog.ApplyResponse, error) {
 	if companyID == "" {
-		return nil, errCompanyIDNotDefined
+		return nil, commonMarketplace.ErrCompanyIDNotDefined
 	}
 
 	bodyBytes, err := json.Marshal(request)

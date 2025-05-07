@@ -27,7 +27,9 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
@@ -144,7 +146,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		filePaths := []string{}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.ErrorIs(t, err, errNoValidFilesProvided)
+		require.ErrorIs(t, err, commonMarketplace.ErrNoValidFilesProvided)
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
@@ -155,7 +157,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.ErrorIs(t, err, errNoValidFilesProvided)
+		require.ErrorIs(t, err, commonMarketplace.ErrNoValidFilesProvided)
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
@@ -167,7 +169,7 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.ErrorIs(t, err, errDuplicatedResIdentifier)
+		require.ErrorIs(t, err, commonMarketplace.ErrDuplicatedResIdentifier)
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
@@ -179,20 +181,20 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		}
 
 		foundApplyReq, foundResNameToFilePath, err := buildApplyRequest(filePaths)
-		require.ErrorIs(t, err, errDuplicatedResIdentifier)
+		require.ErrorIs(t, err, commonMarketplace.ErrDuplicatedResIdentifier)
 		require.Nil(t, foundApplyReq)
 		require.Nil(t, foundResNameToFilePath)
 	})
 }
 
-const mockTenantID = "some-tenant-id"
+const mockTenantID = "mock-tenant-id"
 
 var mockURI = fmt.Sprintf(applyEndpointTemplate, mockTenantID)
 
 func TestApplyApplyResourceCmd(t *testing.T) {
 	mockItemID := "some-item-id"
 	validReqMock := &catalog.ApplyRequest{
-		Resources: []*catalog.Item{
+		Resources: []*marketplace.Item{
 			{
 				"categoryId":      "devportal",
 				"imageUrl":        "some/path/to/image.png",
@@ -508,7 +510,7 @@ func TestApplyIntegration(t *testing.T) {
 				},
 			},
 		}
-		uploadMockResponse := &catalog.UploadImageResponse{
+		uploadMockResponse := &marketplace.UploadImageResponse{
 			Location: mockImageURLLocation,
 		}
 
@@ -521,38 +523,38 @@ func TestApplyIntegration(t *testing.T) {
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[0].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[1].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[1].(map[string]interface{}),
-					supportedByImageKey,
-					supportedByImageURLKey,
+					commonMarketplace.SupportedByImageKey,
+					commonMarketplace.SupportedByImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[2].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[2].(map[string]interface{}),
-					supportedByImageKey,
-					supportedByImageURLKey,
+					commonMarketplace.SupportedByImageKey,
+					commonMarketplace.SupportedByImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[3].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 			},
 			nil,
@@ -605,7 +607,7 @@ func TestApplyIntegration(t *testing.T) {
 				},
 			},
 		}
-		uploadMockResponse := &catalog.UploadImageResponse{
+		uploadMockResponse := &marketplace.UploadImageResponse{
 			Location: mockImageURLLocation,
 		}
 
@@ -619,8 +621,8 @@ func TestApplyIntegration(t *testing.T) {
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[0].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 				version, ok := resources[0].(map[string]interface{})["version"]
 				assert.False(t, ok)
@@ -629,8 +631,8 @@ func TestApplyIntegration(t *testing.T) {
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[1].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 
 				version, ok = resources[1].(map[string]interface{})["version"].(map[string]interface{})
@@ -647,19 +649,19 @@ func TestApplyIntegration(t *testing.T) {
 				require.LessOrEqual(t, uploadImageCallIdx, 1, "too many calls to upload image endpoint")
 				if uploadImageCallIdx == 0 {
 					require.Equal(t, "miactl-test-with-image-and-local-path", mf.Value["itemId"][0])
-					require.Equal(t, imageAssetType, mf.Value["assetType"][0])
+					require.Equal(t, commonMarketplace.ImageAssetType, mf.Value["assetType"][0])
 					require.Equal(t, mockTenantID, mf.Value["tenantId"][0])
 					require.Nil(t, mf.Value["version"])
 
-					require.Equal(t, "imageTest.png", mf.File[multipartFieldName][0].Filename)
+					require.Equal(t, "imageTest.png", mf.File[commonMarketplace.MultipartFieldName][0].Filename)
 				}
 				if uploadImageCallIdx == 1 {
 					require.Equal(t, "miactl-test-with-image-and-local-path", mf.Value["itemId"][0])
-					require.Equal(t, imageAssetType, mf.Value["assetType"][0])
+					require.Equal(t, commonMarketplace.ImageAssetType, mf.Value["assetType"][0])
 					require.Equal(t, mockTenantID, mf.Value["tenantId"][0])
 					require.Equal(t, "1.0.0", mf.Value["version"][0])
 
-					require.Equal(t, "imageTest2.png", mf.File[multipartFieldName][0].Filename)
+					require.Equal(t, "imageTest2.png", mf.File[commonMarketplace.MultipartFieldName][0].Filename)
 				}
 
 				uploadImageCallIdx++
@@ -754,7 +756,7 @@ func TestApplyIntegration(t *testing.T) {
 			"message":    mockErrorMsg,
 			"statusCode": mockUploadImageStatusCode,
 		}
-		uploadMockResponse := &catalog.UploadImageResponse{
+		uploadMockResponse := &marketplace.UploadImageResponse{
 			Location: mockImageURLLocation,
 		}
 
@@ -767,38 +769,38 @@ func TestApplyIntegration(t *testing.T) {
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[0].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[1].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[1].(map[string]interface{}),
-					supportedByImageKey,
-					supportedByImageURLKey,
+					commonMarketplace.SupportedByImageKey,
+					commonMarketplace.SupportedByImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[2].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[2].(map[string]interface{}),
-					supportedByImageKey,
-					supportedByImageURLKey,
+					commonMarketplace.SupportedByImageKey,
+					commonMarketplace.SupportedByImageURLKey,
 				)
 				assertImageKeyIsReplacedWithImageURL(
 					t,
 					resources[3].(map[string]interface{}),
-					imageKey,
-					imageURLKey,
+					commonMarketplace.ImageKey,
+					commonMarketplace.ImageURLKey,
 				)
 			},
 			nil,
@@ -881,8 +883,8 @@ func applyIntegrationMockServer(
 			}
 
 			applyRequestHandler(t, w, r, applyItemStatusCode, applyMockResponse)
-		case fmt.Sprintf(uploadImageEndpointTemplate, mockTenantID):
-			uploadImageHandler(t, w, r, uploadImageStatusCode, uploadMockResponse)
+		case fmt.Sprintf(commonMarketplace.UploadImageEndpointTemplate, mockTenantID):
+			commonMarketplace.UploadImageHandler(t, w, r, uploadImageStatusCode, uploadMockResponse)
 			if assertImageUploadBody != nil {
 				err := r.ParseMultipartForm(5 * 10000)
 				require.NoError(t, err)
@@ -905,7 +907,7 @@ func TestProcessItemImages(t *testing.T) {
 		itemVersionToFilePathMap map[string]string
 
 		expectedErr  error
-		expectedItem *catalog.Item
+		expectedItem *marketplace.Item
 	}{
 		{
 			testName: "should upload file correctly - without version",
@@ -916,9 +918,9 @@ func TestProcessItemImages(t *testing.T) {
 					"localPath": "./testdata/imageTest.png"
 				}
 			}`,
-			expectedItem: &catalog.Item{
-				"itemId":    "some-id",
-				imageURLKey: mockImageURLLocation,
+			expectedItem: &marketplace.Item{
+				"itemId":                      "some-id",
+				commonMarketplace.ImageURLKey: mockImageURLLocation,
 			},
 			itemVersionToFilePathMap: map[string]string{
 				"itemId": "./testdata/imageTest.png",
@@ -937,10 +939,10 @@ func TestProcessItemImages(t *testing.T) {
 					"releaseNotes": "some release note"
 				}
 			}`,
-			expectedItem: &catalog.Item{
-				"itemId":    "some-id",
-				imageURLKey: mockImageURLLocation,
-				"version": catalog.Item{
+			expectedItem: &marketplace.Item{
+				"itemId":                      "some-id",
+				commonMarketplace.ImageURLKey: mockImageURLLocation,
+				"version": marketplace.Item{
 					"name":         "1.0.0",
 					"releaseNotes": "some release note",
 				},
@@ -965,7 +967,7 @@ func TestProcessItemImages(t *testing.T) {
 				},
 			},
 		}
-		uploadMockResponse := &catalog.UploadImageResponse{
+		uploadMockResponse := &marketplace.UploadImageResponse{
 			Location: mockImageURLLocation,
 		}
 
@@ -985,7 +987,7 @@ func TestProcessItemImages(t *testing.T) {
 		client, err := client.APIClientForConfig(clientConfig)
 		require.NoError(t, err)
 
-		mockItem := &catalog.Item{}
+		mockItem := &marketplace.Item{}
 		err = yaml.Unmarshal([]byte(testCase.itemJSON), mockItem)
 		require.NoError(t, err)
 
@@ -1030,7 +1032,7 @@ func TestBuildIdentifier(t *testing.T) {
 				"itemId": 5
 			}`,
 			"",
-			errResItemIDNotAString,
+			commonMarketplace.ErrResItemIDNotAString,
 		},
 		{
 			"should return error if name is not defined",
@@ -1039,7 +1041,7 @@ func TestBuildIdentifier(t *testing.T) {
 				"version": {}
 			}`,
 			"",
-			catalog.ErrVersionNameNotAString,
+			marketplace.ErrVersionNameNotAString,
 		},
 		{
 			"should return error if name is not a string",
@@ -1050,7 +1052,7 @@ func TestBuildIdentifier(t *testing.T) {
 				}
 			}`,
 			"",
-			catalog.ErrVersionNameNotAString,
+			marketplace.ErrVersionNameNotAString,
 		},
 		{
 			"should return itemID concatenated with version name when version name is present",
@@ -1067,7 +1069,7 @@ func TestBuildIdentifier(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.testName, func(t *testing.T) {
-			parsedItem := &catalog.Item{}
+			parsedItem := &marketplace.Item{}
 			err := yaml.Unmarshal([]byte(tt.itemJSON), parsedItem)
 			require.NoError(t, err)
 

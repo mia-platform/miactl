@@ -21,8 +21,10 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -81,40 +83,13 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func getItemByItemIDAndVersion(ctx context.Context, client *client.APIClient, companyID, itemID, version string) (*catalog.Item, error) {
-	endpoint := fmt.Sprintf(getItemByItemIDAndVersionEndpointTemplate, companyID, itemID, version)
-	return performGetItemRequest(ctx, client, endpoint)
-}
-
-func performGetItemRequest(ctx context.Context, client *client.APIClient, endpoint string) (*catalog.Item, error) {
-	resp, err := client.Get().APIPath(endpoint).Do(ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("error executing request: %w", err)
-	}
-
-	if err := resp.Error(); err != nil {
-		return nil, err
-	}
-
-	var marketplaceItem *catalog.Item
-	if err := resp.ParseResponse(&marketplaceItem); err != nil {
-		return nil, fmt.Errorf("error parsing response body: %w", err)
-	}
-
-	if marketplaceItem == nil {
-		return nil, fmt.Errorf("no catalog item returned in the response")
-	}
-
-	return marketplaceItem, nil
-}
-
 // getItemEncodedWithFormat retrieves the catalog item corresponding to the specified identifier, serialized with the specified outputFormat
 func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, companyID, itemID, version, outputFormat string) (string, error) {
 	if companyID == "" {
-		return "", catalog.ErrMissingCompanyID
+		return "", marketplace.ErrMissingCompanyID
 	}
-	item, err := getItemByItemIDAndVersion(ctx, client, companyID, itemID, version)
+	endpoint := fmt.Sprintf(getItemByItemIDAndVersionEndpointTemplate, companyID, itemID, version)
+	item, err := commonMarketplace.PerformGetItemRequest(ctx, client, endpoint)
 
 	if err != nil {
 		return "", err

@@ -23,7 +23,9 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/require"
 )
 
@@ -109,7 +111,7 @@ func TestDeleteItemByItemIDAndVersion(t *testing.T) {
 
 			statusCode: http.StatusNotFound,
 
-			expectedErr:   catalog.ErrItemNotFound,
+			expectedErr:   marketplace.ErrItemNotFound,
 			expectedCalls: 1,
 		},
 		{
@@ -119,7 +121,7 @@ func TestDeleteItemByItemIDAndVersion(t *testing.T) {
 
 			statusCode: http.StatusInternalServerError,
 
-			expectedErr:   errServerDeleteItem,
+			expectedErr:   commonMarketplace.ErrServerDeleteItem,
 			expectedCalls: 1,
 		},
 		{
@@ -129,7 +131,7 @@ func TestDeleteItemByItemIDAndVersion(t *testing.T) {
 
 			statusCode: http.StatusBadRequest,
 
-			expectedErr:   errUnexpectedDeleteItem,
+			expectedErr:   commonMarketplace.ErrUnexpectedDeleteItem,
 			expectedCalls: 1,
 		},
 	}

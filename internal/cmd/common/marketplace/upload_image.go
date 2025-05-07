@@ -32,8 +32,8 @@ import (
 )
 
 const (
-	uploadImageEndpointTemplate = "/api/backend/marketplace/tenants/%s/files"
-	multipartFieldName          = "marketplace_image"
+	UploadImageEndpointTemplate = "/api/backend/marketplace/tenants/%s/files"
+	MultipartFieldName          = "marketplace_image"
 
 	localPathKey = "localPath"
 
@@ -49,7 +49,7 @@ var (
 	errFileMustBeImage = errors.New("the file must a jpeg or png image")
 )
 
-func getAndValidateImageLocalPath(item *marketplace.Item, imageKey, imageURLKey string) (string, error) {
+func GetAndValidateImageLocalPath(item *marketplace.Item, imageKey, imageURLKey string) (string, error) {
 	_, imageURLExists := (*item)[imageURLKey]
 	imageInfo, imageExists := (*item)[imageKey]
 	if imageExists && imageURLExists {
@@ -165,7 +165,7 @@ func buildUploadImageReq(
 	var bodyBuffer bytes.Buffer
 	multipartWriter := multipart.NewWriter(&bodyBuffer)
 
-	if err := appendFileToRequest(multipartWriter, multipartFieldName, fileName, imageMimeType, fileContents); err != nil {
+	if err := appendFileToRequest(multipartWriter, MultipartFieldName, fileName, imageMimeType, fileContents); err != nil {
 		return "", nil, err
 	}
 
@@ -183,7 +183,7 @@ func buildUploadImageReq(
 	return reqContentType, bodyBytes, nil
 }
 
-func uploadImageFileAndGetURL(
+func UploadImageFileAndGetURL(
 	ctx context.Context,
 	client *client.APIClient,
 	companyID, filePath, assetType, itemID, versionName string,
@@ -235,7 +235,7 @@ func uploadSingleFileWithMultipart(
 	itemID, assetType, versionName string,
 ) (string, error) {
 	if companyID == "" {
-		return "", errCompanyIDNotDefined
+		return "", ErrCompanyIDNotDefined
 	}
 
 	contentType, bodyBytes, err := buildUploadImageReq(
@@ -253,7 +253,7 @@ func uploadSingleFileWithMultipart(
 
 	resp, err := client.Post().
 		SetHeader("Content-Type", contentType).
-		APIPath(fmt.Sprintf(uploadImageEndpointTemplate, companyID)).
+		APIPath(fmt.Sprintf(UploadImageEndpointTemplate, companyID)).
 		Body(bodyBytes).
 		Do(ctx)
 	if err != nil {
