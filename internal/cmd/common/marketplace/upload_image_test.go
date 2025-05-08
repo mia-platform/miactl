@@ -16,10 +16,7 @@
 package marketplace
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -41,19 +38,19 @@ image:
 		err := yaml.Unmarshal(mockItemYAML, mockItem)
 		require.NoError(t, err)
 
-		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
+		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.NoError(t, err)
 		require.Equal(t, found, "./someImage.png")
 	})
 	t.Run("should throw error with an item that contains both image and imageURL", func(t *testing.T) {
 		mockItem := &marketplace.Item{
-			imageKey: map[string]interface{}{
+			ImageKey: map[string]interface{}{
 				localPathKey: "some/local/path/image.jpg",
 			},
-			imageURLKey: "http://some.url",
+			ImageURLKey: "http://some.url",
 		}
 
-		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
+		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.ErrorIs(t, err, errImageObjKeysConflict)
 		require.Zero(t, found)
 	})
@@ -68,34 +65,32 @@ image:
 		err := yaml.Unmarshal(mockItemJSON, mockItem)
 		require.NoError(t, err)
 
-		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
+		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.NoError(t, err)
 		require.Equal(t, found, "some/local/path/image.jpg")
 	})
 
 	t.Run("should return error if image object is not valid", func(t *testing.T) {
 		mockItem := &marketplace.Item{
-			imageKey: map[string]interface{}{
+			ImageKey: map[string]interface{}{
 				"someWrongKey": "some/local/path/image.jpg",
 			},
 		}
 
-		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
+		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.ErrorIs(t, err, errImageObjectInvalid)
 		require.Zero(t, found)
 	})
 	t.Run("should not return anything if only imageUrl is found", func(t *testing.T) {
 		mockItem := &marketplace.Item{
-			imageURLKey: "http://some.url",
+			ImageURLKey: "http://some.url",
 		}
 
-		found, err := getAndValidateImageLocalPath(mockItem, imageKey, imageURLKey)
+		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.NoError(t, err)
 		require.Zero(t, found)
 	})
 }
-
-const mockImagePath = "./testdata/imageTest.png"
 
 type ErrReader struct {
 	err error
@@ -107,7 +102,7 @@ func (er *ErrReader) Read([]byte) (int, error) {
 
 func TestApplyReadContentType(t *testing.T) {
 	t.Run("should read correct content type", func(t *testing.T) {
-		imageFile, err := os.Open(mockImagePath)
+		imageFile, err := os.Open(MockImagePath)
 		require.NoError(t, err)
 		defer imageFile.Close()
 		found, err := readContentType(imageFile)
@@ -129,7 +124,7 @@ func TestApplyReadContentType(t *testing.T) {
 
 func TestApplyUploadImage(t *testing.T) {
 	t.Run("should upload image successfully", func(t *testing.T) {
-		imageFile, err := os.Open(mockImagePath)
+		imageFile, err := os.Open(MockImagePath)
 		require.NoError(t, err)
 		defer imageFile.Close()
 
@@ -148,7 +143,7 @@ func TestApplyUploadImage(t *testing.T) {
 		found, err := uploadSingleFileWithMultipart(
 			t.Context(),
 			client,
-			mockTenantID,
+			MockTenantID,
 			"image/png",
 			imageFile.Name(),
 			imageFile,
@@ -162,7 +157,7 @@ func TestApplyUploadImage(t *testing.T) {
 	})
 
 	t.Run("should return error if companyID is not defined", func(t *testing.T) {
-		imageFile, err := os.Open(mockImagePath)
+		imageFile, err := os.Open(MockImagePath)
 		require.NoError(t, err)
 		defer imageFile.Close()
 
@@ -186,7 +181,7 @@ func TestApplyUploadImage(t *testing.T) {
 			"someAssetType",
 			"",
 		)
-		require.ErrorIs(t, err, errCompanyIDNotDefined)
+		require.ErrorIs(t, err, ErrCompanyIDNotDefined)
 		require.Zero(t, found)
 	})
 }
@@ -219,33 +214,9 @@ func TestValidateImageFile(t *testing.T) {
 	})
 }
 
-func uploadImageHandler(t *testing.T, w http.ResponseWriter, r *http.Request, statusCode int, mockResponse interface{}) {
-	t.Helper()
-
-	mockImageURI := fmt.Sprintf(uploadImageEndpointTemplate, mockTenantID)
-	imageFile, err := os.Open(mockImagePath)
-	require.NoError(t, err)
-	imageBytes, err := io.ReadAll(imageFile)
-	require.NoError(t, err)
-	require.Equal(t, mockImageURI, r.RequestURI)
-	require.Equal(t, http.MethodPost, r.Method)
-	require.Contains(t, r.Header.Get("Content-Type"), "multipart/form-data")
-
-	foundReqFile, _, err := r.FormFile(multipartFieldName)
-	require.NoError(t, err)
-	foundReqFileBytes, err := io.ReadAll(foundReqFile)
-	require.NoError(t, err)
-	require.Equal(t, imageBytes, foundReqFileBytes)
-
-	w.WriteHeader(statusCode)
-	resBytes, err := json.Marshal(mockResponse)
-	require.NoError(t, err)
-	w.Write(resBytes)
-}
-
 func uploadImageMockServer(t *testing.T, statusCode int, mockResponse interface{}) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		uploadImageHandler(t, w, r, statusCode, mockResponse)
+		UploadImageHandler(t, w, r, statusCode, mockResponse)
 	}))
 }

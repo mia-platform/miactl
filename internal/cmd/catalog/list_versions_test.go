@@ -13,16 +13,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package marketplace
+package catalog
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
@@ -30,6 +27,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/printer"
+	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -69,12 +67,8 @@ func TestNewListVersionsCmd(t *testing.T) {
 		require.NotNil(t, cmd)
 	})
 
-	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
-		storeStdout := os.Stdout
-		r, w, _ := os.Pipe()
-		os.Stdout = w
-
-		server := httptest.NewServer(listVersionsCommandHandler(t, `{"major": "14", "minor":"0"}`))
+	t.Run("should not run command when Console version is lower than 14.0.0", func(t *testing.T) {
+		server := httptest.NewServer(unexecutedCmdMockServer(t))
 		defer server.Close()
 
 		opts := clioptions.NewCLIOptions()
@@ -84,49 +78,8 @@ func TestNewListVersionsCmd(t *testing.T) {
 		cmd := ListVersionCmd(opts)
 		cmd.SetArgs([]string{"list-versions", "--item-id", "item-id"})
 
-		buffer := bytes.NewBuffer([]byte{})
-		cmd.SetErr(buffer)
-
 		err := cmd.Execute()
-		require.NoError(t, err)
-
-		w.Close()
-		out, _ := io.ReadAll(r)
-		os.Stdout = storeStdout
-		assert.Contains(t, string(out), "  VERSION  NAME                     DESCRIPTION                                           \n\n  1.0.0    Some Awesome Service     The Awesome Service allows to do some amazing stuff.  \n  2.0.0    Some Awesome Service v2  The Awesome Service allows to do some amazing stuff.  \n")
-
-		outputErr := buffer.String()
-		assert.Contains(t, outputErr, "The command you are using is deprecated. Please use 'miactl catalog' instead.")
-	})
-
-	t.Run("test post run - does not show deprecated command message", func(t *testing.T) {
-		storeStdout := os.Stdout
-		r, w, _ := os.Pipe()
-		os.Stdout = w
-
-		server := httptest.NewServer(listVersionsCommandHandler(t, `{"major": "13", "minor":"5"}`))
-		defer server.Close()
-
-		opts := clioptions.NewCLIOptions()
-		opts.CompanyID = "my-company"
-		opts.Endpoint = server.URL
-
-		cmd := ListVersionCmd(opts)
-		cmd.SetArgs([]string{"list-versions", "--item-id", "item-id"})
-
-		buffer := bytes.NewBuffer([]byte{})
-		cmd.SetErr(buffer)
-
-		err := cmd.Execute()
-		require.NoError(t, err)
-
-		w.Close()
-		out, _ := io.ReadAll(r)
-		os.Stdout = storeStdout
-		assert.Contains(t, string(out), "  VERSION  NAME                     DESCRIPTION                                           \n\n  1.0.0    Some Awesome Service     The Awesome Service allows to do some amazing stuff.  \n  2.0.0    Some Awesome Service v2  The Awesome Service allows to do some amazing stuff.  \n")
-
-		outputErr := buffer.String()
-		assert.Equal(t, outputErr, "")
+		require.ErrorIs(t, err, catalog.ErrUnsupportedCompanyVersion)
 	})
 }
 
@@ -271,27 +224,6 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 				assert.Contains(t, found, expected)
 			}
 		})
-	}
-}
-
-func listVersionsCommandHandler(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
-	t.Helper()
-	return func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/api/backend/marketplace/tenants/my-company/resources/item-id/versions":
-			if r.Method == http.MethodGet {
-				_, err := w.Write([]byte(listVersionsMockResponseBody))
-				require.NoError(t, err)
-			}
-		case "/api/version":
-			if r.Method == http.MethodGet {
-				_, err := w.Write([]byte(consoleVersionResponse))
-				require.NoError(t, err)
-			}
-		default:
-			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
-		}
 	}
 }
 

@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package marketplace
+package catalog
 
 import (
 	"context"
@@ -28,13 +28,16 @@ import (
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/files"
+	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
 const (
-	applyLong = `Create or update one or more Marketplace items.
+	applyLong = `Create or update one or more Catalog items.
+
+This command works with Mia-Platform Console v14.0.0 or later.
 
 The flag -f accepts either files or directories. In case of directories, it explores them recursively.
 
@@ -45,7 +48,7 @@ The file can contain an image object with the following format:
 	"localPath": "./someImage.png"
 }
 The localPath can be absolute or relative to the file location.
-The image will be uploaded along with the marketplace item.
+The image will be uploaded along with the catalog item.
 Before being applied, the "image" key will be replaced with the "imageUrl" referring to the uploaded image.
 You can retrieve the updated item with the "get" command.
 
@@ -54,23 +57,23 @@ You can also specify the "supportedByImage" in a similar fashion.
 Be aware that the presence of both "image" and "imageUrl" and/or of both "supportedByImage" and "supportedByImageUrl" is illegal.`
 
 	applyExample = `
-# Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Marketplace
-miactl marketplace apply -f myFantasticGoTemplate.json
+# Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Catalog
+miactl catalog apply -f myFantasticGoTemplate.json
 
-# Apply the configurations in myFantasticGoTemplate.json and myFantasticNodeTemplate.yml to the Marketplace, with relative paths
-miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFantasticNodeTemplate.yml
+# Apply the configurations in myFantasticGoTemplate.json and myFantasticNodeTemplate.yml to the Catalog, with relative paths
+miactl catalog apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFantasticNodeTemplate.yml
 
-# Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
-miactl marketplace apply -f myFantasticGoTemplates`
+# Apply all the valid configuration files in the directory myFantasticGoTemplates to the Catalog
+miactl catalog apply -f myFantasticGoTemplates`
 
-	applyEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources"
+	applyEndpointTemplate = "/api/tenants/%s/marketplace/items"
 )
 
-// ApplyCmd returns a new cobra command for adding or updating marketplace resources
+// ApplyCmd returns a new cobra command for adding or updating catalog resources
 func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "apply { -f file-path }... }",
-		Short:   "Create or update Marketplace items",
+		Short:   "Create or update Catalog items",
 		Long:    applyLong,
 		Example: applyExample,
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -78,6 +81,11 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
+
+			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
+			if !canUseNewAPI || versionError != nil {
+				return catalog.ErrUnsupportedCompanyVersion
+			}
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {
@@ -96,7 +104,6 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			return nil
 		},
-		PostRun: util.CheckVersionAndShowMessage(options, 14, 0, marketplace.DeprecatedMessage),
 	}
 
 	options.AddMarketplaceApplyFlags(cmd)
@@ -217,7 +224,7 @@ func buildFilePathsList(paths []string) ([]string, error) {
 	return filePaths, nil
 }
 
-func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string]string, error) {
+func buildApplyRequest(pathList []string) (*catalog.ApplyRequest, map[string]string, error) {
 	resources := []*marketplace.Item{}
 	// the identifier is the concatenation of itemID and, if present, version.name
 	resIdentifierToFilePath := map[string]string{}
@@ -254,7 +261,7 @@ func buildApplyRequest(pathList []string) (*marketplace.ApplyRequest, map[string
 	if len(resources) == 0 {
 		return nil, nil, commonMarketplace.ErrNoValidFilesProvided
 	}
-	return &marketplace.ApplyRequest{
+	return &catalog.ApplyRequest{
 		Resources: resources,
 	}, resIdentifierToFilePath, nil
 }
@@ -301,8 +308,8 @@ func applyMarketplaceResource(
 	ctx context.Context,
 	client *client.APIClient,
 	companyID string,
-	request *marketplace.ApplyRequest,
-) (*marketplace.ApplyResponse, error) {
+	request *catalog.ApplyRequest,
+) (*catalog.ApplyResponse, error) {
 	if companyID == "" {
 		return nil, commonMarketplace.ErrCompanyIDNotDefined
 	}
@@ -323,7 +330,7 @@ func applyMarketplaceResource(
 		return nil, err
 	}
 
-	applyResp := &marketplace.ApplyResponse{}
+	applyResp := &catalog.ApplyResponse{}
 
 	err = resp.ParseResponse(applyResp)
 	if err != nil {

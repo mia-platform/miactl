@@ -148,7 +148,7 @@ func versionTestServer(t *testing.T, response func(w http.ResponseWriter)) *http
 		switch {
 		default:
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, "request not expexted")
+			assert.Fail(t, "request not expected")
 		case r.URL.Path == "/api/version" && r.Method == http.MethodGet:
 			response(w)
 		}

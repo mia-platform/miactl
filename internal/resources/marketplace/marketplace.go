@@ -27,6 +27,8 @@ var (
 	ErrMissingCompanyID      = errors.New("missing company id, please set one with the flag company-id or in the context")
 )
 
+var DeprecatedMessage = "The command you are using is deprecated. Please use 'miactl catalog' instead."
+
 // Item is a Marketplace item
 // we use a map[string]interface{} to represent the item
 // this allows to avoid changes in the code in case of a change in the resource structure

@@ -13,37 +13,36 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package marketplace
+package catalog
 
 import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
-	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
 const (
-	listMarketplaceEndpoint = "/api/backend/marketplace/"
-	listCmdLong             = `List Marketplace items
+	listMarketplaceEndpoint = "/api/marketplace/"
+	listCmdLong             = `List Catalog items
 
-    This command lists the Marketplace items of a company.
+    This command lists the Catalog items of a company. It works with Mia-Platform Console v14.0.0 or later.
 
     you can also specify the following flags:
-    - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Marketplace items from other companies.
+    - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Catalog items from other companies.
     `
 	listCmdUse = "list --company-id company-id"
 )
 
-// ListCmd return a new cobra command for listing marketplace items
+// ListCmd return a new cobra command for listing catalog items
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:     listCmdUse,
-		Short:   "List marketplace items",
-		Long:    listCmdLong,
-		Run:     runListCmd(options),
-		PostRun: util.CheckVersionAndShowMessage(options, 14, 0, marketplace.DeprecatedMessage),
+		Use:   listCmdUse,
+		Short: "List catalog items",
+		Long:  listCmdLong,
+		RunE:  runListCmd(options),
 	}
 
 	options.AddPublicFlag(cmd.Flags())
@@ -51,12 +50,17 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []string) {
-	return func(cmd *cobra.Command, _ []string) {
+func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []string) error {
+	return func(cmd *cobra.Command, _ []string) error {
 		restConfig, err := options.ToRESTConfig()
 		cobra.CheckErr(err)
 		apiClient, err := client.APIClientForConfig(restConfig)
 		cobra.CheckErr(err)
+
+		canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), apiClient, 14, 0)
+		if !canUseNewAPI || versionError != nil {
+			return catalog.ErrUnsupportedCompanyVersion
+		}
 
 		marketplaceItemsOptions := commonMarketplace.GetMarketplaceItemsOptions{
 			CompanyID: restConfig.CompanyID,
@@ -65,5 +69,7 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 
 		err = commonMarketplace.PrintMarketplaceItems(cmd.Context(), apiClient, marketplaceItemsOptions, options.Printer(), listMarketplaceEndpoint)
 		cobra.CheckErr(err)
+
+		return nil
 	}
 }

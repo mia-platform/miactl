@@ -21,8 +21,10 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
@@ -68,6 +70,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 			fmt.Println(serializedItem)
 			return nil
 		},
+		PostRun: util.CheckVersionAndShowMessage(options, 14, 0, marketplace.DeprecatedMessage),
 	}
 
 	options.AddOutputFormatFlag(cmd.Flags(), encoding.JSON)
@@ -85,35 +88,12 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 func getItemByObjectID(ctx context.Context, client *client.APIClient, objectID string) (*marketplace.Item, error) {
-	return performGetItemRequest(ctx, client, fmt.Sprintf(getItemByObjectIDEndpointTemplate, objectID))
+	return commonMarketplace.PerformGetItemRequest(ctx, client, fmt.Sprintf(getItemByObjectIDEndpointTemplate, objectID))
 }
 
 func getItemByItemIDAndVersion(ctx context.Context, client *client.APIClient, companyID, itemID, version string) (*marketplace.Item, error) {
 	endpoint := fmt.Sprintf(getItemByItemIDAndVersionEndpointTemplate, companyID, itemID, version)
-	return performGetItemRequest(ctx, client, endpoint)
-}
-
-func performGetItemRequest(ctx context.Context, client *client.APIClient, endpoint string) (*marketplace.Item, error) {
-	resp, err := client.Get().APIPath(endpoint).Do(ctx)
-
-	if err != nil {
-		return nil, fmt.Errorf("error executing request: %w", err)
-	}
-
-	if err := resp.Error(); err != nil {
-		return nil, err
-	}
-
-	var marketplaceItem *marketplace.Item
-	if err := resp.ParseResponse(&marketplaceItem); err != nil {
-		return nil, fmt.Errorf("error parsing response body: %w", err)
-	}
-
-	if marketplaceItem == nil {
-		return nil, fmt.Errorf("no marketplace item returned in the response")
-	}
-
-	return marketplaceItem, nil
+	return commonMarketplace.PerformGetItemRequest(ctx, client, endpoint)
 }
 
 // getItemEncodedWithFormat retrieves the marketplace item corresponding to the specified identifier, serialized with the specified outputFormat

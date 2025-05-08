@@ -13,18 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package marketplace
+package catalog
 
 import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
-	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
 
-const listItemVersionsEndpointTemplate = "/api/backend/marketplace/tenants/%s/resources/%s/versions"
+const listItemVersionsEndpointTemplate = "/api/tenants/%s/marketplace/items/%s/versions"
 
 // ListVersionCmd return a new cobra command for listing marketplace item versions
 func ListVersionCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -32,12 +32,17 @@ func ListVersionCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   "list-versions",
 		Short: "List versions of a Marketplace item",
 		Long: `List the currently available versions of a Marketplace item.
-The command will output a table with each version of the item.`,
-		Run: func(cmd *cobra.Command, _ []string) {
+The command will output a table with each version of the item. It works with Mia-Platform Console v14.0.0 or later.`,
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
+
+			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
+			if !canUseNewAPI || versionError != nil {
+				return catalog.ErrUnsupportedCompanyVersion
+			}
 
 			releases, err := commonMarketplace.GetItemVersions(
 				cmd.Context(),
@@ -51,8 +56,9 @@ The command will output a table with each version of the item.`,
 			commonMarketplace.PrintItemVersionList(releases, options.Printer(
 				clioptions.DisableWrapLines(true),
 			))
+
+			return nil
 		},
-		PostRun: util.CheckVersionAndShowMessage(options, 14, 0, marketplace.DeprecatedMessage),
 	}
 
 	flagName := options.AddMarketplaceItemIDFlag(cmd.Flags())

@@ -16,14 +16,19 @@
 package marketplace
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -38,6 +43,86 @@ func TestDeleteResourceCmd(t *testing.T) {
 		cmd := DeleteCmd(opts)
 		require.NotNil(t, cmd)
 	})
+
+	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(deleteItemCommandMockServer(t, `{"major": "14", "minor":"1"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = mockDeleteCompanyID
+		opts.Endpoint = server.URL
+
+		cmd := DeleteCmd(opts)
+		cmd.SetArgs([]string{"delete", "--item-id", "some-item-id", "--version", "1.0.0"})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "item deleted successfully")
+
+		outputErr := buffer.String()
+		assert.Contains(t, outputErr, "The command you are using is deprecated. Please use 'miactl catalog' instead.")
+	})
+
+	t.Run("test post run - does not show deprecated command message", func(t *testing.T) {
+		storeStdout := os.Stdout
+		r, w, _ := os.Pipe()
+		os.Stdout = w
+
+		server := httptest.NewServer(deleteItemCommandMockServer(t, `{"major": "13", "minor":"5"}`))
+		defer server.Close()
+
+		opts := clioptions.NewCLIOptions()
+		opts.CompanyID = mockDeleteCompanyID
+		opts.Endpoint = server.URL
+
+		cmd := DeleteCmd(opts)
+		cmd.SetArgs([]string{"delete", "--item-id", "some-item-id", "--version", "1.0.0"})
+
+		buffer := bytes.NewBuffer([]byte{})
+		cmd.SetErr(buffer)
+
+		err := cmd.Execute()
+		require.NoError(t, err)
+
+		w.Close()
+		out, _ := io.ReadAll(r)
+		os.Stdout = storeStdout
+		assert.Contains(t, string(out), "item deleted successfully")
+
+		outputErr := buffer.String()
+		assert.Equal(t, outputErr, "")
+	})
+}
+
+func deleteItemCommandMockServer(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/api/backend/marketplace/tenants/company-id/resources/some-item-id/versions/1.0.0":
+			if r.Method == http.MethodDelete {
+				w.WriteHeader(http.StatusNoContent)
+			}
+		case "/api/version":
+			if r.Method == http.MethodGet {
+				_, err := w.Write([]byte(consoleVersionResponse))
+				require.NoError(t, err)
+			}
+		default:
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
+	}
 }
 
 func deleteByIDMockServer(t *testing.T, statusCode int) *httptest.Server {
@@ -101,19 +186,19 @@ func TestDeleteItemByObjectId(t *testing.T) {
 		},
 		"internal server error": {
 			server:      deleteByIDMockServer(t, http.StatusInternalServerError),
-			expectedErr: errServerDeleteItem,
+			expectedErr: commonMarketplace.ErrServerDeleteItem,
 		},
 		"unexpected server response error": {
 			server:      deleteByIDMockServer(t, http.StatusBadGateway),
-			expectedErr: errServerDeleteItem,
+			expectedErr: commonMarketplace.ErrServerDeleteItem,
 		},
 		"unexpected server response 2xx": {
 			server:      deleteByIDMockServer(t, http.StatusAccepted),
-			expectedErr: errUnexpectedDeleteItem,
+			expectedErr: commonMarketplace.ErrUnexpectedDeleteItem,
 		},
 		"unexpected server response 4xx": {
 			server:      deleteByIDMockServer(t, http.StatusBadRequest),
-			expectedErr: errUnexpectedDeleteItem,
+			expectedErr: commonMarketplace.ErrUnexpectedDeleteItem,
 		},
 	}
 
@@ -179,7 +264,7 @@ func TestDeleteItemByItemIDAndVersion(t *testing.T) {
 
 			statusCode: http.StatusInternalServerError,
 
-			expectedErr:   errServerDeleteItem,
+			expectedErr:   commonMarketplace.ErrServerDeleteItem,
 			expectedCalls: 1,
 		},
 		{
@@ -189,7 +274,7 @@ func TestDeleteItemByItemIDAndVersion(t *testing.T) {
 
 			statusCode: http.StatusBadRequest,
 
-			expectedErr:   errUnexpectedDeleteItem,
+			expectedErr:   commonMarketplace.ErrUnexpectedDeleteItem,
 			expectedCalls: 1,
 		},
 	}

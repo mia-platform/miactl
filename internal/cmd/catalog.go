@@ -17,15 +17,15 @@ package cmd
 
 import (
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/cmd/marketplace"
-	marketplace_apply "github.com/mia-platform/miactl/internal/cmd/marketplace/apply"
+	"github.com/mia-platform/miactl/internal/cmd/catalog"
+	catalog_apply "github.com/mia-platform/miactl/internal/cmd/catalog/apply"
 	"github.com/spf13/cobra"
 )
 
-func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
+func CatalogCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "marketplace",
-		Short: "View and manage Marketplace items. This command is deprecated from Mia-Platform Console v14.0.0.",
+		Use:   "catalog",
+		Short: "View and manage Catalog items. This command is available from Mia-Platform Console v14.0.0.",
 	}
 
 	// add cmd flags
@@ -35,11 +35,11 @@ func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {
 	options.AddContextFlags(flags)
 
 	// add sub commands
-	cmd.AddCommand(marketplace.ListCmd(options))
-	cmd.AddCommand(marketplace.GetCmd(options))
-	cmd.AddCommand(marketplace.DeleteCmd(options))
-	cmd.AddCommand(marketplace_apply.ApplyCmd(options))
-	cmd.AddCommand(marketplace.ListVersionCmd(options))
+	cmd.AddCommand(catalog.ListCmd(options))
+	cmd.AddCommand(catalog.GetCmd(options))
+	cmd.AddCommand(catalog.DeleteCmd(options))
+	cmd.AddCommand(catalog_apply.ApplyCmd(options))
+	cmd.AddCommand(catalog.ListVersionCmd(options))
 
 	return cmd
 }

@@ -13,22 +13,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package marketplace
+package catalog
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
-	"os"
+	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
+	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -37,11 +37,7 @@ import (
 
 func TestApplyCommand(t *testing.T) {
 	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
-		storeStdout := os.Stdout
-		r, w, _ := os.Pipe()
-		os.Stdout = w
-
-		server := httptest.NewServer(ApplyItemCommandMockServer(t, `{"major": "14", "minor":"1"}`))
+		server := httptest.NewServer(unexecutedCmdMockServer(t))
 		defer server.Close()
 
 		opts := clioptions.NewCLIOptions()
@@ -51,86 +47,9 @@ func TestApplyCommand(t *testing.T) {
 		cmd := ApplyCmd(opts)
 		cmd.SetArgs([]string{"apply", "-f", "testdata/validItem1.json"})
 
-		buffer := bytes.NewBuffer([]byte{})
-		cmd.SetErr(buffer)
-
 		err := cmd.Execute()
-		require.NoError(t, err)
-
-		w.Close()
-		out, _ := io.ReadAll(r)
-		os.Stdout = storeStdout
-		assert.Contains(t, string(out), "1 of 1 items have been successfully applied")
-
-		outputErr := buffer.String()
-		assert.Contains(t, outputErr, "The command you are using is deprecated. Please use 'miactl catalog' instead.")
+		require.ErrorIs(t, err, catalog.ErrUnsupportedCompanyVersion)
 	})
-
-	t.Run("test post run - does not show deprecated command message", func(t *testing.T) {
-		storeStdout := os.Stdout
-		r, w, _ := os.Pipe()
-		os.Stdout = w
-
-		server := httptest.NewServer(ApplyItemCommandMockServer(t, `{"major": "13", "minor":"9"}`))
-		defer server.Close()
-
-		opts := clioptions.NewCLIOptions()
-		opts.CompanyID = "company-id"
-		opts.Endpoint = server.URL
-
-		cmd := ApplyCmd(opts)
-		cmd.SetArgs([]string{"apply", "-f", "testdata/validItem1.json"})
-
-		buffer := bytes.NewBuffer([]byte{})
-		cmd.SetErr(buffer)
-
-		err := cmd.Execute()
-		require.NoError(t, err)
-
-		w.Close()
-		out, _ := io.ReadAll(r)
-		os.Stdout = storeStdout
-		assert.Contains(t, string(out), "1 of 1 items have been successfully applied")
-
-		outputErr := buffer.String()
-		assert.Equal(t, outputErr, "")
-	})
-}
-
-func ApplyItemCommandMockServer(t *testing.T, consoleVersionResponse string) http.HandlerFunc {
-	t.Helper()
-	return func(w http.ResponseWriter, r *http.Request) {
-		switch r.URL.Path {
-		case "/api/backend/marketplace/tenants/company-id/resources":
-			if r.Method == http.MethodPost {
-				mockResponse := &marketplace.ApplyResponse{
-					Done: true,
-					Items: []marketplace.ApplyResponseItem{
-						{
-							ID:       "id1",
-							ItemID:   "some-item-id",
-							Done:     true,
-							Inserted: true,
-							Updated:  false,
-						},
-					},
-				}
-
-				w.WriteHeader(http.StatusOK)
-				resBytes, err := json.Marshal(mockResponse)
-				require.NoError(t, err)
-				w.Write(resBytes)
-			}
-		case "/api/version":
-			if r.Method == http.MethodGet {
-				_, err := w.Write([]byte(consoleVersionResponse))
-				require.NoError(t, err)
-			}
-		default:
-			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
-		}
-	}
 }
 
 func TestApplyBuildPathsFromDir(t *testing.T) {
@@ -274,15 +193,15 @@ var mockURI = fmt.Sprintf(applyEndpointTemplate, mockTenantID)
 
 func TestApplyApplyResourceCmd(t *testing.T) {
 	mockItemID := "some-item-id"
-	validReqMock := &marketplace.ApplyRequest{
+	validReqMock := &catalog.ApplyRequest{
 		Resources: []*marketplace.Item{
 			{
-				"categoryId":    "devportal",
-				"imageUrl":      "some/path/to/image.png",
-				"name":          "some name",
-				"itemId":        mockItemID,
-				"releaseStage":  "",
-				"repositoryUrl": "https://example.com/repo",
+				"categoryId":      "devportal",
+				"imageUrl":        "some/path/to/image.png",
+				"name":            "some name",
+				"itemId":          mockItemID,
+				"lifecycleStatus": "",
+				"repositoryUrl":   "https://example.com/repo",
 				"resources": map[string]interface{}{
 					"services": map[string]interface{}{
 						"api-portal": map[string]interface{}{
@@ -337,9 +256,9 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 	}
 
 	t.Run("should return response when is 200 OK", func(t *testing.T) {
-		mockResponse := &marketplace.ApplyResponse{
+		mockResponse := &catalog.ApplyResponse{
 			Done: true,
-			Items: []marketplace.ApplyResponseItem{
+			Items: []catalog.ApplyResponseItem{
 				{
 					ID:       "id1",
 					ItemID:   "some-item-id",
@@ -397,32 +316,32 @@ func TestApplyApplyResourceCmd(t *testing.T) {
 
 func TestApplyPrintApplyOutcome(t *testing.T) {
 	t.Run("should contain both valid files and validation errors", func(t *testing.T) {
-		mockOutcome := &marketplace.ApplyResponse{
+		mockOutcome := &catalog.ApplyResponse{
 			Done: false,
-			Items: []marketplace.ApplyResponseItem{
+			Items: []catalog.ApplyResponseItem{
 				{
-					ID:               "id1",
-					ItemID:           "item-id-1",
-					Done:             true,
-					Inserted:         false,
-					Updated:          true,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id1",
+					ItemID:   "item-id-1",
+					Done:     true,
+					Inserted: false,
+					Updated:  true,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 				{
-					ID:               "id2",
-					ItemID:           "item-id-2",
-					Done:             true,
-					Inserted:         true,
-					Updated:          false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id2",
+					ItemID:   "item-id-2",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 				{
-					ID:               "id3",
-					ItemID:           "item-id-3",
-					Done:             true,
-					Inserted:         true,
-					Updated:          false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id3",
+					ItemID:   "item-id-3",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 				{
 					ID:       "id4",
@@ -430,7 +349,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
+					Errors: []catalog.ApplyResponseItemError{
 						{
 							Message: "some validation error",
 						},
@@ -439,23 +358,6 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 				{
 					ID:       "id5",
 					ItemID:   "item-id-5",
-					Done:     false,
-					Inserted: false,
-					Updated:  false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
-						{
-							Message: "some validation error",
-						},
-					},
-					Errors: []marketplace.ApplyResponseItemValidationError{
-						{
-							Message: "some validation error in errors field",
-						},
-					},
-				},
-				{
-					ID:       "id6",
-					ItemID:   "item-id-6",
 					Done:     true,
 					Inserted: true,
 					Updated:  false,
@@ -463,36 +365,33 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 			},
 		}
 		found := buildOutcomeSummaryAsTables(mockOutcome)
-		require.Contains(t, found, "4 of 6 items have been successfully applied:")
+		require.Contains(t, found, "4 of 5 items have been successfully applied:")
 		require.Contains(t, found, "id1")
 		require.Contains(t, found, "item-id-1")
 		require.Contains(t, found, "id2")
 		require.Contains(t, found, "item-id-2")
 		require.Contains(t, found, "id3")
 		require.Contains(t, found, "item-id-3")
-		require.Contains(t, found, "id6")
-		require.Contains(t, found, "item-id-6")
-		require.Contains(t, found, "2 of 6 items have not been applied due to validation errors:")
+		require.Contains(t, found, "id5")
+		require.Contains(t, found, "item-id-5")
+		require.Contains(t, found, "1 of 5 items have not been applied due to errors:")
 		require.Contains(t, found, "id4")
 		require.Contains(t, found, "item-id-4")
 		require.Contains(t, found, "some validation error")
-		require.Contains(t, found, "id5")
-		require.Contains(t, found, "item-id-5")
-		require.Contains(t, found, "some validation error in errors field")
 		require.Contains(t, found, "OBJECT ID")
 		require.Contains(t, found, "ITEM ID")
 	})
 
-	t.Run("should show validation errors only when input does not contain successful applies", func(t *testing.T) {
-		mockOutcome := &marketplace.ApplyResponse{
+	t.Run("should show errors only when input does not contain successful applies", func(t *testing.T) {
+		mockOutcome := &catalog.ApplyResponse{
 			Done: false,
-			Items: []marketplace.ApplyResponseItem{
+			Items: []catalog.ApplyResponseItem{
 				{
 					ItemID:   "some-item-id-1",
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
+					Errors: []catalog.ApplyResponseItemError{
 						{
 							Message: "some validation error",
 						},
@@ -503,7 +402,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
+					Errors: []catalog.ApplyResponseItemError{
 						{
 							Message: "some other validation error",
 						},
@@ -518,7 +417,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 					Done:     false,
 					Inserted: false,
 					Updated:  false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{
+					Errors: []catalog.ApplyResponseItemError{
 						{
 							Message: "some other very very long validation error",
 						},
@@ -528,7 +427,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		}
 		found := buildOutcomeSummaryAsTables(mockOutcome)
 		require.NotContains(t, found, "items have been successfully applied:")
-		require.Contains(t, found, "3 of 3 items have not been applied due to validation errors:")
+		require.Contains(t, found, "3 of 3 items have not been applied due to errors:")
 		require.Contains(t, found, "some validation error")
 		require.Contains(t, found, "some other validation error")
 		require.Contains(t, found, "some other very very long validation error")
@@ -542,32 +441,32 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 	})
 
 	t.Run("should match with valid files only", func(t *testing.T) {
-		mockOutcome := &marketplace.ApplyResponse{
+		mockOutcome := &catalog.ApplyResponse{
 			Done: false,
-			Items: []marketplace.ApplyResponseItem{
+			Items: []catalog.ApplyResponseItem{
 				{
-					ID:               "id1",
-					ItemID:           "some-item-id-1",
-					Done:             true,
-					Inserted:         false,
-					Updated:          true,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id1",
+					ItemID:   "some-item-id-1",
+					Done:     true,
+					Inserted: false,
+					Updated:  true,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 				{
-					ID:               "id2",
-					ItemID:           "some-item-id-2",
-					Done:             true,
-					Inserted:         true,
-					Updated:          false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id2",
+					ItemID:   "some-item-id-2",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 				{
-					ID:               "id3",
-					ItemID:           "some-item-id-3",
-					Done:             true,
-					Inserted:         true,
-					Updated:          false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id3",
+					ItemID:   "some-item-id-3",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 			},
 		}
@@ -581,7 +480,7 @@ func TestApplyPrintApplyOutcome(t *testing.T) {
 		require.Contains(t, found, "some-item-id-3")
 		require.Contains(t, found, "OBJECT ID")
 		require.Contains(t, found, "ITEM ID")
-		require.NotContains(t, found, "items have not been applied due to validation errors:")
+		require.NotContains(t, found, "items have not been applied due to errors:")
 	})
 }
 
@@ -598,16 +497,16 @@ func TestApplyIntegration(t *testing.T) {
 			"./testdata/yamlWithImage.yml",
 			"./testdata/subdir/validItemWithImage.json",
 		}
-		applyMockResponse := &marketplace.ApplyResponse{
+		applyMockResponse := &catalog.ApplyResponse{
 			Done: true,
-			Items: []marketplace.ApplyResponseItem{
+			Items: []catalog.ApplyResponseItem{
 				{
-					ID:               "id1",
-					ItemID:           "item-id-1",
-					Done:             true,
-					Inserted:         true,
-					Updated:          false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id1",
+					ItemID:   "item-id-1",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 			},
 		}
@@ -687,24 +586,24 @@ func TestApplyIntegration(t *testing.T) {
 			"./testdata/validItemWithImage.json",
 			"./testdata/validItemWithVersion.json",
 		}
-		applyMockResponse := &marketplace.ApplyResponse{
+		applyMockResponse := &catalog.ApplyResponse{
 			Done: true,
-			Items: []marketplace.ApplyResponseItem{
+			Items: []catalog.ApplyResponseItem{
 				{
-					ID:               "id1",
-					ItemID:           "miactl-test-with-image-and-local-path",
-					Done:             true,
-					Inserted:         true,
-					Updated:          false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id1",
+					ItemID:   "miactl-test-with-image-and-local-path",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 				{
-					ID:               "id1",
-					ItemID:           "miactl-test-with-image-and-local-path",
-					Done:             true,
-					Inserted:         true,
-					Updated:          false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id1",
+					ItemID:   "miactl-test-with-image-and-local-path",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 			},
 		}
@@ -797,15 +696,15 @@ func TestApplyIntegration(t *testing.T) {
 			"./testdata/yamlWithImage.yml",
 			"./testdata/subdir/validItemWithImage.json",
 		}
-		applyMockResponse := &marketplace.ApplyResponse{
+		applyMockResponse := &catalog.ApplyResponse{
 			Done: true,
-			Items: []marketplace.ApplyResponseItem{
+			Items: []catalog.ApplyResponseItem{
 				{
-					ItemID:           "item-id-1",
-					Done:             true,
-					Inserted:         true,
-					Updated:          false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ItemID:   "item-id-1",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 			},
 		}
@@ -1055,16 +954,16 @@ func TestProcessItemImages(t *testing.T) {
 	}
 
 	for _, testCase := range testCases {
-		applyMockResponse := &marketplace.ApplyResponse{
+		applyMockResponse := &catalog.ApplyResponse{
 			Done: true,
-			Items: []marketplace.ApplyResponseItem{
+			Items: []catalog.ApplyResponseItem{
 				{
-					ID:               "id1",
-					ItemID:           "some-id",
-					Done:             true,
-					Inserted:         true,
-					Updated:          false,
-					ValidationErrors: []marketplace.ApplyResponseItemValidationError{},
+					ID:       "id1",
+					ItemID:   "some-id",
+					Done:     true,
+					Inserted: true,
+					Updated:  false,
+					Errors:   []catalog.ApplyResponseItemError{},
 				},
 			},
 		}
@@ -1190,4 +1089,17 @@ func applyMockServer(t *testing.T, statusCode int, mockResponse interface{}) *ht
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		applyRequestHandler(t, w, r, statusCode, mockResponse)
 	}))
+}
+
+func unexecutedCmdMockServer(t *testing.T) http.HandlerFunc {
+	t.Helper()
+	return func(w http.ResponseWriter, r *http.Request) {
+		if strings.EqualFold(r.URL.Path, "/api/version") && r.Method == http.MethodGet {
+			_, err := w.Write([]byte(`{"major": "13", "minor":"6"}`))
+			require.NoError(t, err)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+		}
+	}
 }
