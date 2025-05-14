@@ -66,7 +66,7 @@ func (e *rulesClient) ListTenantRules(ctx context.Context, companyID string) ([]
 		return nil, fmt.Errorf("error parsing response body: %w", err)
 	}
 	if len(tenants) == 0 {
-		return nil, fmt.Errorf("Company %s not found", companyID)
+		return nil, fmt.Errorf("company %s not found", companyID)
 	}
 	var tenant *resources.Company
 	for _, possible := range tenants {
@@ -76,7 +76,7 @@ func (e *rulesClient) ListTenantRules(ctx context.Context, companyID string) ([]
 		}
 	}
 	if tenant == nil {
-		return nil, fmt.Errorf("Company %s not found", companyID)
+		return nil, fmt.Errorf("company %s not found", companyID)
 	}
 	if len(tenant.ConfigurationManagement.SaveChangesRules) == 0 {
 		return []*rulesentities.SaveChangesRules{}, nil

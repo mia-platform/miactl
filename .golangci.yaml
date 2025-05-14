@@ -1,11 +1,10 @@
+version: "2"
 run:
-  timeout: 10m
   build-tags:
   - conformance
   - integration
-
 linters:
-  disable-all: true
+  default: none
   enable:
   - asasalint
   - asciicheck
@@ -21,16 +20,13 @@ linters:
   - goconst
   - gocritic
   - gocyclo
-  - gofmt
   - goheader
-  - goimports
-  - mnd
   - gosec
-  - gosimple
   - gosmopolitan
   - govet
   - ineffassign
   - misspell
+  - mnd
   - nolintlint
   - prealloc
   - predeclared
@@ -45,63 +41,82 @@ linters:
   - usetesting
   - whitespace
   - zerologlint
-linters-settings:
-  gocyclo:
-    min-complexity: 15
-  gofmt:
-    simplify: true
-  goconst:
-    ignore-tests: true
-  tagliatelle:
-    case:
-      use-field-name: true
-      rules:
-        yaml: camel
-  usetesting:
-    os-create-temp: true
-    os-mkdir-temp: true
-    os-setenv: true
-    os-temp-dir: true
-    os-chdir: true
-    context-background: true
-    context-todo: true
-  unparam:
-    check-exported: false
-  mnd:
-    checks:
-    - case
-    - condition
-    - return
-  goheader:
-    values:
-      const:
-        MY COMPANY: Mia srl
-    template: |-
-      Copyright {{ MY COMPANY }}
-      SPDX-License-Identifier: Apache-2.0
+  settings:
+    gocyclo:
+      min-complexity: 15
+    goheader:
+      values:
+        const:
+          MY COMPANY: Mia srl
+      template: |-
+        Copyright {{ MY COMPANY }}
+        SPDX-License-Identifier: Apache-2.0
 
-      Licensed under the Apache License, Version 2.0 (the "License");
-      you may not use this file except in compliance with the License.
-      You may obtain a copy of the License at
+        Licensed under the Apache License, Version 2.0 (the "License");
+        you may not use this file except in compliance with the License.
+        You may obtain a copy of the License at
 
-          http://www.apache.org/licenses/LICENSE-2.0
+            http://www.apache.org/licenses/LICENSE-2.0
 
-      Unless required by applicable law or agreed to in writing, software
-      distributed under the License is distributed on an "AS IS" BASIS,
-      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-      See the License for the specific language governing permissions and
-      limitations under the License.
-
-issues:
-  exclude-dirs:
-  - internal/jws
-  exclude-rules:
-  - path: zz_generated
-    linters:
-    - goimports
-  - path: _test\.go
-    linters:
-    - errcheck
-    - gosec
-    - tagliatelle
-    - gocyclo
+        Unless required by applicable law or agreed to in writing, software
+        distributed under the License is distributed on an "AS IS" BASIS,
+        WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+        See the License for the specific language governing permissions and
+        limitations under the License.
+    mnd:
+      checks:
+      - case
+      - condition
+      - return
+    tagliatelle:
+      case:
+        rules:
+          yaml: camel
+        use-field-name: true
+    unparam:
+      check-exported: false
+    usetesting:
+      context-background: true
+      context-todo: true
+      os-chdir: true
+      os-mkdir-temp: true
+      os-setenv: true
+      os-temp-dir: true
+      os-create-temp: true
+  exclusions:
+    generated: lax
+    presets:
+    - comments
+    - common-false-positives
+    - legacy
+    - std-error-handling
+    rules:
+      - linters:
+        - errcheck
+        - gocyclo
+        - gosec
+        - tagliatelle
+        path: _test\.go
+      - linters:
+        - goconst
+        path: (.+)_test\.go
+    paths:
+    - internal/jws
+    - third_party$
+    - builtin$
+    - examples$
+formatters:
+  enable:
+  - gofmt
+  - goimports
+  settings:
+    gofmt:
+      simplify: true
+  exclusions:
+    generated: lax
+    paths:
+    - internal/jws
+    - third_party$
+    - builtin$
+    - examples$
+    - zz_generated

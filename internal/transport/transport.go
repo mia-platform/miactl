@@ -32,11 +32,11 @@ func NewTransport(config *Config) (http.RoundTripper, error) {
 		tlsConfig := &tls.Config{
 			MinVersion: tls.VersionTLS12,
 			// disable gosec because will trigger G402 but we want to be able to configure this for debug purprose
-			InsecureSkipVerify: config.TLSConfig.Insecure, //nolint:gosec
+			InsecureSkipVerify: config.Insecure, //nolint:gosec
 		}
 
 		if config.CAFile != "" {
-			certData, err := dataFromFile(config.TLSConfig.CAFile)
+			certData, err := dataFromFile(config.CAFile)
 			if err != nil {
 				return nil, err
 			}

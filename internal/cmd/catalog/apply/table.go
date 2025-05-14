@@ -60,7 +60,7 @@ func buildFailureTable(items []catalog.ApplyResponseItem) string {
 	headers := []string{"Object ID", "Item ID", "Errors"}
 	columnTransform := func(item catalog.ApplyResponseItem) []string {
 		var errorsStr string
-		var errors []catalog.ApplyResponseItemError = item.Errors
+		var errors = item.Errors
 		for i, valErr := range errors {
 			errorsStr += valErr.Message
 			if len(errors)-1 > i {
