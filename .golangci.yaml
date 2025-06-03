@@ -91,15 +91,15 @@ linters:
     - legacy
     - std-error-handling
     rules:
-      - linters:
-        - errcheck
-        - gocyclo
-        - gosec
-        - tagliatelle
-        path: _test\.go
-      - linters:
-        - goconst
-        path: (.+)_test\.go
+    - linters:
+      - errcheck
+      - gocyclo
+      - gosec
+      - tagliatelle
+      path: _test\.go
+    - linters:
+      - goconst
+      path: (.+)_test\.go
     paths:
     - internal/jws
     - third_party$
