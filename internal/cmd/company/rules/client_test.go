@@ -38,13 +38,20 @@ func TestClientListTenantRules(t *testing.T) {
 				"roleIds": ["maintainer"],
 				"disallowedRuleSet": [
 					{"jsonPath": "$.services.*.description"},
-					{"jsonPath": "$.services", "processingOptions": {"action": "create"}}
+					{"jsonPath": "$.services", "processingOptions": {"actions": ["create"]}}
 				]
 			},
 			{
 				"roleIds": ["developer"],
 				"disallowedRuleSet": [
 					{"ruleId": "endpoint.security.edit"}
+				]
+			},
+			{
+				"roleIds": ["some-role"],
+				"allowedRuleSet": [
+          { "jsonPath": "$.endpoints.*.public" },
+        	{ "jsonPath": "$.secrets", "processingOptions": { "actions": ["create"], "primaryKey": "clientType" }}
 				]
 			}
 		]
@@ -101,13 +108,20 @@ func TestClientListTenantRules(t *testing.T) {
 						RoleIDs: []string{"maintainer"},
 						DisallowedRuleSet: []rulesentities.RuleSet{
 							{JSONPath: "$.services.*.description"},
-							{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Action: "create"}},
+							{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Actions: []string{"create"}}},
 						},
 					},
 					{
 						RoleIDs: []string{"developer"},
 						DisallowedRuleSet: []rulesentities.RuleSet{
 							{RuleID: "endpoint.security.edit"},
+						},
+					},
+					{
+						RoleIDs: []string{"some-role"},
+						AllowedRuleSet: []rulesentities.RuleSet{
+							{JSONPath: "$.endpoints.*.public"},
+							{JSONPath: "$.secrets", Options: &rulesentities.RuleOptions{Actions: []string{"create"}, PrimaryKey: "clientType"}},
 						},
 					},
 				}, data)
@@ -126,7 +140,7 @@ func TestClientListProjectRules(t *testing.T) {
 				"roleIds": ["maintainer"],
 				"disallowedRuleSet": [
 					{"jsonPath": "$.services.*.description"},
-					{"jsonPath": "$.services", "processingOptions": {"action": "create"}}
+					{"jsonPath": "$.services", "processingOptions": {"actions":[ "create"]}}
 				]
 			},
 			{
@@ -135,6 +149,13 @@ func TestClientListProjectRules(t *testing.T) {
 					{"ruleId": "endpoint.security.edit"}
 				],
 				"isInheritedFromTenant": true
+			},
+			{
+				"roleIds": ["some-role"],
+				"allowedRuleSet": [
+          { "jsonPath": "$.endpoints.*.public" },
+        	{ "jsonPath": "$.secrets", "processingOptions": { "actions": ["create"], "primaryKey": "clientType" }}
+				]
 			}
 		]
 	}
@@ -190,7 +211,7 @@ func TestClientListProjectRules(t *testing.T) {
 						RoleIDs: []string{"maintainer"},
 						DisallowedRuleSet: []rulesentities.RuleSet{
 							{JSONPath: "$.services.*.description"},
-							{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Action: "create"}},
+							{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Actions: []string{"create"}}},
 						},
 					},
 					{
@@ -199,6 +220,13 @@ func TestClientListProjectRules(t *testing.T) {
 							{RuleID: "endpoint.security.edit"},
 						},
 						IsInheritedFromTenant: true,
+					},
+					{
+						RoleIDs: []string{"some-role"},
+						AllowedRuleSet: []rulesentities.RuleSet{
+							{JSONPath: "$.endpoints.*.public"},
+							{JSONPath: "$.secrets", Options: &rulesentities.RuleOptions{Actions: []string{"create"}, PrimaryKey: "clientType"}},
+						},
 					},
 				}, data)
 			}

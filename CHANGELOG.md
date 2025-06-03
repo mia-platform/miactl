@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- add field `AllowedRuleSet` to `SaveChangesRules` 
+- change field `Action` field of `SaveChangesRules` to `Actions`
+
 ## [v0.18.0] - 2025-06-03
 
 ### Changed
