@@ -35,6 +35,7 @@ type RuleSet struct {
 }
 
 type RuleOptions struct {
+	Action     string   `yaml:"action,omitempty" json:"action,omitempty"` // kept for retrocompatibility with console < V14.1
 	Actions    []string `yaml:"actions,omitempty" json:"actions,omitempty"`
 	PrimaryKey string   `yaml:"primaryKey,omitempty" json:"primaryKey,omitempty"`
 }
