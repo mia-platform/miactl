@@ -95,7 +95,7 @@ func printTenantList(rules []*rulesentities.SaveChangesRules, p printer.IPrinter
 
 	p.Keys(tableColumnLabel...)
 	for i, rule := range rules {
-		ruleInfo := createRecord(rule.DisallowedRuleSet, rule.DisallowedRuleSet)
+		ruleInfo := createRecord(rule.DisallowedRuleSet, rule.AllowedRuleSet)
 		p.Record(
 			strconv.Itoa(i),
 			strings.Join(rule.RoleIDs, ", "),
