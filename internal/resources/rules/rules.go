@@ -18,11 +18,13 @@ package rules
 type SaveChangesRules struct {
 	RoleIDs           []string  `yaml:"roleIds,omitempty" json:"roleIds,omitempty"` //nolint:tagliatelle
 	DisallowedRuleSet []RuleSet `yaml:"disallowedRuleSet,omitempty" json:"disallowedRuleSet,omitempty"`
+	AllowedRuleSet    []RuleSet `yaml:"allowedRuleSet,omitempty" json:"allowedRuleSet,omitempty"`
 }
 
 type ProjectSaveChangesRules struct {
 	RoleIDs               []string  `yaml:"roleIds,omitempty" json:"roleIds,omitempty"` //nolint:tagliatelle
 	DisallowedRuleSet     []RuleSet `yaml:"disallowedRuleSet,omitempty" json:"disallowedRuleSet,omitempty"`
+	AllowedRuleSet        []RuleSet `yaml:"allowedRuleSet,omitempty" json:"allowedRuleSet,omitempty"`
 	IsInheritedFromTenant bool      `yaml:"isInheritedFromTenant,omitempty" json:"isInheritedFromTenant,omitempty"`
 }
 
@@ -33,6 +35,7 @@ type RuleSet struct {
 }
 
 type RuleOptions struct {
-	Action     string `yaml:"action,omitempty" json:"action,omitempty"`
-	PrimaryKey string `yaml:"primaryKey,omitempty" json:"primaryKey,omitempty"`
+	Action     string   `yaml:"action,omitempty" json:"action,omitempty"` // kept for retrocompatibility with console < V14.1
+	Actions    []string `yaml:"actions,omitempty" json:"actions,omitempty"`
+	PrimaryKey string   `yaml:"primaryKey,omitempty" json:"primaryKey,omitempty"`
 }
