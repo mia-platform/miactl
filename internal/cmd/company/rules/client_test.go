@@ -339,7 +339,6 @@ func TestClientListProjectRules(t *testing.T) {
 }
 
 func TestClientTenantPatch(t *testing.T) {
-
 	patchData := []*rulesentities.SaveChangesRules{
 		{
 			RoleIDs: []string{"maintainer"},
