@@ -20,7 +20,6 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -31,6 +30,34 @@ import (
 
 func TestClientListTenantRules(t *testing.T) {
 	validBodyString := `[{
+	"tenantId": "company-1",
+	"configurationManagement": {
+		"saveChangesRules": [
+			{
+				"roleIds": ["maintainer"],
+				"disallowedRuleSet": [
+					{"jsonPath": "$.services.*.description"},
+					{"jsonPath": "$.services", "processingOptions": {"actions": ["create", "delete"]}}
+				]
+			},
+			{
+				"roleIds": ["developer"],
+				"disallowedRuleSet": [
+					{"ruleId": "endpoint.security.edit"}
+				]
+			},
+			{
+				"roleIds": ["some-role"],
+				"allowedRuleSet": [
+					{ "jsonPath": "$.endpoints.*.public" },
+					{ "jsonPath": "$.secrets", "processingOptions": { "actions": ["create", "delete"], "primaryKey": "clientType" }}
+				]
+			}
+		]
+	}
+}]`
+
+	validBodyStringBeforeV14_1 := `[{
 	"tenantId": "company-1",
 	"configurationManagement": {
 		"saveChangesRules": [
@@ -51,10 +78,50 @@ func TestClientListTenantRules(t *testing.T) {
 	}
 }]`
 
+	expecteRes := []*rulesentities.SaveChangesRules{
+		{
+			RoleIDs: []string{"maintainer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.services.*.description"},
+				{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Actions: []string{"create", "delete"}}},
+			},
+		},
+		{
+			RoleIDs: []string{"developer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{RuleID: "endpoint.security.edit"},
+			},
+		},
+		{
+			RoleIDs: []string{"some-role"},
+			AllowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.endpoints.*.public"},
+				{JSONPath: "$.secrets", Options: &rulesentities.RuleOptions{Actions: []string{"create", "delete"}, PrimaryKey: "clientType"}},
+			},
+		},
+	}
+
+	expecteResBeforeV14_1 := []*rulesentities.SaveChangesRules{
+		{
+			RoleIDs: []string{"maintainer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.services.*.description"},
+				{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Action: "create"}},
+			},
+		},
+		{
+			RoleIDs: []string{"developer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{RuleID: "endpoint.security.edit"},
+			},
+		},
+	}
+
 	testCases := map[string]struct {
-		companyID string
-		server    *httptest.Server
-		err       bool
+		companyID      string
+		server         *httptest.Server
+		err            bool
+		expectedResult []*rulesentities.SaveChangesRules
 	}{
 		"valid response": {
 			companyID: "company-1",
@@ -65,6 +132,18 @@ func TestClientListTenantRules(t *testing.T) {
 				statusCode: http.StatusOK,
 				respBody:   validBodyString,
 			}),
+			expectedResult: expecteRes,
+		},
+		"valid response - before Console V14.1": {
+			companyID: "company-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf("/api/backend/tenants/?search=%s", "company-1"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+				respBody:   validBodyStringBeforeV14_1,
+			}),
+			expectedResult: expecteResBeforeV14_1,
 		},
 		"invalid response": {
 			companyID: "company-1",
@@ -96,21 +175,7 @@ func TestClientListTenantRules(t *testing.T) {
 				require.Nil(t, data)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, []*rulesentities.SaveChangesRules{
-					{
-						RoleIDs: []string{"maintainer"},
-						DisallowedRuleSet: []rulesentities.RuleSet{
-							{JSONPath: "$.services.*.description"},
-							{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Action: "create"}},
-						},
-					},
-					{
-						RoleIDs: []string{"developer"},
-						DisallowedRuleSet: []rulesentities.RuleSet{
-							{RuleID: "endpoint.security.edit"},
-						},
-					},
-				}, data)
+				require.Equal(t, testCase.expectedResult, data)
 			}
 		})
 	}
@@ -119,6 +184,34 @@ func TestClientListTenantRules(t *testing.T) {
 func TestClientListProjectRules(t *testing.T) {
 	validBodyString := `{
 	"_id": "myproject",
+	"tenantId": "company-1",
+	"configurationManagement": {
+		"saveChangesRules": [
+			{
+				"roleIds": ["maintainer"],
+				"disallowedRuleSet": [
+					{"jsonPath": "$.services.*.description"},
+					{"jsonPath": "$.services", "processingOptions": {"actions":[ "create", "delete"]}}
+				]
+			},
+			{
+				"roleIds": ["developer"],
+				"disallowedRuleSet": [
+					{"ruleId": "endpoint.security.edit"}
+				],
+				"isInheritedFromTenant": true
+			},
+			{
+				"roleIds": ["some-role"],
+				"allowedRuleSet": [
+          { "jsonPath": "$.endpoints.*.public" },
+        	{ "jsonPath": "$.secrets", "processingOptions": { "actions": ["create", "delete"], "primaryKey": "clientType" }}
+				]
+			}
+		]
+	}
+}`
+	validBodyStringBeforeV14_1 := `{
 	"tenantId": "company-1",
 	"configurationManagement": {
 		"saveChangesRules": [
@@ -140,10 +233,52 @@ func TestClientListProjectRules(t *testing.T) {
 	}
 }`
 
+	expectedRes := []*rulesentities.ProjectSaveChangesRules{
+		{
+			RoleIDs: []string{"maintainer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.services.*.description"},
+				{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Actions: []string{"create", "delete"}}},
+			},
+		},
+		{
+			RoleIDs: []string{"developer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{RuleID: "endpoint.security.edit"},
+			},
+			IsInheritedFromTenant: true,
+		},
+		{
+			RoleIDs: []string{"some-role"},
+			AllowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.endpoints.*.public"},
+				{JSONPath: "$.secrets", Options: &rulesentities.RuleOptions{Actions: []string{"create", "delete"}, PrimaryKey: "clientType"}},
+			},
+		},
+	}
+
+	expecteResBeforeV14_1 := []*rulesentities.ProjectSaveChangesRules{
+		{
+			RoleIDs: []string{"maintainer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.services.*.description"},
+				{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Action: "create"}},
+			},
+		},
+		{
+			RoleIDs: []string{"developer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{RuleID: "endpoint.security.edit"},
+			},
+			IsInheritedFromTenant: true,
+		},
+	}
+
 	testCases := map[string]struct {
-		companyID string
-		server    *httptest.Server
-		err       bool
+		companyID      string
+		server         *httptest.Server
+		err            bool
+		expectedResult []*rulesentities.ProjectSaveChangesRules
 	}{
 		"valid response": {
 			companyID: "company-1",
@@ -154,6 +289,18 @@ func TestClientListProjectRules(t *testing.T) {
 				statusCode: http.StatusOK,
 				respBody:   validBodyString,
 			}),
+			expectedResult: expectedRes,
+		},
+		"valid response - before console V14.1": {
+			companyID: "company-1",
+			server: mockServer(t, ExpectedRequest{
+				path: fmt.Sprintf("/api/backend/projects/%s", "my-project"),
+				verb: http.MethodGet,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+				respBody:   validBodyStringBeforeV14_1,
+			}),
+			expectedResult: expecteResBeforeV14_1,
 		},
 		"invalid response": {
 			companyID: "company-1",
@@ -185,28 +332,52 @@ func TestClientListProjectRules(t *testing.T) {
 				require.Nil(t, data)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, []*rulesentities.ProjectSaveChangesRules{
-					{
-						RoleIDs: []string{"maintainer"},
-						DisallowedRuleSet: []rulesentities.RuleSet{
-							{JSONPath: "$.services.*.description"},
-							{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Action: "create"}},
-						},
-					},
-					{
-						RoleIDs: []string{"developer"},
-						DisallowedRuleSet: []rulesentities.RuleSet{
-							{RuleID: "endpoint.security.edit"},
-						},
-						IsInheritedFromTenant: true,
-					},
-				}, data)
+				require.Equal(t, testCase.expectedResult, data)
 			}
 		})
 	}
 }
 
 func TestClientTenantPatch(t *testing.T) {
+	patchData := []*rulesentities.SaveChangesRules{
+		{
+			RoleIDs: []string{"maintainer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.services.*.description"},
+				{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Actions: []string{"create", "delete"}}},
+			},
+		},
+		{
+			RoleIDs: []string{"developer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{RuleID: "endpoint.security.edit"},
+			},
+		},
+		{
+			RoleIDs: []string{"some-role"},
+			AllowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.endpoints.*.public"},
+				{JSONPath: "$.secrets", Options: &rulesentities.RuleOptions{Actions: []string{"create", "delete"}, PrimaryKey: "clientType"}},
+			},
+		},
+	}
+
+	patchDataBeforeV14_1 := []*rulesentities.SaveChangesRules{
+		{
+			RoleIDs: []string{"maintainer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.services.*.description"},
+				{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Action: "create"}},
+			},
+		},
+		{
+			RoleIDs: []string{"developer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{RuleID: "endpoint.security.edit"},
+			},
+		},
+	}
+
 	testCases := map[string]struct {
 		companyID string
 		PatchData []*rulesentities.SaveChangesRules
@@ -216,11 +387,24 @@ func TestClientTenantPatch(t *testing.T) {
 		"valid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf("/api/backend/tenants/%s/rules", "company-1"),
-				verb: http.MethodPatch,
+				path:              fmt.Sprintf("/api/backend/tenants/%s/rules", "company-1"),
+				verb:              http.MethodPatch,
+				bodyContainsMatch: `"actions":["create","delete"]`,
 			}, MockResponse{
 				statusCode: http.StatusOK,
 			}),
+			PatchData: patchData,
+		},
+		"valid response - before Console V14.1": {
+			companyID: "company-1",
+			server: mockServer(t, ExpectedRequest{
+				path:              fmt.Sprintf("/api/backend/tenants/%s/rules", "company-1"),
+				verb:              http.MethodPatch,
+				bodyContainsMatch: `"action":"create"`,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+			}),
+			PatchData: patchDataBeforeV14_1,
 		},
 		"invalid response": {
 			companyID: "company-1",
@@ -257,6 +441,45 @@ func TestClientTenantPatch(t *testing.T) {
 }
 
 func TestClientProjectPatch(t *testing.T) {
+	patchData := []*rulesentities.SaveChangesRules{
+		{
+			RoleIDs: []string{"maintainer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.services.*.description"},
+				{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Actions: []string{"create", "delete"}}},
+			},
+		},
+		{
+			RoleIDs: []string{"developer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{RuleID: "endpoint.security.edit"},
+			},
+		},
+		{
+			RoleIDs: []string{"some-role"},
+			AllowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.endpoints.*.public"},
+				{JSONPath: "$.secrets", Options: &rulesentities.RuleOptions{Actions: []string{"create", "delete"}, PrimaryKey: "clientType"}},
+			},
+		},
+	}
+
+	patchDataBeforeV14_1 := []*rulesentities.SaveChangesRules{
+		{
+			RoleIDs: []string{"maintainer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{JSONPath: "$.services.*.description"},
+				{JSONPath: "$.services", Options: &rulesentities.RuleOptions{Action: "create"}},
+			},
+		},
+		{
+			RoleIDs: []string{"developer"},
+			DisallowedRuleSet: []rulesentities.RuleSet{
+				{RuleID: "endpoint.security.edit"},
+			},
+		},
+	}
+
 	testCases := map[string]struct {
 		projectID string
 		PatchData []*rulesentities.SaveChangesRules
@@ -266,11 +489,24 @@ func TestClientProjectPatch(t *testing.T) {
 		"valid response": {
 			projectID: "project-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf("/api/backend/projects/%s/rules", "project-1"),
-				verb: http.MethodPatch,
+				path:              fmt.Sprintf("/api/backend/projects/%s/rules", "project-1"),
+				verb:              http.MethodPatch,
+				bodyContainsMatch: `"actions":["create","delete"]`,
 			}, MockResponse{
 				statusCode: http.StatusOK,
 			}),
+			PatchData: patchData,
+		},
+		"valid response - before Console V14.1": {
+			projectID: "project-1",
+			server: mockServer(t, ExpectedRequest{
+				path:              fmt.Sprintf("/api/backend/projects/%s/rules", "project-1"),
+				verb:              http.MethodPatch,
+				bodyContainsMatch: `"action":"create"`,
+			}, MockResponse{
+				statusCode: http.StatusOK,
+			}),
+			PatchData: patchDataBeforeV14_1,
 		},
 		"invalid response": {
 			projectID: "project-1",
@@ -313,26 +549,26 @@ type MockResponse struct {
 }
 
 type ExpectedRequest struct {
-	path string
-	verb string
-	body string
+	path              string
+	verb              string
+	bodyContainsMatch string
 }
 
-func mockServer(t *testing.T, req ExpectedRequest, resp MockResponse) *httptest.Server {
+func mockServer(t *testing.T, expectedReq ExpectedRequest, resp MockResponse) *httptest.Server {
 	t.Helper()
-	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.RequestURI != req.path && r.Method != req.verb {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.RequestURI != expectedReq.path && req.Method != expectedReq.verb {
 			w.WriteHeader(http.StatusNotFound)
-			require.Fail(t, fmt.Sprintf("unsupported call: %s - wanted: %s", r.RequestURI, req.path))
+			require.Fail(t, fmt.Sprintf("unsupported call: %s - wanted: %s", req.RequestURI, expectedReq.path))
 			return
 		}
 
-		if req.body != "" {
-			foundBody, err := io.ReadAll(r.Body)
+		if expectedReq.bodyContainsMatch != "" {
+			foundBody, err := io.ReadAll(req.Body)
 			if err != nil {
 				require.Fail(t, fmt.Sprintf("failed req body read: %s", err.Error()))
 			}
-			require.Equal(t, req.body, strings.TrimSuffix(string(foundBody), "\n"))
+			require.Contains(t, string(foundBody), expectedReq.bodyContainsMatch)
 		}
 
 		w.WriteHeader(resp.statusCode)

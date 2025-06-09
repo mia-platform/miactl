@@ -65,15 +65,25 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func createRecord(rules []rulesentities.RuleSet) []string {
+func createRecord(disallowedRules []rulesentities.RuleSet, allowedRules []rulesentities.RuleSet) []string {
 	ruleInfo := []string{}
-	for _, ruleset := range rules {
-		if ruleset.RuleID != "" {
-			ruleInfo = append(ruleInfo, fmt.Sprintf("Rule ID: '%s'", ruleset.RuleID))
+	for _, dRuleset := range disallowedRules {
+		if dRuleset.RuleID != "" {
+			ruleInfo = append(ruleInfo, fmt.Sprintf("Disallowed Rule ID: '%s'", dRuleset.RuleID))
 			continue
 		}
-		if ruleset.JSONPath != "" {
-			ruleInfo = append(ruleInfo, fmt.Sprintf("JSON Path: '%s'", ruleset.JSONPath))
+		if dRuleset.JSONPath != "" {
+			ruleInfo = append(ruleInfo, fmt.Sprintf("Disallowed JSON Path: '%s'", dRuleset.JSONPath))
+			continue
+		}
+	}
+	for _, aRuleset := range allowedRules {
+		if aRuleset.RuleID != "" {
+			ruleInfo = append(ruleInfo, fmt.Sprintf("Allowed Rule ID: '%s'", aRuleset.RuleID))
+			continue
+		}
+		if aRuleset.JSONPath != "" {
+			ruleInfo = append(ruleInfo, fmt.Sprintf("Allowed JSON Path: '%s'", aRuleset.JSONPath))
 			continue
 		}
 	}
@@ -85,7 +95,7 @@ func printTenantList(rules []*rulesentities.SaveChangesRules, p printer.IPrinter
 
 	p.Keys(tableColumnLabel...)
 	for i, rule := range rules {
-		ruleInfo := createRecord(rule.DisallowedRuleSet)
+		ruleInfo := createRecord(rule.DisallowedRuleSet, rule.AllowedRuleSet)
 		p.Record(
 			strconv.Itoa(i),
 			strings.Join(rule.RoleIDs, ", "),
@@ -100,7 +110,7 @@ func printProjectList(rules []*rulesentities.ProjectSaveChangesRules, p printer.
 
 	p.Keys(tableColumnLabel...)
 	for i, rule := range rules {
-		ruleInfo := createRecord(rule.DisallowedRuleSet)
+		ruleInfo := createRecord(rule.DisallowedRuleSet, rule.AllowedRuleSet)
 		p.Record(
 			strconv.Itoa(i),
 			strings.Join(rule.RoleIDs, ", "),
