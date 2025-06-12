@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- add field `AllowedRuleSet` to `SaveChangesRules` 
+- update go version to 1.24.4
+- add field `AllowedRuleSet` to `SaveChangesRules`
 - add field `Actions` to `SaveChangesRules`. Kept also `Action` for compatibility to console version before 14.1
 
 ## [v0.18.0] - 2025-06-03
