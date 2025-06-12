@@ -223,7 +223,7 @@ func TestConfirmationFlow(t *testing.T) {
 		FlowManagerConfigPath:        flowManagerFile,
 		RbacManagerConfigPath:        rbacManagerFile,
 		FastDataConfigPath:           fastDataFile,
-		BackofficeConfigPath: backofficeFile,
+		BackofficeConfigurationsPath: backofficeFile,
 		SkipConfirmation:             true,
 		Environment:                  "test-env",
 	}

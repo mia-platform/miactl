@@ -51,13 +51,13 @@ const (
 
 // ConfigImportOptions contains the file paths for the various configuration files
 type ConfigImportOptions struct {
-	FlowManagerConfigPath        string
-	RbacManagerConfigPath        string
-	BackofficeConfigurationsPath string
-	FastDataConfigPath           string
-	APIConsoleConfigPath         string
-	Environment                  string // Environment ID for saving to environment configuration
-	SkipConfirmation             bool   // If true, skip interactive confirmation
+	FlowManagerConfigPath string
+	RbacManagerConfigPath string
+	BackofficeConfigPath  string
+	FastDataConfigPath    string
+	APIConsoleConfigPath  string
+	Environment           string // Environment ID for saving to environment configuration
+	SkipConfirmation      bool   // If true, skip interactive confirmation
 }
 
 // ImportConfigCmd return a cobra command for importing configurations from JSON files
@@ -86,7 +86,7 @@ func ImportConfigCmd(o *clioptions.CLIOptions) *cobra.Command {
 	// add config file flags
 	flags.StringVar(&importOptions.FlowManagerConfigPath, "flow-manager-config", "", "path to flowManagerConfig.json file")
 	flags.StringVar(&importOptions.RbacManagerConfigPath, "rbac-manager-config", "", "path to rbacManagerConfig.json file")
-	flags.StringVar(&importOptions.BackofficeConfigurationsPath, "backoffice-config", "", "path to backofficeConfigurations.json file")
+	flags.StringVar(&importOptions.BackofficeConfigPath, "backoffice-config", "", "path to backofficeConfigurations.json file")
 	flags.StringVar(&importOptions.FastDataConfigPath, "fast-data-config", "", "path to fast-data-config.json file")
 	flags.StringVar(&importOptions.APIConsoleConfigPath, "api-console-config", "", "path to api-console-config.json file")
 
@@ -107,7 +107,7 @@ func importConfigFromFiles(ctx context.Context, client *client.APIClient, projec
 
 	if opts.FlowManagerConfigPath == "" &&
 		opts.RbacManagerConfigPath == "" &&
-		opts.BackofficeConfigurationsPath == "" &&
+		opts.BackofficeConfigPath == "" &&
 		opts.FastDataConfigPath == "" &&
 		opts.APIConsoleConfigPath == "" {
 		return fmt.Errorf("missing configuration files, please specify at least one configuration file")
@@ -176,9 +176,9 @@ func importConfigFromFiles(ctx context.Context, client *client.APIClient, projec
 		}
 	}
 
-	if opts.BackofficeConfigurationsPath != "" {
+	if opts.BackofficeConfigPath != "" {
 		var backofficeData map[string]any
-		if err := readJSONFile(opts.BackofficeConfigurationsPath, &backofficeData); err != nil {
+		if err := readJSONFile(opts.BackofficeConfigPath, &backofficeData); err != nil {
 			return fmt.Errorf("error reading backoffice configurations: %w", err)
 		}
 		if config, ok := backofficeData["config"]; ok {
@@ -258,8 +258,8 @@ func validateFilePaths(opts *ConfigImportOptions) error {
 			return fmt.Errorf("RBAC manager config file not found: %w", err)
 		}
 	}
-	if opts.BackofficeConfigurationsPath != "" {
-		if _, err := os.Stat(opts.BackofficeConfigurationsPath); err != nil {
+	if opts.BackofficeConfigPath != "" {
+		if _, err := os.Stat(opts.BackofficeConfigPath); err != nil {
 			return fmt.Errorf("backoffice configurations file not found: %w", err)
 		}
 	}
@@ -355,9 +355,9 @@ func showConfirmationAndPrompt(opts *ConfigImportOptions, revision string, write
 		configCount++
 	}
 
-	if opts.BackofficeConfigurationsPath != "" {
+	if opts.BackofficeConfigPath != "" {
 		fmt.Fprintf(writer, "  ✓ Backoffice Configuration\n")
-		fmt.Fprintf(writer, "    Source: %s\n", opts.BackofficeConfigurationsPath)
+		fmt.Fprintf(writer, "    Source: %s\n", opts.BackofficeConfigPath)
 		configCount++
 	}
 
