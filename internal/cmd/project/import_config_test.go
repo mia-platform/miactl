@@ -134,6 +134,36 @@ func TestPreparePostConfig(t *testing.T) {
 	assert.False(t, hasPlatformVersion)
 }
 
+func TestAPIConsoleConfigMerging(t *testing.T) {
+	t.Parallel()
+
+	tempDir := t.TempDir()
+	apiConsoleFile := filepath.Join(tempDir, "apiConsole.json")
+	err := os.WriteFile(apiConsoleFile, []byte(`{"consoleField1": "consoleValue1", "consoleField2": "consoleValue2"}`), 0644)
+	require.NoError(t, err)
+
+	config := map[string]any{
+		"apiField1": "value1",
+		"apiField2": "value2",
+	}
+
+	var apiConsoleData map[string]any
+	err = readJSONFile(apiConsoleFile, &apiConsoleData)
+	require.NoError(t, err)
+
+	// Simulate merging APIConsoleConfig into the main config
+	for key, value := range apiConsoleData {
+		config[key] = value
+	}
+
+	postConfig := preparePostConfig(config, "")
+
+	assert.Equal(t, "value1", postConfig["config"].(map[string]any)["apiField1"])
+	assert.Equal(t, "value2", postConfig["config"].(map[string]any)["apiField2"])
+	assert.Equal(t, "consoleValue1", postConfig["config"].(map[string]any)["consoleField1"])
+	assert.Equal(t, "consoleValue2", postConfig["config"].(map[string]any)["consoleField2"])
+}
+
 func TestEndpointSelection(t *testing.T) {
 	t.Parallel()
 
@@ -220,12 +250,12 @@ func TestConfirmationFlow(t *testing.T) {
 	require.FileExists(t, backofficeFile)
 
 	opts := &ConfigImportOptions{
-		FlowManagerConfigPath:        flowManagerFile,
-		RbacManagerConfigPath:        rbacManagerFile,
-		FastDataConfigPath:           fastDataFile,
-		BackofficeConfigPath: backofficeFile,
-		SkipConfirmation:             true,
-		Environment:                  "test-env",
+		FlowManagerConfigPath: flowManagerFile,
+		RbacManagerConfigPath: rbacManagerFile,
+		FastDataConfigPath:    fastDataFile,
+		BackofficeConfigPath:  backofficeFile,
+		SkipConfirmation:      true,
+		Environment:           "test-env",
 	}
 
 	err := validateFilePaths(opts)
