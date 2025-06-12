@@ -1,0 +1,20 @@
+{
+  "projectId": "project-id",
+  "tenantId": "tenant-id",
+  "ref": "branches/main",
+  "parentChangesId": "parent-changes-id",
+  "configType": "fast-data",
+  "config": {
+    "systems": {},
+    "castFunctions": {},
+    "singleViews": {},
+    "version": "2.2.0",
+    "erSchemas": {}
+  },
+  "hash": "hash-value",
+  "changesId": "changes-id",
+  "snapshotInfo": {
+    "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of Fast Data configuration document"
+  },
+  "__STATE__": "PUBLIC"
+}

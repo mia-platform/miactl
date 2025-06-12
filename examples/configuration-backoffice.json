@@ -1,0 +1,17 @@
+{
+  "projectId": "project-id",
+  "tenantId": "tenant-id",
+  "ref": "branches/main",
+  "parentChangesId": "parent-changes-id",
+  "configType": "backofficeConfigurations",
+  "config": {
+    "services": "...",
+    "version": "1.8.0"
+  },
+  "hash": "hash-value",
+  "changesId": "changes-id",
+  "snapshotInfo": {
+    "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of Backoffice configuration document"
+  },
+  "__STATE__": "PUBLIC"
+}

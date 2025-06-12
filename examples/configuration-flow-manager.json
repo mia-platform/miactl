@@ -1,0 +1,18 @@
+{
+  "projectId": "project-id",
+  "tenantId": "tenant-id",
+  "ref": "branches/main",
+  "parentChangesId": "parent-changes-id",
+  "configType": "flowManagerConfigurations",
+  "config": {
+    "flows": {},
+    "unlinkedFlows": {},
+    "version": "2.3.1"
+  },
+  "hash": "hash-value",
+  "changesId": "changes-id",
+  "snapshotInfo": {
+    "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of Flow Manager configuration document"
+  },
+  "__STATE__": "PUBLIC"
+}

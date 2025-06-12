@@ -1,0 +1,14 @@
+{
+  "projectId": "project-id",
+  "tenantId": "tenant-id",
+  "ref": "branches/main",
+  "parentChangesId": "parent-changes-id",
+  "configType": "extensions",
+  "config": {},
+  "hash": "hash-value",
+  "changesId": "changes-id",
+  "snapshotInfo": {
+    "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of Extensions configuration document"
+  },
+  "__STATE__": "PUBLIC"
+}

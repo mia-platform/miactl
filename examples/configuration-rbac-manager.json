@@ -1,0 +1,27 @@
+{
+  "projectId": "project-id",
+  "tenantId": "tenant-id",
+  "ref": "branches/main",
+  "configType": "rbacManagerConfig",
+  "config": {
+    "enabledServices": {},
+    "imageName": "public-registry/rond-image:latest",
+    "permissions": {
+      "policyFileConfigName": "rbac-sidecar-svc-opa-policies-config",
+      "policyFileContent": "...",
+      "testFileContent": "..."
+    },
+    "rbacStorage": {
+      "mongoDBURL": "{{DB_CONNECTION_STRING}}",
+      "bindingsCollection": "rbac-bindings",
+      "rolesCollection": "rbac-roles"
+    },
+    "version": "0.1.0"
+  },
+  "hash": "hash-value",
+  "changesId": "changes-id",
+  "snapshotInfo": {
+    "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of RBAC Manager configuration document"
+  },
+  "__STATE__": "PUBLIC"
+}
