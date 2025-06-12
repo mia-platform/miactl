@@ -1,16 +1,16 @@
 {
-  "projectId": "66dead64ef00b28459046b2e",
-  "tenantId": "99350849-653a-418c-8a66-545b4b34b619",
-  "ref": "branches/manual-tests",
-  "parentChangesId": "a7ea1589-4530-429b-93b7-e5574aac8ceb",
+  "projectId": "project-id",
+  "tenantId": "tenant-id",
+  "ref": "branches/main",
+  "parentChangesId": "parent-changes-id",
   "configType": "flowManagerConfigurations",
   "config": {
     "flows": {},
     "unlinkedFlows": {},
     "version": "2.3.1"
   },
-  "hash": "42164d006ba0103632b99e2c2706aa3d1b80481983eab80b0c8c4fc6b24315c5",
-  "changesId": "c0bfcfda-f7ae-4f77-8b16-45763a3c1eb5",
+  "hash": "hash-value",
+  "changesId": "changes-id",
   "snapshotInfo": {
     "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of Flow Manager configuration document"
   },

@@ -1,12 +1,12 @@
 {
-  "projectId": "0000000000000000000000000",
-  "tenantId": "bot-targa",
-  "ref": "branches/branch-b2d167a6-3ce3-41f5-91ed-f2a015a7ff72",
-  "parentChangesId": "28237084-884a-42a5-936c-ae03c2dfd794",
+  "projectId": "project-id",
+  "tenantId": "tenant-id",
+  "ref": "branches/main",
+  "parentChangesId": "parent-changes-id",
   "configType": "extensions",
   "config": {},
-  "hash": "aae5a71db7cd42382ef749f87ca847684d9d4a517cc8235f53ea31bd492c3577",
-  "changesId": "cd8129d4-ff19-4135-afc3-205056259612",
+  "hash": "hash-value",
+  "changesId": "changes-id",
   "snapshotInfo": {
     "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of Extensions configuration document"
   },

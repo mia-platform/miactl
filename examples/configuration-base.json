@@ -1,7 +1,7 @@
 {
-  "projectId": "0000000000000000000000000",
-  "tenantId": "bot-targa",
-  "ref": "branches/branch-9b1c6db2-d936-46ca-9e6f-453e2195172f",
+  "projectId": "project-id",
+  "tenantId": "tenant-id",
+  "ref": "branches/main",
   "configType": "base",
   "config": {
     "endpoints": {
@@ -191,11 +191,10 @@
         "logParser": "mia-json",
         "name": "crud-service",
         "description": "",
-        "dockerImage": "nexus.mia-platform.eu/core/crud-service:4.2.0",
-        "environment": [
+        "dockerImage": "registry-example/core/crud-service:4.2.0",          "environment": [
           {
             "name": "MONGODB_URL",
-            "value": "{{MONGODB_URL}}",
+            "value": "{{DB_CONNECTION_STRING}}",
             "valueType": "plain"
           },
           {
@@ -298,7 +297,7 @@
         "logParser": "mia-json",
         "name": "swagger-aggregator",
         "description": "",
-        "dockerImage": "nexus.mia-platform.eu/core/swagger-aggregator:3.4.0",
+        "dockerImage": "registry-example/core/swagger-aggregator:3.4.0",
         "environment": [
           {
             "name": "CONFIG_FILE_PATH",
@@ -377,7 +376,7 @@
         "logParser": "mia-nginx",
         "name": "api-portal",
         "description": "",
-        "dockerImage": "nexus.mia-platform.eu/api-portal/website:1.13.7",
+        "dockerImage": "registry-example/api-portal/website:1.13.7",
         "environment": [
           {
             "name": "HTTP_PORT",
@@ -426,7 +425,7 @@
         "logParser": "mia-json",
         "name": "microservice-gateway",
         "description": "",
-        "dockerImage": "nexus.mia-platform.eu/core/microservice-gateway:6.0.6",
+        "dockerImage": "registry-example/core/microservice-gateway:6.0.6",
         "environment": [
           {
             "name": "CONFIGURATION_PATH",
@@ -510,7 +509,7 @@
         "logParser": "mia-json",
         "name": "authorization-service",
         "description": "",
-        "dockerImage": "nexus.mia-platform.eu/core/authorization-service:2.1.0",
+        "dockerImage": "registry-example/core/authorization-service:2.1.0",
         "environment": [
           {
             "name": "LOG_LEVEL",
@@ -638,7 +637,7 @@
         "additionalContainers": [
           {
             "name": "dnsmasq",
-            "dockerImage": "nexus.mia-platform.eu/core/dnsmasq:1.0.0",
+            "dockerImage": "registry-example/core/dnsmasq:1.0.0",
             "environment": [],
             "resources": {
               "cpuLimits": {
@@ -680,7 +679,7 @@
         ],
         "name": "api-gateway",
         "description": "",
-        "dockerImage": "nexus.mia-platform.eu/core/api-gateway:4.1.4",
+        "dockerImage": "registry-example/core/api-gateway:4.1.4",
         "environment": [],
         "resources": {
           "cpuLimits": {
