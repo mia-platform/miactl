@@ -1,0 +1,812 @@
+{
+  "projectId": "0000000000000000000000000",
+  "tenantId": "bot-targa",
+  "ref": "branches/branch-9b1c6db2-d936-46ca-9e6f-453e2195172f",
+  "configType": "base",
+  "config": {
+    "endpoints": {
+      "/documentations/api-portal": {
+        "basePath": "/documentations/api-portal",
+        "pathRewrite": "/",
+        "description": "",
+        "type": "custom",
+        "tags": [
+          "api-docs"
+        ],
+        "public": true,
+        "showInDocumentation": false,
+        "secreted": false,
+        "acl": "false",
+        "backofficeAcl": {
+          "inherited": true
+        },
+        "allowUnknownRequestContentType": true,
+        "allowUnknownResponseContentType": true,
+        "forceMicroserviceGatewayProxy": false,
+        "service": "api-portal",
+        "routes": {
+          "GET/": {
+            "id": "GET/",
+            "path": "/",
+            "public": {
+              "inherited": false,
+              "value": true
+            },
+            "showInDocumentation": {
+              "inherited": true
+            },
+            "secreted": {
+              "inherited": true
+            },
+            "allowUnknownRequestContentType": {
+              "inherited": true
+            },
+            "allowUnknownResponseContentType": {
+              "inherited": true
+            },
+            "acl": {
+              "inherited": false,
+              "value": "true"
+            },
+            "backofficeAcl": {
+              "inherited": true
+            },
+            "verb": "GET",
+            "preDecorators": [],
+            "postDecorators": []
+          },
+          "GET/api/swagger/": {
+            "acl": {
+              "inherited": false,
+              "value": "true"
+            },
+            "allowUnknownRequestContentType": {
+              "inherited": true
+            },
+            "allowUnknownResponseContentType": {
+              "inherited": true
+            },
+            "backofficeAcl": {
+              "inherited": true
+            },
+            "id": "GET/api/swagger/",
+            "path": "/api/swagger/",
+            "postDecorators": [],
+            "preDecorators": [],
+            "public": {
+              "inherited": true
+            },
+            "secreted": {
+              "inherited": true
+            },
+            "showInDocumentation": {
+              "inherited": true
+            },
+            "verb": "GET"
+          }
+        }
+      },
+      "/documentations/api-portal/api": {
+        "basePath": "/documentations/api-portal/api",
+        "pathRewrite": "/",
+        "description": "",
+        "type": "custom",
+        "tags": [
+          "api-docs"
+        ],
+        "public": true,
+        "showInDocumentation": false,
+        "secreted": false,
+        "acl": "true",
+        "backofficeAcl": {
+          "inherited": true
+        },
+        "allowUnknownRequestContentType": false,
+        "allowUnknownResponseContentType": false,
+        "forceMicroserviceGatewayProxy": false,
+        "service": "swagger-aggregator"
+      },
+      "/documentations/swagger": {
+        "basePath": "/documentations/swagger",
+        "pathRewrite": "/swagger",
+        "description": "",
+        "type": "custom",
+        "tags": [
+          "api-docs"
+        ],
+        "public": true,
+        "showInDocumentation": false,
+        "secreted": false,
+        "acl": "true",
+        "backofficeAcl": {
+          "inherited": true
+        },
+        "allowUnknownRequestContentType": true,
+        "allowUnknownResponseContentType": true,
+        "forceMicroserviceGatewayProxy": false,
+        "service": "swagger-aggregator",
+        "routes": {
+          "GET/": {
+            "acl": {
+              "inherited": false,
+              "value": "true"
+            },
+            "allowUnknownRequestContentType": {
+              "inherited": true
+            },
+            "allowUnknownResponseContentType": {
+              "inherited": true
+            },
+            "backofficeAcl": {
+              "inherited": true
+            },
+            "id": "GET/",
+            "path": "/",
+            "postDecorators": [],
+            "preDecorators": [],
+            "public": {
+              "inherited": true
+            },
+            "secreted": {
+              "inherited": true
+            },
+            "showInDocumentation": {
+              "inherited": true
+            },
+            "verb": "GET"
+          }
+        }
+      },
+      "/documentations/openapi": {
+        "basePath": "/documentations/openapi",
+        "pathRewrite": "/openapi",
+        "description": "",
+        "type": "custom",
+        "tags": [
+          "api-docs"
+        ],
+        "public": true,
+        "showInDocumentation": false,
+        "secreted": false,
+        "acl": "true",
+        "backofficeAcl": {
+          "inherited": true
+        },
+        "allowUnknownRequestContentType": false,
+        "allowUnknownResponseContentType": false,
+        "forceMicroserviceGatewayProxy": false,
+        "service": "swagger-aggregator"
+      }
+    },
+    "decorators": {
+      "preDecorators": {},
+      "postDecorators": {}
+    },
+    "services": {
+      "crud-service": {
+        "type": "custom",
+        "advanced": false,
+        "replicas": 1,
+        "terminationGracePeriodSeconds": 30,
+        "logParser": "mia-json",
+        "name": "crud-service",
+        "description": "",
+        "dockerImage": "nexus.mia-platform.eu/core/crud-service:4.2.0",
+        "environment": [
+          {
+            "name": "MONGODB_URL",
+            "value": "{{MONGODB_URL}}",
+            "valueType": "plain"
+          },
+          {
+            "name": "COLLECTION_DEFINITION_FOLDER",
+            "value": "/home/node/app/collections",
+            "valueType": "plain"
+          },
+          {
+            "name": "HTTP_PORT",
+            "value": "3000",
+            "valueType": "plain"
+          },
+          {
+            "name": "LOG_LEVEL",
+            "value": "{{LOG_LEVEL}}",
+            "valueType": "plain"
+          },
+          {
+            "name": "SERVICE_PREFIX",
+            "value": "/",
+            "valueType": "plain"
+          },
+          {
+            "name": "USER_ID_HEADER_KEY",
+            "value": "miauserid",
+            "valueType": "plain"
+          },
+          {
+            "name": "TRUSTED_PROXIES",
+            "value": "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16",
+            "valueType": "plain"
+          },
+          {
+            "name": "CRUD_LIMIT_CONSTRAINT_ENABLED",
+            "value": "{{CRUD_LIMIT_CONSTRAINT_ENABLED}}",
+            "valueType": "plain"
+          },
+          {
+            "name": "EXPOSE_METRICS",
+            "value": "false",
+            "valueType": "plain"
+          }
+        ],
+        "resources": {
+          "memoryLimits": {
+            "max": "250Mi",
+            "min": "70Mi"
+          },
+          "cpuLimits": {
+            "max": "300m",
+            "min": "30m"
+          }
+        },
+        "probes": {
+          "liveness": {
+            "path": "/-/healthz",
+            "initialDelaySeconds": 15,
+            "periodSeconds": 20
+          },
+          "readiness": {
+            "path": "/-/ready",
+            "initialDelaySeconds": 5,
+            "periodSeconds": 10
+          }
+        },
+        "tags": [
+          "crud-service"
+        ],
+        "swaggerPath": "/documentation/json",
+        "configMaps": [
+          {
+            "name": "crud-service-collections",
+            "mountPath": "/home/node/app/collections",
+            "viewAsReadOnly": true,
+            "link": {
+              "targetSection": "collections"
+            }
+          }
+        ],
+        "secrets": [],
+        "sourceComponentId": "crud-service",
+        "mapEnvVarToMountPath": {
+          "collections": {
+            "type": "folder",
+            "envName": "COLLECTION_DEFINITION_FOLDER"
+          }
+        },
+        "containerPorts": [
+          {
+            "name": "http",
+            "from": 80
+          }
+        ]
+      },
+      "swagger-aggregator": {
+        "type": "custom",
+        "advanced": false,
+        "replicas": 1,
+        "terminationGracePeriodSeconds": 30,
+        "logParser": "mia-json",
+        "name": "swagger-aggregator",
+        "description": "",
+        "dockerImage": "nexus.mia-platform.eu/core/swagger-aggregator:3.4.0",
+        "environment": [
+          {
+            "name": "CONFIG_FILE_PATH",
+            "value": "/home/node/app/configs/config.json",
+            "valueType": "plain"
+          },
+          {
+            "name": "HTTP_PORT",
+            "value": "3000",
+            "valueType": "plain"
+          },
+          {
+            "name": "LOG_LEVEL",
+            "value": "{{LOG_LEVEL}}",
+            "valueType": "plain"
+          },
+          {
+            "name": "TRUSTED_PROXIES",
+            "value": "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16",
+            "valueType": "plain"
+          }
+        ],
+        "probes": {
+          "liveness": {
+            "path": "/-/healthz",
+            "initialDelaySeconds": 15,
+            "periodSeconds": 20
+          },
+          "readiness": {
+            "path": "/-/ready",
+            "initialDelaySeconds": 5,
+            "periodSeconds": 10
+          }
+        },
+        "tags": [
+          "api-docs"
+        ],
+        "swaggerPath": "/documentation/json",
+        "configMaps": [
+          {
+            "name": "swagger-aggregator-config",
+            "mountPath": "/home/node/app/configs",
+            "viewAsReadOnly": true
+          }
+        ],
+        "secrets": [],
+        "sourceComponentId": "swagger-aggregator",
+        "mapEnvVarToMountPath": {
+          "swagger-aggregator-config": {
+            "type": "file",
+            "envName": "CONFIG_FILE_PATH"
+          }
+        },
+        "containerPorts": [
+          {
+            "name": "http",
+            "from": 80
+          }
+        ],
+        "resources": {
+          "memoryLimits": {
+            "max": "250Mi",
+            "min": "70Mi"
+          },
+          "cpuLimits": {
+            "max": "50m",
+            "min": "10m"
+          }
+        }
+      },
+      "api-portal": {
+        "type": "custom",
+        "advanced": false,
+        "replicas": 1,
+        "terminationGracePeriodSeconds": 30,
+        "logParser": "mia-nginx",
+        "name": "api-portal",
+        "description": "",
+        "dockerImage": "nexus.mia-platform.eu/api-portal/website:1.13.7",
+        "environment": [
+          {
+            "name": "HTTP_PORT",
+            "value": "8080",
+            "valueType": "plain"
+          }
+        ],
+        "resources": {
+          "memoryLimits": {
+            "max": "25Mi",
+            "min": "5Mi"
+          },
+          "cpuLimits": {
+            "max": "40m",
+            "min": "5m"
+          }
+        },
+        "probes": {
+          "liveness": {
+            "path": "/index.html",
+            "initialDelaySeconds": 15,
+            "periodSeconds": 20
+          },
+          "readiness": {
+            "path": "/index.html",
+            "initialDelaySeconds": 5,
+            "periodSeconds": 10
+          }
+        },
+        "tags": [
+          "api-docs"
+        ],
+        "secrets": [],
+        "sourceComponentId": "api-portal",
+        "containerPorts": [
+          {
+            "name": "http",
+            "from": 80
+          }
+        ]
+      },
+      "microservice-gateway": {
+        "type": "custom",
+        "advanced": false,
+        "replicas": 1,
+        "logParser": "mia-json",
+        "name": "microservice-gateway",
+        "description": "",
+        "dockerImage": "nexus.mia-platform.eu/core/microservice-gateway:6.0.6",
+        "environment": [
+          {
+            "name": "CONFIGURATION_PATH",
+            "value": "/home/node/app/configs/config.json",
+            "valueType": "plain"
+          },
+          {
+            "name": "LOG_LEVEL",
+            "value": "{{LOG_LEVEL}}",
+            "valueType": "plain"
+          },
+          {
+            "name": "HTTP_PORT",
+            "value": "3000",
+            "valueType": "plain"
+          },
+          {
+            "name": "SERVICE_PREFIX",
+            "value": "/",
+            "valueType": "plain"
+          },
+          {
+            "name": "TRUSTED_PROXIES",
+            "value": "10.0.0.0/8,172.16.0.0/12,192.168.0.0/16",
+            "valueType": "plain"
+          },
+          {
+            "name": "DISABLE_STRICT_CONTENT_TYPE_CHECK",
+            "value": "false",
+            "valueType": "plain"
+          }
+        ],
+        "resources": {
+          "memoryLimits": {
+            "max": "300Mi",
+            "min": "50Mi"
+          }
+        },
+        "probes": {
+          "liveness": {
+            "path": "/-/healthz",
+            "initialDelaySeconds": 15,
+            "periodSeconds": 20
+          },
+          "readiness": {
+            "path": "/-/ready",
+            "initialDelaySeconds": 5,
+            "periodSeconds": 10
+          }
+        },
+        "tags": [
+          "orchestrator"
+        ],
+        "swaggerPath": "/documentation/json",
+        "configMaps": [
+          {
+            "name": "microservice-gateway-config",
+            "mountPath": "/home/node/app/configs",
+            "viewAsReadOnly": true
+          }
+        ],
+        "secrets": [],
+        "sourceComponentId": "microservice-gateway",
+        "mapEnvVarToMountPath": {
+          "microservice-gateway-config": {
+            "type": "file",
+            "envName": "CONFIGURATION_PATH"
+          }
+        },
+        "containerPorts": [
+          {
+            "name": "http",
+            "from": 80
+          }
+        ]
+      },
+      "authorization-service": {
+        "type": "custom",
+        "advanced": false,
+        "replicas": 1,
+        "logParser": "mia-json",
+        "name": "authorization-service",
+        "description": "",
+        "dockerImage": "nexus.mia-platform.eu/core/authorization-service:2.1.0",
+        "environment": [
+          {
+            "name": "LOG_LEVEL",
+            "value": "{{LOG_LEVEL}}",
+            "valueType": "plain"
+          },
+          {
+            "name": "HTTP_PORT",
+            "value": "3000",
+            "valueType": "plain"
+          },
+          {
+            "name": "CONFIGURATION_PATH",
+            "value": "/configs",
+            "valueType": "plain"
+          },
+          {
+            "name": "CONFIGURATION_FILE_NAME",
+            "value": "auth",
+            "valueType": "plain"
+          },
+          {
+            "name": "BACKOFFICE_HEADER_KEY",
+            "value": "isbackoffice",
+            "valueType": "plain"
+          },
+          {
+            "name": "SERVICE_VERSION",
+            "value": "2.1.0",
+            "valueType": "plain"
+          },
+          {
+            "name": "USERINFO_URL",
+            "value": "",
+            "valueType": "plain"
+          },
+          {
+            "name": "CUSTOM_USER_ID_KEY",
+            "value": "",
+            "valueType": "plain"
+          },
+          {
+            "name": "HEADERS_TO_PROXY",
+            "value": "",
+            "valueType": "plain"
+          },
+          {
+            "name": "AUTHORIZATION_STRICT_MODE_ENABLED",
+            "value": "true",
+            "valueType": "plain"
+          },
+          {
+            "name": "USER_PROPERTIES_TO_PROXY",
+            "value": "",
+            "valueType": "plain"
+          },
+          {
+            "name": "CLIENT_TYPE_HEADER_KEY",
+            "value": "client-type",
+            "valueType": "plain"
+          },
+          {
+            "name": "BACKOFFICE_USERINFO_URL",
+            "value": "",
+            "valueType": "plain"
+          },
+          {
+            "name": "CUSTOM_PERMISSIONS_KEY",
+            "value": "permissions",
+            "valueType": "plain"
+          },
+          {
+            "name": "AUTHORIZATION_HEADERS_TO_PROXY",
+            "value": "cookie,authorization",
+            "valueType": "plain"
+          }
+        ],
+        "resources": {
+          "memoryLimits": {
+            "max": "80Mi",
+            "min": "20Mi"
+          }
+        },
+        "probes": {
+          "liveness": {
+            "path": "/-/healthz",
+            "initialDelaySeconds": 15,
+            "periodSeconds": 20
+          },
+          "readiness": {
+            "path": "/-/ready",
+            "initialDelaySeconds": 5,
+            "periodSeconds": 10
+          }
+        },
+        "tags": [
+          "auth"
+        ],
+        "configMaps": [
+          {
+            "name": "authorization-service-config",
+            "mountPath": "/configs",
+            "viewAsReadOnly": true
+          }
+        ],
+        "sourceComponentId": "authorization-service",
+        "mapEnvVarToMountPath": {
+          "authorization-service-config": {
+            "type": "folder",
+            "envName": "CONFIGURATION_PATH"
+          }
+        },
+        "containerPorts": [
+          {
+            "name": "http",
+            "from": 80
+          }
+        ]
+      },
+      "api-gateway": {
+        "type": "custom",
+        "advanced": false,
+        "replicas": 1,
+        "logParser": "mia-nginx",
+        "additionalContainers": [
+          {
+            "name": "dnsmasq",
+            "dockerImage": "nexus.mia-platform.eu/core/dnsmasq:1.0.0",
+            "environment": [],
+            "resources": {
+              "cpuLimits": {
+                "min": "10m"
+              },
+              "memoryLimits": {
+                "max": "20Mi",
+                "min": "5Mi"
+              }
+            },
+            "probes": {
+              "liveness": {
+                "cmd": [
+                  "/bin/sh",
+                  "-c",
+                  "netstat -lutanp | grep LISTEN | grep 53"
+                ],
+                "initialDelaySeconds": 15,
+                "periodSeconds": 20
+              },
+              "readiness": {
+                "cmd": [
+                  "/bin/sh",
+                  "-c",
+                  "netstat -lutanp | grep LISTEN | grep 53"
+                ],
+                "initialDelaySeconds": 5,
+                "periodSeconds": 10
+              }
+            },
+            "args": [
+              "--listen",
+              "127.0.0.1:53",
+              "--default-resolver",
+              "--enable-search",
+              "--hostsfile=/etc/hosts"
+            ]
+          }
+        ],
+        "name": "api-gateway",
+        "description": "",
+        "dockerImage": "nexus.mia-platform.eu/core/api-gateway:4.1.4",
+        "environment": [],
+        "resources": {
+          "cpuLimits": {
+            "min": "10m",
+            "max": "100m"
+          },
+          "memoryLimits": {
+            "max": "25Mi",
+            "min": "5Mi"
+          }
+        },
+        "probes": {
+          "liveness": {
+            "path": "/healthz",
+            "port": 8080,
+            "initialDelaySeconds": 15,
+            "periodSeconds": 20
+          },
+          "readiness": {
+            "path": "/healthz",
+            "port": 8080,
+            "initialDelaySeconds": 5,
+            "periodSeconds": 10
+          }
+        },
+        "tags": [
+          "microgateway"
+        ],
+        "swaggerPath": "",
+        "configMaps": [
+          {
+            "name": "api-gateway-server",
+            "mountPath": "/etc/nginx/conf.d",
+            "viewAsReadOnly": true
+          },
+          {
+            "name": "api-gateway-platform",
+            "mountPath": "/etc/nginx/platform.d",
+            "viewAsReadOnly": true
+          },
+          {
+            "name": "api-gateway-customization",
+            "mountPath": "/etc/nginx/customization.d",
+            "viewAsReadOnly": true,
+            "link": {
+              "targetSection": "endpoints"
+            }
+          },
+          {
+            "name": "api-gateway-backoffice",
+            "mountPath": "/etc/nginx/backoffice.d",
+            "viewAsReadOnly": true
+          }
+        ],
+        "secrets": [],
+        "sourceComponentId": "api-gateway",
+        "containerPorts": [
+          {
+            "name": "frontend",
+            "from": 8080,
+            "to": 8080
+          },
+          {
+            "name": "backoffice",
+            "from": 8081,
+            "to": 8081
+          }
+        ],
+        "execPreStop": [
+          "sh",
+          "-c",
+          "sleep 5 && /usr/sbin/nginx -s quit"
+        ]
+      }
+    },
+    "configMaps": {
+      "crud-service-collections": {
+        "name": "crud-service-collections",
+        "gitFilesFolder": "crud-service",
+        "files": []
+      },
+      "swagger-aggregator-config": {
+        "name": "swagger-aggregator-config",
+        "gitFilesFolder": "swagger-aggregator",
+        "files": []
+      },
+      "microservice-gateway-config": {
+        "name": "microservice-gateway-config",
+        "gitFilesFolder": "microservice-gateway",
+        "files": []
+      },
+      "authorization-service-config": {
+        "name": "authorization-service-config",
+        "gitFilesFolder": "authorization-service",
+        "files": []
+      },
+      "api-gateway-server": {
+        "name": "api-gateway-server",
+        "gitFilesFolder": "api-gateway/conf.d",
+        "files": []
+      },
+      "api-gateway-platform": {
+        "name": "api-gateway-platform",
+        "gitFilesFolder": "api-gateway/platform.d",
+        "files": []
+      },
+      "api-gateway-customization": {
+        "name": "api-gateway-customization",
+        "gitFilesFolder": "api-gateway/customization.d",
+        "files": []
+      },
+      "api-gateway-backoffice": {
+        "name": "api-gateway-backoffice",
+        "gitFilesFolder": "api-gateway/backoffice.d",
+        "files": []
+      }
+    },
+    "version": "0.41.0",
+    "platformVersion": "7.9.0",
+    "serviceAccounts": {}
+  },
+  "hash": "c7713b4d21e262ebc0dd713692e01eb44135daa61ca23d342adec81b0e20dcac",
+  "changesId": "b2577223-6046-4d6e-970a-db9efb6a2981",
+  "__STATE__": "PUBLIC",
+  "snapshotInfo": {
+    "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of Base configuration document"
+  },
+  "sourceRef": "branches/main"
+}

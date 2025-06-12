@@ -624,6 +624,36 @@ Available flags for the command:
 - `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 
+### import-config
+
+The `project import-config` subcommand allows you to import specific configuration files in a Mia-Platform Console project.
+This command can be used to import one or more configuration files at the same time.
+
+Usage:
+
+```sh
+miactl project import-config [flags]
+```
+
+Available flags for the command:
+
+- `--revision`, to specify the revision of the commit to import the configuration (mutually exclusive with --environment)
+- `--environment`, to specify the environment where to import the configuration (mutually exclusive with --revision)
+- `--flow-manager-config`, path to the flowManagerConfig.json file
+- `--rbac-manager-config`, path to the rbacManagerConfig.json file
+- `--backoffice-config`, path to the backofficeConfigurations.json file
+- `--fast-data-config`, path to the fast-data-config.json file
+- `--api-console-config`, path to the api-console-config.json file
+- `--yes` (`-y`), skip interactive confirmation and proceed with import
+
+- `--project-id`, to set the ID of the desired Project
+- `--auth-name`, the name of the miactl auth to use
+- `--endpoint`, to set the Console endpoint
+- `--certificate-authority`, to provide the path to a custom CA certificate
+- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
+- `--context`, to specify a different context from the currently selected one
+- `--company-id`, to set the ID of the desired Company
+
 ## deploy
 
 The `deploy` command allows you to manage the deployment of your Projects.

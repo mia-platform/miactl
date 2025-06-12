@@ -1,0 +1,20 @@
+{
+  "projectId": "0000000000000000000000000",
+  "tenantId": "bot-targa",
+  "ref": "branches/branch-b2d167a6-3ce3-41f5-91ed-f2a015a7ff72",
+  "parentChangesId": "28237084-884a-42a5-936c-ae03c2dfd794",
+  "configType": "fast-data",
+  "config": {
+    "systems": {},
+    "castFunctions": {},
+    "singleViews": {},
+    "version": "2.2.0",
+    "erSchemas": {}
+  },
+  "hash": "8b24f6e61dadc91d5aab56207ff7fade500d6b58ba8152f8128afa4110a0d993",
+  "changesId": "cd8129d4-ff19-4135-afc3-205056259612",
+  "snapshotInfo": {
+    "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of Fast Data configuration document"
+  },
+  "__STATE__": "PUBLIC"
+}

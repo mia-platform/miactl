@@ -1,0 +1,27 @@
+{
+  "projectId": "6846886a81b6fceefa03d5ef",
+  "tenantId": "bot-targa",
+  "ref": "branches/branch-072b335d-e809-4361-b7a5-2f4890599120",
+  "configType": "rbacManagerConfig",
+  "config": {
+    "enabledServices": {},
+    "imageName": "ghcr.io/rond-authz/rond:latest",
+    "permissions": {
+      "policyFileConfigName": "rbac-sidecar-svc-opa-policies-config",
+      "policyFileContent": "...",
+      "testFileContent": "..."
+    },
+    "rbacStorage": {
+      "mongoDBURL": "{{MONGODB_URL}}",
+      "bindingsCollection": "rbac-bindings",
+      "rolesCollection": "rbac-roles"
+    },
+    "version": "0.1.0"
+  },
+  "hash": "cec952c89f6a4472af483daee30aebc19097cf6aacea11b2172dab297e6bd577",
+  "changesId": "cef5ec56-b867-4182-9b89-aa203306b740",
+  "snapshotInfo": {
+    "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of RBAC Manager configuration document"
+  },
+  "__STATE__": "PUBLIC"
+}

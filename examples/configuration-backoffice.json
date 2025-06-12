@@ -1,0 +1,17 @@
+{
+  "projectId": "6821c8de556438a553188a10",
+  "tenantId": "33f78781-4f21-40eb-8a25-e3c6b09d3236",
+  "ref": "branches/demo-self-service",
+  "parentChangesId": "589b6904-742a-4f58-9f8c-4a0db5d418e7",
+  "configType": "backofficeConfigurations",
+  "config": {
+    "services": "...",
+    "version": "1.8.0"
+  },
+  "hash": "8e68e94dfb9af7f65e91aac2a08d5d49415924962e335ffa753c123063d89a9b",
+  "changesId": "3925c607-2cef-4b5d-934d-36a7102ef872",
+  "snapshotInfo": {
+    "message": "backup from {tenantId}-{projectId}-{ref}-{gg:mm:aaaa:hh:ss:ms} of Backoffice configuration document"
+  },
+  "__STATE__": "PUBLIC"
+}
