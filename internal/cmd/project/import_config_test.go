@@ -56,7 +56,7 @@ func TestFileValidation(t *testing.T) {
 
 	tempDir := t.TempDir()
 	validFile := filepath.Join(tempDir, "valid-config.json")
-	err := os.WriteFile(validFile, []byte("{}"), 0644)
+	err := os.WriteFile(validFile, []byte("{}"), 0600)
 	require.NoError(t, err)
 
 	opts := &ConfigImportOptions{
@@ -77,11 +77,11 @@ func TestReadJSONFile(t *testing.T) {
 
 	tempDir := t.TempDir()
 	validJSON := filepath.Join(tempDir, "valid.json")
-	err := os.WriteFile(validJSON, []byte(`{"key": "value"}`), 0644)
+	err := os.WriteFile(validJSON, []byte(`{"key": "value"}`), 0600)
 	require.NoError(t, err)
 
 	invalidExt := filepath.Join(tempDir, "invalid.txt")
-	err = os.WriteFile(invalidExt, []byte(`{"key": "value"}`), 0644)
+	err = os.WriteFile(invalidExt, []byte(`{"key": "value"}`), 0600)
 	require.NoError(t, err)
 
 	var result map[string]interface{}
@@ -139,7 +139,7 @@ func TestAPIConsoleConfigMerging(t *testing.T) {
 
 	tempDir := t.TempDir()
 	apiConsoleFile := filepath.Join(tempDir, "apiConsole.json")
-	err := os.WriteFile(apiConsoleFile, []byte(`{"consoleField1": "consoleValue1", "consoleField2": "consoleValue2"}`), 0644)
+	err := os.WriteFile(apiConsoleFile, []byte(`{"consoleField1": "consoleValue1", "consoleField2": "consoleValue2"}`), 0600)
 	require.NoError(t, err)
 
 	config := map[string]any{
@@ -198,11 +198,11 @@ func TestConfirmationPrompt(t *testing.T) {
 	tempDir := t.TempDir()
 
 	flowManagerFile := filepath.Join(tempDir, "flowManager.json")
-	err := os.WriteFile(flowManagerFile, []byte(`{"flowSetting": "value1"}`), 0644)
+	err := os.WriteFile(flowManagerFile, []byte(`{"flowSetting": "value1"}`), 0600)
 	require.NoError(t, err)
 
 	rbacManagerFile := filepath.Join(tempDir, "rbacManager.json")
-	err = os.WriteFile(rbacManagerFile, []byte(`{"rbacSetting": "value2"}`), 0644)
+	err = os.WriteFile(rbacManagerFile, []byte(`{"rbacSetting": "value2"}`), 0600)
 	require.NoError(t, err)
 
 	opts := &ConfigImportOptions{
