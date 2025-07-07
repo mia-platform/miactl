@@ -43,6 +43,7 @@ type CLIOptions struct {
 	Environment string
 
 	Revision   string
+	Version    string
 	DeployType string
 	NoSemVer   bool
 	TriggerID  string
@@ -130,6 +131,14 @@ func (o *CLIOptions) AddProjectFlags(flags *pflag.FlagSet) {
 
 func (o *CLIOptions) AddCompanyFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.CompanyID, "company-id", "", "the ID of the company")
+}
+
+func (o *CLIOptions) AddRevisionFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.Revision, "revision", "", "the revision name of the configuration")
+}
+
+func (o *CLIOptions) AddVersionFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.Version, "version", "", "the version name of the configuration")
 }
 
 func (o *CLIOptions) AddEnvironmentFlags(flags *pflag.FlagSet) {
