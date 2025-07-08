@@ -54,7 +54,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 			options:          describeProjectOptions{},
 			expectError:      true,
 			expectedErrorMsg: "missing project name, please provide a project name as argument",
-			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+			testServer: describeTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
 				return false
 			}),
 		},
@@ -64,7 +64,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 			},
 			expectError:      true,
 			expectedErrorMsg: "missing revision/version name, please provide one as argument",
-			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+			testServer: describeTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
 				return false
 			}),
 		},
@@ -76,7 +76,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 			},
 			expectError:      true,
 			expectedErrorMsg: "both revision and version specified, please provide only one",
-			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+			testServer: describeTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
 				return false
 			}),
 		},
@@ -158,7 +158,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 					require.JSONEq(t, testCase.outputTextJSON, outputBuffer.String(), "output should match expected JSON")
 				} else {
 					foundMap := map[string]interface{}{}
-					err := yaml.Unmarshal([]byte(outputBuffer.String()), &foundMap)
+					err := yaml.Unmarshal(outputBuffer.Bytes(), &foundMap)
 					require.NoError(t, err)
 
 					expectedMap := map[string]interface{}{}
@@ -167,7 +167,6 @@ func TestDescribeProjectCmd(t *testing.T) {
 
 					require.Equal(t, expectedMap, foundMap)
 				}
-
 			}
 		})
 	}
