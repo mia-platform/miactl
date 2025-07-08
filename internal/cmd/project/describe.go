@@ -35,7 +35,7 @@ type describeProjectOptions struct {
 	ProjectName  string
 	RevisionName string
 	VersionName  string
-	OutputFormat string `default:"json"`
+	OutputFormat string
 }
 
 // DescribeCmd returns a cobra command for describing a project configuration
@@ -44,7 +44,7 @@ func DescribeCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   describeProjectCmdUsage,
 		Short: describeProjectCmdShort,
 		Long:  describeProjectCmdLong,
-		RunE: func(cmd *cobra.Command, _ []string) error {
+		RunE: func(cmd *cobra.Command, _args []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 
