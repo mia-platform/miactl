@@ -104,7 +104,7 @@ func describeProject(ctx context.Context, client *client.APIClient, options desc
 		return err
 	}
 
-	fmt.Println(string(bytes))
+	fmt.Fprintln(writer, string(bytes))
 	return nil
 }
 

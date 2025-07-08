@@ -18,6 +18,7 @@ package project
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -25,8 +26,10 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
 func TestCreateDescribeCmd(t *testing.T) {
@@ -45,7 +48,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 		expectError      bool
 		expectedErrorMsg string
 		testServer       *httptest.Server
-		outputText       string
+		outputTextJSON   string
 	}{
 		"error missing project id": {
 			options:          describeProjectOptions{},
@@ -80,18 +83,19 @@ func TestDescribeProjectCmd(t *testing.T) {
 		"valid project with revision": {
 			options: describeProjectOptions{
 				ProjectID:    "test-project",
-				RevisionName: "test-revision",
+				RevisionName: "test-json-revision",
 				OutputFormat: "json",
 			},
 			revisionName: "test-revision",
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-json-revision/configuration" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
-					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-revision"}`))
+					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-json-revision"}`))
 					return true
 				}
 				return false
 			}),
+			outputTextJSON: `{"name": "test-project", "revision": "test-json-revision"}`,
 		},
 		"valid project with version": {
 			options: describeProjectOptions{
@@ -107,6 +111,23 @@ func TestDescribeProjectCmd(t *testing.T) {
 				}
 				return false
 			}),
+			outputTextJSON: `{"name": "test-project", "revision": "test-version"}`,
+		},
+		"valid project with yaml output format": {
+			options: describeProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-yaml-revision",
+				OutputFormat: "yaml",
+			},
+			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-yaml-revision/configuration" && r.Method == http.MethodGet {
+					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-yaml-revision"}`))
+					return true
+				}
+				return false
+			}),
+			outputTextJSON: `{"name": "test-project", "revision": "test-yaml-revision"}`,
 		},
 	}
 
@@ -132,9 +153,22 @@ func TestDescribeProjectCmd(t *testing.T) {
 				require.EqualError(t, err, testCase.expectedErrorMsg)
 			} else {
 				require.NoError(t, err)
-			}
 
-			assert.Equal(t, testCase.outputText, outputBuffer.String())
+				if testCase.options.OutputFormat == encoding.JSON {
+					require.JSONEq(t, testCase.outputTextJSON, outputBuffer.String(), "output should match expected JSON")
+				} else {
+					foundMap := map[string]interface{}{}
+					err := yaml.Unmarshal([]byte(outputBuffer.String()), &foundMap)
+					require.NoError(t, err)
+
+					expectedMap := map[string]interface{}{}
+					err = json.Unmarshal([]byte(testCase.outputTextJSON), &expectedMap)
+					require.NoError(t, err)
+
+					require.Equal(t, expectedMap, foundMap)
+				}
+
+			}
 		})
 	}
 }
