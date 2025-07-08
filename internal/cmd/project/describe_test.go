@@ -16,6 +16,7 @@
 package project
 
 import (
+	"bytes"
 	"context"
 	"net/http"
 	"net/http/httptest"
@@ -36,46 +37,6 @@ func TestCreateDescribeCmd(t *testing.T) {
 	})
 }
 
-func TestDescribeProjectArguments(t *testing.T) {
-	t.Run("error missing project", func(t *testing.T) {
-		opts := clioptions.NewCLIOptions()
-		cmd := DescribeCmd(opts)
-
-		cmd.SetArgs([]string{"describe"})
-		err := cmd.Execute()
-
-		require.EqualError(t, err, "missing project name, please provide a project name as argument")
-	})
-
-	t.Run("error missing revision/version", func(t *testing.T) {
-		opts := clioptions.NewCLIOptions()
-		cmd := DescribeCmd(opts)
-
-		cmd.SetArgs([]string{
-			"describe",
-			"--project-id", "test-project",
-		})
-		err := cmd.Execute()
-
-		require.EqualError(t, err, "missing revision/version name, please provide one as argument")
-	})
-
-	t.Run("error both revision/version specified", func(t *testing.T) {
-		opts := clioptions.NewCLIOptions()
-		cmd := DescribeCmd(opts)
-
-		cmd.SetArgs([]string{
-			"describe",
-			"--project-id", "test-project",
-			"--revision", "test-revision",
-			"--version", "test-version",
-		})
-		err := cmd.Execute()
-
-		require.EqualError(t, err, "both revision and version specified, please provide only one")
-	})
-}
-
 func TestDescribeProjectCmd(t *testing.T) {
 	testCases := map[string]struct {
 		options          describeProjectOptions
@@ -84,10 +45,41 @@ func TestDescribeProjectCmd(t *testing.T) {
 		expectError      bool
 		expectedErrorMsg string
 		testServer       *httptest.Server
+		outputText       string
 	}{
+		"error missing project id": {
+			options:          describeProjectOptions{},
+			expectError:      true,
+			expectedErrorMsg: "missing project name, please provide a project name as argument",
+			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				return false
+			}),
+		},
+		"error missing revision/version": {
+			options: describeProjectOptions{
+				ProjectID: "test-project",
+			},
+			expectError:      true,
+			expectedErrorMsg: "missing revision/version name, please provide one as argument",
+			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				return false
+			}),
+		},
+		"error both revision/version specified": {
+			options: describeProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-revision",
+				VersionName:  "test-version",
+			},
+			expectError:      true,
+			expectedErrorMsg: "both revision and version specified, please provide only one",
+			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				return false
+			}),
+		},
 		"valid project with revision": {
 			options: describeProjectOptions{
-				ProjectName:  "test-project",
+				ProjectID:    "test-project",
 				RevisionName: "test-revision",
 				OutputFormat: "json",
 			},
@@ -103,7 +95,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 		},
 		"valid project with version": {
 			options: describeProjectOptions{
-				ProjectName:  "test-project",
+				ProjectID:    "test-project",
 				VersionName:  "test-version",
 				OutputFormat: "json",
 			},
@@ -131,7 +123,9 @@ func TestDescribeProjectCmd(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = describeProject(ctx, client, testCase.options)
+			outputBuffer := bytes.NewBuffer([]byte{})
+
+			err = describeProject(ctx, client, testCase.options, outputBuffer)
 
 			if testCase.expectError {
 				require.Error(t, err)
@@ -139,6 +133,8 @@ func TestDescribeProjectCmd(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 			}
+
+			assert.Equal(t, testCase.outputText, outputBuffer.String())
 		})
 	}
 }

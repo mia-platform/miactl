@@ -18,6 +18,7 @@ package project
 import (
 	"context"
 	"fmt"
+	"io"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -32,7 +33,7 @@ const (
 )
 
 type describeProjectOptions struct {
-	ProjectName  string
+	ProjectID    string
 	RevisionName string
 	VersionName  string
 	OutputFormat string
@@ -54,15 +55,14 @@ func DescribeCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cmdOptions := describeProjectOptions{
 				RevisionName: options.Revision,
 				VersionName:  options.Version,
-				ProjectName:  restConfig.ProjectID,
+				ProjectID:    restConfig.ProjectID,
 				OutputFormat: options.OutputFormat,
 			}
 
-			return describeProject(cmd.Context(), client, cmdOptions)
+			return describeProject(cmd.Context(), client, cmdOptions, cmd.ErrOrStderr())
 		},
 	}
 
-	// add cmd flags
 	flags := cmd.Flags()
 	options.AddProjectFlags(flags)
 	options.AddRevisionFlags(flags)
@@ -72,8 +72,8 @@ func DescribeCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func describeProject(ctx context.Context, client *client.APIClient, options describeProjectOptions) error {
-	if len(options.ProjectName) == 0 {
+func describeProject(ctx context.Context, client *client.APIClient, options describeProjectOptions, writer io.Writer) error {
+	if len(options.ProjectID) == 0 {
 		return fmt.Errorf("missing project name, please provide a project name as argument")
 	}
 
@@ -82,13 +82,13 @@ func describeProject(ctx context.Context, client *client.APIClient, options desc
 		return err
 	}
 
-	endpoint := fmt.Sprintf("/api/backend/projects/%s/%s/configuration", options.ProjectName, ref)
+	endpoint := fmt.Sprintf("/api/backend/projects/%s/%s/configuration", options.ProjectID, ref)
 	response, err := client.
 		Get().
 		APIPath(endpoint).
 		Do(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to get project %s, ref %s: %w", options.ProjectName, ref, err)
+		return fmt.Errorf("failed to get project %s, ref %s: %w", options.ProjectID, ref, err)
 	}
 	if err := response.Error(); err != nil {
 		return err
