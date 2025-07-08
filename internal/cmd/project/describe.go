@@ -44,7 +44,7 @@ func DescribeCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   describeProjectCmdUsage,
 		Short: describeProjectCmdShort,
 		Long:  describeProjectCmdLong,
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 

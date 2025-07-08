@@ -129,6 +129,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 			client, err := client.APIClientForConfig(&client.Config{
 				Host: server.URL,
 			})
+			require.NoError(t, err)
 
 			err = describeProject(ctx, client, testCase.options)
 
