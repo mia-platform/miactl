@@ -38,7 +38,7 @@ $(TOOLS_BIN)/golangci-lint: $(TOOLS_DIR)/GOLANGCI_LINT_VERSION
 	$(eval GOLANGCI_LINT_VERSION:= $(shell cat $<))
 	mkdir -p $(TOOLS_BIN)
 	$(info Installing golangci-lint $(GOLANGCI_LINT_VERSION) bin in $(TOOLS_BIN))
-	GOBIN=$(TOOLS_BIN) go install github.com/golangci/golangci-lint/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	GOBIN=$(TOOLS_BIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
 
 .PHONY: gomod-lint
 lint: gomod-lint
