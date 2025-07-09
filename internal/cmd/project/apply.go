@@ -1,0 +1,158 @@
+// Copyright Mia srl
+// SPDX-License-Identifier: Apache-2.0
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package project
+
+import (
+	"context"
+	"fmt"
+	"io"
+
+	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/files"
+	"github.com/mia-platform/miactl/internal/resources"
+	"github.com/spf13/cobra"
+)
+
+const (
+	applyProjectCmdUsage = "apply"
+	applyProjectCmdShort = "Apply a Project configuration"
+	applyProjectCmdLong  = `Apply a Project configuration from a file.
+
+The configuration file should contain a complete project configuration in JSON or YAML format.
+This command will replace the current project configuration with the one provided in the file.
+`
+)
+
+type applyProjectOptions struct {
+	ProjectID    string
+	RevisionName string
+	VersionName  string
+	FilePath     string
+}
+
+// ApplyCmd returns a cobra command for applying a project configuration
+func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   applyProjectCmdUsage,
+		Short: applyProjectCmdShort,
+		Long:  applyProjectCmdLong,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			restConfig, err := options.ToRESTConfig()
+			cobra.CheckErr(err)
+
+			client, err := client.APIClientForConfig(restConfig)
+			cobra.CheckErr(err)
+
+			cmdOptions := applyProjectOptions{
+				RevisionName: options.Revision,
+				VersionName:  options.Version,
+				ProjectID:    restConfig.ProjectID,
+				FilePath:     options.InputFilePath,
+			}
+
+			return applyProject(cmd.Context(), client, cmdOptions, cmd.OutOrStdout())
+		},
+	}
+
+	flags := cmd.Flags()
+	options.AddProjectFlags(flags)
+	options.AddRevisionFlags(flags)
+	options.AddVersionFlags(flags)
+
+	flags.StringVarP(&options.InputFilePath, "file", "f", "", "path to JSON/YAML file containing the project configuration")
+	if err := cmd.MarkFlagRequired("file"); err != nil {
+		panic(err)
+	}
+
+	return cmd
+}
+
+func applyProject(ctx context.Context, client *client.APIClient, options applyProjectOptions, writer io.Writer) error {
+	if len(options.ProjectID) == 0 {
+		return fmt.Errorf("missing project name, please provide a project name as argument")
+	}
+
+	if len(options.FilePath) == 0 {
+		return fmt.Errorf("missing file path, please provide a file path with the -f flag")
+	}
+
+	ref, err := getConfigRef(options.RevisionName, options.VersionName)
+	if err != nil {
+		return err
+	}
+
+	// Read the project configuration from the file
+	projectConfig := make(map[string]any)
+	if err := files.ReadFile(options.FilePath, &projectConfig); err != nil {
+		return fmt.Errorf("failed to read project configuration file: %w", err)
+	}
+
+	// Prepare the request body with the configuration
+	requestBody := map[string]any{
+		"config":          projectConfig,
+		"previousSave":    projectConfig["commitId"],
+		"title":           "[CLI] Apply project configuration",
+		"deletedElements": make(map[string]any),
+	}
+
+	// Handle special config sections that need to be at the top level
+	if fastDataConfig, ok := projectConfig["fastDataConfig"]; ok {
+		requestBody["fastDataConfig"] = fastDataConfig
+		delete(projectConfig, "fastDataConfig")
+	}
+	if microfrontendPluginsConfig, ok := projectConfig["microfrontendPluginsConfig"]; ok {
+		requestBody["microfrontendPluginsConfig"] = microfrontendPluginsConfig
+		delete(projectConfig, "microfrontendPluginsConfig")
+	} else {
+		requestBody["microfrontendPluginsConfig"] = make(map[string]any)
+	}
+	if extensionsConfig, ok := projectConfig["extensionsConfig"]; ok {
+		requestBody["extensionsConfig"] = extensionsConfig
+		delete(projectConfig, "extensionsConfig")
+	} else {
+		requestBody["extensionsConfig"] = map[string]any{
+			"files": make(map[string]any),
+		}
+	}
+
+	// Remove read-only fields that shouldn't be in the request
+	delete(projectConfig, "committedDate")
+	delete(projectConfig, "lastCommitAuthor")
+	delete(projectConfig, "platformVersion")
+
+	// Encode the request body
+	body, err := resources.EncodeResourceToJSON(requestBody)
+	if err != nil {
+		return fmt.Errorf("cannot encode project configuration: %w", err)
+	}
+
+	endpoint := fmt.Sprintf("/api/backend/projects/%s/%s/configuration", options.ProjectID, ref)
+	response, err := client.
+		Post().
+		APIPath(endpoint).
+		Body(body).
+		Do(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to apply project configuration: %w", err)
+	}
+	if err := response.Error(); err != nil {
+		return err
+	}
+
+	fmt.Fprintln(writer, "Project configuration applied successfully")
+	return nil
+}
