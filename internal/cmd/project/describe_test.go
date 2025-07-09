@@ -129,6 +129,38 @@ func TestDescribeProjectCmd(t *testing.T) {
 			}),
 			outputTextJSON: `{"name": "test-project", "revision": "test-yaml-revision"}`,
 		},
+		"revision with slash": {
+			options: describeProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "some/revision",
+				OutputFormat: "yaml",
+			},
+			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/some%2Frevision/configuration" && r.Method == http.MethodGet {
+					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-yaml-revision"}`))
+					return true
+				}
+				return false
+			}),
+			outputTextJSON: `{"name": "test-project", "revision": "test-yaml-revision"}`,
+		},
+		"version with slash": {
+			options: describeProjectOptions{
+				ProjectID:    "test-project",
+				VersionName:  "version/1.2.3",
+				OutputFormat: "yaml",
+			},
+			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/versions/version%2F1.2.3/configuration" && r.Method == http.MethodGet {
+					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-yaml-revision"}`))
+					return true
+				}
+				return false
+			}),
+			outputTextJSON: `{"name": "test-project", "revision": "test-yaml-revision"}`,
+		},
 	}
 
 	for name, testCase := range testCases {

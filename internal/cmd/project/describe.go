@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -114,10 +115,12 @@ func getConfigRef(revisionName, versionName string) (string, error) {
 	}
 
 	if len(revisionName) > 0 {
-		return fmt.Sprintf("revisions/%s", revisionName), nil
+		encodedRevisionName := url.PathEscape(revisionName)
+		return fmt.Sprintf("revisions/%s", encodedRevisionName), nil
 	}
 	if len(versionName) > 0 {
-		return fmt.Sprintf("versions/%s", versionName), nil
+		encodedVersionName := url.PathEscape(versionName)
+		return fmt.Sprintf("versions/%s", encodedVersionName), nil
 	}
 
 	return "", fmt.Errorf("missing revision/version name, please provide one as argument")
