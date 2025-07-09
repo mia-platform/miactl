@@ -62,15 +62,15 @@
   "fastDataConfig": {
     "castFunctions": {},
     "erSchemas": {},
-    "lastCommitId": "90184c97-e717-41dd-889c-a493ff48d999",
+    "lastCommitId": "some-commit-id",
     "singleViews": {},
     "systems": {},
     "updatedAt": "2025-05-14T13:59:00.766Z",
     "version": "2.2.0"
   },
   "groups": [],
-  "lastCommitAuthor": "Federico Maggi",
-  "lastConfigFileCommitId": "90184c97-e717-41dd-889c-a493ff48d999",
+  "lastCommitAuthor": "John Doe",
+  "lastConfigFileCommitId": "some-commit-id",
   "listeners": {
     "frontend": {
       "type": "http",

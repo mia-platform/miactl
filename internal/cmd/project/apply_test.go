@@ -98,11 +98,38 @@ func TestApplyProjectCmd(t *testing.T) {
 				return false
 			}),
 		},
-		"valid project apply with revision": {
+		"valid project apply with revision (JSON)": {
 			options: applyProjectOptions{
 				ProjectID:    "test-project",
 				RevisionName: "test-revision",
 				FilePath:     "testdata/valid-config.json",
+			},
+			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
+					// Verify the request body structure
+					var requestBody map[string]interface{}
+					err := json.NewDecoder(r.Body).Decode(&requestBody)
+					require.NoError(t, err)
+
+					// Check that the request has the expected structure
+					assert.Contains(t, requestBody, "config")
+					assert.Contains(t, requestBody, "previousSave")
+					assert.Contains(t, requestBody, "title")
+					assert.Contains(t, requestBody, "deletedElements")
+					assert.Equal(t, "[CLI] Apply project configuration", requestBody["title"])
+
+					w.WriteHeader(http.StatusOK)
+					w.Write([]byte(`{}`))
+					return true
+				}
+				return false
+			}),
+		},
+		"valid project apply with revision (YAML)": {
+			options: applyProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-revision",
+				FilePath:     "testdata/valid-config.yaml",
 			},
 			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
 				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
