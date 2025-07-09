@@ -104,7 +104,8 @@ func (r *Request) APIPath(apiPath string) *Request {
 		return r
 	}
 
-	r.apiPath = parsedURI.Path
+	r.apiPath = parsedURI.EscapedPath()
+
 	// comment out this, because not every request support the trailing /
 	// hopefully in the future they will
 	// if !strings.HasSuffix(r.apiPath, "/") {

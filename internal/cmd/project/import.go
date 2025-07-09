@@ -34,9 +34,9 @@ import (
 )
 
 const (
-	cmdUsage = "import"
-	cmdShort = "[beta] - Import kubernetes resources"
-	cmdLong  = `[beta] - Import kubernetes resources in a Mia-Platform Console project.`
+	importCmdUsage = "import"
+	importCmdShort = "[beta] - Import kubernetes resources"
+	importCmdLong  = `[beta] - Import kubernetes resources in a Mia-Platform Console project.`
 
 	configurationEndpointTemplate = "/api/backend/projects/%s/revisions/%s/configuration"
 	convertEndpointTemplate       = "/api/projects/%s/configurations/from-raw"
@@ -58,9 +58,9 @@ type convertedResourcesBody struct {
 // ImportCmd return a cobra command for listing projects
 func ImportCmd(o *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   cmdUsage,
-		Short: cmdShort,
-		Long:  cmdLong,
+		Use:   importCmdUsage,
+		Short: importCmdShort,
+		Long:  importCmdLong,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := o.ToRESTConfig()
 			cobra.CheckErr(err)
