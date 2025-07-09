@@ -63,26 +63,25 @@ func TestApplyProjectCmd(t *testing.T) {
 				return false
 			}),
 		},
-		"error missing revision/version": {
+		"error missing revision": {
 			options: applyProjectOptions{
 				ProjectID: "test-project",
 				FilePath:  "testdata/valid-config.json",
 			},
 			expectError:      true,
-			expectedErrorMsg: "missing revision/version name, please provide one as argument",
+			expectedErrorMsg: "missing revision name, please provide a revision name",
 			testServer: applyTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
 				return false
 			}),
 		},
-		"error both revision/version specified": {
+		"error version not supported": {
 			options: applyProjectOptions{
-				ProjectID:    "test-project",
-				RevisionName: "test-revision",
-				VersionName:  "test-version",
-				FilePath:     "testdata/valid-config.json",
+				ProjectID:   "test-project",
+				VersionName: "test-version",
+				FilePath:    "testdata/valid-config.json",
 			},
 			expectError:      true,
-			expectedErrorMsg: "both revision and version specified, please provide only one",
+			expectedErrorMsg: "version flag is not supported for apply command, use --revision instead",
 			testServer: applyTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
 				return false
 			}),
@@ -119,21 +118,6 @@ func TestApplyProjectCmd(t *testing.T) {
 					assert.Contains(t, requestBody, "deletedElements")
 					assert.Equal(t, "[CLI] Apply project configuration", requestBody["title"])
 
-					w.WriteHeader(http.StatusOK)
-					w.Write([]byte(`{}`))
-					return true
-				}
-				return false
-			}),
-		},
-		"valid project apply with version": {
-			options: applyProjectOptions{
-				ProjectID:   "test-project",
-				VersionName: "test-version",
-				FilePath:    "testdata/valid-config.json",
-			},
-			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/versions/test-version/configuration" && r.Method == http.MethodPost {
 					w.WriteHeader(http.StatusOK)
 					w.Write([]byte(`{}`))
 					return true

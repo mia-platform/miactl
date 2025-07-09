@@ -19,6 +19,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -40,7 +41,7 @@ This command will replace the current project configuration with the one provide
 type applyProjectOptions struct {
 	ProjectID    string
 	RevisionName string
-	VersionName  string
+	VersionName  string // NOTE: explicited to avoid confusion with RevisionName
 	FilePath     string
 }
 
@@ -59,7 +60,6 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			cmdOptions := applyProjectOptions{
 				RevisionName: options.Revision,
-				VersionName:  options.Version,
 				ProjectID:    restConfig.ProjectID,
 				FilePath:     options.InputFilePath,
 			}
@@ -71,7 +71,6 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	flags := cmd.Flags()
 	options.AddProjectFlags(flags)
 	options.AddRevisionFlags(flags)
-	options.AddVersionFlags(flags)
 
 	flags.StringVarP(&options.InputFilePath, "file", "f", "", "path to JSON/YAML file containing the project configuration")
 	if err := cmd.MarkFlagRequired("file"); err != nil {
@@ -90,7 +89,12 @@ func applyProject(ctx context.Context, client *client.APIClient, options applyPr
 		return fmt.Errorf("missing file path, please provide a file path with the -f flag")
 	}
 
-	ref, err := getConfigRef(options.RevisionName, options.VersionName)
+	// Check if version flag is provided and reject it
+	if options.VersionName != "" {
+		return fmt.Errorf("version flag is not supported for apply command, use --revision instead")
+	}
+
+	ref, err := getRevisionRef(options.RevisionName)
 	if err != nil {
 		return err
 	}
@@ -155,4 +159,13 @@ func applyProject(ctx context.Context, client *client.APIClient, options applyPr
 
 	fmt.Fprintln(writer, "Project configuration applied successfully")
 	return nil
+}
+
+func getRevisionRef(revisionName string) (string, error) {
+	if len(revisionName) == 0 {
+		return "", fmt.Errorf("missing revision name, please provide a revision name")
+	}
+
+	encodedRevisionName := url.PathEscape(revisionName)
+	return fmt.Sprintf("revisions/%s", encodedRevisionName), nil
 }
