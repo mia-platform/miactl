@@ -60,7 +60,7 @@ func DescribeCmd(options *clioptions.CLIOptions) *cobra.Command {
 				OutputFormat: options.OutputFormat,
 			}
 
-			return describeProject(cmd.Context(), client, cmdOptions, cmd.ErrOrStderr())
+			return describeProject(cmd.Context(), client, cmdOptions, cmd.OutOrStdout())
 		},
 	}
 
