@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - added `project describe` command
+- added `project apply` command
 
 ## [v0.19.0] - 2025-06-18
 

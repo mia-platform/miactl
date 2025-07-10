@@ -25,6 +25,8 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/files"
 	"github.com/mia-platform/miactl/internal/resources"
+	"github.com/mia-platform/miactl/internal/resources/configuration"
+
 	"github.com/spf13/cobra"
 )
 
@@ -41,7 +43,6 @@ This command will replace the current project configuration with the one provide
 type applyProjectOptions struct {
 	ProjectID    string
 	RevisionName string
-	VersionName  string // NOTE: explicited to avoid confusion with RevisionName
 	FilePath     string
 }
 
@@ -89,11 +90,6 @@ func applyProject(ctx context.Context, client *client.APIClient, options applyPr
 		return fmt.Errorf("missing file path, please provide a file path with the -f flag")
 	}
 
-	// Check if version flag is provided and reject it
-	if options.VersionName != "" {
-		return fmt.Errorf("version flag is not supported for apply command, use --revision instead")
-	}
-
 	ref, err := getRevisionRef(options.RevisionName)
 	if err != nil {
 		return err
@@ -105,41 +101,10 @@ func applyProject(ctx context.Context, client *client.APIClient, options applyPr
 		return fmt.Errorf("failed to read project configuration file: %w", err)
 	}
 
-	// Prepare the request body with the configuration
-	requestBody := map[string]any{
-		"config":          projectConfig,
-		"previousSave":    projectConfig["commitId"],
-		"title":           "[CLI] Apply project configuration",
-		"deletedElements": make(map[string]any),
-	}
+	applyConfigRequest := configuration.CreateApplyConfigurationRequest(projectConfig)
+	applyConfigRequest.Title = "[miactl] Applied project configuration"
 
-	// Handle special config sections that need to be at the top level
-	if fastDataConfig, ok := projectConfig["fastDataConfig"]; ok {
-		requestBody["fastDataConfig"] = fastDataConfig
-		delete(projectConfig, "fastDataConfig")
-	}
-	if microfrontendPluginsConfig, ok := projectConfig["microfrontendPluginsConfig"]; ok {
-		requestBody["microfrontendPluginsConfig"] = microfrontendPluginsConfig
-		delete(projectConfig, "microfrontendPluginsConfig")
-	} else {
-		requestBody["microfrontendPluginsConfig"] = make(map[string]any)
-	}
-	if extensionsConfig, ok := projectConfig["extensionsConfig"]; ok {
-		requestBody["extensionsConfig"] = extensionsConfig
-		delete(projectConfig, "extensionsConfig")
-	} else {
-		requestBody["extensionsConfig"] = map[string]any{
-			"files": make(map[string]any),
-		}
-	}
-
-	// Remove read-only fields that shouldn't be in the request
-	delete(projectConfig, "committedDate")
-	delete(projectConfig, "lastCommitAuthor")
-	delete(projectConfig, "platformVersion")
-
-	// Encode the request body
-	body, err := resources.EncodeResourceToJSON(requestBody)
+	body, err := resources.EncodeResourceToJSON(applyConfigRequest)
 	if err != nil {
 		return fmt.Errorf("cannot encode project configuration: %w", err)
 	}

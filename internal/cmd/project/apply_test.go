@@ -22,6 +22,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -74,18 +75,6 @@ func TestApplyProjectCmd(t *testing.T) {
 				return false
 			}),
 		},
-		"error version not supported": {
-			options: applyProjectOptions{
-				ProjectID:   "test-project",
-				VersionName: "test-version",
-				FilePath:    "testdata/valid-config.json",
-			},
-			expectError:      true,
-			expectedErrorMsg: "version flag is not supported for apply command, use --revision instead",
-			testServer: applyTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
-				return false
-			}),
-		},
 		"error invalid file path": {
 			options: applyProjectOptions{
 				ProjectID:    "test-project",
@@ -98,52 +87,80 @@ func TestApplyProjectCmd(t *testing.T) {
 				return false
 			}),
 		},
-		"valid project apply with revision (JSON)": {
+		"apply base project (JSON)": {
 			options: applyProjectOptions{
 				ProjectID:    "test-project",
 				RevisionName: "test-revision",
-				FilePath:     "testdata/valid-config.json",
+				FilePath:     "testdata/base-config.json",
 			},
 			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
 				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
-					// Verify the request body structure
-					var requestBody map[string]interface{}
+					var requestBody map[string]any
 					err := json.NewDecoder(r.Body).Decode(&requestBody)
 					require.NoError(t, err)
 
-					// Check that the request has the expected structure
 					assert.Contains(t, requestBody, "config")
 					assert.Contains(t, requestBody, "previousSave")
 					assert.Contains(t, requestBody, "title")
-					assert.Contains(t, requestBody, "deletedElements")
-					assert.Equal(t, "[CLI] Apply project configuration", requestBody["title"])
+					assert.NotContains(t, requestBody, "fastDataConfig")
+
+					assert.Equal(t, "[miactl] Applied project configuration", requestBody["title"])
 
 					w.WriteHeader(http.StatusOK)
 					w.Write([]byte(`{}`))
+
 					return true
 				}
+
 				return false
 			}),
 		},
-		"valid project apply with revision (YAML)": {
+		"apply base project (YAML)": {
 			options: applyProjectOptions{
 				ProjectID:    "test-project",
 				RevisionName: "test-revision",
-				FilePath:     "testdata/valid-config.yaml",
+				FilePath:     "testdata/base-config.yaml",
 			},
 			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
 				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
-					// Verify the request body structure
+					var requestBody map[string]any
+					err := json.NewDecoder(r.Body).Decode(&requestBody)
+					require.NoError(t, err)
+
+					assert.Contains(t, requestBody, "config")
+					assert.Contains(t, requestBody, "previousSave")
+					assert.Contains(t, requestBody, "title")
+					assert.NotContains(t, requestBody, "fastDataConfig")
+
+					assert.Equal(t, "[miactl] Applied project configuration", requestBody["title"])
+
+					w.WriteHeader(http.StatusOK)
+					w.Write([]byte(`{}`))
+
+					return true
+				}
+
+				return false
+			}),
+		},
+		"apply config with fastdata": {
+			options: applyProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-revision",
+				FilePath:     "testdata/config-with-fastdata.json",
+			},
+			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
 					var requestBody map[string]interface{}
 					err := json.NewDecoder(r.Body).Decode(&requestBody)
 					require.NoError(t, err)
 
-					// Check that the request has the expected structure
 					assert.Contains(t, requestBody, "config")
 					assert.Contains(t, requestBody, "previousSave")
 					assert.Contains(t, requestBody, "title")
-					assert.Contains(t, requestBody, "deletedElements")
-					assert.Equal(t, "[CLI] Apply project configuration", requestBody["title"])
+					assert.Contains(t, requestBody, "fastDataConfig")
+
+					assert.Equal(t, "[miactl] Applied project configuration", requestBody["title"])
 
 					w.WriteHeader(http.StatusOK)
 					w.Write([]byte(`{}`))
@@ -159,13 +176,16 @@ func TestApplyProjectCmd(t *testing.T) {
 			server := testCase.testServer
 			defer server.Close()
 
+			ctx, cancel := context.WithTimeout(t.Context(), 5*time.Second)
+			defer cancel()
+
 			client, err := client.APIClientForConfig(&client.Config{
 				Host: server.URL,
 			})
 			require.NoError(t, err)
 
 			var writer bytes.Buffer
-			err = applyProject(context.Background(), client, testCase.options, &writer)
+			err = applyProject(ctx, client, testCase.options, &writer)
 
 			if testCase.expectError {
 				assert.Error(t, err)
