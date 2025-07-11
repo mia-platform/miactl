@@ -52,16 +52,6 @@ type ApplyProjectConfigurationRequest struct {
 	*configuration.DescribeConfiguration
 }
 
-func CreateApplyConfigurationRequest(config *configuration.DescribeConfiguration) (ApplyProjectConfigurationRequest, error) {
-	if config == nil {
-		return ApplyProjectConfigurationRequest{}, fmt.Errorf("invalid nil configuration provided")
-	}
-
-	return ApplyProjectConfigurationRequest{
-		DescribeConfiguration: config,
-	}, nil
-}
-
 // ApplyCmd returns a cobra command for applying a project configuration
 func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
@@ -144,13 +134,12 @@ func applyConfiguration(ctx context.Context, client *client.APIClient, options a
 		return fmt.Errorf("cannot parse project configuration: %w", err)
 	}
 
-	applyConfig, err := CreateApplyConfigurationRequest(structuredConfig)
-	if err != nil {
-		return fmt.Errorf("failed to apply configuration: %w", err)
+	previousSnapshotID := structuredConfig.Config["commitId"].(string)
+	applyConfig := ApplyProjectConfigurationRequest{
+		DescribeConfiguration: structuredConfig,
+		Title:                 "[miactl] Applied project configuration",
+		PreviousSave:          previousSnapshotID,
 	}
-
-	applyConfig.Title = "[miactl] Applied project configuration"
-	applyConfig.PreviousSave = structuredConfig.Config["commitId"].(string)
 
 	body, err := resources.EncodeResourceToJSON(applyConfig)
 	if err != nil {
