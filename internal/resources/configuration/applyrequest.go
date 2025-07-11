@@ -15,8 +15,32 @@
 
 package configuration
 
+const (
+	DefaultTitle = "[miactl] Applied project configuration"
+)
+
 type ApplyRequest struct {
 	Title        string `json:"title" yaml:"title"`
 	PreviousSave string `json:"previousSave,omitempty" yaml:"previousSave,omitempty"`
 	*Configuration
+}
+
+func BuildApplyRequest(config *Configuration) *ApplyRequest {
+	req := &ApplyRequest{
+		Configuration: config,
+	}
+
+	return req.
+		withPreviousSnapshotID(config.Config["commitId"].(string)).
+		WithTitle(DefaultTitle)
+}
+
+func (r *ApplyRequest) WithTitle(title string) *ApplyRequest {
+	r.Title = title
+	return r
+}
+
+func (r *ApplyRequest) withPreviousSnapshotID(previousSnapshotID string) *ApplyRequest {
+	r.PreviousSave = previousSnapshotID
+	return r
 }

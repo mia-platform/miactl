@@ -42,6 +42,7 @@ type applyProjectOptions struct {
 	ProjectID    string
 	RevisionName string
 	FilePath     string
+	Title        string
 }
 
 // ApplyCmd returns a cobra command for applying a project configuration
@@ -61,6 +62,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 				RevisionName: options.Revision,
 				ProjectID:    restConfig.ProjectID,
 				FilePath:     options.InputFilePath,
+				Title:        options.Message,
 			}
 
 			return handleApplyProjectConfigurationCmd(cmd.Context(), client, cmdOptions)
@@ -71,6 +73,9 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	options.AddProjectFlags(flags)
 	options.AddRevisionFlags(flags)
 
+	flags.StringVarP(&options.Message, "message", "m", "", "the message to use when saving the configuration")
+
+	// file path flag is required
 	flags.StringVarP(&options.InputFilePath, "file", "f", "", "path to JSON/YAML file containing the project configuration")
 	if err := cmd.MarkFlagRequired("file"); err != nil {
 		panic(err)
@@ -126,11 +131,10 @@ func applyConfiguration(ctx context.Context, client *client.APIClient, options a
 		return fmt.Errorf("cannot parse project configuration: %w", err)
 	}
 
-	previousSnapshotID := structuredConfig.Config["commitId"].(string)
-	applyConfig := configuration.ApplyRequest{
-		Configuration: structuredConfig,
-		Title:         "[miactl] Applied project configuration",
-		PreviousSave:  previousSnapshotID,
+	applyConfig := configuration.BuildApplyRequest(structuredConfig)
+
+	if options.Title != "" {
+		applyConfig = applyConfig.WithTitle(options.Title)
 	}
 
 	body, err := resources.EncodeResourceToJSON(applyConfig)

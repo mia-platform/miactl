@@ -232,6 +232,31 @@ func TestApplyProjectCmd(t *testing.T) {
 				return false
 			}),
 		},
+		"with custom title": {
+			options: applyProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-revision",
+				FilePath:     "testdata/base-config.json",
+				Title:        "apply config custom title",
+			},
+			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
+					var requestBody map[string]any
+					err := json.NewDecoder(r.Body).Decode(&requestBody)
+					require.NoError(t, err)
+
+					assert.Contains(t, requestBody, "title")
+					assert.Equal(t, "apply config custom title", requestBody["title"])
+
+					w.WriteHeader(http.StatusOK)
+					w.Write([]byte(`{}`))
+
+					return true
+				}
+
+				return false
+			}),
+		},
 	}
 
 	for name, testCase := range testCases {
