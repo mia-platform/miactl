@@ -44,6 +44,7 @@ resources that make up the applications of a specific company.
 		project.IAMCmd(o),
 		project.ImportCmd(o),
 		project.DescribeCmd(o),
+		project.ApplyCmd(o),
 	)
 
 	return projectCmd
