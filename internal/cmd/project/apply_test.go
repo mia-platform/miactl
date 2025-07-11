@@ -151,7 +151,7 @@ func TestApplyProjectCmd(t *testing.T) {
 			},
 			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
 				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
-					var requestBody map[string]interface{}
+					var requestBody map[string]any
 					err := json.NewDecoder(r.Body).Decode(&requestBody)
 					require.NoError(t, err)
 
@@ -159,6 +159,59 @@ func TestApplyProjectCmd(t *testing.T) {
 					assert.Contains(t, requestBody, "previousSave")
 					assert.Contains(t, requestBody, "title")
 					assert.Contains(t, requestBody, "fastDataConfig")
+
+					assert.Equal(t, "[miactl] Applied project configuration", requestBody["title"])
+
+					w.WriteHeader(http.StatusOK)
+					w.Write([]byte(`{}`))
+					return true
+				}
+				return false
+			}),
+		},
+		"apply config with extensionsConfig": {
+			options: applyProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-revision",
+				FilePath:     "testdata/config-with-extensions.json",
+			},
+			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
+					var requestBody map[string]any
+					err := json.NewDecoder(r.Body).Decode(&requestBody)
+					require.NoError(t, err)
+
+					assert.Contains(t, requestBody, "config")
+					assert.Contains(t, requestBody, "previousSave")
+					assert.Contains(t, requestBody, "title")
+					assert.Contains(t, requestBody, "extensionsConfig")
+
+					assert.Equal(t, "[miactl] Applied project configuration", requestBody["title"])
+
+					w.WriteHeader(http.StatusOK)
+					w.Write([]byte(`{}`))
+					return true
+				}
+				return false
+			}),
+		},
+		"apply config with rbacManagerConfig": {
+			options: applyProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-revision",
+				FilePath:     "testdata/config-with-microfrontendPluginsConfig.json",
+			},
+			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
+					var requestBody map[string]any
+					err := json.NewDecoder(r.Body).Decode(&requestBody)
+					require.NoError(t, err)
+
+					assert.Contains(t, requestBody, "config")
+					assert.Contains(t, requestBody, "previousSave")
+					assert.Contains(t, requestBody, "title")
+					assert.Contains(t, requestBody, "microfrontendPluginsConfig")
+					assert.Contains(t, requestBody["microfrontendPluginsConfig"], "rbacManagerConfig")
 
 					assert.Equal(t, "[miactl] Applied project configuration", requestBody["title"])
 
@@ -185,7 +238,7 @@ func TestApplyProjectCmd(t *testing.T) {
 			require.NoError(t, err)
 
 			var writer bytes.Buffer
-			err = applyProject(ctx, client, testCase.options, &writer)
+			err = handleApplyProjectConfigurationCmd(ctx, client, testCase.options, &writer)
 
 			if testCase.expectError {
 				assert.Error(t, err)

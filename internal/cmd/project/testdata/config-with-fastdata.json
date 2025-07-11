@@ -1,63 +1,96 @@
 {
-  "apiVersions": [],
-  "applications": {},
-  "cmsAnalytics": {},
-  "cmsCategories": {},
-  "cmsDashboard": [],
-  "cmsSettings": {
-    "accessGroupsExpression": "isBackoffice && groups.admin"
-  },
-  "collections": {},
-  "commitId": "90184c97-e717-41dd-889c-a493ff48d999",
-  "committedDate": "2025-05-14T13:59:00.766Z",
-  "configMaps": {
-    "api-gateway-envoy-config": {
-      "files": [],
-      "name": "api-gateway-envoy-config"
-    }
-  },
-  "decorators": {
-    "postDecorators": {},
-    "preDecorators": {}
-  },
-  "enabledFeatures": {
-    "api-gateway": true,
-    "api-gateway-envoy": true,
-    "replicas": true,
-    "visualize": true
-  },
-  "endpoints": {
-    "/": {
-      "acl": "true",
-      "allowUnknownRequestContentType": false,
-      "allowUnknownResponseContentType": false,
-      "backofficeAcl": {
-        "inherited": true
+  "config": {
+    "apiVersions": [],
+    "applications": {},
+    "cmsAnalytics": {},
+    "cmsCategories": {},
+    "cmsDashboard": [],
+    "cmsSettings": {
+      "accessGroupsExpression": "isBackoffice && groups.admin"
+    },
+    "collections": {},
+    "commitId": "90184c97-e717-41dd-889c-a493ff48d999",
+    "committedDate": "2025-05-14T13:59:00.766Z",
+    "configMaps": {
+      "api-gateway-envoy-config": {
+        "files": [],
+        "name": "api-gateway-envoy-config"
+      }
+    },
+    "decorators": {
+      "postDecorators": {},
+      "preDecorators": {}
+    },
+    "enabledFeatures": {
+      "api-gateway": true,
+      "api-gateway-envoy": true,
+      "replicas": true,
+      "visualize": true
+    },
+    "endpoints": {
+      "/": {
+        "acl": "true",
+        "allowUnknownRequestContentType": false,
+        "allowUnknownResponseContentType": false,
+        "backofficeAcl": {
+          "inherited": true
+        },
+        "basePath": "/",
+        "description": "Endpoint /",
+        "forceMicroserviceGatewayProxy": false,
+        "listeners": {
+          "frontend": true
+        },
+        "options": {
+          "iframePolicy": "all"
+        },
+        "pathRewrite": "/",
+        "port": "80",
+        "public": true,
+        "secreted": false,
+        "service": "react-spa",
+        "showInDocumentation": true,
+        "tags": [
+          "react-spa"
+        ],
+        "type": "custom",
+        "useDownstreamProtocol": true
+      }
+    },
+    "groups": [],
+    "lastCommitAuthor": "John Doe",
+    "lastConfigFileCommitId": "some-commit-id",
+    "listeners": {
+      "frontend": {
+        "type": "http",
+        "port": 8080
+      }
+    },
+    "platformVersion": "13.0.0",
+    "secrets": [],
+    "serviceAccounts": {
+      "go-120-hello-world-example": {
+        "name": "go-120-hello-world-example"
+      }
+    },
+    "serviceSecrets": {},
+    "services": {
+      "api-gateway": {
+        "type": "custom"
       },
-      "basePath": "/",
-      "description": "Endpoint /",
-      "forceMicroserviceGatewayProxy": false,
-      "listeners": {
-        "frontend": true
+      "react-spa": {
+        "type": "custom"
+      }
+    },
+    "unsecretedVariables": [
+      {
+        "name": "PROJECT_HOST"
       },
-      "options": {
-        "iframePolicy": "all"
-      },
-      "pathRewrite": "/",
-      "port": "80",
-      "public": true,
-      "secreted": false,
-      "service": "react-spa",
-      "showInDocumentation": true,
-      "tags": [
-        "react-spa"
-      ],
-      "type": "custom",
-      "useDownstreamProtocol": true
-    }
-  },
-  "extensionsConfig": {
-    "files": {}
+      {
+        "name": "CRUD_REPL"
+      }
+    ],
+    "version": "0.62.0"
   },
   "fastDataConfig": {
     "castFunctions": {},
@@ -67,39 +100,5 @@
     "systems": {},
     "updatedAt": "2025-05-14T13:59:00.766Z",
     "version": "2.2.0"
-  },
-  "groups": [],
-  "lastCommitAuthor": "John Doe",
-  "lastConfigFileCommitId": "some-commit-id",
-  "listeners": {
-    "frontend": {
-      "type": "http",
-      "port": 8080
-    }
-  },
-  "platformVersion": "13.0.0",
-  "secrets": [],
-  "serviceAccounts": {
-    "go-120-hello-world-example": {
-      "name": "go-120-hello-world-example"
-    }
-  },
-  "serviceSecrets": {},
-  "services": {
-    "api-gateway": {
-      "type": "custom"
-    },
-    "react-spa": {
-      "type": "custom"
-    }
-  },
-  "unsecretedVariables": [
-    {
-      "name": "PROJECT_HOST"
-    },
-    {
-      "name": "CRUD_REPL"
-    }
-  ],
-  "version": "0.62.0"
+  }
 }

@@ -228,7 +228,7 @@
     ],
     "version": "0.62.0"
   },
-  "extensionsConfig": {
-    "files": {}
+  "microfrontendPluginsConfig": {
+    "rbacManagerConfig": {}
   }
 }

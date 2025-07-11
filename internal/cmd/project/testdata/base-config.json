@@ -1,229 +1,231 @@
 {
-  "apiVersions": [],
-  "applications": {},
-  "cmsAnalytics": {},
-  "cmsCategories": {},
-  "cmsDashboard": [],
-  "cmsSettings": {
-    "accessGroupsExpression": "false"
-  },
-  "collections": {},
-  "commitId": "some-commit-id",
-  "committedDate": "2025-05-14T13:59:00.766Z",
-  "configMaps": {
-    "api-gateway-envoy-config": {
-      "files": [
-      ],
-      "name": "api-gateway-envoy-config"
+  "config": {
+    "apiVersions": [],
+    "applications": {},
+    "cmsAnalytics": {},
+    "cmsCategories": {},
+    "cmsDashboard": [],
+    "cmsSettings": {
+      "accessGroupsExpression": "false"
     },
-    "function-service-config": {
-      "files": [
-        {
-          "content": "'use strict'\n\nconst schema = {\n    query: {\n        type: 'object',\n        properties: {\n            name: {\n                type: 'string'\n            }\n        },\n    },\n    response: {\n        '200': {\n            type: 'object',\n            properties: {\n                message: {\n                    type: 'string'\n                }\n            }\n        }\n    }\n}\n\nasync function handler(req, res) {\n    const resName = req.query.name || \"there\"\n    res.send({ message: `Hello ${resName}` });\n}\n\nmodule.exports = {\n    method: 'GET',\n    path: '/hello',\n    name: 'Hello World',\n    handler,\n    schema,\n}\n",
-          "name": "hello-there.js"
-        }
-      ],
-      "name": "function-service-config"
-    }
-  },
-  "decorators": {
-    "postDecorators": {},
-    "preDecorators": {}
-  },
-  "enabledFeatures": {
-    "api-gateway": true,
-    "api-gateway-envoy": true,
-    "replicas": true,
-    "visualize": true
-  },
-  "endpoints": {
-    
-    "/hello": {
-      "acl": "true",
-      "allowUnknownRequestContentType": false,
-      "allowUnknownResponseContentType": false,
-      "backofficeAcl": {
-        "inherited": true
+    "collections": {},
+    "commitId": "some-commit-id",
+    "committedDate": "2025-05-14T13:59:00.766Z",
+    "configMaps": {
+      "api-gateway-envoy-config": {
+        "files": [
+        ],
+        "name": "api-gateway-envoy-config"
       },
-      "basePath": "/hello",
-      "description": "Endpoint /hello",
-      "forceMicroserviceGatewayProxy": false,
-      "listeners": {
-        "frontend": true
-      },
-      "pathRewrite": "/",
-      "port": "80",
-      "public": true,
-      "routes": {
-        "GET/hello": {
-          "acl": {
-            "inherited": true
-          },
-          "allowUnknownRequestContentType": {
-            "inherited": true
-          },
-          "allowUnknownResponseContentType": {
-            "inherited": true
-          },
-          "backofficeAcl": {
-            "inherited": true
-          },
-          "id": "GET/hello",
-          "path": "/hello",
-          "postDecorators": [],
-          "preDecorators": [],
-          "public": {
-            "inherited": true
-          },
-          "rateLimit": {
-            "inherited": true
-          },
-          "secreted": {
-            "inherited": true
-          },
-          "showInDocumentation": {
-            "inherited": true
-          },
-          "verb": "GET"
-        }
-      },
-      "secreted": false,
-      "service": "my-function-service",
-      "showInDocumentation": true,
-      "tags": [
-        "my-function-service"
-      ],
-      "type": "custom"
-    }
-  },
-  "groups": [],
-  "lastCommitAuthor": "John Doe",
-  "lastConfigFileCommitId": "some-commit-id",
-  "listeners": {
-    "frontend": {
-      "type": "http",
-      "port": 8080
-    }
-  },
-  "platformVersion": "13.0.0",
-  "secrets": [],
-  "serviceAccounts": {
-    "go-120-hello-world-example": {
-      "name": "go-120-hello-world-example"
-    }
-  },
-  "serviceSecrets": {},
-  "services": {
-    "api-gateway": {
-      "type": "custom"
+      "function-service-config": {
+        "files": [
+          {
+            "content": "'use strict'\n\nconst schema = {\n    query: {\n        type: 'object',\n        properties: {\n            name: {\n                type: 'string'\n            }\n        },\n    },\n    response: {\n        '200': {\n            type: 'object',\n            properties: {\n                message: {\n                    type: 'string'\n                }\n            }\n        }\n    }\n}\n\nasync function handler(req, res) {\n    const resName = req.query.name || \"there\"\n    res.send({ message: `Hello ${resName}` });\n}\n\nmodule.exports = {\n    method: 'GET',\n    path: '/hello',\n    name: 'Hello World',\n    handler,\n    schema,\n}\n",
+            "name": "hello-there.js"
+          }
+        ],
+        "name": "function-service-config"
+      }
     },
-    "my-function-service": {
-      "advanced": false,
-      "annotations": [
-        {
-          "description": "Version of Mia-Platform used by the project",
-          "name": "mia-platform.eu/version",
-          "readOnly": true,
-          "value": "13.0.0"
+    "decorators": {
+      "postDecorators": {},
+      "preDecorators": {}
+    },
+    "enabledFeatures": {
+      "api-gateway": true,
+      "api-gateway-envoy": true,
+      "replicas": true,
+      "visualize": true
+    },
+    "endpoints": {
+      
+      "/hello": {
+        "acl": "true",
+        "allowUnknownRequestContentType": false,
+        "allowUnknownResponseContentType": false,
+        "backofficeAcl": {
+          "inherited": true
         },
-        {
-          "description": "Pino parser annotation for Fluent Bit",
-          "name": "fluentbit.io/parser",
-          "readOnly": true,
-          "value": "pino"
-        }
-      ],
-      "configMaps": [
-        {
-          "mountPath": "/functions",
-          "name": "authz-extensions"
-        }
-      ],
-      "containerPorts": [
-        {
-          "from": 80,
-          "name": "http",
-          "protocol": "TCP",
-          "to": 3000
-        }
-      ],
-      "createdAt": "2024-07-23T07:17:47.105Z",
-      "description": "This service implements fake APIs to test the extensibility authorization flow - based on RFC-105",
-      "dockerImage": "nexus.mia-platform.eu/core/function-service:2.3.2",
-      "environment": [
-        {
-          "name": "LOG_LEVEL",
-          "value": "{{LOG_LEVEL}}",
-          "valueType": "plain"
+        "basePath": "/hello",
+        "description": "Endpoint /hello",
+        "forceMicroserviceGatewayProxy": false,
+        "listeners": {
+          "frontend": true
         },
-        {
-          "name": "HTTP_PORT",
-          "value": "3000",
-          "valueType": "plain"
+        "pathRewrite": "/",
+        "port": "80",
+        "public": true,
+        "routes": {
+          "GET/hello": {
+            "acl": {
+              "inherited": true
+            },
+            "allowUnknownRequestContentType": {
+              "inherited": true
+            },
+            "allowUnknownResponseContentType": {
+              "inherited": true
+            },
+            "backofficeAcl": {
+              "inherited": true
+            },
+            "id": "GET/hello",
+            "path": "/hello",
+            "postDecorators": [],
+            "preDecorators": [],
+            "public": {
+              "inherited": true
+            },
+            "rateLimit": {
+              "inherited": true
+            },
+            "secreted": {
+              "inherited": true
+            },
+            "showInDocumentation": {
+              "inherited": true
+            },
+            "verb": "GET"
+          }
         },
-        {
-          "name": "FUNCTIONS_FOLDER",
-          "value": "/functions",
-          "valueType": "plain"
-        }
-      ],
-      "labels": [
-        {
-          "description": "Name of the microservice, in the service selector",
-          "isSelector": false,
-          "name": "app",
-          "readOnly": true,
-          "value": "my-function-service"
-        }
-      ],
-      "logParser": "mia-json",
-      "name": "my-function-service",
-      "probes": {
-        "liveness": {
-          "failureThreshold": 3,
-          "initialDelaySeconds": 15,
-          "path": "/-/healthz",
-          "periodSeconds": 20,
-          "timeoutSeconds": 1
-        },
-        "readiness": {
-          "failureThreshold": 3,
-          "initialDelaySeconds": 5,
-          "path": "/-/ready",
-          "periodSeconds": 10,
-          "successThreshold": 1,
-          "timeoutSeconds": 1
-        },
-        "startup": {}
+        "secreted": false,
+        "service": "my-function-service",
+        "showInDocumentation": true,
+        "tags": [
+          "my-function-service"
+        ],
+        "type": "custom"
+      }
+    },
+    "groups": [],
+    "lastCommitAuthor": "John Doe",
+    "lastConfigFileCommitId": "some-commit-id",
+    "listeners": {
+      "frontend": {
+        "type": "http",
+        "port": 8080
+      }
+    },
+    "platformVersion": "13.0.0",
+    "secrets": [],
+    "serviceAccounts": {
+      "go-120-hello-world-example": {
+        "name": "go-120-hello-world-example"
+      }
+    },
+    "serviceSecrets": {},
+    "services": {
+      "api-gateway": {
+        "type": "custom"
       },
-      "replicas": 1,
-      "resources": {
-        "cpuLimits": {
-          "max": "100m",
-          "min": "100m"
+      "my-function-service": {
+        "advanced": false,
+        "annotations": [
+          {
+            "description": "Version of Mia-Platform used by the project",
+            "name": "mia-platform.eu/version",
+            "readOnly": true,
+            "value": "13.0.0"
+          },
+          {
+            "description": "Pino parser annotation for Fluent Bit",
+            "name": "fluentbit.io/parser",
+            "readOnly": true,
+            "value": "pino"
+          }
+        ],
+        "configMaps": [
+          {
+            "mountPath": "/functions",
+            "name": "authz-extensions"
+          }
+        ],
+        "containerPorts": [
+          {
+            "from": 80,
+            "name": "http",
+            "protocol": "TCP",
+            "to": 3000
+          }
+        ],
+        "createdAt": "2024-07-23T07:17:47.105Z",
+        "description": "This service implements fake APIs to test the extensibility authorization flow - based on RFC-105",
+        "dockerImage": "nexus.mia-platform.eu/core/function-service:2.3.2",
+        "environment": [
+          {
+            "name": "LOG_LEVEL",
+            "value": "{{LOG_LEVEL}}",
+            "valueType": "plain"
+          },
+          {
+            "name": "HTTP_PORT",
+            "value": "3000",
+            "valueType": "plain"
+          },
+          {
+            "name": "FUNCTIONS_FOLDER",
+            "value": "/functions",
+            "valueType": "plain"
+          }
+        ],
+        "labels": [
+          {
+            "description": "Name of the microservice, in the service selector",
+            "isSelector": false,
+            "name": "app",
+            "readOnly": true,
+            "value": "my-function-service"
+          }
+        ],
+        "logParser": "mia-json",
+        "name": "my-function-service",
+        "probes": {
+          "liveness": {
+            "failureThreshold": 3,
+            "initialDelaySeconds": 15,
+            "path": "/-/healthz",
+            "periodSeconds": 20,
+            "timeoutSeconds": 1
+          },
+          "readiness": {
+            "failureThreshold": 3,
+            "initialDelaySeconds": 5,
+            "path": "/-/ready",
+            "periodSeconds": 10,
+            "successThreshold": 1,
+            "timeoutSeconds": 1
+          },
+          "startup": {}
         },
-        "memoryLimits": {
-          "max": "150Mi",
-          "min": "150Mi"
-        }
-      },
-      "sourceMarketplaceItem": {
-        "itemId": "function-service",
-        "tenantId": "mia-platform",
-        "version": "NA"
-      },
-      "swaggerPath": "/documentation/json",
-      "tags": [
-        "custom"
-      ],
-      "terminationGracePeriodSeconds": 30,
-      "type": "custom"
-    }
-  },
-  "unsecretedVariables": [
-    {
-      "name": "PROJECT_HOST"
-    }
-  ],
-  "version": "0.62.0"
+        "replicas": 1,
+        "resources": {
+          "cpuLimits": {
+            "max": "100m",
+            "min": "100m"
+          },
+          "memoryLimits": {
+            "max": "150Mi",
+            "min": "150Mi"
+          }
+        },
+        "sourceMarketplaceItem": {
+          "itemId": "function-service",
+          "tenantId": "mia-platform",
+          "version": "NA"
+        },
+        "swaggerPath": "/documentation/json",
+        "tags": [
+          "custom"
+        ],
+        "terminationGracePeriodSeconds": 30,
+        "type": "custom"
+      }
+    },
+    "unsecretedVariables": [
+      {
+        "name": "PROJECT_HOST"
+      }
+    ],
+    "version": "0.62.0"
+  }
 }

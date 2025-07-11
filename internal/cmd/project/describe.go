@@ -24,6 +24,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
+	"github.com/mia-platform/miactl/internal/resources/configuration"
 	"github.com/spf13/cobra"
 )
 
@@ -100,7 +101,12 @@ func describeProject(ctx context.Context, client *client.APIClient, options desc
 		return fmt.Errorf("cannot parse project configuration: %w", err)
 	}
 
-	bytes, err := encoding.MarshalData(projectConfig, options.OutputFormat, encoding.MarshalOptions{Indent: true})
+	structuredConfig, err := configuration.BuildDescribeFromFlatConfiguration(projectConfig)
+	if err != nil {
+		return fmt.Errorf("cannot parse project configuration: %w", err)
+	}
+
+	bytes, err := encoding.MarshalData(structuredConfig, options.OutputFormat, encoding.MarshalOptions{Indent: true})
 	if err != nil {
 		return err
 	}

@@ -95,7 +95,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				}
 				return false
 			}),
-			outputTextJSON: `{"name": "test-project", "revision": "test-json-revision"}`,
+			outputTextJSON: `{"config": {"name": "test-project", "revision": "test-json-revision"}}`,
 		},
 		"valid project with version": {
 			options: describeProjectOptions{
@@ -111,7 +111,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				}
 				return false
 			}),
-			outputTextJSON: `{"name": "test-project", "revision": "test-version"}`,
+			outputTextJSON: `{"config": {"name": "test-project", "revision": "test-version"}}`,
 		},
 		"valid project with yaml output format": {
 			options: describeProjectOptions{
@@ -127,7 +127,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				}
 				return false
 			}),
-			outputTextJSON: `{"name": "test-project", "revision": "test-yaml-revision"}`,
+			outputTextJSON: `{"config": {"name": "test-project", "revision": "test-yaml-revision"}}`,
 		},
 		"revision with slash": {
 			options: describeProjectOptions{
@@ -143,7 +143,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				}
 				return false
 			}),
-			outputTextJSON: `{"name": "test-project", "revision": "test-yaml-revision"}`,
+			outputTextJSON: `{"config": {"name": "test-project", "revision": "test-yaml-revision"}}`,
 		},
 		"version with slash": {
 			options: describeProjectOptions{
@@ -159,7 +159,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				}
 				return false
 			}),
-			outputTextJSON: `{"name": "test-project", "revision": "test-yaml-revision"}`,
+			outputTextJSON: `{"config": {"name": "test-project", "revision": "test-yaml-revision"}}`,
 		},
 	}
 
@@ -187,13 +187,14 @@ func TestDescribeProjectCmd(t *testing.T) {
 				require.NoError(t, err)
 
 				if testCase.options.OutputFormat == encoding.JSON {
-					require.JSONEq(t, testCase.outputTextJSON, outputBuffer.String(), "output should match expected JSON")
+					found := outputBuffer.String()
+					require.JSONEq(t, testCase.outputTextJSON, found, "output should match expected JSON")
 				} else {
-					foundMap := map[string]interface{}{}
+					foundMap := map[string]any{}
 					err := yaml.Unmarshal(outputBuffer.Bytes(), &foundMap)
 					require.NoError(t, err)
 
-					expectedMap := map[string]interface{}{}
+					expectedMap := map[string]any{}
 					err = json.Unmarshal([]byte(testCase.outputTextJSON), &expectedMap)
 					require.NoError(t, err)
 

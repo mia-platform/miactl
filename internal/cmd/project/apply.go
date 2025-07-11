@@ -46,6 +46,22 @@ type applyProjectOptions struct {
 	FilePath     string
 }
 
+type ApplyProjectConfigurationRequest struct {
+	Title        string `json:"title" yaml:"title"`
+	PreviousSave string `json:"previousSave,omitempty" yaml:"previousSave,omitempty"`
+	*configuration.DescribeConfiguration
+}
+
+func CreateApplyConfigurationRequest(config *configuration.DescribeConfiguration) (ApplyProjectConfigurationRequest, error) {
+	if config == nil {
+		return ApplyProjectConfigurationRequest{}, fmt.Errorf("invalid nil configuration provided")
+	}
+
+	return ApplyProjectConfigurationRequest{
+		DescribeConfiguration: config,
+	}, nil
+}
+
 // ApplyCmd returns a cobra command for applying a project configuration
 func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
@@ -65,7 +81,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 				FilePath:     options.InputFilePath,
 			}
 
-			return applyProject(cmd.Context(), client, cmdOptions, cmd.OutOrStdout())
+			return handleApplyProjectConfigurationCmd(cmd.Context(), client, cmdOptions, cmd.OutOrStdout())
 		},
 	}
 
@@ -81,7 +97,22 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func applyProject(ctx context.Context, client *client.APIClient, options applyProjectOptions, writer io.Writer) error {
+func handleApplyProjectConfigurationCmd(ctx context.Context, client *client.APIClient, options applyProjectOptions, writer io.Writer) error {
+	err := validateApplyProjectOptions(options)
+	if err != nil {
+		return err
+	}
+
+	err = applyConfiguration(ctx, client, options)
+	if err != nil {
+		return fmt.Errorf("failed to apply project configuration: %w", err)
+	}
+
+	fmt.Fprintln(writer, "Project configuration applied successfully")
+	return nil
+}
+
+func validateApplyProjectOptions(options applyProjectOptions) error {
 	if len(options.ProjectID) == 0 {
 		return fmt.Errorf("missing project name, please provide a project name as argument")
 	}
@@ -90,21 +121,38 @@ func applyProject(ctx context.Context, client *client.APIClient, options applyPr
 		return fmt.Errorf("missing file path, please provide a file path with the -f flag")
 	}
 
+	if len(options.RevisionName) == 0 {
+		return fmt.Errorf("missing revision name, please provide a revision name")
+	}
+
+	return nil
+}
+
+func applyConfiguration(ctx context.Context, client *client.APIClient, options applyProjectOptions) error {
 	ref, err := getRevisionRef(options.RevisionName)
 	if err != nil {
 		return err
 	}
 
-	// Read the project configuration from the file
 	projectConfig := make(map[string]any)
 	if err := files.ReadFile(options.FilePath, &projectConfig); err != nil {
 		return fmt.Errorf("failed to read project configuration file: %w", err)
 	}
 
-	applyConfigRequest := configuration.CreateApplyConfigurationRequest(projectConfig)
-	applyConfigRequest.Title = "[miactl] Applied project configuration"
+	structuredConfig, err := configuration.BuildDescribeConfiguration(projectConfig)
+	if err != nil {
+		return fmt.Errorf("cannot parse project configuration: %w", err)
+	}
 
-	body, err := resources.EncodeResourceToJSON(applyConfigRequest)
+	applyConfig, err := CreateApplyConfigurationRequest(structuredConfig)
+	if err != nil {
+		return fmt.Errorf("failed to apply configuration: %w", err)
+	}
+
+	applyConfig.Title = "[miactl] Applied project configuration"
+	applyConfig.PreviousSave = structuredConfig.Config["commitId"].(string)
+
+	body, err := resources.EncodeResourceToJSON(applyConfig)
 	if err != nil {
 		return fmt.Errorf("cannot encode project configuration: %w", err)
 	}
@@ -122,7 +170,6 @@ func applyProject(ctx context.Context, client *client.APIClient, options applyPr
 		return err
 	}
 
-	fmt.Fprintln(writer, "Project configuration applied successfully")
 	return nil
 }
 
