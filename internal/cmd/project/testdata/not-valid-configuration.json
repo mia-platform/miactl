@@ -1,0 +1,7 @@
+{
+    "field1": "value1",
+    "field2": {
+        "subfield1": "subvalue1",
+        "subfield2": "subvalue2"
+    }
+}

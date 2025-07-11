@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"net/url"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -79,7 +78,7 @@ func describeProject(ctx context.Context, client *client.APIClient, options desc
 		return fmt.Errorf("missing project name, please provide a project name as argument")
 	}
 
-	ref, err := getConfigRef(options.RevisionName, options.VersionName)
+	ref, err := configuration.GetEncodedRef(options.RevisionName, options.VersionName)
 	if err != nil {
 		return err
 	}
@@ -113,21 +112,4 @@ func describeProject(ctx context.Context, client *client.APIClient, options desc
 
 	fmt.Fprintln(writer, string(bytes))
 	return nil
-}
-
-func getConfigRef(revisionName, versionName string) (string, error) {
-	if len(revisionName) > 0 && len(versionName) > 0 {
-		return "", fmt.Errorf("both revision and version specified, please provide only one")
-	}
-
-	if len(revisionName) > 0 {
-		encodedRevisionName := url.PathEscape(revisionName)
-		return fmt.Sprintf("revisions/%s", encodedRevisionName), nil
-	}
-	if len(versionName) > 0 {
-		encodedVersionName := url.PathEscape(versionName)
-		return fmt.Sprintf("versions/%s", encodedVersionName), nil
-	}
-
-	return "", fmt.Errorf("missing revision/version name, please provide one as argument")
 }

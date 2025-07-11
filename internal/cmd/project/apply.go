@@ -18,8 +18,6 @@ package project
 import (
 	"context"
 	"fmt"
-	"io"
-	"net/url"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
@@ -46,12 +44,6 @@ type applyProjectOptions struct {
 	FilePath     string
 }
 
-type ApplyProjectConfigurationRequest struct {
-	Title        string `json:"title" yaml:"title"`
-	PreviousSave string `json:"previousSave,omitempty" yaml:"previousSave,omitempty"`
-	*configuration.DescribeConfiguration
-}
-
 // ApplyCmd returns a cobra command for applying a project configuration
 func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
@@ -71,7 +63,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 				FilePath:     options.InputFilePath,
 			}
 
-			return handleApplyProjectConfigurationCmd(cmd.Context(), client, cmdOptions, cmd.OutOrStdout())
+			return handleApplyProjectConfigurationCmd(cmd.Context(), client, cmdOptions)
 		},
 	}
 
@@ -87,7 +79,7 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 	return cmd
 }
 
-func handleApplyProjectConfigurationCmd(ctx context.Context, client *client.APIClient, options applyProjectOptions, writer io.Writer) error {
+func handleApplyProjectConfigurationCmd(ctx context.Context, client *client.APIClient, options applyProjectOptions) error {
 	err := validateApplyProjectOptions(options)
 	if err != nil {
 		return err
@@ -98,7 +90,7 @@ func handleApplyProjectConfigurationCmd(ctx context.Context, client *client.APIC
 		return fmt.Errorf("failed to apply project configuration: %w", err)
 	}
 
-	fmt.Fprintln(writer, "Project configuration applied successfully")
+	fmt.Println("Project configuration applied successfully")
 	return nil
 }
 
@@ -119,7 +111,7 @@ func validateApplyProjectOptions(options applyProjectOptions) error {
 }
 
 func applyConfiguration(ctx context.Context, client *client.APIClient, options applyProjectOptions) error {
-	ref, err := getRevisionRef(options.RevisionName)
+	ref, err := configuration.GetEncodedRevisionRef(options.RevisionName)
 	if err != nil {
 		return err
 	}
@@ -135,10 +127,10 @@ func applyConfiguration(ctx context.Context, client *client.APIClient, options a
 	}
 
 	previousSnapshotID := structuredConfig.Config["commitId"].(string)
-	applyConfig := ApplyProjectConfigurationRequest{
-		DescribeConfiguration: structuredConfig,
-		Title:                 "[miactl] Applied project configuration",
-		PreviousSave:          previousSnapshotID,
+	applyConfig := configuration.ApplyRequest{
+		Configuration: structuredConfig,
+		Title:         "[miactl] Applied project configuration",
+		PreviousSave:  previousSnapshotID,
 	}
 
 	body, err := resources.EncodeResourceToJSON(applyConfig)
@@ -160,13 +152,4 @@ func applyConfiguration(ctx context.Context, client *client.APIClient, options a
 	}
 
 	return nil
-}
-
-func getRevisionRef(revisionName string) (string, error) {
-	if len(revisionName) == 0 {
-		return "", fmt.Errorf("missing revision name, please provide a revision name")
-	}
-
-	encodedRevisionName := url.PathEscape(revisionName)
-	return fmt.Sprintf("revisions/%s", encodedRevisionName), nil
 }

@@ -17,34 +17,39 @@ package configuration
 
 import "fmt"
 
-type DescribeConfiguration struct {
+const (
+	ErrNotValidConfiguration = "provided configuration is not valid"
+)
+
+type Configuration struct {
 	Config                     map[string]any `json:"config" yaml:"config"`
 	FastDataConfig             map[string]any `json:"fastDataConfig,omitempty" yaml:"fastDataConfig,omitempty"`
 	MicrofrontendPluginsConfig map[string]any `json:"microfrontendPluginsConfig,omitempty" yaml:"microfrontendPluginsConfig,omitempty"`
 	ExtensionsConfig           map[string]any `json:"extensionsConfig,omitempty" yaml:"extensionsConfig,omitempty"`
 }
 
-func BuildDescribeConfiguration(config map[string]any) (*DescribeConfiguration, error) {
-	return describeConfigurationAdapter(config)
+// BuildDescribeConfiguration builds a DescribeConfiguration from a configuration
+func BuildDescribeConfiguration(rawConfig map[string]any) (*Configuration, error) {
+	return describeConfigurationAdapter(rawConfig)
 }
 
-func BuildDescribeFromFlatConfiguration(config map[string]any) (*DescribeConfiguration, error) {
-	return flatConfigurationAdapter(config)
+func BuildDescribeFromFlatConfiguration(rawConfig map[string]any) (*Configuration, error) {
+	return flatConfigurationAdapter(rawConfig)
 }
 
 // describeConfigurationAdapter adapts an already describe configuration map to the expected DescribeConfiguration type.
-// This is used to adapt output from the describe command (e.g., when reading the describe output from a file)
-func describeConfigurationAdapter(config map[string]any) (*DescribeConfiguration, error) {
-	applyConfig := &DescribeConfiguration{}
+// This is used to adapt output from the describe command (e.g., when reading the describe output from a file) to a valid DescribeConfiguration structure.
+func describeConfigurationAdapter(config map[string]any) (*Configuration, error) {
+	applyConfig := &Configuration{}
 
 	configSection, hasConfigKey := config["config"]
 	if !hasConfigKey {
-		return nil, fmt.Errorf("not a structured configuration: 'config' key not found")
+		return nil, fmt.Errorf("%s: %s", ErrNotValidConfiguration, "'config' key not found")
 	}
 
 	configSectionMap, ok := configSection.(map[string]any)
 	if !ok {
-		return nil, fmt.Errorf("invalid structured configuration provided: 'config' key is not a valid map[string]any")
+		return nil, fmt.Errorf("%s: %s", ErrNotValidConfiguration, "'config' key is not a valid map[string]any")
 	}
 
 	baseConfig := make(map[string]any)
@@ -69,9 +74,9 @@ func describeConfigurationAdapter(config map[string]any) (*DescribeConfiguration
 }
 
 // AdaptFlatConfiguration adapts a flat configuration map to the structured format.
-// This is used to map the GET /configuration response to the expected structure.
-func flatConfigurationAdapter(config map[string]any) (*DescribeConfiguration, error) {
-	applyConfig := &DescribeConfiguration{}
+// This is used to map the GET /configuration response into the DescribeConfiguration structure.
+func flatConfigurationAdapter(config map[string]any) (*Configuration, error) {
+	applyConfig := &Configuration{}
 
 	baseConfig := make(map[string]any)
 	for key, value := range config {

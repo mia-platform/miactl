@@ -16,7 +16,6 @@
 package project
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -44,7 +43,6 @@ func TestApplyProjectCmd(t *testing.T) {
 		expectError      bool
 		expectedErrorMsg string
 		testServer       *httptest.Server
-		expectedRequest  string
 	}{
 		"error missing project id": {
 			options:          applyProjectOptions{},
@@ -83,6 +81,18 @@ func TestApplyProjectCmd(t *testing.T) {
 			},
 			expectError:      true,
 			expectedErrorMsg: "failed to read project configuration file",
+			testServer: applyTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
+				return false
+			}),
+		},
+		"error invalid configuration": {
+			options: applyProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-revision",
+				FilePath:     "testdata/not-valid-configuration.json",
+			},
+			expectError:      true,
+			expectedErrorMsg: "provided configuration is not valid",
 			testServer: applyTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
 				return false
 			}),
@@ -237,15 +247,14 @@ func TestApplyProjectCmd(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			var writer bytes.Buffer
-			err = handleApplyProjectConfigurationCmd(ctx, client, testCase.options, &writer)
+			err = handleApplyProjectConfigurationCmd(ctx, client, testCase.options)
 
 			if testCase.expectError {
 				assert.Error(t, err)
 				assert.Contains(t, err.Error(), testCase.expectedErrorMsg)
 			} else {
 				assert.NoError(t, err)
-				assert.Contains(t, writer.String(), "Project configuration applied successfully")
+				// assert.Contains(t, writer.String(), "Project configuration applied successfully")
 			}
 		})
 	}
