@@ -17,6 +17,7 @@ package project
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
@@ -33,6 +34,7 @@ const (
 	describeProjectCmdLong  = `Describe the configuration of the specified Project.`
 
 	ErrMultipleIdentifiers = "multiple identifiers specified, please provide only one"
+	ErrMissingIdentifier   = "missing revision/version/branch/tag name, please provide one as argument"
 )
 
 type describeProjectOptions struct {
@@ -133,7 +135,7 @@ func GetRefFromOptions(options describeProjectOptions) (configuration.Ref, error
 
 	if len(options.VersionName) > 0 {
 		if len(refType) > 0 {
-			return configuration.Ref{}, fmt.Errorf(ErrMultipleIdentifiers)
+			return configuration.Ref{}, errors.New(ErrMultipleIdentifiers)
 		}
 
 		refType = configuration.VersionRefType
@@ -142,7 +144,7 @@ func GetRefFromOptions(options describeProjectOptions) (configuration.Ref, error
 
 	if len(options.BranchName) > 0 {
 		if len(refType) > 0 {
-			return configuration.Ref{}, fmt.Errorf(ErrMultipleIdentifiers)
+			return configuration.Ref{}, errors.New(ErrMultipleIdentifiers)
 		}
 
 		refType = configuration.BranchRefType
@@ -151,7 +153,7 @@ func GetRefFromOptions(options describeProjectOptions) (configuration.Ref, error
 
 	if len(options.TagName) > 0 {
 		if len(refType) > 0 {
-			return configuration.Ref{}, fmt.Errorf(ErrMultipleIdentifiers)
+			return configuration.Ref{}, errors.New(ErrMultipleIdentifiers)
 		}
 
 		refType = configuration.TagRefType
@@ -159,7 +161,7 @@ func GetRefFromOptions(options describeProjectOptions) (configuration.Ref, error
 	}
 
 	if len(refType) == 0 {
-		return configuration.Ref{}, fmt.Errorf("missing revision/version/branch/tag name, please provide one as argument")
+		return configuration.Ref{}, errors.New(ErrMissingIdentifier)
 	}
 
 	return configuration.NewRef(refType, refName)
