@@ -116,7 +116,7 @@ func validateApplyProjectOptions(options applyProjectOptions) error {
 }
 
 func applyConfiguration(ctx context.Context, client *client.APIClient, options applyProjectOptions) error {
-	ref, err := configuration.GetEncodedRevisionRef(options.RevisionName)
+	ref, err := configuration.NewRef(configuration.RevisionRefType, options.RevisionName)
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func applyConfiguration(ctx context.Context, client *client.APIClient, options a
 		return fmt.Errorf("cannot encode project configuration: %w", err)
 	}
 
-	endpoint := fmt.Sprintf("/api/backend/projects/%s/%s/configuration", options.ProjectID, ref)
+	endpoint := fmt.Sprintf("/api/backend/projects/%s/%s/configuration", options.ProjectID, ref.EncodedLocationPath())
 	response, err := client.
 		Post().
 		APIPath(endpoint).

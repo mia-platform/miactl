@@ -17,6 +17,7 @@ package project
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 
@@ -31,12 +32,17 @@ const (
 	describeProjectCmdUsage = "describe"
 	describeProjectCmdShort = "Describe a Project configuration"
 	describeProjectCmdLong  = `Describe the configuration of the specified Project.`
+
+	ErrMultipleIdentifiers = "multiple identifiers specified, please provide only one"
+	ErrMissingIdentifier   = "missing revision/version/branch/tag name, please provide one as argument"
 )
 
 type describeProjectOptions struct {
-	ProjectID    string
 	RevisionName string
 	VersionName  string
+	BranchName   string
+	TagName      string
+	ProjectID    string
 	OutputFormat string
 }
 
@@ -56,6 +62,8 @@ func DescribeCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cmdOptions := describeProjectOptions{
 				RevisionName: options.Revision,
 				VersionName:  options.Version,
+				BranchName:   options.Branch,
+				TagName:      options.Tag,
 				ProjectID:    restConfig.ProjectID,
 				OutputFormat: options.OutputFormat,
 			}
@@ -68,6 +76,8 @@ func DescribeCmd(options *clioptions.CLIOptions) *cobra.Command {
 	options.AddProjectFlags(flags)
 	options.AddRevisionFlags(flags)
 	options.AddVersionFlags(flags)
+	options.AddBranchFlags(flags)
+	options.AddTagFlags(flags)
 	options.AddOutputFormatFlag(flags, "json")
 
 	return cmd
@@ -78,12 +88,12 @@ func describeProject(ctx context.Context, client *client.APIClient, options desc
 		return fmt.Errorf("missing project name, please provide a project name as argument")
 	}
 
-	ref, err := configuration.GetEncodedRef(options.RevisionName, options.VersionName)
+	ref, err := GetRefFromOptions(options)
 	if err != nil {
 		return err
 	}
 
-	endpoint := fmt.Sprintf("/api/backend/projects/%s/%s/configuration", options.ProjectID, ref)
+	endpoint := fmt.Sprintf("/api/backend/projects/%s/%s/configuration/", options.ProjectID, ref.EncodedLocationPath())
 	response, err := client.
 		Get().
 		APIPath(endpoint).
@@ -112,4 +122,47 @@ func describeProject(ctx context.Context, client *client.APIClient, options desc
 
 	fmt.Fprintln(writer, string(bytes))
 	return nil
+}
+
+func GetRefFromOptions(options describeProjectOptions) (configuration.Ref, error) {
+	refType := ""
+	refName := ""
+
+	if len(options.RevisionName) > 0 {
+		refType = configuration.RevisionRefType
+		refName = options.RevisionName
+	}
+
+	if len(options.VersionName) > 0 {
+		if len(refType) > 0 {
+			return configuration.Ref{}, errors.New(ErrMultipleIdentifiers)
+		}
+
+		refType = configuration.VersionRefType
+		refName = options.VersionName
+	}
+
+	if len(options.BranchName) > 0 {
+		if len(refType) > 0 {
+			return configuration.Ref{}, errors.New(ErrMultipleIdentifiers)
+		}
+
+		refType = configuration.BranchRefType
+		refName = options.BranchName
+	}
+
+	if len(options.TagName) > 0 {
+		if len(refType) > 0 {
+			return configuration.Ref{}, errors.New(ErrMultipleIdentifiers)
+		}
+
+		refType = configuration.TagRefType
+		refName = options.TagName
+	}
+
+	if len(refType) == 0 {
+		return configuration.Ref{}, errors.New(ErrMissingIdentifier)
+	}
+
+	return configuration.NewRef(refType, refName)
 }

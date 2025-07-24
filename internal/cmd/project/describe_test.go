@@ -58,27 +58,56 @@ func TestDescribeProjectCmd(t *testing.T) {
 				return false
 			}),
 		},
-		"error missing revision/version": {
+		"error missing revision/version/branch/tag": {
 			options: describeProjectOptions{
 				ProjectID: "test-project",
 			},
 			expectError:      true,
-			expectedErrorMsg: "missing revision/version name, please provide one as argument",
+			expectedErrorMsg: "missing revision/version/branch/tag name, please provide one as argument",
 			testServer: describeTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
 				return false
 			}),
 		},
-		"error both revision/version specified": {
+		"error multiple revision/version specified": {
 			options: describeProjectOptions{
 				ProjectID:    "test-project",
 				RevisionName: "test-revision",
 				VersionName:  "test-version",
 			},
 			expectError:      true,
-			expectedErrorMsg: "both revision and version specified, please provide only one",
+			expectedErrorMsg: "multiple identifiers specified, please provide only one",
 			testServer: describeTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
 				return false
 			}),
+		},
+		"error multiple branch/revision specified": {
+			options: describeProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-revision",
+				BranchName:   "test-branch",
+			},
+			expectError:      true,
+			expectedErrorMsg: "multiple identifiers specified, please provide only one",
+			testServer: describeTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
+				return false
+			}),
+		},
+		"valid project with branch": {
+			options: describeProjectOptions{
+				ProjectID:    "test-project",
+				BranchName:   "test-json-branch",
+				OutputFormat: "json",
+			},
+			revisionName: "test-revision",
+			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/branches/test-json-branch/configuration/" && r.Method == http.MethodGet {
+					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write([]byte(`{"name": "test-project", "branch": "test-json-branch"}`))
+					return true
+				}
+				return false
+			}),
+			outputTextJSON: `{"config": {"name": "test-project", "branch": "test-json-branch"}}`,
 		},
 		"valid project with revision": {
 			options: describeProjectOptions{
@@ -88,7 +117,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 			},
 			revisionName: "test-revision",
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-json-revision/configuration" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-json-revision/configuration/" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-json-revision"}`))
 					return true
@@ -97,6 +126,22 @@ func TestDescribeProjectCmd(t *testing.T) {
 			}),
 			outputTextJSON: `{"config": {"name": "test-project", "revision": "test-json-revision"}}`,
 		},
+		"valid project with tag": {
+			options: describeProjectOptions{
+				ProjectID:    "test-project",
+				TagName:      "test-tag",
+				OutputFormat: "json",
+			},
+			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/branches/test-tag/configuration/" && r.Method == http.MethodGet {
+					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write([]byte(`{"name": "test-project", "tag": "test-tag"}`))
+					return true
+				}
+				return false
+			}),
+			outputTextJSON: `{"config": {"name": "test-project", "tag": "test-tag"}}`,
+		},
 		"valid project with version": {
 			options: describeProjectOptions{
 				ProjectID:    "test-project",
@@ -104,7 +149,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				OutputFormat: "json",
 			},
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/versions/test-version/configuration" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/versions/test-version/configuration/" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-version"}`))
 					return true
@@ -120,7 +165,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				OutputFormat: "yaml",
 			},
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-yaml-revision/configuration" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-yaml-revision/configuration/" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-yaml-revision"}`))
 					return true
@@ -136,7 +181,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				OutputFormat: "yaml",
 			},
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/revisions/some%2Frevision/configuration" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/some%2Frevision/configuration/" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-yaml-revision"}`))
 					return true
@@ -152,7 +197,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				OutputFormat: "yaml",
 			},
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/versions/version%2F1.2.3/configuration" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/versions/version%2F1.2.3/configuration/" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-yaml-revision"}`))
 					return true
