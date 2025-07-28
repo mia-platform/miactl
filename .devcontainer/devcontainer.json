@@ -1,6 +1,6 @@
 {
 	"name": "Go",
-	"image": "golang:1.24.4",
+	"image": "golang:1.24.5",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {
 			"installZsh": "true",
@@ -11,7 +11,7 @@
 		},
 		"ghcr.io/devcontainers/features/go:1": {
 			"version": "none",
-			"golangciLintVersion": "2.1.6"
+			"golangciLintVersion": "2.3.0"
 		},
 		"ghcr.io/devcontainers/features/git:1": {
 			"version": "latest",

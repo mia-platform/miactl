@@ -68,6 +68,13 @@ linters:
       - case
       - condition
       - return
+    revive:
+      rules:
+      - name: var-naming
+        arguments:
+          - [] # allow list
+          - [] # block list
+          - - skip-package-name-checks: true # options
     tagliatelle:
       case:
         rules:

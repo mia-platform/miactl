@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- update go version to 1.24.5
+
 ### Added
 
-- added `project describe` command. It supports `--revision`, `--version` flags for enhanced workflow projects and `--branch`, `--tag` flags for standard workflow projects.
+- added `project describe` command. It supports `--revision`, `--version` flags for enhanced workflow projects and
+	`--branch`, `--tag` flags for standard workflow projects.
 - added `project apply` command. It supports `--revision` flag as only ehnanced workflow is supported for project appy
 
 ## [v0.19.0] - 2025-06-18
