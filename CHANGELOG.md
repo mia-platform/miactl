@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - update go version to 1.24.5
+- update pflag to 1.0.7
+- update sync to 0.16.0
+- update text to 0.27.0
+- update kyaml to 0.20.1
 
 ### Added
 
