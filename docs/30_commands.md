@@ -516,11 +516,11 @@ Available flags for the command:
 
 ### describe
 
-The `project describe` subcommand allows you to inspect the current configuration of a Project in Console.
+The `project describe` subcommand allows you to inspect the current configuration of an Application Project in Console.
 
 Specify the correct flags to indicate which revision/version/branch/tag to describe.
 
-For Projects using Enhanced Workflow specify either the `revision` or `version` flag. For Projects using the standard workflow specify either the `branch` or `tag` flag.
+For Application Projects using Enhanced Workflow specify either the `revision` or `version` flag. For Projects using the standard workflow specify either the `branch` or `tag` flag.
 
 If no configuration is found for the specified revision/version/branch/tag flag, an empty configuration is returned.
 
@@ -532,18 +532,18 @@ miactl project describe [flags]
 
 Flags available for this command:
 
-- `--project-id`: required. The ID of the Project to describe 
-- `--revision`: for projects using Enhanced Workflow. The revision of the Project to describe 
-- `--version`: for projects using Enhanced Workflow. The version of the Project to describe 
-- `--branch`: for projects using the standard workflow. The branch of the Project to describe 
-- `--tag`: for projects using the standard workflow. The tag of the Project to describe 
+- `--project-id`: required. The ID of the ProApplication Projectject to describe 
+- `--revision`: for projects using Enhanced Workflow. The revision of the Application Project to describe 
+- `--version`: for projects using Enhanced Workflow. The version of the Application Project to describe 
+- `--branch`: for projects using the standard workflow. The branch of the Application Project to describe 
+- `--tag`: for projects using the standard workflow. The tag of the Application Project to describe 
 - `--output` or `-o`: output format. Allowed values: json, yaml (default is "json")
 
 ### apply
 
-The `project apply` subcommand allows you to apply a valid configuration file on top of an already existing Project in Console. This configuration is saved as latest snapshot for the specified revision.
+The `project apply` subcommand allows you to apply a valid configuration file on top of an already existing Application Project in Console. This configuration is saved as latest snapshot for the specified revision.
 
-This feature is available only for Projects using Enhanced Workflow.
+This feature is available only for Application Projects using Enhanced Workflow.
 
 Usage:
 
@@ -553,8 +553,8 @@ miactl project apply [flags]
 
 Flags available for this command:
 
-- `--project-id`: required. The ID of the Project
-- `--revision`: required. The revision of the Project
+- `--project-id`: required. The ID of the Application Project
+- `--revision`: required. The revision of the Application Project
 - `--file` or `-f`: required. The path to the configuration file. Supported formats for configuration file are yaml and json
 `--message` or `-m`: the custom message used to save the configuration. If not specified, a default message is used
 
