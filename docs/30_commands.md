@@ -541,8 +541,7 @@ Flags available for this command:
 
 ### apply
 
-The `project apply` subcommand allows you to update an already existing Application Project configuration by providing a valid configuration file from your local machine.  
-Executing the `apply` command creates a new snapshot for the specified ref using the provided configuration.
+The `project apply` subcommand allows you to update an already existing Application Project configuration by providing a valid configuration file from your local machine. This command creates a new snapshot for the specified ref using the provided configuration overriding the previous configuration.
 
 This feature is available only for Application Projects using Enhanced Workflow.
 
@@ -557,7 +556,7 @@ Flags available for this command:
 - `--project-id`: required. The ID of the Application Project
 - `--revision`: required. The revision of the Application Project
 - `--file` or `-f`: required. The path to the configuration file. Supported formats for configuration file are yaml and json
-`--message` or `-m`: the custom message used to save the configuration. If not specified, a default message is used
+- `--message` or `-m`: the custom message used to save the configuration. If not specified, a default message is used
 
 ### iam
 
