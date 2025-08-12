@@ -532,7 +532,7 @@ miactl project describe [flags]
 
 Flags available for this command:
 
-- `--project-id`: required. The ID of the ProApplication Projectject to describe 
+- `--project-id`: required. The ID of the Application Project to describe 
 - `--revision`: for projects using Enhanced Workflow. The revision of the Application Project to describe 
 - `--version`: for projects using Enhanced Workflow. The version of the Application Project to describe 
 - `--branch`: for projects using the standard workflow. The branch of the Application Project to describe 
