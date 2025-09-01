@@ -79,6 +79,8 @@ type CLIOptions struct {
 	MarketplaceItemObjectID     string
 	MarketplaceFetchPublicItems bool
 
+	ItemTypeDefinitionName string
+
 	FromCronJob string
 
 	FollowLogs bool
@@ -259,6 +261,12 @@ func (o *CLIOptions) AddMarketplaceItemObjectIDFlag(flags *pflag.FlagSet) (flagN
 func (o *CLIOptions) AddMarketplaceVersionFlag(flags *pflag.FlagSet) (flagName string) {
 	flagName = "version"
 	flags.StringVar(&o.MarketplaceItemVersion, flagName, "", "The version of the Marketplace item")
+	return
+}
+
+func (o *CLIOptions) AddItemTypeDefinitionNameFlag(flags *pflag.FlagSet) (flagName string) {
+	flagName = "name"
+	flags.StringVarP(&o.ItemTypeDefinitionName, flagName, "i", "", "The name of the Item Type Definition")
 	return
 }
 

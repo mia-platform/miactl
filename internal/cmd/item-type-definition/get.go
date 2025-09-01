@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package catalog
+package itd
 
 import (
 	"context"
@@ -21,8 +21,6 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
-	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/mia-platform/miactl/internal/util"
@@ -30,30 +28,28 @@ import (
 )
 
 const (
-	getItemByItemIDAndVersionEndpointTemplate = "/api/tenants/%s/marketplace/items/%s/versions/%s"
+	getItdEndpoint = "/api/tenants/%s/marketplace/item-type-definitions/%s/"
+	getCmdLong     = `Get an Item Type Definition
 
-	cmdGetLongDescription = `Get a single Catalog item
+   This command get an Item Type Definitions based on its name and tenant namespace. It works with Mia-Platform Console v14.1.0 or later.
 
-	This command works with Mia-Platform Console v14.0.0 or later.
-
-	You need to specify the itemId, via the respective flag. The company-id flag can be omitted if it is already set in the context.
-	`
-	cmdGetUse = "get { --item-id item-id --version version }"
+   You need to specify the name and its tenant namespace, via the respective flags. The company-id flag can be omitted if it is already set in the context.
+   `
+	getCmdUse = "list --tenantId tenantId --name name"
 )
 
-// GetCmd return a new cobra command for getting a single catalog resource
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   cmdGetUse,
-		Short: "Get Catalog item",
-		Long:  cmdGetLongDescription,
+		Use:   getCmdUse,
+		Short: "Get item type definition",
+		Long:  getCmdLong,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
+			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 1)
 			if !canUseNewAPI || versionError != nil {
 				return catalog.ErrUnsupportedCompanyVersion
 			}
@@ -62,8 +58,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 				cmd.Context(),
 				client,
 				restConfig.CompanyID,
-				options.MarketplaceItemID,
-				options.MarketplaceItemVersion,
+				options.ItemTypeDefinitionName,
 				options.OutputFormat,
 			)
 			cobra.CheckErr(err)
@@ -73,23 +68,19 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 		},
 	}
 
-	options.AddOutputFormatFlag(cmd.Flags(), encoding.JSON)
+	nameFlagName := options.AddItemTypeDefinitionNameFlag(cmd.Flags())
 
-	itemIDFlagName := options.AddMarketplaceItemIDFlag(cmd.Flags())
-	versionFlagName := options.AddMarketplaceVersionFlag(cmd.Flags())
-
-	cmd.MarkFlagsRequiredTogether(itemIDFlagName, versionFlagName)
+	cmd.MarkFlagRequired(nameFlagName)
 
 	return cmd
 }
 
-// getItemEncodedWithFormat retrieves the catalog item corresponding to the specified identifier, serialized with the specified outputFormat
-func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, companyID, itemID, version, outputFormat string) (string, error) {
+func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, companyID, name, outputFormat string) (string, error) {
 	if companyID == "" {
 		return "", marketplace.ErrMissingCompanyID
 	}
-	endpoint := fmt.Sprintf(getItemByItemIDAndVersionEndpointTemplate, companyID, itemID, version)
-	item, err := commonMarketplace.PerformGetItemRequest(ctx, client, endpoint)
+	endpoint := fmt.Sprintf(getItdEndpoint, companyID, name)
+	item, err := performGetITDRequest(ctx, client, endpoint)
 
 	if err != nil {
 		return "", err
@@ -101,4 +92,27 @@ func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, com
 	}
 
 	return string(data), nil
+}
+
+func performGetITDRequest(ctx context.Context, client *client.APIClient, endpoint string) (*marketplace.Item, error) {
+	resp, err := client.Get().APIPath(endpoint).Do(ctx)
+
+	if err != nil {
+		return nil, fmt.Errorf("error executing request: %w", err)
+	}
+
+	if err := resp.Error(); err != nil {
+		return nil, err
+	}
+
+	var marketplaceItem *marketplace.Item
+	if err := resp.ParseResponse(&marketplaceItem); err != nil {
+		return nil, fmt.Errorf("error parsing response body: %w", err)
+	}
+
+	if marketplaceItem == nil {
+		return nil, fmt.Errorf("no item type definition returned in the response")
+	}
+
+	return marketplaceItem, nil
 }
