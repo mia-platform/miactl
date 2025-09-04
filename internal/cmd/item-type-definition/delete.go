@@ -82,7 +82,11 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 	ITDFlagName := options.AddItemTypeDefinitionNameFlag(cmd.Flags())
 
-	cmd.MarkFlagRequired(ITDFlagName)
+	err := cmd.MarkFlagRequired(ITDFlagName)
+	if err != nil {
+		// the error is only due to a programming error (missing command flag), hence panic
+		panic(err)
+	}
 
 	return cmd
 }

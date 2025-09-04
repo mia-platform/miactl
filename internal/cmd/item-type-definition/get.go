@@ -69,7 +69,11 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 	nameFlagName := options.AddItemTypeDefinitionNameFlag(cmd.Flags())
 
-	cmd.MarkFlagRequired(nameFlagName)
+	err := cmd.MarkFlagRequired(nameFlagName)
+	if err != nil {
+		// the error is only due to a programming error (missing command flag), hence panic
+		panic(err)
+	}
 
 	return cmd
 }

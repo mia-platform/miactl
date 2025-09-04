@@ -34,12 +34,12 @@ type GenericItemTypeDefinition map[string]interface{}
 
 type ItemTypeDefinitionMetadataVisibility struct {
 	Scope string   `json:"scope"`
-	Ids   []string `json:"ids"`
+	IDs   []string `json:"ids"` //nolint: tagliatelle
 }
 
 type ItemTypeDefinitionMetadataNamespace struct {
 	Scope string `json:"scope"`
-	Id    string `json:"id"`
+	ID    string `json:"id"`
 }
 
 type ItemTypeDefinitionMetadataPublisher struct {
