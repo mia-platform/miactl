@@ -21,8 +21,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/resources/catalog"
-	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -51,7 +50,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 1)
 			if !canUseNewAPI || versionError != nil {
-				return catalog.ErrUnsupportedCompanyVersion
+				return itd.ErrUnsupportedCompanyVersion
 			}
 
 			serializedItem, err := getItemEncodedWithFormat(
@@ -77,7 +76,7 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, companyID, name, outputFormat string) (string, error) {
 	if companyID == "" {
-		return "", marketplace.ErrMissingCompanyID
+		return "", itd.ErrMissingCompanyID
 	}
 	endpoint := fmt.Sprintf(getItdEndpoint, companyID, name)
 	item, err := performGetITDRequest(ctx, client, endpoint)
@@ -94,7 +93,7 @@ func getItemEncodedWithFormat(ctx context.Context, client *client.APIClient, com
 	return string(data), nil
 }
 
-func performGetITDRequest(ctx context.Context, client *client.APIClient, endpoint string) (*marketplace.Item, error) {
+func performGetITDRequest(ctx context.Context, client *client.APIClient, endpoint string) (*itd.GenericItemTypeDefinition, error) {
 	resp, err := client.Get().APIPath(endpoint).Do(ctx)
 
 	if err != nil {
@@ -105,14 +104,14 @@ func performGetITDRequest(ctx context.Context, client *client.APIClient, endpoin
 		return nil, err
 	}
 
-	var marketplaceItem *marketplace.Item
-	if err := resp.ParseResponse(&marketplaceItem); err != nil {
+	var itd *itd.GenericItemTypeDefinition
+	if err := resp.ParseResponse(&itd); err != nil {
 		return nil, fmt.Errorf("error parsing response body: %w", err)
 	}
 
-	if marketplaceItem == nil {
+	if itd == nil {
 		return nil, fmt.Errorf("no item type definition returned in the response")
 	}
 
-	return marketplaceItem, nil
+	return itd, nil
 }

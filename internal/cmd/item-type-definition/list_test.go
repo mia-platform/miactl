@@ -132,7 +132,7 @@ func unexecutedCmdMockServer(t *testing.T) http.HandlerFunc {
 	t.Helper()
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.EqualFold(r.URL.Path, "/api/version") && r.Method == http.MethodGet {
-			_, err := w.Write([]byte(`{"major": "13", "minor":"6"}`))
+			_, err := w.Write([]byte(`{"major": "14", "minor":"0"}`))
 			require.NoError(t, err)
 		} else {
 			w.WriteHeader(http.StatusNotFound)

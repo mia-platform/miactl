@@ -57,7 +57,7 @@ const (
             }
         ],
         "publisher": {
-            "name": "Paola"
+            "name": "publisher-name"
         }
     },
     "spec": {

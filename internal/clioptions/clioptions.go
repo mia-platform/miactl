@@ -79,7 +79,8 @@ type CLIOptions struct {
 	MarketplaceItemObjectID     string
 	MarketplaceFetchPublicItems bool
 
-	ItemTypeDefinitionName string
+	ItemTypeDefinitionName     string
+	ItemTypeDefinitionFilePath string
 
 	FromCronJob string
 
@@ -268,6 +269,15 @@ func (o *CLIOptions) AddItemTypeDefinitionNameFlag(flags *pflag.FlagSet) (flagNa
 	flagName = "name"
 	flags.StringVarP(&o.ItemTypeDefinitionName, flagName, "i", "", "The name of the Item Type Definition")
 	return
+}
+
+func (o *CLIOptions) AddItemTypeDefinitionFileFlag(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&o.ItemTypeDefinitionFilePath, "file", "f", "", "paths to JSON/YAML file containing an item type definition")
+	err := cmd.MarkFlagRequired("file")
+	if err != nil {
+		// the error is only due to a programming error (missing command), hence panic
+		panic(err)
+	}
 }
 
 func (o *CLIOptions) AddCreateJobFlags(flags *pflag.FlagSet) {

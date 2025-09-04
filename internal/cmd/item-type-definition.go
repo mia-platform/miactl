@@ -37,7 +37,7 @@ func ItemTypeDefinitionCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd.AddCommand(itd.ListCmd(options))
 	cmd.AddCommand(itd.GetCmd(options))
 	cmd.AddCommand(itd.DeleteCmd(options))
-	// cmd.AddCommand(itd.ApplyCmd(options))
+	cmd.AddCommand(itd.PutCmd(options))
 
 	return cmd
 }

@@ -23,8 +23,7 @@ import (
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/resources/catalog"
-	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
 	"github.com/mia-platform/miactl/internal/util"
 	"github.com/spf13/cobra"
 )
@@ -41,13 +40,13 @@ const (
 
 	You need to specify the companyId and the item type definition name via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 	`
-	cmdUse = "delete { --name name --version version }"
+	deleteCmdUse = "delete { --name name --version version }"
 )
 
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:        cmdUse,
-		Short:      "Delete a Catalog item",
+		Use:        deleteCmdUse,
+		Short:      "Delete an Item Type Definition",
 		Long:       cmdDeleteLongDescription,
 		SuggestFor: []string{"rm"},
 		RunE: func(cmd *cobra.Command, _ []string) error {
@@ -56,14 +55,14 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
 
-			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
+			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 1)
 			if !canUseNewAPI || versionError != nil {
-				return catalog.ErrUnsupportedCompanyVersion
+				return itd.ErrUnsupportedCompanyVersion
 			}
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {
-				return marketplace.ErrMissingCompanyID
+				return itd.ErrMissingCompanyID
 			}
 
 			if options.MarketplaceItemVersion != "" && options.MarketplaceItemID != "" {
@@ -103,7 +102,7 @@ func deleteITD(ctx context.Context, client *client.APIClient, companyID, name st
 		fmt.Println("item deleted successfully")
 		return nil
 	case http.StatusNotFound:
-		return marketplace.ErrItemNotFound
+		return itd.ErrItemNotFound
 	default:
 		if resp.StatusCode() >= http.StatusInternalServerError {
 			return ErrServerDeleteItem

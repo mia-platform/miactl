@@ -17,12 +17,20 @@ package itd
 
 import (
 	"errors"
+
+	"github.com/mia-platform/miactl/internal/encoding"
 )
 
 var (
 	ErrUnsupportedCompanyVersion = errors.New("you need Mia-Platform Console v14.1.0 or later to use this command")
 	ErrMissingCompanyID          = errors.New("missing company id, please set one with the flag company-id or in the context")
+	ErrItemNotFound              = errors.New("item type definition not found")
 )
+
+// Item is a Marketplace item
+// we use a map[string]interface{} to represent the item
+// this allows to avoid changes in the code in case of a change in the resource structure
+type GenericItemTypeDefinition map[string]interface{}
 
 type ItemTypeDefinitionMetadataVisibility struct {
 	Scope string   `json:"scope"`
@@ -53,4 +61,20 @@ type ItemTypeDefinitionSpec struct {
 type ItemTypeDefinition struct {
 	Metadata ItemTypeDefinitionMetadata `json:"metadata"`
 	Spec     ItemTypeDefinitionSpec     `json:"spec"`
+}
+
+func (i *GenericItemTypeDefinition) Marshal(encodingFormat string) ([]byte, error) {
+	return encoding.MarshalData(i, encodingFormat, encoding.MarshalOptions{Indent: true})
+}
+
+func (i *GenericItemTypeDefinition) Del(key string) {
+	delete(*i, key)
+}
+
+func (i *GenericItemTypeDefinition) Set(key string, val interface{}) {
+	(*i)[key] = val
+}
+
+func (i *GenericItemTypeDefinition) Get(key string) interface{} {
+	return (*i)[key]
 }

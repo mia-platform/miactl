@@ -24,7 +24,6 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
-	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,7 +38,7 @@ func TestDeleteResourceCmd(t *testing.T) {
 		require.NotNil(t, cmd)
 	})
 
-	t.Run("should not run command when Console version is lower than 14.0.0", func(t *testing.T) {
+	t.Run("should not run command when Console version is lower than 14.1.0", func(t *testing.T) {
 		server := httptest.NewServer(unexecutedCmdMockServer(t))
 		defer server.Close()
 
@@ -48,14 +47,14 @@ func TestDeleteResourceCmd(t *testing.T) {
 		opts.Endpoint = server.URL
 
 		cmd := DeleteCmd(opts)
-		cmd.SetArgs([]string{"delete", "--item-id", "some-item-id", "--version", "1.0.0"})
+		cmd.SetArgs([]string{"delete", "--name", "some-item-id"})
 
 		err := cmd.Execute()
 		require.ErrorIs(t, err, itd.ErrUnsupportedCompanyVersion)
 	})
 }
 
-func deleteByItemIDAndVersionMockServer(t *testing.T,
+func deleteByItemNameMockServer(t *testing.T,
 	statusCode int,
 	mockName string,
 	callsCount *int,
@@ -107,7 +106,7 @@ func TestDeleteItemByItemIDAndVersion(t *testing.T) {
 
 			statusCode: http.StatusNotFound,
 
-			expectedErr:   marketplace.ErrItemNotFound,
+			expectedErr:   itd.ErrItemNotFound,
 			expectedCalls: 1,
 		},
 		{
@@ -134,7 +133,7 @@ func TestDeleteItemByItemIDAndVersion(t *testing.T) {
 		t.Run(tt.testName, func(t *testing.T) {
 			callsCount := new(int)
 			*callsCount = 0
-			testServer := deleteByItemIDAndVersionMockServer(
+			testServer := deleteByItemNameMockServer(
 				t,
 				tt.statusCode,
 				tt.name,
