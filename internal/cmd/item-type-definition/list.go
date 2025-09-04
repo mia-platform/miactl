@@ -31,6 +31,7 @@ import (
 type GetItdsOptions struct {
 	CompanyID string
 	Public    bool
+	Page      int
 }
 
 const (
@@ -39,8 +40,11 @@ const (
 
     This command lists the Item Type Definitions of a company. It works with Mia-Platform Console v14.1.0 or later.
 
+		Results are paginated. By default, only the first page is shown.
+
     you can also specify the following flags:
     - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Catalog items from other companies.
+		- --page - specify the page to fetch, default is 1
     `
 	listCmdUse = "list --company-id company-id"
 )
@@ -54,6 +58,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	}
 
 	options.AddPublicFlag(cmd.Flags())
+	options.AddPageFlag(cmd.Flags())
 
 	return cmd
 }
@@ -70,12 +75,13 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 			return itd.ErrUnsupportedCompanyVersion
 		}
 
-		marketplaceItemsOptions := GetItdsOptions{
+		listItemsOptions := GetItdsOptions{
 			CompanyID: restConfig.CompanyID,
 			Public:    options.MarketplaceFetchPublicItems,
+			Page:      options.Page,
 		}
 
-		err = PrintItds(cmd.Context(), apiClient, marketplaceItemsOptions, options.Printer(), listItdEndpoint)
+		err = PrintItds(cmd.Context(), apiClient, listItemsOptions, options.Printer(), listItdEndpoint)
 		cobra.CheckErr(err)
 
 		return nil
@@ -119,12 +125,12 @@ func fetchItds(ctx context.Context, client *client.APIClient, options GetItdsOpt
 		return nil, err
 	}
 
-	marketplaceItems, err := parseResponse(resp)
+	listItems, err := parseResponse(resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return marketplaceItems, nil
+	return listItems, nil
 }
 
 func validateOptions(options GetItdsOptions) error {
@@ -146,6 +152,12 @@ func buildRequest(client *client.APIClient, options GetItdsOptions, endpoint str
 		request.SetParam("visibility", options.CompanyID)
 	}
 
+	if options.Page <= 0 {
+		request.SetParam("page", "1")
+	} else {
+		request.SetParam("page", strconv.Itoa(options.Page))
+	}
+
 	return request
 }
 
@@ -162,10 +174,10 @@ func executeRequest(ctx context.Context, request *client.Request) (*client.Respo
 }
 
 func parseResponse(resp *client.Response) ([]*itd.ItemTypeDefinition, error) {
-	marketplaceItems := make([]*itd.ItemTypeDefinition, 0)
-	if err := resp.ParseResponse(&marketplaceItems); err != nil {
+	listItems := make([]*itd.ItemTypeDefinition, 0)
+	if err := resp.ParseResponse(&listItems); err != nil {
 		return nil, fmt.Errorf("error parsing response body: %w", err)
 	}
 
-	return marketplaceItems, nil
+	return listItems, nil
 }

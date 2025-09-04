@@ -61,6 +61,8 @@ type CLIOptions struct {
 	UserEmails []string
 	UserIDs    []string
 
+	Page int
+
 	ServiceAccountID string
 
 	BasicClientID     string
@@ -250,6 +252,12 @@ func (o *CLIOptions) AddMarketplaceItemIDFlag(flags *pflag.FlagSet) (flagName st
 func (o *CLIOptions) AddPublicFlag(flags *pflag.FlagSet) (flagName string) {
 	flagName = "public"
 	flags.BoolVarP(&o.MarketplaceFetchPublicItems, flagName, "p", false, "specify to fetch also public items")
+	return
+}
+
+func (o *CLIOptions) AddPageFlag(flags *pflag.FlagSet) (flagName string) {
+	flagName = "page"
+	flags.IntVar(&o.Page, flagName, 1, "specify the page to fetch")
 	return
 }
 

@@ -157,6 +157,7 @@ func privateAndPublicMarketplaceHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.EqualFold(r.URL.Path, "/api/marketplace/") &&
 			r.Method == http.MethodGet &&
+			r.URL.Query().Get("page") == "1" &&
 			r.URL.Query().Get("includeTenantId") == "my-company" {
 			_, err := w.Write([]byte(marketplaceItemsBodyContent(t)))
 			require.NoError(t, err)
@@ -172,6 +173,7 @@ func privateCompanyMarketplaceHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.EqualFold(r.URL.Path, "/api/marketplace/") &&
 			r.Method == http.MethodGet &&
+			r.URL.Query().Get("page") == "1" &&
 			r.URL.Query().Get("tenantId") == "my-company" {
 			_, err := w.Write([]byte(marketplacePrivateCompanyBodyContent(t)))
 			require.NoError(t, err)

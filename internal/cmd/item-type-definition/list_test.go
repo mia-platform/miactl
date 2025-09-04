@@ -79,10 +79,11 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 			},
 		},
 		{
-			name: "public and private item type definitions",
+			name: "public and private item type definitions, page 2",
 			options: GetItdsOptions{
 				CompanyID: "my-company",
 				Public:    true,
+				Page:      2,
 			},
 			responseHandler: publicAndPrivateItdsHandler(t),
 			clientConfig:    &client.Config{Transport: http.DefaultTransport},
@@ -146,6 +147,7 @@ func privateItdsHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.EqualFold(r.URL.Path, listItdEndpoint) &&
 			r.Method == http.MethodGet &&
+			r.URL.Query().Get("page") == "1" &&
 			r.URL.Query().Get("visibility") == "my-company" {
 			_, err := w.Write([]byte(privateItdsBodyContent(t)))
 			require.NoError(t, err)
@@ -161,6 +163,7 @@ func publicAndPrivateItdsHandler(t *testing.T) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.EqualFold(r.URL.Path, listItdEndpoint) &&
 			r.Method == http.MethodGet &&
+			r.URL.Query().Get("page") == "2" &&
 			r.URL.Query().Get("visibility") == "console,my-company" {
 			_, err := w.Write([]byte(publicItdsBodyContent(t)))
 			require.NoError(t, err)

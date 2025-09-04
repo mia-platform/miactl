@@ -18,6 +18,7 @@ package marketplace
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/printer"
@@ -28,6 +29,7 @@ import (
 type GetMarketplaceItemsOptions struct {
 	CompanyID string
 	Public    bool
+	Page      int
 }
 
 func PrintMarketplaceItems(context context.Context, client *client.APIClient, options GetMarketplaceItemsOptions, p printer.IPrinter, endpoint string) error {
@@ -87,6 +89,15 @@ func buildRequest(client *client.APIClient, options GetMarketplaceItemsOptions, 
 		request.SetParam("includeTenantId", options.CompanyID)
 	case !options.Public:
 		request.SetParam("tenantId", options.CompanyID)
+	}
+
+	// marketplace command API does not support pagination
+	if endpoint == "/api/marketplace/" {
+		if options.Page <= 0 {
+			request.SetParam("page", "1")
+		} else {
+			request.SetParam("page", strconv.Itoa(options.Page))
+		}
 	}
 
 	return request
