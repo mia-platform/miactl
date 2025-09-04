@@ -23,8 +23,8 @@ import (
 
 func ItemTypeDefinitionCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "catalog",
-		Short: "View and manage Catalog items. This command is available from Mia-Platform Console v14.1.0.",
+		Use:   "itd",
+		Short: "View and manage Item Type Definitions. This command is available from Mia-Platform Console v14.1.0.",
 	}
 
 	// add cmd flags
