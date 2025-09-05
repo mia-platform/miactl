@@ -1,0 +1,38 @@
+{
+    "apiVersion": "software-catalog.mia-platform.eu/v1",
+    "kind": "item-type-definition",
+    "metadata": {
+        "namespace": {
+            "scope": "tenant",
+            "id": "some-company-id"
+        },
+        "name": "plugin",
+        "visibility": {
+            "scope": "tenant",
+            "ids": [
+                "some-company-id"
+            ]
+        },
+        "displayName": "Plugin",
+        "tags": [
+            "prova"
+        ],
+        "maintainers": [
+            {
+                "name": "ok"
+            }
+        ],
+        "publisher": {
+            "name": "publisher-name"
+        }
+    },
+    "spec": {
+        "type": "plugin",
+        "scope": "tenant",
+        "validation": {
+            "mechanism": "json-schema",
+            "schema": {}
+        }
+    },
+    "__v": 2
+  }

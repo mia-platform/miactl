@@ -30,8 +30,11 @@ const (
 
     This command lists the Catalog items of a company. It works with Mia-Platform Console v14.0.0 or later.
 
+		Results are paginated. By default, only the first page is shown.
+
     you can also specify the following flags:
     - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Catalog items from other companies.
+		- -- page - specify the page to fetch, default is 1
     `
 	listCmdUse = "list --company-id company-id"
 )
@@ -46,6 +49,7 @@ func ListCmd(options *clioptions.CLIOptions) *cobra.Command {
 	}
 
 	options.AddPublicFlag(cmd.Flags())
+	options.AddPageFlag(cmd.Flags())
 
 	return cmd
 }
@@ -65,6 +69,7 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 		marketplaceItemsOptions := commonMarketplace.GetMarketplaceItemsOptions{
 			CompanyID: restConfig.CompanyID,
 			Public:    options.MarketplaceFetchPublicItems,
+			Page:      options.Page,
 		}
 
 		err = commonMarketplace.PrintMarketplaceItems(cmd.Context(), apiClient, marketplaceItemsOptions, options.Printer(), listMarketplaceEndpoint)

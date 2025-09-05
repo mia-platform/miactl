@@ -61,6 +61,8 @@ type CLIOptions struct {
 	UserEmails []string
 	UserIDs    []string
 
+	Page int
+
 	ServiceAccountID string
 
 	BasicClientID     string
@@ -78,6 +80,9 @@ type CLIOptions struct {
 	// MarketplaceItemObjectID is the _id of a Marketplace item
 	MarketplaceItemObjectID     string
 	MarketplaceFetchPublicItems bool
+
+	ItemTypeDefinitionName     string
+	ItemTypeDefinitionFilePath string
 
 	FromCronJob string
 
@@ -250,6 +255,12 @@ func (o *CLIOptions) AddPublicFlag(flags *pflag.FlagSet) (flagName string) {
 	return
 }
 
+func (o *CLIOptions) AddPageFlag(flags *pflag.FlagSet) (flagName string) {
+	flagName = "page"
+	flags.IntVar(&o.Page, flagName, 1, "specify the page to fetch")
+	return
+}
+
 func (o *CLIOptions) AddMarketplaceItemObjectIDFlag(flags *pflag.FlagSet) (flagName string) {
 	flagName = "object-id"
 	flags.StringVar(&o.MarketplaceItemObjectID, flagName, "", "The _id of the Marketplace item")
@@ -260,6 +271,21 @@ func (o *CLIOptions) AddMarketplaceVersionFlag(flags *pflag.FlagSet) (flagName s
 	flagName = "version"
 	flags.StringVar(&o.MarketplaceItemVersion, flagName, "", "The version of the Marketplace item")
 	return
+}
+
+func (o *CLIOptions) AddItemTypeDefinitionNameFlag(flags *pflag.FlagSet) (flagName string) {
+	flagName = "name"
+	flags.StringVarP(&o.ItemTypeDefinitionName, flagName, "i", "", "The name of the Item Type Definition")
+	return
+}
+
+func (o *CLIOptions) AddItemTypeDefinitionFileFlag(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&o.ItemTypeDefinitionFilePath, "file", "f", "", "paths to JSON/YAML file containing an item type definition")
+	err := cmd.MarkFlagRequired("file")
+	if err != nil {
+		// the error is only due to a programming error (missing command), hence panic
+		panic(err)
+	}
 }
 
 func (o *CLIOptions) AddCreateJobFlags(flags *pflag.FlagSet) {

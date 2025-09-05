@@ -52,6 +52,7 @@ func NewRootCommand() *cobra.Command {
 		ContextCmd(options),
 		ProjectCmd(options),
 		MarketplaceCmd(options),
+		ItemTypeDefinitionCmd(options),
 		CatalogCmd(options),
 		RuntimeCmd(options),
 		VersionCmd(options),

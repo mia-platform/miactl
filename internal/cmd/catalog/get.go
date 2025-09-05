@@ -36,7 +36,7 @@ const (
 
 	This command works with Mia-Platform Console v14.0.0 or later.
 
-	You need to specify the companyId, itemId and version, via the respective flags. The company-id flag can be omitted if it is already set in the context.
+	You need to specify the itemId, via the respective flag. The company-id flag can be omitted if it is already set in the context.
 	`
 	cmdGetUse = "get { --item-id item-id --version version }"
 )
