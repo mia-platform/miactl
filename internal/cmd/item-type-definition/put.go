@@ -52,12 +52,12 @@ const (
 
 	putExample = `
   # Create the item type definition in file myFantasticGoTemplate.json located in the current directory
-  miactl catalog apply --file myFantasticGoTemplate.json
+  miactl catalog put --file myFantasticGoTemplate.json
 
   # Create the item type definition in file myFantasticGoTemplate.json, with relative path
-  miactl catalog apply --file ./path/to/myFantasticGoTemplate.json`
+  miactl catalog put --file ./path/to/myFantasticGoTemplate.json`
 
-	putCmdUse = "delete { --file file-path }"
+	putCmdUse = "put { --file file-path }"
 )
 
 func PutCmd(options *clioptions.CLIOptions) *cobra.Command {

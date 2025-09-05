@@ -37,7 +37,7 @@ func TestPutCommand(t *testing.T) {
 		opts.Endpoint = server.URL
 
 		cmd := PutCmd(opts)
-		cmd.SetArgs([]string{"apply", "-f", "testdata/validItem1.json"})
+		cmd.SetArgs([]string{"put", "--file", "testdata/validItem1.json"})
 
 		err := cmd.Execute()
 		require.ErrorIs(t, err, itd.ErrUnsupportedCompanyVersion)

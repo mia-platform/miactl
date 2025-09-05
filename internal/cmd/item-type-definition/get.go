@@ -34,7 +34,7 @@ const (
 
    You need to specify the name and its tenant namespace, via the respective flags. The company-id flag can be omitted if it is already set in the context.
    `
-	getCmdUse = "list --tenantId tenantId --name name"
+	getCmdUse = "get --tenantId tenantId --name name"
 )
 
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
