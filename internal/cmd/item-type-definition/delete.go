@@ -40,7 +40,7 @@ const (
 
 	You need to specify the companyId and the item type definition name via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 	`
-	deleteCmdUse = "delete { --name name --version version }"
+	deleteCmdUse = "delete --name name --version version"
 )
 
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {

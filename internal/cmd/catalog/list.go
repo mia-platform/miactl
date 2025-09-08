@@ -34,7 +34,7 @@ const (
 
     you can also specify the following flags:
     - --public - if this flag is set, the command fetches not only the items from the requested company, but also the public Catalog items from other companies.
-		- -- page - specify the page to fetch, default is 1
+		- --page - specify the page to fetch, default is 1
     `
 	listCmdUse = "list --company-id company-id"
 )
