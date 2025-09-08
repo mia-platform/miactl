@@ -51,11 +51,11 @@ const (
   Supported formats are JSON (.json files) and YAML (.yaml or .yml files). The company-id flag can be omitted if it is already set in the context.`
 
 	putExample = `
-  # Create the item type definition in file myFantasticGoTemplate.json located in the current directory
-  miactl catalog put --file myFantasticGoTemplate.json
+  # Create the item type definition in file myFantasticPluginDefinition.json located in the current directory
+  miactl catalog put --file myFantasticPluginDefinition.json
 
-  # Create the item type definition in file myFantasticGoTemplate.json, with relative path
-  miactl catalog put --file ./path/to/myFantasticGoTemplate.json`
+  # Create the item type definition in file myFantasticPluginDefinition.json, with relative path
+  miactl catalog put --file ./path/to/myFantasticPluginDefinition.json`
 
 	putCmdUse = "put { --file file-path }"
 )
