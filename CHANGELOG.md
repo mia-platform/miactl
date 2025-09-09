@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- update go version to 1.25.1
+- update cobra to v1.10.1
+- update pflag to v1.0.10
+- update oauth2 to v0.31.0
+- update sync to v0.17.0
+- update text to v0.29.0
+
 ### Added
 
 - new command: `itd`

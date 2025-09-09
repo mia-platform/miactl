@@ -14,8 +14,8 @@ on:
     - examples/**
 
 env:
-  GORELEASER_VERSION: v2.11.1
-  GOLANGCI_LINT_VERSION: v2.3.0
+  GORELEASER_VERSION: v2.12.0
+  GOLANGCI_LINT_VERSION: v2.4.0
 jobs:
   lint:
     name: Lint Code
