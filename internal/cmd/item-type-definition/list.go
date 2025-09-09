@@ -71,7 +71,10 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 		cobra.CheckErr(err)
 
 		canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), apiClient, 14, 1)
-		if !canUseNewAPI || versionError != nil {
+		if versionError != nil {
+			return versionError
+		}
+		if !canUseNewAPI {
 			return itd.ErrUnsupportedCompanyVersion
 		}
 

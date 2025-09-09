@@ -56,7 +56,10 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 
 			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
-			if !canUseNewAPI || versionError != nil {
+			if versionError != nil {
+				return versionError
+			}
+			if !canUseNewAPI {
 				return catalog.ErrUnsupportedCompanyVersion
 			}
 

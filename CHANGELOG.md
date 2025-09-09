@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- fixed error management in commands with Console version check
+
 ### Changed
 
 - update go version to 1.25.1
