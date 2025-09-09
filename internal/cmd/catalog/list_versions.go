@@ -40,7 +40,10 @@ The command will output a table with each version of the item. It works with Mia
 			cobra.CheckErr(err)
 
 			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
-			if !canUseNewAPI || versionError != nil {
+			if versionError != nil {
+				return versionError
+			}
+			if !canUseNewAPI {
 				return catalog.ErrUnsupportedCompanyVersion
 			}
 
