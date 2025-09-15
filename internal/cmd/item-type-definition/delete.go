@@ -40,7 +40,7 @@ const (
 
 	You need to specify the companyId and the item type definition name via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 	`
-	deleteCmdUse = "delete --name name --version version"
+	deleteCmdUse = "delete --name name"
 )
 
 func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -68,7 +68,7 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 				return itd.ErrMissingCompanyID
 			}
 
-			if options.MarketplaceItemVersion != "" && options.MarketplaceItemID != "" {
+			if options.ItemTypeDefinitionName != "" {
 				err = deleteITD(
 					cmd.Context(),
 					client,
