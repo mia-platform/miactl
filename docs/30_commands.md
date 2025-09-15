@@ -1370,10 +1370,10 @@ Get a Catalog item
 
 Get an Item Type Definition
 
-You need to specify the name and its tenant namespace, via the respective flags. The company-id flag can be omitted if it is already set in the context.
+You need to specify the name via the respective flag. The company-id flag can be omitted if it is already set in the context and it is used as tenantId of the item type definition.
 
 ```bash
-miactl itd get --tenantId tenantId --name name
+miactl itd get --name name
 ```
 
 ### delete
@@ -1387,7 +1387,7 @@ Delete an Item Type Definition
 You need to specify the companyId and the item type definition name via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 
 ```bash
-miactl itd delete --name name --version version ...
+miactl itd delete --name name
 ```
 
 ### put

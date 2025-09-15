@@ -32,9 +32,9 @@ const (
 
    This command get an Item Type Definitions based on its name and tenant namespace. It works with Mia-Platform Console v14.1.0 or later.
 
-   You need to specify the name and its tenant namespace, via the respective flags. The company-id flag can be omitted if it is already set in the context.
+   You need to specify the name via the respective flag. The company-id flag can be omitted if it is already set in the context and it is used as tenantId of the item type definition.
    `
-	getCmdUse = "get --tenantId tenantId --name name"
+	getCmdUse = "get --name name"
 )
 
 func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
