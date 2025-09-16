@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.21.0] - 2025-09-16
+
 ### Fixed
 
 - fixed error management in commands with Console version check
@@ -411,7 +413,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - create cli sdk
 - create cli renderer
 
-[unreleased]: https://github.com/mia-platform/miactl/compare/v0.20.0...HEAD
+[unreleased]: https://github.com/mia-platform/miactl/compare/v0.21.0...HEAD
+[v0.21.0]: https://github.com/mia-platform/miactl/compare/v0.20.0...v0.21.0
 [v0.20.0]: https://github.com/mia-platform/miactl/compare/v0.19.0...v0.20.0
 [v0.19.0]: https://github.com/mia-platform/miactl/compare/v0.18.0...v0.19.0
 [v0.18.0]: https://github.com/mia-platform/miactl/compare/v0.17.3...v0.18.0
