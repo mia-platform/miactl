@@ -17,7 +17,7 @@ package client
 
 import (
 	"bytes"
-	"fmt"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -42,14 +42,14 @@ func TestNewRequest(t *testing.T) {
 		},
 		"without content type": {
 			client:               newAPIClient(testURL, contentConfig{ContentType: testContentType}, http.DefaultClient),
-			expectedAcceptHeader: fmt.Sprintf("%s, */*", testContentType),
+			expectedAcceptHeader: testContentType + ", */*",
 		},
 	}
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
 			request := NewRequest(testCase.client)
-			actualAcceptHeader := request.headers.Get("accept")
+			actualAcceptHeader := request.headers.Get("Accept")
 			assert.Equal(t, testCase.expectedAcceptHeader, actualAcceptHeader)
 		})
 	}
@@ -92,10 +92,10 @@ func testAPIServer(t *testing.T, server *httptest.Server) *APIClient {
 
 func TestSetParams(t *testing.T) {
 	r := (&Request{}).SetParam("foo", "bar")
-	assert.Equal(t, r.params, url.Values{"foo": []string{"bar"}})
+	assert.Equal(t, url.Values{"foo": []string{"bar"}}, r.params)
 
 	r.SetParam("baz", "1", "2")
-	assert.Equal(t, r.params, url.Values{"foo": []string{"bar"}, "baz": []string{"1", "2"}})
+	assert.Equal(t, url.Values{"foo": []string{"bar"}, "baz": []string{"1", "2"}}, r.params)
 }
 
 func TestSetAPIPath(t *testing.T) {
@@ -144,7 +144,7 @@ func TestPreflightCheck(t *testing.T) {
 			err:     true,
 		},
 		"valid verb and body but preexisting error": {
-			request: (&Request{err: fmt.Errorf("")}).SetVerb("GET"),
+			request: (&Request{err: errors.New("")}).SetVerb("GET"),
 			err:     true,
 		},
 	}

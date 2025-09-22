@@ -16,7 +16,6 @@
 package catalog
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -122,10 +121,10 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		found := strBuilder.String()
 		if tc.expectError {
 			assert.Error(t, err)
-			assert.Zero(t, found)
+			assert.Empty(t, found)
 		} else {
 			assert.NoError(t, err)
-			assert.NotZero(t, found)
+			assert.NotEmpty(t, found)
 			for _, expected := range tc.expectedContains {
 				assert.Contains(t, found, expected)
 			}
@@ -147,7 +146,7 @@ func unexecutedCmdMockServer(t *testing.T) http.HandlerFunc {
 			require.NoError(t, err)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }
@@ -163,7 +162,7 @@ func privateAndPublicMarketplaceHandler(t *testing.T) http.HandlerFunc {
 			require.NoError(t, err)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }
@@ -179,7 +178,7 @@ func privateCompanyMarketplaceHandler(t *testing.T) http.HandlerFunc {
 			require.NoError(t, err)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }
@@ -194,7 +193,7 @@ func wrongPayloadHandler(t *testing.T) http.HandlerFunc {
 			require.NoError(t, err)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }

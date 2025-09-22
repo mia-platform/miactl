@@ -17,6 +17,7 @@ package group
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -53,15 +54,15 @@ func AddMemberCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 func addMemberToGroup(ctx context.Context, client *client.APIClient, companyID, groupID string, userEmails []string) error {
 	if len(companyID) == 0 {
-		return fmt.Errorf("company id is required, please set it via flag or context")
+		return errors.New("company id is required, please set it via flag or context")
 	}
 
 	if len(groupID) == 0 {
-		return fmt.Errorf("a group id is required")
+		return errors.New("a group id is required")
 	}
 
 	if len(userEmails) < 1 {
-		return fmt.Errorf("at least one user must be added to the group")
+		return errors.New("at least one user must be added to the group")
 	}
 
 	payload := resources.AddMembersToGroup{

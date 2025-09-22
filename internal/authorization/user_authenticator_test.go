@@ -101,7 +101,7 @@ func TestUserAuthenticator(t *testing.T) {
 						resp.Body.Close()
 					}
 					require.NoError(t, err)
-					assert.Equal(t, resp.StatusCode, http.StatusOK)
+					assert.Equal(t, http.StatusOK, resp.StatusCode)
 					return err
 				},
 			}

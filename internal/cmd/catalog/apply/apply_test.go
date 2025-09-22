@@ -85,10 +85,10 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, foundApplyReq)
 		require.NotEmpty(t, foundApplyReq.Resources)
-		require.Equal(t, foundResNameToFilePath, map[string]string{
+		require.Equal(t, map[string]string{
 			"miactl-test-json": "./testdata/validItem1.json",
 			"miactl-test":      "./testdata/validYaml.yaml",
-		})
+		}, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if file is not valid json", func(t *testing.T) {
@@ -136,10 +136,10 @@ func TestApplyBuildApplyRequest(t *testing.T) {
 		require.NoError(t, err)
 		require.NotNil(t, foundApplyReq)
 		require.Len(t, foundApplyReq.Resources, 2)
-		require.Equal(t, foundResNameToFilePath, map[string]string{
+		require.Equal(t, map[string]string{
 			"miactl-test-json": "./testdata/validItem1.json",
 			"miactl-test":      "./testdata/validYaml.yaml",
-		})
+		}, foundResNameToFilePath)
 	})
 
 	t.Run("should return error if resources array is empty", func(t *testing.T) {
@@ -737,7 +737,7 @@ func TestApplyIntegration(t *testing.T) {
 			mockPaths,
 		)
 		require.ErrorContains(t, err, mockErrorMsg)
-		require.Zero(t, found)
+		require.Empty(t, found)
 	})
 
 	t.Run("should return the error message returned from server if apply item fails", func(t *testing.T) {
@@ -820,7 +820,7 @@ func TestApplyIntegration(t *testing.T) {
 			mockPaths,
 		)
 		require.ErrorContains(t, err, mockErrorMsg)
-		require.Zero(t, found)
+		require.Empty(t, found)
 	})
 }
 
@@ -1075,7 +1075,7 @@ func TestBuildIdentifier(t *testing.T) {
 
 			found, err := buildItemIdentifier(parsedItem)
 			if tt.expectedErr != nil {
-				require.Zero(t, found)
+				require.Empty(t, found)
 				require.ErrorIs(t, err, tt.expectedErr)
 				return
 			}
@@ -1099,7 +1099,7 @@ func unexecutedCmdMockServer(t *testing.T) http.HandlerFunc {
 			require.NoError(t, err)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }

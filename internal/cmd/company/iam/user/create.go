@@ -17,6 +17,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -64,11 +65,11 @@ func addUserToCompany(ctx context.Context, client *client.APIClient, companyID, 
 	}
 
 	if len(companyID) == 0 {
-		return fmt.Errorf("company id is required, please set it via flag or context")
+		return errors.New("company id is required, please set it via flag or context")
 	}
 
 	if len(userEmail) == 0 {
-		return fmt.Errorf("the user email is required")
+		return errors.New("the user email is required")
 	}
 
 	payload := resources.AddUserRequest{

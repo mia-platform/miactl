@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/go-logr/logr"
@@ -59,7 +58,7 @@ func TestUserAgentRoundTripper(t *testing.T) {
 
 		rtRequest := rt.Request
 		assert.Same(t, rtRequest, req)
-		assert.Equal(t, rtRequest.Header.Get("User-Agent"), "other")
+		assert.Equal(t, "other", rtRequest.Header.Get("User-Agent"))
 	})
 
 	t.Run("missing user agent in request", func(t *testing.T) {
@@ -70,7 +69,7 @@ func TestUserAgentRoundTripper(t *testing.T) {
 
 		rtRequest := rt.Request
 		assert.NotSame(t, rtRequest, req)
-		assert.Equal(t, rtRequest.Header.Get("User-Agent"), "test")
+		assert.Equal(t, "test", rtRequest.Header.Get("User-Agent"))
 	})
 }
 
@@ -219,7 +218,7 @@ func TestDebugRoundTripper(t *testing.T) {
 				"Response Headers:",
 				"Authorization: Bearer REDACTED",
 				"Response Headers:",
-				fmt.Sprintf("curl -v -X%s", request.Method),
+				"curl -v -X" + request.Method,
 				fmt.Sprintf("'%s'", request.URL.String()),
 			},
 		},
@@ -227,6 +226,8 @@ func TestDebugRoundTripper(t *testing.T) {
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+
 			// execute the round tripper
 			buffer := bytes.NewBuffer(nil)
 			logger := logger.NewTestLogger(buffer, testCase.logLevel)
@@ -236,11 +237,11 @@ func TestDebugRoundTripper(t *testing.T) {
 			loggedOutput := buffer.String()
 
 			if len(testCase.expectedOutputLines) == 0 {
-				require.Equal(t, "", loggedOutput)
+				require.Empty(t, loggedOutput)
 			}
 
 			for _, expectedString := range testCase.expectedOutputLines {
-				assert.True(t, strings.Contains(loggedOutput, expectedString), "%s not found", expectedString)
+				assert.Contains(t, loggedOutput, expectedString, "%s not found", expectedString)
 			}
 		})
 	}

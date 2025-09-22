@@ -19,10 +19,11 @@ import "net/http"
 
 // Config transport layer configurations for setting up http.Transport
 type Config struct {
-	// UserAgent is an optional field that specifies the caller of this request.
-	UserAgent string
 	// TLSConfig contains settings to enable transport layer security
 	TLSConfig
+
+	// UserAgent is an optional field that specifies the caller of this request.
+	UserAgent string
 	// AuthorizeWrapper will add authorization header to the wrapped RoundTripper
 	AuthorizeWrapper AuthorizeWrapperFunc
 	// Verbose will add logging function to the call via a wrapper RoundTripper

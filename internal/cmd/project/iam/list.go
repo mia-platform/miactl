@@ -17,6 +17,7 @@ package iam
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -59,11 +60,11 @@ all of them noting the type and the current role associated with them`,
 
 func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID, projectID string, entityTypes map[string]bool, p printer.IPrinter) error {
 	if len(companyID) == 0 {
-		return fmt.Errorf("missing company id, please set one with the flag or context")
+		return errors.New("missing company id, please set one with the flag or context")
 	}
 
 	if len(projectID) == 0 {
-		return fmt.Errorf("missing project id, please set one with the flag or context")
+		return errors.New("missing project id, please set one with the flag or context")
 	}
 
 	resp, err := iam.ListAllIAMEntities(ctx, client, companyID, []string{projectID}, entityTypes)

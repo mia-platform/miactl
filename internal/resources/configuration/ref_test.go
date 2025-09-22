@@ -78,7 +78,7 @@ func TestGetEncodedResourceLocation(t *testing.T) {
 			require.NoError(t, err)
 
 			encodedString := ref.EncodedLocationPath()
-			require.Equal(t, encodedString, tt.expected)
+			require.Equal(t, tt.expected, encodedString)
 		})
 	}
 }

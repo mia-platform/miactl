@@ -19,6 +19,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -98,7 +99,7 @@ func errorParsingCAData(pemCerts []byte) error {
 		var block *pem.Block
 		block, pemCerts = pem.Decode(pemCerts)
 		if block == nil {
-			return fmt.Errorf("unable to parse file as PEM")
+			return errors.New("unable to parse file as PEM")
 		}
 
 		if block.Type != "CERTIFICATE" || len(block.Headers) != 0 {
@@ -112,5 +113,5 @@ func errorParsingCAData(pemCerts []byte) error {
 		}
 	}
 
-	return fmt.Errorf("no valid certificate authority data")
+	return errors.New("no valid certificate authority data")
 }

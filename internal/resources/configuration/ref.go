@@ -16,6 +16,7 @@
 package configuration
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 )
@@ -41,7 +42,7 @@ func NewRef(refType, refName string) (Ref, error) {
 		return Ref{}, fmt.Errorf("unknown reference type: %s", refType)
 	}
 	if len(refName) == 0 {
-		return Ref{}, fmt.Errorf("missing reference name, please provide a reference name")
+		return Ref{}, errors.New("missing reference name, please provide a reference name")
 	}
 	return Ref{
 		refType: refType,
@@ -58,7 +59,7 @@ func (r Ref) EncodedLocationPath() string {
 		return fmt.Sprintf("%s/%s", r.refType, url.PathEscape(r.refName))
 	case BranchRefType, TagRefType:
 		// Legacy projects use /branches endpoint only
-		return fmt.Sprintf("branches/%s", url.PathEscape(r.refName))
+		return "branches/" + url.PathEscape(r.refName)
 	default:
 		return ""
 	}

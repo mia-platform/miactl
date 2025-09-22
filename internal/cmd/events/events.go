@@ -17,6 +17,7 @@ package events
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -51,11 +52,11 @@ func Command(o *clioptions.CLIOptions) *cobra.Command {
 
 func printEventsList(ctx context.Context, client *client.APIClient, projectID, environment, resourceName string, p printer.IPrinter) error {
 	if projectID == "" {
-		return fmt.Errorf("missing project id, please set one with the flag or context")
+		return errors.New("missing project id, please set one with the flag or context")
 	}
 
 	if environment == "" {
-		return fmt.Errorf("missing environment, please set one with the flag or context")
+		return errors.New("missing environment, please set one with the flag or context")
 	}
 
 	resp, err := client.

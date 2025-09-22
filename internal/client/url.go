@@ -16,6 +16,7 @@
 package client
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"path"
@@ -25,7 +26,7 @@ import (
 func defaultServerURL(config *Config) (*url.URL, error) {
 	host := config.Host
 	if host == "" {
-		return nil, fmt.Errorf("host must be a URL or a host:port pair")
+		return nil, errors.New("host must be a URL or a host:port pair")
 	}
 
 	hostURL, err := url.Parse(host)

@@ -107,7 +107,7 @@ func addUserTestServer(t *testing.T) *httptest.Server {
 		case r.Method == http.MethodPost && r.URL.Path == fmt.Sprintf(createGroupTemplate, "fail"):
 			w.WriteHeader(http.StatusBadRequest)
 		default:
-			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)
+			assert.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))

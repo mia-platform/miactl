@@ -110,7 +110,7 @@ func mockServer(t *testing.T, validResponse bool) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.RequestURI != listCompaniesEndpoint && r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusNotFound)
-			require.Fail(t, "unsupported call")
+			assert.Fail(t, "unsupported call")
 			return
 		}
 		w.WriteHeader(http.StatusOK)

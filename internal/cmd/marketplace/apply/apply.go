@@ -107,23 +107,23 @@ func ApplyCmd(options *clioptions.CLIOptions) *cobra.Command {
 func applyItemsFromPaths(ctx context.Context, client *client.APIClient, companyID string, filePaths []string) (string, error) {
 	resourceFilesPaths, err := buildFilePathsList(filePaths)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrBuildingFilesList, err)
+		return "", fmt.Errorf("%w: %w", commonMarketplace.ErrBuildingFilesList, err)
 	}
 
 	applyReq, identifierToFilePathMap, err := buildApplyRequest(resourceFilesPaths)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrBuildingApplyReq, err)
+		return "", fmt.Errorf("%w: %w", commonMarketplace.ErrBuildingApplyReq, err)
 	}
 
 	for _, item := range applyReq.Resources {
 		if err := processItemImages(ctx, client, companyID, item, identifierToFilePathMap); err != nil {
-			return "", fmt.Errorf("%w: %s", commonMarketplace.ErrProcessingImages, err)
+			return "", fmt.Errorf("%w: %w", commonMarketplace.ErrProcessingImages, err)
 		}
 	}
 
 	outcome, err := applyMarketplaceResource(ctx, client, companyID, applyReq)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", commonMarketplace.ErrApplyingResources, err)
+		return "", fmt.Errorf("%w: %w", commonMarketplace.ErrApplyingResources, err)
 	}
 
 	return buildOutcomeSummaryAsTables(outcome), nil
@@ -179,7 +179,7 @@ func processItemImages(
 			versionName,
 		)
 		if err != nil {
-			return fmt.Errorf("%w: %s: %s", commonMarketplace.ErrUploadingImage, imageFilePath, err)
+			return fmt.Errorf("%w: %s: %w", commonMarketplace.ErrUploadingImage, imageFilePath, err)
 		}
 
 		item.Del(imageObjKey)

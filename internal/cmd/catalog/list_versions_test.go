@@ -219,7 +219,7 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 			strBuilder := &strings.Builder{}
 			commonMarketplace.PrintItemVersionList(&testCase.releases, printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}, strBuilder))
 			found := strBuilder.String()
-			assert.NotZero(t, found)
+			assert.NotEmpty(t, found)
 			for _, expected := range testCase.expectedContains {
 				assert.Contains(t, found, expected)
 			}

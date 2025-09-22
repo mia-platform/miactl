@@ -17,6 +17,7 @@ package project
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -55,7 +56,7 @@ an error.`,
 // listProjects retrieves the projects with the company ID of the current context
 func listProjects(ctx context.Context, client *client.APIClient, companyID string, p printer.IPrinter) error {
 	if len(companyID) == 0 {
-		return fmt.Errorf("missing company id, please set one with the flag or context")
+		return errors.New("missing company id, please set one with the flag or context")
 	}
 
 	// execute the request

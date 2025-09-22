@@ -17,6 +17,7 @@ package serviceaccount
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -61,11 +62,11 @@ func editCompanyServiceAccount(ctx context.Context, client *client.APIClient, co
 	}
 
 	if len(companyID) == 0 {
-		return fmt.Errorf("company id is required, please set it via flag or context")
+		return errors.New("company id is required, please set it via flag or context")
 	}
 
 	if len(serviceAccountID) == 0 {
-		return fmt.Errorf("the service account id is required")
+		return errors.New("the service account id is required")
 	}
 
 	payload := resources.EditIAMRole{

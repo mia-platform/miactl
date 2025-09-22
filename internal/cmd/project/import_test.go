@@ -172,6 +172,7 @@ func TestImportValidation(t *testing.T) {
 
 func TestImportResources(t *testing.T) {
 	t.Parallel()
+
 	testdata := "testdata"
 	projectID := "projectID"
 	revision := "revision"
@@ -196,7 +197,7 @@ func TestImportResources(t *testing.T) {
 					defer r.Body.Close()
 					bodyData, err := io.ReadAll(r.Body)
 					require.NoError(t, err)
-					require.Equal(t, modifiedConfigurationBody, string(bodyData))
+					require.JSONEq(t, modifiedConfigurationBody, string(bodyData))
 					_, err = w.Write([]byte(`{}`))
 					require.NoError(t, err)
 				default:
@@ -221,7 +222,7 @@ func TestImportResources(t *testing.T) {
 					defer r.Body.Close()
 					bodyData, err := io.ReadAll(r.Body)
 					require.NoError(t, err)
-					require.Equal(t, modifiedConfigurationBody, string(bodyData))
+					require.JSONEq(t, modifiedConfigurationBody, string(bodyData))
 					_, err = w.Write([]byte(`{}`))
 					require.NoError(t, err)
 				default:
@@ -246,7 +247,7 @@ func TestImportResources(t *testing.T) {
 					defer r.Body.Close()
 					bodyData, err := io.ReadAll(r.Body)
 					require.NoError(t, err)
-					require.Equal(t, modifiedConfigurationBodyWithServiceAccount, string(bodyData))
+					require.JSONEq(t, modifiedConfigurationBodyWithServiceAccount, string(bodyData))
 					_, err = w.Write([]byte(`{}`))
 					require.NoError(t, err)
 				default:
@@ -367,6 +368,8 @@ func TestImportResources(t *testing.T) {
 
 	for testName, testCase := range tests {
 		t.Run(testName, func(t *testing.T) {
+			t.Parallel()
+
 			server := testCase.testServer
 			defer server.Close()
 

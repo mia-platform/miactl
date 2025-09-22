@@ -16,7 +16,6 @@
 package environments
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -54,7 +53,7 @@ func TestListEnvironments(t *testing.T) {
 				switch {
 				default:
 					w.WriteHeader(http.StatusNotFound)
-					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
+					assert.Fail(t, "request not expexted "+r.URL.Path)
 				case strings.HasPrefix(r.URL.Path, "/api/backend/projects/") && r.Method == http.MethodGet:
 					_, err := w.Write([]byte(projectBodyContent(t)))
 					require.NoError(t, err)
@@ -71,7 +70,7 @@ func TestListEnvironments(t *testing.T) {
 				switch {
 				default:
 					w.WriteHeader(http.StatusNotFound)
-					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
+					assert.Fail(t, "request not expexted "+r.URL.Path)
 				case strings.HasPrefix(r.URL.Path, "/api/backend/projects/") && r.Method == http.MethodGet:
 					_, err := w.Write([]byte(emptyEnvironmentsBodyContent(t)))
 					require.NoError(t, err)
@@ -93,7 +92,7 @@ func TestListEnvironments(t *testing.T) {
 				switch {
 				default:
 					w.WriteHeader(http.StatusNotFound)
-					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
+					assert.Fail(t, "request not expexted "+r.URL.Path)
 				case strings.HasPrefix(r.URL.Path, "/api/backend/projects/") && r.Method == http.MethodGet:
 					_, err := w.Write([]byte(emptyEnvironmentsBodyContent(t)))
 					require.NoError(t, err)
@@ -108,7 +107,7 @@ func TestListEnvironments(t *testing.T) {
 				switch {
 				default:
 					w.WriteHeader(http.StatusNotFound)
-					assert.Fail(t, fmt.Sprintf("request not expexted %s", r.URL.Path))
+					assert.Fail(t, "request not expexted "+r.URL.Path)
 				case strings.HasPrefix(r.URL.Path, "/api/backend/projects/") && r.Method == http.MethodGet:
 					_, err := w.Write([]byte(projectBodyContent(t)))
 					require.NoError(t, err)

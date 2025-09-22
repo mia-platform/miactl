@@ -18,6 +18,7 @@ package client
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -148,16 +149,16 @@ func (r *Request) preflightCheck() error {
 
 	// if no verb has been set break
 	if len(r.verb) == 0 {
-		return fmt.Errorf("no HTTP verb specified on request")
+		return errors.New("no HTTP verb specified on request")
 	}
 
 	switch {
 	case r.verb == http.MethodPut && len(r.body) == 0:
 		fallthrough
 	case r.verb == http.MethodPost && len(r.body) == 0:
-		return fmt.Errorf("empty body for a POST request")
+		return errors.New("empty body for a POST request")
 	case r.verb == http.MethodGet && len(r.body) > 0:
-		return fmt.Errorf("body set for a GET request")
+		return errors.New("body set for a GET request")
 	}
 
 	return nil

@@ -17,6 +17,7 @@ package iam
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -102,7 +103,7 @@ func listEntity(options *clioptions.CLIOptions, commandName, shortHelp, longHelp
 
 func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID string, entityTypes map[string]bool, p printer.IPrinter) error {
 	if len(companyID) == 0 {
-		return fmt.Errorf("missing company id, please set one with the flag or context")
+		return errors.New("missing company id, please set one with the flag or context")
 	}
 	resp, err := iam.ListAllIAMEntities(ctx, client, companyID, nil, entityTypes)
 
@@ -127,7 +128,7 @@ func listAllIAMEntities(ctx context.Context, client *client.APIClient, companyID
 
 func listSpecificEntities(ctx context.Context, client *client.APIClient, companyID string, entityType string, p printer.IPrinter) error {
 	if len(companyID) == 0 {
-		return fmt.Errorf("missing company id, please set one with the flag or context")
+		return errors.New("missing company id, please set one with the flag or context")
 	}
 	response, err := iam.ListSpecificEntities(ctx, client, companyID, entityType)
 

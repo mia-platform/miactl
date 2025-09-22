@@ -17,6 +17,7 @@ package logs
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"regexp"
@@ -73,11 +74,11 @@ miactl runtime logs "^job-name$"`,
 
 func getLogs(ctx context.Context, client *client.APIClient, projectID, environment, podRegex string, follow bool) (io.ReadCloser, error) {
 	if projectID == "" {
-		return nil, fmt.Errorf("missing project id, please set one with the flag or context")
+		return nil, errors.New("missing project id, please set one with the flag or context")
 	}
 
 	if environment == "" {
-		return nil, fmt.Errorf("missing environment, please set one with the flag or context")
+		return nil, errors.New("missing environment, please set one with the flag or context")
 	}
 
 	regex, err := regexp.Compile(podRegex)

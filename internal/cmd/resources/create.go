@@ -18,6 +18,7 @@ package resources
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -74,11 +75,11 @@ func jobCommand(options *clioptions.CLIOptions) *cobra.Command {
 
 func createJob(ctx context.Context, client *client.APIClient, projectID, environment, cronjobName string) error {
 	if projectID == "" {
-		return fmt.Errorf("missing project id, please set one with the flag or context")
+		return errors.New("missing project id, please set one with the flag or context")
 	}
 
 	if environment == "" {
-		return fmt.Errorf("missing environment, please set one with the flag or context")
+		return errors.New("missing environment, please set one with the flag or context")
 	}
 
 	requestBody := &resources.CreateJobRequest{

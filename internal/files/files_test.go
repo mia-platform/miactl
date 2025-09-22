@@ -48,13 +48,13 @@ func TestReadFile(t *testing.T) {
 	t.Run("reads json file", func(t *testing.T) {
 		content := TestFileContent{}
 		require.NoError(t, ReadFile("./testdata/valid.json", &content))
-		require.Equal(t, content.Answer, 42)
+		require.Equal(t, 42, content.Answer)
 	})
 
 	t.Run("reads yaml file", func(t *testing.T) {
 		content := TestFileContent{}
 		require.NoError(t, ReadFile("./testdata/valid.yaml", &content))
-		require.Equal(t, content.Answer, 42)
+		require.Equal(t, 42, content.Answer)
 	})
 
 	t.Run("errors", func(t *testing.T) {

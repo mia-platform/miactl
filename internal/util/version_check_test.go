@@ -29,8 +29,6 @@ import (
 )
 
 func TestCompareVersion(t *testing.T) {
-	t.Parallel()
-
 	defaultMajorInt, err := strconv.Atoi(defaultMajor)
 	require.NoError(t, err)
 	defaultMinorInt, err := strconv.Atoi(defaultMinor)

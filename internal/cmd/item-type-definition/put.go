@@ -108,12 +108,12 @@ func PutCmd(options *clioptions.CLIOptions) *cobra.Command {
 func putItemFromPath(ctx context.Context, client *client.APIClient, companyID string, filePath string, outputFormat string) (string, error) {
 	_, err := checkFilePath(filePath)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", err, err)
+		return "", fmt.Errorf("%w: %w", err, err)
 	}
 
 	outcome, err := putItemTypeDefinition(ctx, client, companyID, filePath)
 	if err != nil {
-		return "", fmt.Errorf("%w: %s", ErrPuttingResources, err)
+		return "", fmt.Errorf("%w: %w", ErrPuttingResources, err)
 	}
 
 	data, err := outcome.Marshal(outputFormat)

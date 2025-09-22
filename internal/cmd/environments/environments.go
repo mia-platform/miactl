@@ -17,6 +17,7 @@ package environments
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strconv"
 
@@ -71,9 +72,9 @@ func listEnvironmentsCmd(o *clioptions.CLIOptions) *cobra.Command {
 func printEnvironments(ctx context.Context, client *client.APIClient, companyID, projectID string, p printer.IPrinter) error {
 	switch {
 	case len(companyID) == 0:
-		return fmt.Errorf("missing company id, please set one with the flag or context")
+		return errors.New("missing company id, please set one with the flag or context")
 	case len(projectID) == 0:
-		return fmt.Errorf("missing project id, please set one with the flag or context")
+		return errors.New("missing project id, please set one with the flag or context")
 	}
 
 	resp, err := client.
@@ -94,7 +95,7 @@ func printEnvironments(ctx context.Context, client *client.APIClient, companyID,
 	}
 
 	if project.CompanyID != companyID {
-		return fmt.Errorf("no project found with this id in the current company")
+		return errors.New("no project found with this id in the current company")
 	}
 
 	environments := project.Environments

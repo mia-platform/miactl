@@ -290,7 +290,7 @@ func applyTestServer(t *testing.T, handler func(w http.ResponseWriter, r *http.R
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if !handler(w, r) {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, "unexpected request: %s %s", r.Method, r.URL.Path)
+			assert.Fail(t, "unexpected request", "%s: %s", r.Method, r.URL.Path)
 		}
 	}))
 }

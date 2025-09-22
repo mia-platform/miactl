@@ -126,7 +126,7 @@ func TestNewListVersionsCmd(t *testing.T) {
 		assert.Contains(t, string(out), "  VERSION  NAME                     DESCRIPTION                                           \n\n  1.0.0    Some Awesome Service     The Awesome Service allows to do some amazing stuff.  \n  2.0.0    Some Awesome Service v2  The Awesome Service allows to do some amazing stuff.  \n")
 
 		outputErr := buffer.String()
-		assert.Equal(t, outputErr, "")
+		assert.Empty(t, outputErr)
 	})
 }
 
@@ -266,7 +266,7 @@ func TestBuildMarketplaceItemVersionList(t *testing.T) {
 			strBuilder := &strings.Builder{}
 			commonMarketplace.PrintItemVersionList(&testCase.releases, printer.NewTablePrinter(printer.TablePrinterOptions{WrapLinesDisabled: true}, strBuilder))
 			found := strBuilder.String()
-			assert.NotZero(t, found)
+			assert.NotEmpty(t, found)
 			for _, expected := range testCase.expectedContains {
 				assert.Contains(t, found, expected)
 			}
@@ -290,7 +290,7 @@ func listVersionsCommandHandler(t *testing.T, consoleVersionResponse string) htt
 			}
 		default:
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }

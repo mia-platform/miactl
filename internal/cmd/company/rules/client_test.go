@@ -25,6 +25,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	rulesentities "github.com/mia-platform/miactl/internal/resources/rules"
 
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -126,7 +127,7 @@ func TestClientListTenantRules(t *testing.T) {
 		"valid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf("/api/backend/tenants/?search=%s", "company-1"),
+				path: "/api/backend/tenants/?search=" + "company-1",
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusOK,
@@ -137,7 +138,7 @@ func TestClientListTenantRules(t *testing.T) {
 		"valid response - before Console V14.1": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf("/api/backend/tenants/?search=%s", "company-1"),
+				path: "/api/backend/tenants/?search=" + "company-1",
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusOK,
@@ -148,7 +149,7 @@ func TestClientListTenantRules(t *testing.T) {
 		"invalid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf("/api/backend/tenants/?search=%s", "company-1"),
+				path: "/api/backend/tenants/?search=" + "company-1",
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusInternalServerError,
@@ -283,7 +284,7 @@ func TestClientListProjectRules(t *testing.T) {
 		"valid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf("/api/backend/projects/%s", "my-project"),
+				path: "/api/backend/projects/" + "my-project",
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusOK,
@@ -294,7 +295,7 @@ func TestClientListProjectRules(t *testing.T) {
 		"valid response - before console V14.1": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf("/api/backend/projects/%s", "my-project"),
+				path: "/api/backend/projects/" + "my-project",
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusOK,
@@ -305,7 +306,7 @@ func TestClientListProjectRules(t *testing.T) {
 		"invalid response": {
 			companyID: "company-1",
 			server: mockServer(t, ExpectedRequest{
-				path: fmt.Sprintf("/api/backend/projects/%s", "my-project"),
+				path: "/api/backend/projects/" + "my-project",
 				verb: http.MethodGet,
 			}, MockResponse{
 				statusCode: http.StatusInternalServerError,
@@ -559,16 +560,14 @@ func mockServer(t *testing.T, expectedReq ExpectedRequest, resp MockResponse) *h
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		if req.RequestURI != expectedReq.path && req.Method != expectedReq.verb {
 			w.WriteHeader(http.StatusNotFound)
-			require.Fail(t, fmt.Sprintf("unsupported call: %s - wanted: %s", req.RequestURI, expectedReq.path))
+			assert.Fail(t, fmt.Sprintf("unsupported call: %s - wanted: %s", req.RequestURI, expectedReq.path))
 			return
 		}
 
 		if expectedReq.bodyContainsMatch != "" {
 			foundBody, err := io.ReadAll(req.Body)
-			if err != nil {
-				require.Fail(t, fmt.Sprintf("failed req body read: %s", err.Error()))
-			}
-			require.Contains(t, string(foundBody), expectedReq.bodyContainsMatch)
+			require.NoError(t, err)
+			assert.Contains(t, string(foundBody), expectedReq.bodyContainsMatch)
 		}
 
 		w.WriteHeader(resp.statusCode)

@@ -23,26 +23,24 @@ import (
 
 // Config holds the common attributes that can be passed to a client on initialization
 type Config struct {
+	// TLSClientConfig contains settings to enable transport layer security
+	TLSClientConfig
+	// AuthConfig contains settings for settign up authentication for the http requests
+	AuthConfig
+	// AuthCacheReadWriter provides access to authorization cache
+	AuthCacheReadWriter
+
 	// Host must be a host string, a host:port pair, or a URL to the base of the server.
 	// If a URL is given then the (optional) Path of that URL represents a prefix that must
 	// be appended to all request URIs used to access the server. This allows a frontend
 	// proxy to easily relocate all of the server endpoints.
 	Host string
 
-	// TLSClientConfig contains settings to enable transport layer security
-	TLSClientConfig
-
 	// UserAgent is an optional field that specifies the caller of this request.
 	UserAgent string
 
 	// Transport add a custom transport instead of creating a new one. Wrappers will be added to it
 	Transport http.RoundTripper
-
-	// AuthConfig contains settings for settign up authentication for the http requests
-	AuthConfig
-
-	// AuthCacheReadWriter provides access to authorization cache
-	AuthCacheReadWriter
 
 	// CompanyID contains the company id that can be used for filtering requests
 	CompanyID string

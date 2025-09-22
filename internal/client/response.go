@@ -17,6 +17,7 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -95,7 +96,7 @@ func (r *Response) ParseResponse(obj interface{}) error {
 
 func parseBody(body []byte, obj interface{}) error {
 	err := json.Unmarshal(body, obj)
-	if err != nil && err != io.EOF {
+	if err != nil && !errors.Is(err, io.EOF) {
 		return fmt.Errorf("cannot parse server response: %w", err)
 	}
 

@@ -20,9 +20,10 @@ const (
 )
 
 type ApplyRequest struct {
+	*Configuration
+
 	Title        string `json:"title" yaml:"title"`
 	PreviousSave string `json:"previousSave,omitempty" yaml:"previousSave,omitempty"`
-	*Configuration
 }
 
 func BuildApplyRequest(config *Configuration) *ApplyRequest {

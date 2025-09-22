@@ -17,6 +17,7 @@ package user
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -61,11 +62,11 @@ func editCompanyUser(ctx context.Context, client *client.APIClient, companyID, u
 	}
 
 	if len(companyID) == 0 {
-		return fmt.Errorf("company id is required, please set it via flag or context")
+		return errors.New("company id is required, please set it via flag or context")
 	}
 
 	if len(userID) == 0 {
-		return fmt.Errorf("the user id is required")
+		return errors.New("the user id is required")
 	}
 
 	payload := resources.EditIAMRole{

@@ -102,7 +102,7 @@ func testAddStatusServer(t *testing.T) *httptest.Server {
 			w.Write([]byte(respBody))
 		default:
 			w.WriteHeader(http.StatusNotFound)
-			require.FailNowf(t, "unknown http request", "request method: %s request URL: %s", r.Method, r.URL)
+			assert.Failf(t, "unknown http request", "request method: %s request URL: %s", r.Method, r.URL)
 		}
 	}))
 

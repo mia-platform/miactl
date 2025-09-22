@@ -16,7 +16,7 @@
 package client
 
 import (
-	"fmt"
+	"errors"
 	"net/http"
 	"sync"
 
@@ -45,7 +45,7 @@ func RegisterAuthProvider(ap AuthProviderCreator) error {
 	defer authProvidersLock.Unlock()
 
 	if authProvider != nil {
-		return fmt.Errorf("another auth provider is already registred")
+		return errors.New("another auth provider is already registred")
 	}
 
 	authProvider = ap

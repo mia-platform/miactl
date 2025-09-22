@@ -79,15 +79,15 @@ func ImportCmd(o *clioptions.CLIOptions) *cobra.Command {
 
 func importResources(ctx context.Context, client *client.APIClient, projectID, revision, path string, writer io.Writer) error {
 	if len(projectID) == 0 {
-		return fmt.Errorf("missing project id, please set one with the flag or context")
+		return errors.New("missing project id, please set one with the flag or context")
 	}
 
 	if len(revision) == 0 {
-		return fmt.Errorf("missing revision, please set one with the revision flag")
+		return errors.New("missing revision, please set one with the revision flag")
 	}
 
 	if len(path) == 0 {
-		return fmt.Errorf("missing file path, please set on with the filename flag")
+		return errors.New("missing file path, please set on with the filename flag")
 	}
 
 	endpoint := fmt.Sprintf(configurationEndpointTemplate, projectID, revision)

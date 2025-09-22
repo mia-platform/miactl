@@ -17,7 +17,6 @@ package marketplace
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -97,7 +96,7 @@ func TestNewGetCmd(t *testing.T) {
 		assert.Contains(t, string(out), "OBJECT ID                 ITEM ID               NAME                  TYPE    COMPANY ID       \n\n  43774c07d09ac6996ecfb3ef  space-travel-service  Space Travel Service  plugin  my-company       \n  43774c07d09ac6996ecfb3eg  a-public-service      A public service      plugin  another-company  \n")
 
 		outputErr := buffer.String()
-		assert.Equal(t, outputErr, "")
+		assert.Empty(t, outputErr)
 	})
 }
 
@@ -169,10 +168,10 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		found := strBuilder.String()
 		if tc.expectError {
 			assert.Error(t, err)
-			assert.Zero(t, found)
+			assert.Empty(t, found)
 		} else {
 			assert.NoError(t, err)
-			assert.NotZero(t, found)
+			assert.NotEmpty(t, found)
 			for _, expected := range tc.expectedContains {
 				assert.Contains(t, found, expected)
 			}
@@ -202,7 +201,7 @@ func listCommandHandler(t *testing.T, consoleVersionResponse string) http.Handle
 			}
 		default:
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }
@@ -217,7 +216,7 @@ func privateAndPublicMarketplaceHandler(t *testing.T) http.HandlerFunc {
 			require.NoError(t, err)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }
@@ -232,7 +231,7 @@ func privateCompanyMarketplaceHandler(t *testing.T) http.HandlerFunc {
 			require.NoError(t, err)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }
@@ -247,7 +246,7 @@ func wrongPayloadHandler(t *testing.T) http.HandlerFunc {
 			require.NoError(t, err)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }

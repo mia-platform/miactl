@@ -79,7 +79,7 @@ func runDeployTrigger(ctx context.Context, environmentName string, options *clio
 
 	projectID := restConfig.ProjectID
 	if len(projectID) == 0 {
-		return fmt.Errorf("projectId is required to start a deploy")
+		return errors.New("projectId is required to start a deploy")
 	}
 
 	client, err := client.APIClientForConfig(restConfig)
@@ -99,7 +99,7 @@ func runDeployTrigger(ctx context.Context, environmentName string, options *clio
 	}
 
 	if status == "failed" {
-		return fmt.Errorf("pipeline failed")
+		return errors.New("pipeline failed")
 	}
 
 	fmt.Printf("Pipeline ended with %s\n", status)

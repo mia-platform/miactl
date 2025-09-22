@@ -24,6 +24,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -90,7 +91,7 @@ func createJWTServiceAccount(ctx context.Context, client *client.APIClient, name
 	}
 
 	if len(companyID) == 0 {
-		return nil, fmt.Errorf("company id is required, please set it via flag or context")
+		return nil, errors.New("company id is required, please set it via flag or context")
 	}
 
 	key, err := generateRSAKey()

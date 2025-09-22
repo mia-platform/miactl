@@ -25,7 +25,6 @@ import (
 
 	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"golang.org/x/oauth2"
 )
 
@@ -67,7 +66,7 @@ func testServerForCompleteFlow(t *testing.T) *httptest.Server {
 			}
 			encoder := json.NewEncoder(w)
 			err := encoder.Encode([]*resources.AuthProvider{&testProvider})
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		case r.Method == http.MethodGet && r.RequestURI == authorizeEndpointString:
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("{\"statusCode\":500,\"message\":\"not implemented\"}"))
@@ -84,7 +83,7 @@ func testServerForCompleteFlow(t *testing.T) *httptest.Server {
 			}
 			encoder := json.NewEncoder(w)
 			err := encoder.Encode(&testUserToken)
-			require.NoError(t, err)
+			assert.NoError(t, err)
 		default:
 			assert.Failf(t, "unexpected request", "%s request %s", r.Method, r.RequestURI)
 		}

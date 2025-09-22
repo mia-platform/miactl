@@ -107,7 +107,7 @@ func NewCLIOptions() *CLIOptions {
 
 func (o *CLIOptions) AddGlobalFlags(flags *pflag.FlagSet) {
 	locator := cliconfig.NewConfigPathLocator()
-	configFilePathDescription := fmt.Sprintf("path to the config file default to %s", locator.DefaultConfigPath())
+	configFilePathDescription := "path to the config file default to " + locator.DefaultConfigPath()
 	flags.StringVarP(&o.MiactlConfig, "config", "c", "", configFilePathDescription)
 	flags.IntVarP(&logger.LogLevel, "verbose", "v", 0, "increase the verbosity of the cli output")
 }

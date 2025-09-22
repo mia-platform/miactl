@@ -105,7 +105,7 @@ func removeUserTestServer(t *testing.T) *httptest.Server {
 		case r.Method == http.MethodDelete && r.URL.Path == fmt.Sprintf(removeUserTemplate, "fail", "000000000000000000000001"):
 			w.WriteHeader(http.StatusBadRequest)
 		default:
-			require.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)
+			assert.Fail(t, "request not implemented", "request received for %s with %s method", r.URL, r.Method)
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))

@@ -17,6 +17,7 @@ package iam
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -52,7 +53,7 @@ func ListSpecificEntities(ctx context.Context, client *client.APIClient, company
 	case ServiceAccountsEntityName:
 		apiPathTemplate = serviceAccountsPathTemplate
 	default:
-		return nil, fmt.Errorf("unknown IAM entity")
+		return nil, errors.New("unknown IAM entity")
 	}
 
 	response, err := client.

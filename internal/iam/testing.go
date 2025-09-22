@@ -43,7 +43,7 @@ func ErrorTestServerForProjectIAMList(t *testing.T, companyID, projectID string)
 		params := r.URL.Query()
 		require.True(t, params.Has(projectIDsKey), "for project calls project ids are required")
 		projectIDs := params[projectIDsKey]
-		require.Equal(t, 1, len(projectIDs), "only one project id is required")
+		require.Len(t, projectIDs, 1, "only one project id is required")
 		assert.Equal(t, projectID, projectIDs[0])
 		internalErrorServerHandler(t, w, r, companyID)
 	}))
@@ -116,7 +116,7 @@ func TestServerForProjectIAMList(t *testing.T, companyID, projectID string) *htt
 		params := r.URL.Query()
 		require.True(t, params.Has(projectIDsKey), "for project calls project ids are required")
 		projectIDs := params[projectIDsKey]
-		require.Equal(t, 1, len(projectIDs), "only one project id is required")
+		require.Len(t, projectIDs, 1, "only one project id is required")
 		assert.Equal(t, projectID, projectIDs[0])
 
 		searchTerms := params["identityType"]
@@ -169,7 +169,7 @@ func TestServerForCompanySpecificList(t *testing.T, companyID, entityType string
 
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		params := r.URL.Query()
-		require.Equal(t, 0, len(params), "no query param supported")
+		require.Empty(t, params, "no query param supported")
 		switch {
 		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pathTemplate, companyID):
 			w.WriteHeader(http.StatusOK)

@@ -17,6 +17,7 @@ package itd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -117,7 +118,7 @@ func performGetITDRequest(ctx context.Context, client *client.APIClient, endpoin
 	}
 
 	if itd == nil {
-		return nil, fmt.Errorf("no item type definition returned in the response")
+		return nil, errors.New("no item type definition returned in the response")
 	}
 
 	return itd, nil

@@ -17,6 +17,7 @@ package marketplace
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -40,7 +41,7 @@ func PerformGetItemRequest(ctx context.Context, client *client.APIClient, endpoi
 	}
 
 	if marketplaceItem == nil {
-		return nil, fmt.Errorf("no marketplace item returned in the response")
+		return nil, errors.New("no marketplace item returned in the response")
 	}
 
 	return marketplaceItem, nil

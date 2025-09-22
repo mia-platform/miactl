@@ -93,6 +93,7 @@ var _ logr.LogSink = &testSink{}
 
 type testSink struct {
 	stdSink
+
 	level int
 }
 

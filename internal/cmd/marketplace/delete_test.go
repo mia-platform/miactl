@@ -101,7 +101,7 @@ func TestDeleteResourceCmd(t *testing.T) {
 		assert.Contains(t, string(out), "item deleted successfully")
 
 		outputErr := buffer.String()
-		assert.Equal(t, outputErr, "")
+		assert.Empty(t, outputErr)
 	})
 }
 
@@ -120,7 +120,7 @@ func deleteItemCommandMockServer(t *testing.T, consoleVersionResponse string) ht
 			}
 		default:
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }

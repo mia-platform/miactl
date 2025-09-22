@@ -44,7 +44,7 @@ type UnsupportedEncodingError struct {
 }
 
 func (e UnsupportedEncodingError) Error() string {
-	return fmt.Sprintf("unsupported encoding: %s", e.Encoding)
+	return "unsupported encoding: " + e.Encoding
 }
 
 var marshalFuncs = map[string]func(interface{}) ([]byte, error){

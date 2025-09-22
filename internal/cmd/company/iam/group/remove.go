@@ -17,6 +17,7 @@ package group
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -52,11 +53,11 @@ func RemoveCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 func removeCompanyGroup(ctx context.Context, client *client.APIClient, companyID, groupID string) error {
 	if len(companyID) == 0 {
-		return fmt.Errorf("company id is required, please set it via flag or context")
+		return errors.New("company id is required, please set it via flag or context")
 	}
 
 	if len(groupID) == 0 {
-		return fmt.Errorf("the group id is required")
+		return errors.New("the group id is required")
 	}
 
 	resp, err := client.

@@ -144,7 +144,7 @@ func TestGetResourceCmd(t *testing.T) {
 		assert.Contains(t, string(out), "RocketScience 101: Hello Universe Example")
 
 		outputErr := buffer.String()
-		assert.Equal(t, outputErr, "")
+		assert.Empty(t, outputErr)
 	})
 }
 
@@ -186,7 +186,7 @@ func getItemCommandMockServer(t *testing.T, consoleVersionResponse string) http.
 			}
 		default:
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }
@@ -271,7 +271,7 @@ func TestGetItemEncodedByObjectId(t *testing.T) {
 				testCase.outputFormat,
 			)
 			if testCase.isExpectedErr {
-				require.Zero(t, found)
+				require.Empty(t, found)
 				require.Error(t, err)
 			} else {
 				if testCase.outputFormat == encoding.JSON {
@@ -404,7 +404,7 @@ func TestGetItemEncodedByTuple(t *testing.T) {
 			)
 
 			if testCase.expectError {
-				require.Zero(t, found)
+				require.Empty(t, found)
 				require.Error(t, err)
 			} else {
 				if testCase.outputFormat == encoding.JSON {

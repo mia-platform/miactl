@@ -17,6 +17,7 @@ package basic
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -75,7 +76,7 @@ func createBasicServiceAccount(ctx context.Context, client *client.APIClient, na
 	}
 
 	if len(companyID) == 0 {
-		return nil, fmt.Errorf("company id is required, please set it via flag or context")
+		return nil, errors.New("company id is required, please set it via flag or context")
 	}
 
 	payload := &resources.ServiceAccountRequest{

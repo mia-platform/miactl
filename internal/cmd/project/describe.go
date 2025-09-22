@@ -85,7 +85,7 @@ func DescribeCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 func describeProject(ctx context.Context, client *client.APIClient, options describeProjectOptions, writer io.Writer) error {
 	if len(options.ProjectID) == 0 {
-		return fmt.Errorf("missing project name, please provide a project name as argument")
+		return errors.New("missing project name, please provide a project name as argument")
 	}
 
 	ref, err := GetRefFromOptions(options)

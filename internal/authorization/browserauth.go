@@ -17,6 +17,7 @@ package authorization
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"net/http"
@@ -101,11 +102,11 @@ type Config struct {
 // 6. Return the oauth2 token
 func (c *Config) GetToken(ctx context.Context) (*oauth2.Token, error) {
 	if len(c.AppID) == 0 {
-		return nil, fmt.Errorf("missing appId for browser login flow")
+		return nil, errors.New("missing appId for browser login flow")
 	}
 
 	if c.Client == nil {
-		return nil, fmt.Errorf("cannot setup browser login flow without a valid client")
+		return nil, errors.New("cannot setup browser login flow without a valid client")
 	}
 
 	return c.startLoginFlow(ctx)
@@ -114,11 +115,11 @@ func (c *Config) GetToken(ctx context.Context) (*oauth2.Token, error) {
 // RefreshToken perform a refresh token request and return an error if something went wrong or the new oauth2 token
 func (c *Config) RefreshToken(ctx context.Context, refreshToken string) (*oauth2.Token, error) {
 	if len(refreshToken) == 0 {
-		return nil, fmt.Errorf("missing refresh token")
+		return nil, errors.New("missing refresh token")
 	}
 
 	if c.Client == nil {
-		return nil, fmt.Errorf("cannot refresh token without a valid client")
+		return nil, errors.New("cannot refresh token without a valid client")
 	}
 
 	return c.startRefreshFlow(ctx, refreshToken)
@@ -209,13 +210,13 @@ func startLocalServerForToken(ctx context.Context, startFlowURL string, listener
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 
-	hostAddress := fmt.Sprintf("http://%s", listener.Addr().String())
+	hostAddress := "http://" + listener.Addr().String()
 	var taskGroup errgroup.Group
 	var respOut *authResponse
 	taskGroup.Go(func() error {
 		defer close(responseChannel)
 
-		if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
+		if err := server.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			return err
 		}
 

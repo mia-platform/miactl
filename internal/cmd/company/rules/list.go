@@ -16,6 +16,7 @@
 package rules
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
@@ -28,7 +29,7 @@ import (
 )
 
 var (
-	ErrRequiredCompanyIDOrProjectID = fmt.Errorf("at least one of company id or project id is required, please set it via flag or context")
+	ErrRequiredCompanyIDOrProjectID = errors.New("at least one of company id or project id is required, please set it via flag or context")
 )
 
 func ListCmd(options *clioptions.CLIOptions) *cobra.Command {

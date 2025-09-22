@@ -16,6 +16,7 @@
 package files
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -24,9 +25,9 @@ import (
 )
 
 var (
-	ErrUnsupportedFile = fmt.Errorf("file extension not supported")
-	ErrFileReadFailed  = fmt.Errorf("failed file read")
-	ErrFileMalformed   = fmt.Errorf("file malformed")
+	ErrUnsupportedFile = errors.New("file extension not supported")
+	ErrFileReadFailed  = errors.New("failed file read")
+	ErrFileMalformed   = errors.New("file malformed")
 )
 
 func isSupportedExtension(ext string) bool {
@@ -44,11 +45,11 @@ func ReadFile(file string, out interface{}) error {
 
 	content, err := os.ReadFile(file)
 	if err != nil {
-		return fmt.Errorf("%w: %s", ErrFileReadFailed, err)
+		return fmt.Errorf("%w: %w", ErrFileReadFailed, err)
 	}
 
 	if err := encoding.UnmarshalData(content, out); err != nil {
-		return fmt.Errorf("%w %s: %s", ErrFileMalformed, file, err)
+		return fmt.Errorf("%w %s: %w", ErrFileMalformed, file, err)
 	}
 	return nil
 }

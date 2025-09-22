@@ -16,7 +16,7 @@
 package extensions
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
 
@@ -24,8 +24,8 @@ import (
 )
 
 var (
-	ErrRequiredCompanyID   = fmt.Errorf("company id is required, please set it via flag or context")
-	ErrRequiredExtensionID = fmt.Errorf("extension-id is required, please set it via flag")
+	ErrRequiredCompanyID   = errors.New("company id is required, please set it via flag or context")
+	ErrRequiredExtensionID = errors.New("extension-id is required, please set it via flag")
 )
 
 func NewCommand(o *clioptions.CLIOptions) *cobra.Command {

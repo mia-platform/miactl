@@ -40,7 +40,7 @@ image:
 
 		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.NoError(t, err)
-		require.Equal(t, found, "./someImage.png")
+		require.Equal(t, "./someImage.png", found)
 	})
 	t.Run("should throw error with an item that contains both image and imageURL", func(t *testing.T) {
 		mockItem := &marketplace.Item{
@@ -52,7 +52,7 @@ image:
 
 		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.ErrorIs(t, err, errImageObjKeysConflict)
-		require.Zero(t, found)
+		require.Empty(t, found)
 	})
 
 	t.Run("should return local path if element contains image", func(t *testing.T) {
@@ -67,7 +67,7 @@ image:
 
 		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.NoError(t, err)
-		require.Equal(t, found, "some/local/path/image.jpg")
+		require.Equal(t, "some/local/path/image.jpg", found)
 	})
 
 	t.Run("should return error if image object is not valid", func(t *testing.T) {
@@ -79,7 +79,7 @@ image:
 
 		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.ErrorIs(t, err, errImageObjectInvalid)
-		require.Zero(t, found)
+		require.Empty(t, found)
 	})
 	t.Run("should not return anything if only imageUrl is found", func(t *testing.T) {
 		mockItem := &marketplace.Item{
@@ -88,7 +88,7 @@ image:
 
 		found, err := GetAndValidateImageLocalPath(mockItem, ImageKey, ImageURLKey)
 		require.NoError(t, err)
-		require.Zero(t, found)
+		require.Empty(t, found)
 	})
 }
 
@@ -118,7 +118,7 @@ func TestApplyReadContentType(t *testing.T) {
 			},
 		)
 		require.ErrorIs(t, err, mockErr)
-		require.Zero(t, found)
+		require.Empty(t, found)
 	})
 }
 
@@ -182,7 +182,7 @@ func TestApplyUploadImage(t *testing.T) {
 			"",
 		)
 		require.ErrorIs(t, err, ErrCompanyIDNotDefined)
-		require.Zero(t, found)
+		require.Empty(t, found)
 	})
 }
 

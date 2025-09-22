@@ -17,6 +17,7 @@ package iam
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -57,15 +58,15 @@ func RemoveRoleCmd(options *clioptions.CLIOptions) *cobra.Command {
 
 func removeRoleForEntity(ctx context.Context, client *client.APIClient, changes roleChanges) error {
 	if len(changes.companyID) == 0 {
-		return fmt.Errorf("missing company id, please set one with the flag or context")
+		return errors.New("missing company id, please set one with the flag or context")
 	}
 
 	if len(changes.projectID) == 0 {
-		return fmt.Errorf("missing project id, please set one with the flag or context")
+		return errors.New("missing project id, please set one with the flag or context")
 	}
 
 	if len(changes.entityID) == 0 {
-		return fmt.Errorf("missing entity id, please set one with the flag")
+		return errors.New("missing entity id, please set one with the flag")
 	}
 
 	if len(changes.environmentName) == 0 {

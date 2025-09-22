@@ -25,6 +25,7 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
@@ -108,12 +109,12 @@ func getItemByTupleMockServer(
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		*calledCount++
-		require.Equal(t,
+		assert.Equal(t,
 			fmt.Sprintf(
 				getItemByItemIDAndVersionEndpointTemplate, mockCompanyID, mockItemID, mockVersion),
 			r.RequestURI,
 		)
-		require.Equal(t, http.MethodGet, r.Method)
+		assert.Equal(t, http.MethodGet, r.Method)
 
 		w.WriteHeader(statusCode)
 		if statusCode == http.StatusNotFound || statusCode == http.StatusInternalServerError {
@@ -237,7 +238,7 @@ func TestGetItemEncodedByTuple(t *testing.T) {
 			)
 
 			if testCase.expectError {
-				require.Zero(t, found)
+				require.Empty(t, found)
 				require.Error(t, err)
 			} else {
 				if testCase.outputFormat == encoding.JSON {

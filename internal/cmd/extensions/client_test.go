@@ -253,7 +253,7 @@ func TestE11yClientApply(t *testing.T) {
 			id, err := New(client).Apply(t.Context(), testCase.companyID, testCase.extension)
 			if testCase.err {
 				require.Error(t, err)
-				require.Zero(t, id)
+				require.Empty(t, id)
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, testCase.expectedExtensionID, id)
@@ -470,7 +470,7 @@ func mockServer(t *testing.T, req ExpectedRequest, resp MockResponse) *httptest.
 		if req.body != "" {
 			foundBody, err := io.ReadAll(r.Body)
 			if err != nil {
-				require.Fail(t, fmt.Sprintf("failed req body read: %s", err.Error()))
+				require.Fail(t, "failed req body read: "+err.Error())
 			}
 			require.Equal(t, req.body, strings.TrimSuffix(string(foundBody), "\n"))
 		}

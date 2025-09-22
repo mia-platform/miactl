@@ -17,6 +17,7 @@ package group
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -64,11 +65,11 @@ func createNewGroup(ctx context.Context, client *client.APIClient, companyID, gr
 	}
 
 	if len(groupName) == 0 {
-		return fmt.Errorf("a group name is required")
+		return errors.New("a group name is required")
 	}
 
 	if len(companyID) == 0 {
-		return fmt.Errorf("company id is required, please set it via flag or context")
+		return errors.New("company id is required, please set it via flag or context")
 	}
 
 	payload := resources.CreateGroupRequest{

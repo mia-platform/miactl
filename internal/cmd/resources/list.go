@@ -17,6 +17,7 @@ package resources
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 	"strings"
@@ -140,11 +141,11 @@ func resourcesCompletions(args []string, toComplete string) []string {
 
 func printList(ctx context.Context, client *client.APIClient, projectID, resourceType, environment string, p printer.IPrinter) error {
 	if projectID == "" {
-		return fmt.Errorf("missing project id, please set one with the flag or context")
+		return errors.New("missing project id, please set one with the flag or context")
 	}
 
 	if environment == "" {
-		return fmt.Errorf("missing environment, please set one with the flag or context")
+		return errors.New("missing environment, please set one with the flag or context")
 	}
 
 	if !slices.Contains(resourcesAvailable, resourceType) {

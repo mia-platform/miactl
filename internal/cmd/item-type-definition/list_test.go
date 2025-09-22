@@ -112,10 +112,10 @@ func TestBuildMarketplaceItemsList(t *testing.T) {
 		found := strBuilder.String()
 		if tc.expectError {
 			assert.Error(t, err)
-			assert.Zero(t, found)
+			assert.Empty(t, found)
 		} else {
 			assert.NoError(t, err)
-			assert.NotZero(t, found)
+			assert.NotEmpty(t, found)
 			for _, expected := range tc.expectedContains {
 				assert.Contains(t, found, expected)
 			}
@@ -133,11 +133,10 @@ func unexecutedCmdMockServer(t *testing.T) http.HandlerFunc {
 	t.Helper()
 	return func(w http.ResponseWriter, r *http.Request) {
 		if strings.EqualFold(r.URL.Path, "/api/version") && r.Method == http.MethodGet {
-			_, err := w.Write([]byte(`{"major": "14", "minor":"0"}`))
-			require.NoError(t, err)
+			fmt.Fprint(w, `{"major": "14", "minor":"0"}`)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }
@@ -149,11 +148,10 @@ func privateItdsHandler(t *testing.T) http.HandlerFunc {
 			r.Method == http.MethodGet &&
 			r.URL.Query().Get("page") == "1" &&
 			r.URL.Query().Get("visibility") == "my-company" {
-			_, err := w.Write([]byte(privateItdsBodyContent(t)))
-			require.NoError(t, err)
+			fmt.Fprint(w, privateItdsBodyContent(t))
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }
@@ -165,11 +163,10 @@ func publicAndPrivateItdsHandler(t *testing.T) http.HandlerFunc {
 			r.Method == http.MethodGet &&
 			r.URL.Query().Get("page") == "2" &&
 			r.URL.Query().Get("visibility") == "console,my-company" {
-			_, err := w.Write([]byte(publicItdsBodyContent(t)))
-			require.NoError(t, err)
+			fmt.Fprint(w, publicItdsBodyContent(t))
 		} else {
 			w.WriteHeader(http.StatusNotFound)
-			assert.Fail(t, fmt.Sprintf("unexpected request: %s", r.URL.Path))
+			assert.Fail(t, "unexpected request: "+r.URL.Path)
 		}
 	}
 }

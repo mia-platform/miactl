@@ -83,7 +83,7 @@ func rowForPod(pod resources.Pod) []string {
 		strings.Join(components, ", "),
 		fmt.Sprintf("%d/%d", readyContainers, totalContainers),
 		caser.String(pod.Phase),
-		fmt.Sprint(totalRestart),
+		strconv.Itoa(totalRestart),
 		util.HumanDuration(time.Since(pod.Age)),
 	}
 }
@@ -106,8 +106,8 @@ func rowForDeployment(deployment resources.Deployment) []string {
 	return []string{
 		deployment.Name,
 		fmt.Sprintf("%d/%d", deployment.Ready, deployment.Available),
-		fmt.Sprint(deployment.Replicas),
-		fmt.Sprint(deployment.Available),
+		strconv.Itoa(deployment.Replicas),
+		strconv.Itoa(deployment.Available),
 		util.HumanDuration(time.Since(deployment.Age)),
 	}
 }
@@ -117,7 +117,7 @@ func rowForCronJob(cronjob resources.CronJob) []string {
 		cronjob.Name,
 		cronjob.Schedule,
 		strconv.FormatBool(cronjob.Suspend),
-		fmt.Sprint(cronjob.Active),
+		strconv.Itoa(cronjob.Active),
 		util.HumanDuration(time.Since(cronjob.LastSchedule)),
 		util.HumanDuration(time.Since(cronjob.Age)),
 	}

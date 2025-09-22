@@ -21,7 +21,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"fmt"
+	"errors"
 	"net/http"
 	"net/url"
 	"sync"
@@ -81,7 +81,7 @@ func (saa *serviceAccountAuthenticator) basicAuth() (*oauth2.Token, error) {
 		}
 		jwt, err = getJWTToken(context.Background(), saa.client, saa.keyID, saa.clientID, key)
 	default:
-		err = fmt.Errorf("inconsistent auth configuration")
+		err = errors.New("inconsistent auth configuration")
 	}
 
 	if jwt != nil {
@@ -177,7 +177,7 @@ func rsaKeyFromBase64(base64Data string) (*rsa.PrivateKey, error) {
 	key, err := x509.ParsePKCS8PrivateKey(pemData.Bytes)
 	rsaKey, ok := key.(*rsa.PrivateKey)
 	if !ok {
-		return nil, fmt.Errorf("only rsa key are supported")
+		return nil, errors.New("only rsa key are supported")
 	}
 
 	return rsaKey, err

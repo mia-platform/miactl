@@ -16,6 +16,7 @@
 package extensions
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -53,7 +54,7 @@ If an extension-id is found an updated is performed, if not instead a new extens
 			}
 
 			if o.EntityID != "" && extensionData.ExtensionID != "" && o.EntityID != extensionData.ExtensionID {
-				return fmt.Errorf("extension id has been provided both with flags and manifest and they mismatch")
+				return errors.New("extension id has been provided both with flags and manifest and they mismatch")
 			}
 
 			if o.EntityID != "" {

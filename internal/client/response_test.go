@@ -16,7 +16,7 @@
 package client
 
 import (
-	"fmt"
+	"errors"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -36,7 +36,7 @@ func TestParseResponse(t *testing.T) {
 			err:      true,
 		},
 		"response with error": {
-			response: &Response{err: fmt.Errorf("network error")},
+			response: &Response{err: errors.New("network error")},
 			err:      true,
 		},
 	}

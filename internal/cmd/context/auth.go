@@ -17,6 +17,7 @@ package context
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -63,7 +64,7 @@ and then attach it to one or more contexts.`,
 
 func setAuth(authName string, opts *clioptions.CLIOptions) (bool, error) {
 	if len(opts.JWTJsonPath) > 0 && (len(opts.BasicClientID) > 0 || len(opts.BasicClientSecret) > 0) {
-		return false, fmt.Errorf("is not possible to set both jwt and basic service account configs")
+		return false, errors.New("is not possible to set both jwt and basic service account configs")
 	}
 
 	locator := cliconfig.NewConfigPathLocator()

@@ -62,7 +62,7 @@ func (rt *debugRoundTripper) RoundTrip(req *http.Request) (*http.Response, error
 		}
 	}
 
-	logger.V(10).Info(fmt.Sprintf("Try this at home:\n%s", printCurl(req)))
+	logger.V(10).Info("Try this at home:\n" + printCurl(req))
 	requestStartTime := time.Now()
 	response, err := rt.next.RoundTrip(clonedReq)
 	requestEndTime := time.Since(requestStartTime)

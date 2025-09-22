@@ -17,6 +17,7 @@ package project
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/mia-platform/miactl/internal/client"
@@ -101,15 +102,15 @@ func handleApplyProjectConfigurationCmd(ctx context.Context, client *client.APIC
 
 func validateApplyProjectOptions(options applyProjectOptions) error {
 	if len(options.ProjectID) == 0 {
-		return fmt.Errorf("missing project name, please provide a project name as argument")
+		return errors.New("missing project name, please provide a project name as argument")
 	}
 
 	if len(options.FilePath) == 0 {
-		return fmt.Errorf("missing file path, please provide a file path with the -f flag")
+		return errors.New("missing file path, please provide a file path with the -f flag")
 	}
 
 	if len(options.RevisionName) == 0 {
-		return fmt.Errorf("missing revision name, please provide a revision name")
+		return errors.New("missing revision name, please provide a revision name")
 	}
 
 	return nil

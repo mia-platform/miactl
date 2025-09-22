@@ -26,6 +26,7 @@ import (
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -63,11 +64,11 @@ func deleteByItemIDAndVersionMockServer(t *testing.T,
 ) *httptest.Server {
 	t.Helper()
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		require.Equal(t,
+		assert.Equal(t,
 			fmt.Sprintf(deleteItemByTupleEndpointTemplate, mockDeleteCompanyID, mockItemID, mockVersion),
 			r.RequestURI,
 		)
-		require.Equal(t, http.MethodDelete, r.Method)
+		assert.Equal(t, http.MethodDelete, r.Method)
 		w.WriteHeader(statusCode)
 		if statusCode != http.StatusNoContent {
 			w.Write([]byte(`
