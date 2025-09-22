@@ -10,30 +10,44 @@ linters:
   - asciicheck
   - bidichk
   - bodyclose
+  - canonicalheader
+  - contextcheck
   - copyloopvar
   - decorder
   - dogsled
   - durationcheck
+  - embeddedstructfieldcheck
   - errcheck
   - errname
+  - errorlint
+  - exptostd
   - fatcontext
+  - gocheckcompilerdirectives
   - goconst
   - gocritic
   - gocyclo
+  # - godoclint
   - goheader
   - gosec
   - gosmopolitan
   - govet
+  - iface
   - ineffassign
+  - intrange
+  - iotamixing
   - misspell
   - mnd
   - nolintlint
+  - perfsprint
   - prealloc
   - predeclared
+  - protogetter
   - revive
   - staticcheck
   - tagliatelle
+  - testifylint
   - thelper
+  - tparallel
   - unconvert
   - unparam
   - unused
@@ -80,6 +94,11 @@ linters:
         rules:
           yaml: camel
         use-field-name: true
+    testifylint:
+      disable:
+      - require-error
+      go-require:
+        ignore-http-handlers: true
     unparam:
       check-exported: false
     usetesting:
