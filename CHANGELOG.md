@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.21.1] - 2025-09-26
+
 ### Fixed
 
 - correct environment flag parsing for `runtime create job` command
@@ -417,7 +419,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - create cli sdk
 - create cli renderer
 
-[unreleased]: https://github.com/mia-platform/miactl/compare/v0.21.0...HEAD
+[unreleased]: https://github.com/mia-platform/miactl/compare/v0.21.1...HEAD
+[v0.21.1]: https://github.com/mia-platform/miactl/compare/v0.21.0...v0.21.1
 [v0.21.0]: https://github.com/mia-platform/miactl/compare/v0.20.0...v0.21.0
 [v0.20.0]: https://github.com/mia-platform/miactl/compare/v0.19.0...v0.20.0
 [v0.19.0]: https://github.com/mia-platform/miactl/compare/v0.18.0...v0.19.0
