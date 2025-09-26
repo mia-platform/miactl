@@ -38,9 +38,6 @@ func CreateCommand(options *clioptions.CLIOptions) *cobra.Command {
 		Long:  "Create Mia-Platform Console runtime resources.",
 	}
 
-	// add cmd flags
-	options.AddEnvironmentFlags(cmd.Flags())
-
 	// add sub commands
 	cmd.AddCommand(
 		jobCommand(options),
@@ -64,7 +61,9 @@ func jobCommand(options *clioptions.CLIOptions) *cobra.Command {
 	}
 
 	// add cmd flags
-	options.AddCreateJobFlags(cmd.Flags())
+	flags := cmd.Flags()
+	options.AddCreateJobFlags(flags)
+	options.AddEnvironmentFlags(flags)
 	if err := cmd.MarkFlagRequired("from"); err != nil {
 		// programming error, panic and broke everything
 		panic(err)

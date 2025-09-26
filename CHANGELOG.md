@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- correct environment flag parsing for `runtime create job` command
+
 ## [v0.21.0] - 2025-09-16
 
 ### Fixed

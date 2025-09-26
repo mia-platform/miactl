@@ -25,7 +25,6 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/printer"
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/mia-platform/miactl/internal/util"
 
 	"github.com/spf13/cobra"
@@ -175,23 +174,23 @@ func printList(ctx context.Context, client *client.APIClient, projectID, resourc
 	switch resourceType {
 	case PodResourceType, PodsResourceType:
 		tableHeaders = append(tableHeaders, "Status", "Name", "Application", "Ready", "Phase", "Restart", "Age")
-		rows, err = util.RowsForResources[resources.Pod](resp, rowForPod)
+		rows, err = util.RowsForResources(resp, rowForPod)
 		canonicalType = PodsResourceType
 	case CronJobResourceType, CronJobsResourceType:
 		tableHeaders = append(tableHeaders, "Name", "Schedule", "Suspend", "Active", "Last Schedule", "Age")
-		rows, err = util.RowsForResources[resources.CronJob](resp, rowForCronJob)
+		rows, err = util.RowsForResources(resp, rowForCronJob)
 		canonicalType = CronJobsResourceType
 	case DeploymentResourceType, DeploymentsResourceType:
 		tableHeaders = append(tableHeaders, "Name", "Ready", "Up-to-Date", "Available", "Age")
-		rows, err = util.RowsForResources[resources.Deployment](resp, rowForDeployment)
+		rows, err = util.RowsForResources(resp, rowForDeployment)
 		canonicalType = DeploymentsResourceType
 	case JobResourceType, JobsResourceType:
 		tableHeaders = append(tableHeaders, "Name", "Finished Pods", "Duration", "Age")
-		rows, err = util.RowsForResources[resources.Job](resp, rowForJob)
+		rows, err = util.RowsForResources(resp, rowForJob)
 		canonicalType = JobsResourceType
 	case ServiceResourceType, ServicesResourceType:
 		tableHeaders = append(tableHeaders, "Name", "Type", "Cluster-IP", "Port(s)", "Age")
-		rows, err = util.RowsForResources[resources.Service](resp, rowForService)
+		rows, err = util.RowsForResources(resp, rowForService)
 		canonicalType = ServicesResourceType
 	}
 	if err != nil {
