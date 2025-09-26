@@ -45,7 +45,7 @@ lint: gomod-lint
 gomod-lint:
 	$(info Running go mod tidy)
 # Always keep this version to latest -1 version of Go
-	go mod tidy -compat=1.23
+	go mod tidy -compat=1.24
 
 .PHONY: ci-lint
 ci-lint: lint

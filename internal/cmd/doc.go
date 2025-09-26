@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// cmd package create the main miactl root command for cobra and initialize all the subcommands and flags
+// Package cmd package create the main miactl root command for cobra and initialize all the subcommands and flags
 package cmd

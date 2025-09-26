@@ -13,6 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// authorization package contains the abstraction for handling the different authorization methods
+// Package authorization package contains the abstraction for handling the different authorization methods
 // and manage the tokens retrivial and refresh
 package authorization

@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// user package contains subcommands and functions for managing users
+// Package user package contains subcommands and functions for managing users
 package user

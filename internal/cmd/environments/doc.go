@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// environments package contains subcommands and functions for managing project environments
+// Package environments package contains subcommands and functions for managing project environments
 package environments

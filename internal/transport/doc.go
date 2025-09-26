@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// transport package create a http.Transport configured for communicating with Mia-Platform Console
+// Package transport package create a http.Transport configured for communicating with Mia-Platform Console
 package transport

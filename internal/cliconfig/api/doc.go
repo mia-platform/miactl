@@ -15,5 +15,5 @@
 
 // +k8s:deepcopy-gen=package
 
-// package api contains the definitions of the struct for the miactl configuration
+// Package api contains the definitions of the struct for the miactl configuration
 package api

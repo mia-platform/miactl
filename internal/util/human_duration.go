@@ -20,9 +20,9 @@ import (
 	"time"
 )
 
-// adapted from https://github.com/kubernetes/apimachinery/blob/master/pkg/util/duration/duration.go#L48
 // HumanDuration returns a succinct representation of the provided duration with limited precision for
 // consumption by humans. It provides ~2-3 significant figures of duration.
+// adapted from https://github.com/kubernetes/apimachinery/blob/master/pkg/util/duration/duration.go#L48
 func HumanDuration(d time.Duration) string {
 	var durationString string
 

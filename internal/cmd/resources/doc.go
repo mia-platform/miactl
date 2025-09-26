@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// resources package contains subcommands and functions for managing runtime resources
+// Package resources package contains subcommands and functions for managing runtime resources
 package resources

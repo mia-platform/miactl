@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// client package contains the primiteves to create a new http client for connecting to
+// Package client package contains the primiteves to create a new http client for connecting to
 // Mia-Platform Console using the connection options passed to it.
 //
 // It also manage the authentication, renewal and re authentication if necessary.

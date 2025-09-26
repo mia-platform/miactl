@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// iam package contains functions for working with the IAM APIs
+// Package iam package contains functions for working with the IAM APIs
 package iam

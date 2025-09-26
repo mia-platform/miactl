@@ -27,7 +27,7 @@ var (
 	ErrItemNotFound              = errors.New("item type definition not found")
 )
 
-// Item is a Marketplace item
+// GenericItemTypeDefinition is a Marketplace item
 // we use a map[string]interface{} to represent the item
 // this allows to avoid changes in the code in case of a change in the resource structure
 type GenericItemTypeDefinition map[string]interface{}

@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// logs package contains subcommands and functions for displaying resources logs
+// Package logs package contains subcommands and functions for displaying resources logs
 package logs

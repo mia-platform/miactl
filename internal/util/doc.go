@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// util package contains utility functions to use in other packages
+// Package util package contains utility functions to use in other packages
 package util

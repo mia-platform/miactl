@@ -13,6 +13,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// cliconfig package will provide functions for getting the correct configuration for the client,
+// Package cliconfig package will provide functions for getting the correct configuration for the client,
 // it will correctly handling on disk configuration and overrides
 package cliconfig

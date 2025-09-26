@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// basic package contains the function for creating a basic authentication service account
+// Package basic package contains the function for creating a basic authentication service account
 package basic

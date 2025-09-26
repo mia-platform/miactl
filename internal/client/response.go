@@ -68,7 +68,7 @@ func (r *Response) RawRequest() *http.Request {
 	return r.rawRequest
 }
 
-// Error return the response status code
+// StatusCode return the response status code
 func (r *Response) StatusCode() int {
 	return r.statusCode
 }

@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// serviceaccount package contains subcommands and functions for managing service accounts
+// Package serviceaccount package contains subcommands and functions for managing service accounts
 package serviceaccount

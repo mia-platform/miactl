@@ -13,5 +13,5 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// group package contains subcommands and functions for managing groups
+// Package group package contains subcommands and functions for managing groups
 package group
