@@ -55,10 +55,10 @@ func (r Ref) ConfigurationEndpoint(projectID string) string {
 
 	switch r.refType {
 	case RevisionRefType, VersionRefType:
-		return fmt.Sprintf("%s/configuration", basePath)
+		return basePath + "/configuration"
 	case BranchRefType, TagRefType:
 		// NOTE: Legacy configurations use /configuration/ endpoint (with trailing slash)
-		return fmt.Sprintf("%s/configuration/", basePath)
+		return basePath + "/configuration/"
 	default:
 		return ""
 	}
