@@ -43,8 +43,6 @@ func TestCreateDescribeCmd(t *testing.T) {
 func TestDescribeProjectCmd(t *testing.T) {
 	testCases := map[string]struct {
 		options          describeProjectOptions
-		revisionName     string
-		versionName      string
 		expectError      bool
 		expectedErrorMsg string
 		testServer       *httptest.Server
@@ -98,7 +96,6 @@ func TestDescribeProjectCmd(t *testing.T) {
 				BranchName:   "test-json-branch",
 				OutputFormat: "json",
 			},
-			revisionName: "test-revision",
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
 				if r.URL.Path == "/api/backend/projects/test-project/branches/test-json-branch/configuration/" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
@@ -115,9 +112,8 @@ func TestDescribeProjectCmd(t *testing.T) {
 				RevisionName: "test-json-revision",
 				OutputFormat: "json",
 			},
-			revisionName: "test-revision",
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-json-revision/configuration/" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-json-revision/configuration" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-json-revision"}`))
 					return true
@@ -149,7 +145,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				OutputFormat: "json",
 			},
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/versions/test-version/configuration/" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/versions/test-version/configuration" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-version"}`))
 					return true
@@ -165,7 +161,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				OutputFormat: "yaml",
 			},
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-yaml-revision/configuration/" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-yaml-revision/configuration" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-yaml-revision"}`))
 					return true
@@ -181,7 +177,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				OutputFormat: "yaml",
 			},
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/revisions/some%2Frevision/configuration/" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/some%2Frevision/configuration" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-yaml-revision"}`))
 					return true
@@ -197,7 +193,7 @@ func TestDescribeProjectCmd(t *testing.T) {
 				OutputFormat: "yaml",
 			},
 			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
-				if r.URL.Path == "/api/backend/projects/test-project/versions/version%2F1.2.3/configuration/" && r.Method == http.MethodGet {
+				if r.URL.Path == "/api/backend/projects/test-project/versions/version%2F1.2.3/configuration" && r.Method == http.MethodGet {
 					w.WriteHeader(http.StatusOK)
 					_, _ = w.Write([]byte(`{"name": "test-project", "revision": "test-yaml-revision"}`))
 					return true

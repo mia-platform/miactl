@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- fixed `miactl project describe` erroneously adding trailing slash to API endpoint for enhanced workflow projects
+
 ## [v0.21.1] - 2025-09-26
 
 ### Fixed

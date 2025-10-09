@@ -50,6 +50,20 @@ func NewRef(refType, refName string) (Ref, error) {
 	}, nil
 }
 
+func (r Ref) ConfigurationEndpoint(projectID string) string {
+	basePath := fmt.Sprintf("/api/backend/projects/%s/%s", projectID, r.EncodedLocationPath())
+
+	switch r.refType {
+	case RevisionRefType, VersionRefType:
+		return basePath + "/configuration"
+	case BranchRefType, TagRefType:
+		// NOTE: Legacy configurations use /configuration/ endpoint (with trailing slash)
+		return basePath + "/configuration/"
+	default:
+		return ""
+	}
+}
+
 // EncodedLocationPath returns the encoded path to be used when fetching configuration data
 //
 // e.g., "<ConsoleURL>/api/projects/<ProjectID>/<EncodedLocationPath()>/configuration"
