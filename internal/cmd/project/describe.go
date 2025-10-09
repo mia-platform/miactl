@@ -93,7 +93,7 @@ func describeProject(ctx context.Context, client *client.APIClient, options desc
 		return err
 	}
 
-	endpoint := fmt.Sprintf("/api/backend/projects/%s/%s/configuration/", options.ProjectID, ref.EncodedLocationPath())
+	endpoint := ref.ConfigurationEndpoint(options.ProjectID)
 	response, err := client.
 		Get().
 		APIPath(endpoint).

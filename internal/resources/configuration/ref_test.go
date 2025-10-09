@@ -82,3 +82,31 @@ func TestGetEncodedResourceLocation(t *testing.T) {
 		})
 	}
 }
+
+func TestGetConfigurationEndpointEncoded(t *testing.T) {
+	tests := []struct {
+		refType          string
+		refName          string
+		expected         string
+		expectError      bool
+		expectedErrorMsg string
+	}{
+		{"revisions", "rev1", "/api/backend/projects/myProjectID/revisions/rev1/configuration", false, ""},
+		{"versions", "v1", "/api/backend/projects/myProjectID/versions/v1/configuration", false, ""},
+		{"branches", "branch1", "/api/backend/projects/myProjectID/branches/branch1/configuration/", false, ""},
+		{"tags", "tag1", "/api/backend/projects/myProjectID/branches/tag1/configuration/", false, ""},
+		{"revisions", "with/slash", "/api/backend/projects/myProjectID/revisions/with%2Fslash/configuration", false, ""},
+		{"versions", "with/slash", "/api/backend/projects/myProjectID/versions/with%2Fslash/configuration", false, ""},
+		{"branches", "with/slash", "/api/backend/projects/myProjectID/branches/with%2Fslash/configuration/", false, ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.expected, func(t *testing.T) {
+			ref, err := NewRef(tt.refType, tt.refName)
+			require.NoError(t, err)
+
+			encodedString := ref.ConfigurationEndpoint("myProjectID")
+			require.Equal(t, tt.expected, encodedString)
+		})
+	}
+}

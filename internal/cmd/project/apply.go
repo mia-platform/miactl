@@ -143,7 +143,7 @@ func applyConfiguration(ctx context.Context, client *client.APIClient, options a
 		return fmt.Errorf("cannot encode project configuration: %w", err)
 	}
 
-	endpoint := fmt.Sprintf("/api/backend/projects/%s/%s/configuration", options.ProjectID, ref.EncodedLocationPath())
+	endpoint := ref.ConfigurationEndpoint(options.ProjectID)
 	response, err := client.
 		Post().
 		APIPath(endpoint).
