@@ -29,10 +29,32 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreateVersionCmd(t *testing.T) {
+func TestVersionCmd(t *testing.T) {
 	t.Run("test command creation", func(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		cmd := VersionCmd(opts)
+		require.NotNil(t, cmd)
+		
+		// Verify subcommands
+		subCmds := cmd.Commands()
+		require.Len(t, subCmds, 2)
+		
+		// Check for create subcommand
+		createCmd, _, err := cmd.Find([]string{"create"})
+		require.NoError(t, err)
+		require.NotNil(t, createCmd)
+		
+		// Check for list subcommand
+		listCmd, _, err := cmd.Find([]string{"list"})
+		require.NoError(t, err)
+		require.NotNil(t, listCmd)
+	})
+}
+
+func TestCreateVersionCmd(t *testing.T) {
+	t.Run("test command creation", func(t *testing.T) {
+		opts := clioptions.NewCLIOptions()
+		cmd := CreateVersionCmd(opts)
 		require.NotNil(t, cmd)
 	})
 }

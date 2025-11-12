@@ -28,8 +28,14 @@ import (
 
 const (
 	versionProjectCmdUsage = "version"
-	versionProjectCmdShort = "Create a new version for a project"
-	versionProjectCmdLong  = `Create a new version for the specified Project based on an existing revision.`
+	versionProjectCmdShort = "Manage project versions"
+	versionProjectCmdLong  = `Manage project versions for the specified Project.
+
+This command allows you to create new versions and list existing versions.`
+
+	createVersionCmdUsage = "create"
+	createVersionCmdShort = "Create a new version for a project"
+	createVersionCmdLong  = `Create a new version for the specified Project based on an existing revision.` 
 )
 
 type versionProjectOptions struct {
@@ -40,12 +46,29 @@ type versionProjectOptions struct {
 	ReleaseDescription string
 }
 
-// VersionCmd returns a cobra command for creating a project version
+// VersionCmd returns a cobra command for managing project versions
 func VersionCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   versionProjectCmdUsage,
 		Short: versionProjectCmdShort,
 		Long:  versionProjectCmdLong,
+	}
+
+	// Add subcommands
+	cmd.AddCommand(
+		CreateVersionCmd(options),
+		VersionListCmd(options),
+	)
+
+	return cmd
+}
+
+// CreateVersionCmd returns a cobra command for creating a project version
+func CreateVersionCmd(options *clioptions.CLIOptions) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   createVersionCmdUsage,
+		Short: createVersionCmdShort,
+		Long:  createVersionCmdLong,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
