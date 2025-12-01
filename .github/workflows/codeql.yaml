@@ -43,7 +43,7 @@ jobs:
         languages: go
         build-mode: manual
     - name: Run Build
-      run: go build .
+      run: go build ./cmd/miactl
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@fdbfb4d2750291e159f0156def62b853c2798ca2 # v4.31.5
       with:
