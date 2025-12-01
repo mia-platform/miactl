@@ -20,9 +20,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/client"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/client"
 )
 
 func TestListAllIAMEntitites(t *testing.T) {

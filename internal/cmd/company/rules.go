@@ -16,9 +16,10 @@
 package company
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/company/rules"
-	"github.com/spf13/cobra"
 )
 
 func RulesCmd(o *clioptions.CLIOptions) *cobra.Command {

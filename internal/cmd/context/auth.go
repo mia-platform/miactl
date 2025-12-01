@@ -22,11 +22,12 @@ import (
 	"os"
 
 	"dario.cat/mergo"
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/resources"
-	"github.com/spf13/cobra"
 )
 
 func AuthCmd(options *clioptions.CLIOptions) *cobra.Command {

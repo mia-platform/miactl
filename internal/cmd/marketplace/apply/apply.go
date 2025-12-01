@@ -23,6 +23,8 @@ import (
 	"io/fs"
 	"path/filepath"
 
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
@@ -30,7 +32,6 @@ import (
 	"github.com/mia-platform/miactl/internal/files"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 	"github.com/mia-platform/miactl/internal/util"
-	"github.com/spf13/cobra"
 )
 
 const (

@@ -16,10 +16,11 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/catalog"
 	catalog_apply "github.com/mia-platform/miactl/internal/cmd/catalog/apply"
-	"github.com/spf13/cobra"
 )
 
 func CatalogCmd(options *clioptions.CLIOptions) *cobra.Command {

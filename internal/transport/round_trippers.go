@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+
 	"github.com/mia-platform/miactl/internal/netutil"
 )
 
@@ -110,15 +111,15 @@ func maskSensibleHeaderValue(headerKey string, value string) string {
 }
 
 func printCurl(r *http.Request) string {
-	headers := ""
+	var headers strings.Builder
 	for key, values := range r.Header {
 		for _, value := range values {
 			value = maskSensibleHeaderValue(key, value)
-			headers += fmt.Sprintf("\t-H %q\n", fmt.Sprintf("%s: %s", key, value))
+			headers.WriteString(fmt.Sprintf("\t-H %q\n", fmt.Sprintf("%s: %s", key, value)))
 		}
 	}
 
-	return fmt.Sprintf("curl -v -X%s\n%s\t'%s'", r.Method, headers, r.URL.String())
+	return fmt.Sprintf("curl -v -X%s\n%s\t'%s'", r.Method, headers.String(), r.URL.String())
 }
 
 type userAgentRoundTripper struct {

@@ -21,10 +21,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/resources"
 )
 
 func TestSetAuth(t *testing.T) {

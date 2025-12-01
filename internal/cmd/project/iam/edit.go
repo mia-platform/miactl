@@ -21,11 +21,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/iam"
 	"github.com/mia-platform/miactl/internal/resources"
-	"github.com/spf13/cobra"
 )
 
 func EditCmd(options *clioptions.CLIOptions) *cobra.Command {

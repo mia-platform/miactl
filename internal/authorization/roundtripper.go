@@ -18,8 +18,9 @@ package authorization
 import (
 	"net/http"
 
-	"github.com/mia-platform/miactl/internal/netutil"
 	"golang.org/x/oauth2"
+
+	"github.com/mia-platform/miactl/internal/netutil"
 )
 
 type accessTokenFunc func() (*oauth2.Token, error)

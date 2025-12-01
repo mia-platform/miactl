@@ -21,10 +21,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/printer"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/printer"
 )
 
 func TestPreconditions(t *testing.T) {

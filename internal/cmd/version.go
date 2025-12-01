@@ -22,8 +22,9 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
+
+	"github.com/mia-platform/miactl/internal/clioptions"
 )
 
 // Version is dynamically set by the ci or overridden by the Makefile.

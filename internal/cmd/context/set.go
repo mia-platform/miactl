@@ -19,10 +19,11 @@ import (
 	"fmt"
 
 	"dario.cat/mergo"
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/spf13/cobra"
 )
 
 func SetCmd(options *clioptions.CLIOptions) *cobra.Command {

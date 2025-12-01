@@ -26,10 +26,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/resources"
 	"golang.org/x/oauth2"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/resources"
 )
 
 const (

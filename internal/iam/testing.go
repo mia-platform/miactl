@@ -23,9 +23,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/resources"
 )
 
 func ErrorTestServerForCompanyIAMList(t *testing.T, companyID string) *httptest.Server {

@@ -23,9 +23,10 @@ import (
 	"testing"
 
 	"github.com/go-logr/logr"
-	"github.com/mia-platform/miactl/internal/logger"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/logger"
 )
 
 type testRoundTripper struct {

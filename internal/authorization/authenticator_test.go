@@ -19,8 +19,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/client"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mia-platform/miactl/internal/client"
 )
 
 func TestNewAuthenticator(t *testing.T) {

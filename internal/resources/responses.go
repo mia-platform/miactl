@@ -19,8 +19,9 @@ import (
 	"encoding/json"
 	"time"
 
-	rulesentities "github.com/mia-platform/miactl/internal/resources/rules"
 	"golang.org/x/oauth2"
+
+	rulesentities "github.com/mia-platform/miactl/internal/resources/rules"
 )
 
 type APIError struct {

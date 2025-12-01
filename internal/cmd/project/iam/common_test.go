@@ -18,8 +18,9 @@ package iam
 import (
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mia-platform/miactl/internal/resources"
 )
 
 func TestPayloadForChanges(t *testing.T) {

@@ -18,11 +18,12 @@ package rules
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/files"
 	rulesentities "github.com/mia-platform/miactl/internal/resources/rules"
-	"github.com/spf13/cobra"
 )
 
 func UpdateRules(o *clioptions.CLIOptions) *cobra.Command {

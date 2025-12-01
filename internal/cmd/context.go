@@ -16,9 +16,10 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/context"
-	"github.com/spf13/cobra"
 )
 
 func ContextCmd(options *clioptions.CLIOptions) *cobra.Command {

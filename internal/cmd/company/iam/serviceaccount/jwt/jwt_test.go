@@ -23,10 +23,11 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/resources"
 )
 
 func TestRequestFromKey(t *testing.T) {

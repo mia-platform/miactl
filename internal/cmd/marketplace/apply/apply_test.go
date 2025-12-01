@@ -26,13 +26,14 @@ import (
 	"os"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
 func TestApplyCommand(t *testing.T) {
