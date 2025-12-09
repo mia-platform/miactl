@@ -30,33 +30,38 @@ import (
 
 func TestCreateJob(t *testing.T) {
 	testCases := map[string]struct {
-		testServer  *httptest.Server
-		projectID   string
-		environment string
-		err         bool
+		testServer        *httptest.Server
+		projectID         string
+		environment       string
+		waitJobCompletion bool
+		err               bool
 	}{
 		"create job end with success": {
-			testServer:  createJobTestServer(t),
-			projectID:   "success",
-			environment: "env-id",
+			testServer:        createJobTestServer(t),
+			projectID:         "success",
+			environment:       "env-id",
+			waitJobCompletion: false,
 		},
 		"create job end with error": {
-			testServer:  createJobTestServer(t),
-			projectID:   "fail",
-			environment: "env-id",
-			err:         true,
+			testServer:        createJobTestServer(t),
+			projectID:         "fail",
+			environment:       "env-id",
+			waitJobCompletion: false,
+			err:               true,
 		},
 		"fail if no project id": {
-			testServer:  createJobTestServer(t),
-			projectID:   "",
-			environment: "env-id",
-			err:         true,
+			testServer:        createJobTestServer(t),
+			projectID:         "",
+			environment:       "env-id",
+			waitJobCompletion: false,
+			err:               true,
 		},
 		"fail if environment": {
-			testServer:  createJobTestServer(t),
-			projectID:   "success",
-			environment: "",
-			err:         true,
+			testServer:        createJobTestServer(t),
+			projectID:         "success",
+			environment:       "",
+			waitJobCompletion: false,
+			err:               true,
 		},
 	}
 
@@ -70,7 +75,7 @@ func TestCreateJob(t *testing.T) {
 			})
 			require.NoError(t, err)
 
-			err = createJob(t.Context(), client, testCase.projectID, testCase.environment, "cronjob-name")
+			err = createJob(t.Context(), client, testCase.projectID, testCase.environment, "cronjob-name", testCase.waitJobCompletion)
 			if testCase.err {
 				require.Error(t, err)
 			} else {

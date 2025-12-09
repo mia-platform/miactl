@@ -84,7 +84,8 @@ type CLIOptions struct {
 	ItemTypeDefinitionName     string
 	ItemTypeDefinitionFilePath string
 
-	FromCronJob string
+	FromCronJob       string
+	WaitJobCompletion bool
 
 	FollowLogs bool
 
@@ -290,6 +291,7 @@ func (o *CLIOptions) AddItemTypeDefinitionFileFlag(cmd *cobra.Command) {
 
 func (o *CLIOptions) AddCreateJobFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.FromCronJob, "from", "", "name of the cronjob to create a Job from")
+	flags.BoolVar(&o.WaitJobCompletion, "waitJobCompletion", false, "wait for the job to complete before exiting the command")
 }
 
 func (o *CLIOptions) AddLogsFlags(flags *pflag.FlagSet) {
