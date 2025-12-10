@@ -98,7 +98,7 @@ func createJob(ctx context.Context, client *client.APIClient, projectID, environ
 		return nil
 	}
 
-	return waitForJobCompletionWithInterval(ctx, client, projectID, environment, jobName, waitJobTimeoutSeconds, 10*time.Second)
+	return waitForJobCompletion(ctx, client, projectID, environment, jobName, waitJobTimeoutSeconds)
 }
 
 func validateCreateJobParams(projectID, environment string) error {
