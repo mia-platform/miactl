@@ -98,7 +98,7 @@ func createJob(ctx context.Context, client *client.APIClient, projectID, environ
 		return nil
 	}
 
-	return waitForJobCompletion(ctx, client, projectID, environment, jobName, waitJobTimeoutSeconds)
+	return waitForJobCompletionWithInterval(ctx, client, projectID, environment, jobName, waitJobTimeoutSeconds, 10*time.Second)
 }
 
 func validateCreateJobParams(projectID, environment string) error {
@@ -144,10 +144,14 @@ func triggerJobCreation(ctx context.Context, client *client.APIClient, projectID
 }
 
 func waitForJobCompletion(ctx context.Context, client *client.APIClient, projectID, environment, jobName string, timeoutSeconds int) error {
+	return waitForJobCompletionWithInterval(ctx, client, projectID, environment, jobName, timeoutSeconds, 10*time.Second)
+}
+
+func waitForJobCompletionWithInterval(ctx context.Context, client *client.APIClient, projectID, environment, jobName string, timeoutSeconds int, tickerInterval time.Duration) error {
 	fmt.Printf("Waiting for job %s to complete (timeout: %ds)...\n", jobName, timeoutSeconds)
 
 	timeout := time.After(time.Duration(timeoutSeconds) * time.Second)
-	ticker := time.NewTicker(10 * time.Second)
+	ticker := time.NewTicker(tickerInterval)
 	defer ticker.Stop()
 
 	const maxRetries = 3
