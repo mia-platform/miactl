@@ -83,14 +83,35 @@ func jobCommand(options *clioptions.CLIOptions) *cobra.Command {
 }
 
 func createJob(ctx context.Context, client *client.APIClient, projectID, environment, cronjobName string, waitJobCompletion bool, waitJobTimeoutSeconds int) error {
+	if err := validateCreateJobParams(projectID, environment); err != nil {
+		return err
+	}
+
+	jobName, err := triggerJobCreation(ctx, client, projectID, environment, cronjobName)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Job %s created successfully!\n", jobName)
+
+	if !waitJobCompletion {
+		return nil
+	}
+
+	return waitForJobCompletion(ctx, client, projectID, environment, jobName, waitJobTimeoutSeconds)
+}
+
+func validateCreateJobParams(projectID, environment string) error {
 	if projectID == "" {
 		return errors.New("missing project id, please set one with the flag or context")
 	}
-
 	if environment == "" {
 		return errors.New("missing environment, please set one with the flag or context")
 	}
+	return nil
+}
 
+func triggerJobCreation(ctx context.Context, client *client.APIClient, projectID, environment, cronjobName string) (string, error) {
 	requestBody := &resources.CreateJobRequest{
 		From:         "cronjob",
 		ResourceName: cronjobName,
@@ -98,7 +119,7 @@ func createJob(ctx context.Context, client *client.APIClient, projectID, environ
 
 	bodyBytes, err := json.Marshal(requestBody)
 	if err != nil {
-		return err
+		return "", fmt.Errorf("failed to marshal request body: %w", err)
 	}
 
 	response, err := client.
@@ -106,101 +127,137 @@ func createJob(ctx context.Context, client *client.APIClient, projectID, environ
 		APIPath(fmt.Sprintf(createJobTemplate, projectID, environment)).
 		Body(bodyBytes).
 		Do(ctx)
-
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if err := response.Error(); err != nil {
-		return err
+		return "", err
 	}
 
 	var createResponse resources.CreateJob
 	if err := response.ParseResponse(&createResponse); err != nil {
-		return err
+		return "", err
 	}
 
-	fmt.Printf("Job %s create successfully!\n", createResponse.JobName)
-	if !waitJobCompletion {
-		return nil
-	}
-	fmt.Printf("Waiting for job %s to complete...\n", createResponse.JobName)
-	now := time.Now()
-	jobCompleted := false
+	return createResponse.JobName, nil
+}
+
+func waitForJobCompletion(ctx context.Context, client *client.APIClient, projectID, environment, jobName string, timeoutSeconds int) error {
+	fmt.Printf("Waiting for job %s to complete (timeout: %ds)...\n", jobName, timeoutSeconds)
+
+	timeout := time.After(time.Duration(timeoutSeconds) * time.Second)
+	ticker := time.NewTicker(10 * time.Second)
+	defer ticker.Stop()
+
+	const maxRetries = 3
 	retries := 0
-	for !jobCompleted && time.Since(now) < time.Duration(waitJobTimeoutSeconds)*time.Second && retries < 3 {
-		time.Sleep(10 * time.Second)
-		listJobsResponse, err := client.
-			Get().
-			APIPath(fmt.Sprintf(describeJobsTemplate, projectID, environment)).
-			Do(ctx)
-		if err != nil {
-			fmt.Printf("Error retrieving jobs from Console\n")
-			retries++
-			continue
-		}
 
-		var jobsDescribe []resources.Job
-		if err := listJobsResponse.ParseResponse(&jobsDescribe); err != nil {
-			fmt.Printf("Error parsing jobs describe response: %v\n", err)
-		}
+	for {
+		select {
+		case <-timeout:
+			return fmt.Errorf("job %s did not complete within %d seconds", jobName, timeoutSeconds)
+		case <-ticker.C:
+			completed, err := checkJobStatus(ctx, client, projectID, environment, jobName)
+			if err != nil {
+				retries++
+				if retries >= maxRetries {
+					return fmt.Errorf("max retries reached while checking job status: %w", err)
+				}
+				fmt.Printf("Error checking job status (retry %d/%d): %v\n", retries, maxRetries, err)
+				continue
+			}
 
-		currentJob := getCreatedJobFromDescribe(&jobsDescribe, createResponse.JobName)
-		if currentJob == nil {
-			fmt.Printf("Error - Created job %s not found in Console\n", createResponse.JobName)
-			retries++
-			continue
-		}
-
-		listPodsResponse, err := client.
-			Get().
-			APIPath(fmt.Sprintf(describePodsTemplate, projectID, environment)).
-			Do(ctx)
-		if err != nil {
-			fmt.Printf("Error retrieving pods from Console\n")
-		}
-
-		var podsDescribe []resources.Pod
-		if err := listPodsResponse.ParseResponse(&podsDescribe); err != nil {
-			fmt.Printf("Error parsing pods describe response: %v\n", err)
-		}
-
-		currentJobPods := getJobPodsFromDescribe(&podsDescribe, createResponse.JobName)
-		if len(currentJobPods) == 0 {
-			fmt.Printf("Error - No pods found for job %s in Console\n", createResponse.JobName)
-		}
-
-		fmt.Printf("Job Active: %d | Pods: %d | Succeeded: %d | Failed: %d\n", currentJob.Active, len(currentJobPods), currentJob.Succeeded, currentJob.Failed)
-		for _, pod := range currentJobPods {
-			fmt.Printf(" - Pod %s | Phase: %s | Status: %s | Age: %s\n", pod.Name, pod.Phase, pod.Status, pod.Age.String())
-		}
-
-		if currentJob.Succeeded > 0 {
-			jobCompleted = true
-			fmt.Printf("Job %s completed successfully!\n", createResponse.JobName)
-			break
+			retries = 0
+			if completed {
+				fmt.Printf("Job %s completed successfully!\n", jobName)
+				return nil
+			}
 		}
 	}
-	if !jobCompleted {
-		return fmt.Errorf("job %s did not complete within %d seconds", createResponse.JobName, waitJobTimeoutSeconds)
+}
+
+func checkJobStatus(ctx context.Context, client *client.APIClient, projectID, environment, jobName string) (bool, error) {
+	job, err := fetchJobStatus(ctx, client, projectID, environment, jobName)
+	if err != nil {
+		return false, err
 	}
-	return nil
+
+	pods, err := fetchJobPods(ctx, client, projectID, environment, jobName)
+	if err != nil {
+		fmt.Printf("Warning: could not retrieve pods for job %s: %v\n", jobName, err)
+		pods = []*resources.Pod{}
+	}
+
+	printJobStatus(job, pods)
+
+	return job.Succeeded > 0, nil
+}
+
+func fetchJobStatus(ctx context.Context, client *client.APIClient, projectID, environment, jobName string) (*resources.Job, error) {
+	response, err := client.
+		Get().
+		APIPath(fmt.Sprintf(describeJobsTemplate, projectID, environment)).
+		Do(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve jobs: %w", err)
+	}
+
+	var jobs []resources.Job
+	if err := response.ParseResponse(&jobs); err != nil {
+		return nil, fmt.Errorf("failed to parse jobs response: %w", err)
+	}
+
+	job := getCreatedJobFromDescribe(&jobs, jobName)
+	if job == nil {
+		return nil, fmt.Errorf("job %s not found", jobName)
+	}
+
+	return job, nil
+}
+
+func fetchJobPods(ctx context.Context, client *client.APIClient, projectID, environment, jobName string) ([]*resources.Pod, error) {
+	response, err := client.
+		Get().
+		APIPath(fmt.Sprintf(describePodsTemplate, projectID, environment)).
+		Do(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve pods: %w", err)
+	}
+
+	var pods []resources.Pod
+	if err := response.ParseResponse(&pods); err != nil {
+		return nil, fmt.Errorf("failed to parse pods response: %w", err)
+	}
+
+	return getJobPodsFromDescribe(&pods, jobName), nil
+}
+
+func printJobStatus(job *resources.Job, pods []*resources.Pod) {
+	fmt.Printf("Job Status - Active: %d | Pods: %d | Succeeded: %d | Failed: %d\n",
+		job.Active, len(pods), job.Succeeded, job.Failed)
+
+	for _, pod := range pods {
+		fmt.Printf("  └─ Pod: %s | Phase: %s | Status: %s | Age: %s\n",
+			pod.Name, pod.Phase, pod.Status, pod.Age.Format(time.RFC3339))
+	}
 }
 
 func getCreatedJobFromDescribe(jobsDescribe *[]resources.Job, jobName string) *resources.Job {
-	for _, job := range *jobsDescribe {
-		if job.Name == jobName {
-			return &job
+	for i := range *jobsDescribe {
+		if (*jobsDescribe)[i].Name == jobName {
+			return &(*jobsDescribe)[i]
 		}
 	}
 	return nil
 }
 
 func getJobPodsFromDescribe(podsDescribe *[]resources.Pod, jobName string) []*resources.Pod {
-	jobPods := []*resources.Pod{}
-	for _, pod := range *podsDescribe {
-		if pod.Labels["job-name"] == jobName {
-			jobPods = append(jobPods, &pod)
+	jobPods := make([]*resources.Pod, 0)
+
+	for i := range *podsDescribe {
+		if (*podsDescribe)[i].Labels["job-name"] == jobName {
+			jobPods = append(jobPods, &(*podsDescribe)[i])
 		}
 	}
 
