@@ -1017,6 +1017,8 @@ Available flags for the command:
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 - `--environment`, to set the scope for the command
+- `--waitJobCompletion`, (default `false`) to wait for the job completion before exiting
+- `--waitJobTimeoutSeconds`, (default `600`, 10 minutes) to set a maximum wait timeout for the job completion
 
 ### logs
 

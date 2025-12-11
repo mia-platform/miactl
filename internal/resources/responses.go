@@ -157,6 +157,7 @@ type Pod struct {
 		RestartCount int    `json:"restartCount"`
 		Status       string `json:"status"`
 	} `json:"containers"`
+	Labels map[string]string `json:"labels"`
 }
 
 type CronJob struct {
