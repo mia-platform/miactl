@@ -36,6 +36,8 @@ const (
 	describePodsTemplate = "/api/projects/%s/environments/%s/pods/describe/"
 )
 
+var errCreateJobValidation = errors.New("validation error")
+
 func CreateCommand(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -63,8 +65,9 @@ func jobCommand(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			err = createJob(cmd.Context(), client, restConfig.ProjectID, restConfig.Environment, options.FromCronJob, options.WaitJobCompletion, options.WaitJobTimeoutSeconds)
 			if err != nil {
-				// Silence usage for runtime errors
-				cmd.SilenceUsage = true
+				if !errors.Is(err, errCreateJobValidation) {
+					cmd.SilenceUsage = true
+				}
 			}
 			return err
 		},
@@ -103,10 +106,10 @@ func createJob(ctx context.Context, client *client.APIClient, projectID, environ
 
 func validateCreateJobParams(projectID, environment string) error {
 	if projectID == "" {
-		return errors.New("missing project id, please set one with the flag or context")
+		return fmt.Errorf("%w: missing project id, please set one with the flag or context", errCreateJobValidation)
 	}
 	if environment == "" {
-		return errors.New("missing environment, please set one with the flag or context")
+		return fmt.Errorf("%w: missing environment, please set one with the flag or context", errCreateJobValidation)
 	}
 	return nil
 }
