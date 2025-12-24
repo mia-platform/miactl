@@ -16,8 +16,9 @@
 package deploy
 
 import (
-	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/spf13/cobra"
+
+	"github.com/mia-platform/miactl/internal/clioptions"
 )
 
 func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {

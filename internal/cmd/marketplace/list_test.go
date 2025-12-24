@@ -24,12 +24,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/printer"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestNewGetCmd(t *testing.T) {

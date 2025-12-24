@@ -21,13 +21,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"sigs.k8s.io/kustomize/kyaml/yaml"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
 	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"sigs.k8s.io/kustomize/kyaml/yaml"
 )
 
 const (

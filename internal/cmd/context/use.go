@@ -18,9 +18,10 @@ package context
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/spf13/cobra"
 )
 
 func UseCmd(opts *clioptions.CLIOptions) *cobra.Command {

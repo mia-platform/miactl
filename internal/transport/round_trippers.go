@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
+
 	"github.com/mia-platform/miactl/internal/netutil"
 )
 

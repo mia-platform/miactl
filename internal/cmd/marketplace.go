@@ -16,10 +16,11 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/marketplace"
 	marketplace_apply "github.com/mia-platform/miactl/internal/cmd/marketplace/apply"
-	"github.com/spf13/cobra"
 )
 
 func MarketplaceCmd(options *clioptions.CLIOptions) *cobra.Command {

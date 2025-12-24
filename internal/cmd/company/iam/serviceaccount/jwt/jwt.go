@@ -29,10 +29,11 @@ import (
 	"io"
 	"os"
 
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/resources"
-	"github.com/spf13/cobra"
 )
 
 const (

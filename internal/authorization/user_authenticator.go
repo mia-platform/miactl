@@ -20,8 +20,9 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/mia-platform/miactl/internal/client"
 	"golang.org/x/oauth2"
+
+	"github.com/mia-platform/miactl/internal/client"
 )
 
 const (

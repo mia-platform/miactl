@@ -20,8 +20,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
+
+	"github.com/mia-platform/miactl/internal/cliconfig/api"
 )
 
 const ConfigPathEnvVarName = "MIACONFIG"

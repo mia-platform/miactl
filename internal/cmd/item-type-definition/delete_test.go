@@ -21,11 +21,12 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 const (

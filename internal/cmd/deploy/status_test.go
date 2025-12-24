@@ -22,9 +22,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/clioptions"
 )
 
 func TestAddStatus(t *testing.T) {

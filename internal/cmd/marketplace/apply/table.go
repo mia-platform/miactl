@@ -80,7 +80,7 @@ func buildFailureTable(items []marketplace.ApplyResponseItem) string {
 		if item.ID != "" {
 			id = item.ID
 		}
-		return []string{id, item.ItemID, validationErrorsStr}
+		return []string{id, item.ItemID, validationErrString}
 	}
 
 	return buildTable(headers, items, columnTransform)

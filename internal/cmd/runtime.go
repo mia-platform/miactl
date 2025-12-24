@@ -16,12 +16,13 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/environments"
 	"github.com/mia-platform/miactl/internal/cmd/events"
 	"github.com/mia-platform/miactl/internal/cmd/logs"
 	runtimeresources "github.com/mia-platform/miactl/internal/cmd/resources"
-	"github.com/spf13/cobra"
 )
 
 func RuntimeCmd(o *clioptions.CLIOptions) *cobra.Command {

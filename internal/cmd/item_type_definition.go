@@ -16,9 +16,10 @@
 package cmd
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	itd "github.com/mia-platform/miactl/internal/cmd/item-type-definition"
-	"github.com/spf13/cobra"
 )
 
 func ItemTypeDefinitionCmd(options *clioptions.CLIOptions) *cobra.Command {

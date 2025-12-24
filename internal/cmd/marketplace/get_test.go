@@ -24,12 +24,13 @@ import (
 	"os"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"sigs.k8s.io/kustomize/kyaml/yaml"
+
+	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/encoding"
 )
 
 const (

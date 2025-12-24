@@ -23,9 +23,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/oauth2"
+
+	"github.com/mia-platform/miactl/internal/resources"
 )
 
 type testAuthCacheProvider struct {

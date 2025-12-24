@@ -18,9 +18,10 @@ package client
 import (
 	"net/http"
 
+	"golang.org/x/oauth2"
+
 	"github.com/mia-platform/miactl/internal/logger"
 	"github.com/mia-platform/miactl/internal/transport"
-	"golang.org/x/oauth2"
 )
 
 // httpClientForConfig return a new http.Client with the transport security provided in the config

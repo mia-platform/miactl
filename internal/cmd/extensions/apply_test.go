@@ -18,8 +18,9 @@ package extensions
 import (
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/resources/extensibility"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/resources/extensibility"
 )
 
 func TestReadExtensionFromFile(t *testing.T) {

@@ -20,10 +20,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/mia-platform/miactl/internal/resources"
-	"github.com/mia-platform/miactl/internal/util"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	"github.com/mia-platform/miactl/internal/resources"
+	"github.com/mia-platform/miactl/internal/util"
 )
 
 func RowForIAMIdentity(identity resources.IAMIdentity) []string {

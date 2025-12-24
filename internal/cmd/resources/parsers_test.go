@@ -19,8 +19,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mia-platform/miactl/internal/resources"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/mia-platform/miactl/internal/resources"
 )
 
 func TestRowForCronJob(t *testing.T) {

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Add
+
+- `miactl runtime create job` has two additional new flags:
+   - `--waitJobCompletion` (default `false`) - if enabled, the `miactl` will wait for the job completion
+   - `--waitJobTimeoutSeconds` (default `600` seconds) - if `--waitJobCompletion` is enabled, the maximum wait timeout for the job completion
+
 ## [v0.21.2] - 2025-10-09
 
 ### Fixed

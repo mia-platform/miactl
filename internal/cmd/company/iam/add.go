@@ -16,11 +16,12 @@
 package iam
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/company/iam/group"
 	"github.com/mia-platform/miactl/internal/cmd/company/iam/serviceaccount"
 	"github.com/mia-platform/miactl/internal/cmd/company/iam/user"
-	"github.com/spf13/cobra"
 )
 
 func AddCmd(options *clioptions.CLIOptions) *cobra.Command {

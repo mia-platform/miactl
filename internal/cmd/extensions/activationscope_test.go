@@ -19,8 +19,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/client"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/client"
 )
 
 func TestNewActivationScope(t *testing.T) {

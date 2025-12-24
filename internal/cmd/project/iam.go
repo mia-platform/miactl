@@ -16,9 +16,10 @@
 package project
 
 import (
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/cmd/project/iam"
-	"github.com/spf13/cobra"
 )
 
 func IAMCmd(o *clioptions.CLIOptions) *cobra.Command {

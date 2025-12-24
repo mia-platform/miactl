@@ -20,10 +20,11 @@ import (
 	"io"
 	"sort"
 
+	"github.com/spf13/cobra"
+
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"github.com/mia-platform/miactl/internal/clioptions"
-	"github.com/spf13/cobra"
 )
 
 func ListCmd(opts *clioptions.CLIOptions) *cobra.Command {

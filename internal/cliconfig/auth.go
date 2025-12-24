@@ -23,8 +23,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/mia-platform/miactl/internal/cliconfig/api"
 	"golang.org/x/oauth2"
+
+	"github.com/mia-platform/miactl/internal/cliconfig/api"
 )
 
 type AuthReadWriter struct {

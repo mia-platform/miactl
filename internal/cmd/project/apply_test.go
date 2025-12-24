@@ -23,10 +23,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/clioptions"
 )
 
 func TestCreateApplyCmd(t *testing.T) {

@@ -19,8 +19,9 @@ import (
 	"encoding/json"
 	"time"
 
-	rulesentities "github.com/mia-platform/miactl/internal/resources/rules"
 	"golang.org/x/oauth2"
+
+	rulesentities "github.com/mia-platform/miactl/internal/resources/rules"
 )
 
 type APIError struct {
@@ -156,6 +157,7 @@ type Pod struct {
 		RestartCount int    `json:"restartCount"`
 		Status       string `json:"status"`
 	} `json:"containers"`
+	Labels map[string]string `json:"labels"`
 }
 
 type CronJob struct {

@@ -28,10 +28,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/jws"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
+
+	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/jws"
 )
 
 const (

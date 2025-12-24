@@ -20,10 +20,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/iam"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/client"
+	"github.com/mia-platform/miactl/internal/iam"
 )
 
 func TestRemoveRoleForEntity(t *testing.T) {

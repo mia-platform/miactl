@@ -21,9 +21,10 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/mia-platform/miactl/internal/cliconfig"
 )
 
 func TestSetCurrentContext(t *testing.T) {
