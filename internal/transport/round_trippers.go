@@ -110,14 +110,15 @@ func maskSensibleHeaderValue(headerKey string, value string) string {
 }
 
 func printCurl(r *http.Request) string {
-	headers := ""
+	var builder strings.Builder
 	for key, values := range r.Header {
 		for _, value := range values {
 			value = maskSensibleHeaderValue(key, value)
-			headers += fmt.Sprintf("\t-H %q\n", fmt.Sprintf("%s: %s", key, value))
+			builder.WriteString(fmt.Sprintf("\t-H %q\n", fmt.Sprintf("%s: %s", key, value)))
 		}
 	}
 
+	headers := builder.String()
 	return fmt.Sprintf("curl -v -X%s\n%s\t'%s'", r.Method, headers, r.URL.String())
 }
 

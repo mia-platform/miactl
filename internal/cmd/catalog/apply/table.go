@@ -59,14 +59,15 @@ func buildSuccessTable(items []catalog.ApplyResponseItem) string {
 func buildFailureTable(items []catalog.ApplyResponseItem) string {
 	headers := []string{"Object ID", "Item ID", "Errors"}
 	columnTransform := func(item catalog.ApplyResponseItem) []string {
-		var errorsStr string
+		var builder strings.Builder
 		var errors = item.Errors
 		for i, valErr := range errors {
-			errorsStr += valErr.Message
-			if len(errors)-1 > i {
-				errorsStr += "\n"
+			if i > 0 {
+				builder.WriteString("\n")
 			}
+			builder.WriteString(valErr.Message)
 		}
+		errorsStr := builder.String()
 		if errorsStr == "" {
 			errorsStr = "-"
 		}

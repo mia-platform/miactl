@@ -34,16 +34,16 @@ func TestVersionCmd(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		cmd := VersionCmd(opts)
 		require.NotNil(t, cmd)
-		
+
 		// Verify subcommands
 		subCmds := cmd.Commands()
 		require.Len(t, subCmds, 2)
-		
+
 		// Check for create subcommand
 		createCmd, _, err := cmd.Find([]string{"create"})
 		require.NoError(t, err)
 		require.NotNil(t, createCmd)
-		
+
 		// Check for list subcommand
 		listCmd, _, err := cmd.Find([]string{"list"})
 		require.NoError(t, err)

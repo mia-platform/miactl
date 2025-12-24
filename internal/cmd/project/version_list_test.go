@@ -154,10 +154,11 @@ func TestListProjectVersionsCmd(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 
-				if testCase.options.OutputFormat == encoding.JSON && testCase.outputTextJSON != "No versions found for the project" {
+				switch {
+				case testCase.options.OutputFormat == encoding.JSON && testCase.outputTextJSON != "No versions found for the project":
 					found := outputBuffer.String()
 					require.JSONEq(t, testCase.outputTextJSON, found, "output should match expected JSON")
-				} else if testCase.options.OutputFormat == encoding.YAML && testCase.outputTextJSON != "No versions found for the project" {
+				case testCase.options.OutputFormat == encoding.YAML && testCase.outputTextJSON != "No versions found for the project":
 					foundMap := []map[string]interface{}{}
 					err := yaml.Unmarshal(outputBuffer.Bytes(), &foundMap)
 					require.NoError(t, err)
@@ -167,7 +168,7 @@ func TestListProjectVersionsCmd(t *testing.T) {
 					require.NoError(t, err)
 
 					require.Equal(t, expectedMap, foundMap)
-				} else if testCase.outputTextJSON == "No versions found for the project" {
+				case testCase.outputTextJSON == "No versions found for the project":
 					require.Contains(t, outputBuffer.String(), "No versions found for the project")
 				}
 			}

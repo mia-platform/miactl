@@ -30,7 +30,7 @@ import (
 const (
 	listVersionsCmdUsage = "list"
 	listVersionsCmdShort = "List versions for a project"
-	listVersionsCmdLong  = `List all versions for the specified Project.` 
+	listVersionsCmdLong  = `List all versions for the specified Project.`
 )
 
 type listVersionsOptions struct {
@@ -74,7 +74,7 @@ func listProjectVersions(ctx context.Context, client *client.APIClient, options 
 
 	// Create the endpoint
 	endpoint := fmt.Sprintf("/api/backend/projects/%s/versions", options.ProjectID)
-	
+
 	response, err := client.
 		Get().
 		APIPath(endpoint).
