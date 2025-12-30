@@ -73,6 +73,7 @@ func buildFailureTable(items []marketplace.ApplyResponseItem) string {
 				}
 				builder.WriteString(valErr.Message)
 			}
+			builder.WriteString(valErr.Message)
 		}
 		validationErrorsStr := builder.String()
 		if validationErrorsStr == "" {
