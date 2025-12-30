@@ -99,7 +99,8 @@ type CLIOptions struct {
 
 	ResolveExtensionsDetails bool
 
-	Message string
+	Message            string
+	ReleaseDescription string
 }
 
 // NewCLIOptions return a new CLIOptions instance
