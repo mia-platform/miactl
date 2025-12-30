@@ -59,28 +59,30 @@ func buildSuccessTable(items []marketplace.ApplyResponseItem) string {
 func buildFailureTable(items []marketplace.ApplyResponseItem) string {
 	headers := []string{"Object ID", "Item ID", "Validation Errors"}
 	columnTransform := func(item marketplace.ApplyResponseItem) []string {
-		var stringBuilder strings.Builder
+		var builder strings.Builder
 		var validationErrors []marketplace.ApplyResponseItemValidationError
 		if len(item.Errors) > 0 {
 			validationErrors = item.Errors
 		} else {
 			validationErrors = item.ValidationErrors
 		}
-		for i, valErr := range validationErrors {
-			stringBuilder.WriteString(valErr.Message)
-			if len(validationErrors)-1 > i {
-				stringBuilder.WriteString("\n")
+		if len(validationErrors) > 0 {
+			for i, valErr := range validationErrors {
+				if i > 0 {
+					builder.WriteString("\n")
+				}
+				builder.WriteString(valErr.Message)
 			}
 		}
-		validationErrString := stringBuilder.String()
-		if validationErrString == "" {
-			validationErrString = "-"
+		validationErrorsStr := builder.String()
+		if validationErrorsStr == "" {
+			validationErrorsStr = "-"
 		}
 		id := "N/A"
 		if item.ID != "" {
 			id = item.ID
 		}
-		return []string{id, item.ItemID, validationErrString}
+		return []string{id, item.ItemID, validationErrorsStr}
 	}
 
 	return buildTable(headers, items, columnTransform)

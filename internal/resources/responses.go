@@ -122,12 +122,12 @@ type ProjectCluster struct {
 }
 
 type DeployProject struct {
-	ID  int    `json:"id"`
+	ID  string `json:"id"`
 	URL string `json:"url"`
 }
 
 type PipelineStatus struct {
-	ID     int    `json:"id"`
+	ID     string `json:"id"`
 	Status string `json:"status"`
 }
 
