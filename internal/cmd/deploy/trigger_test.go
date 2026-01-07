@@ -90,15 +90,15 @@ func testTriggerServer(t *testing.T) *httptest.Server {
 		switch {
 		case r.Method == http.MethodPost && (r.URL.Path == fmt.Sprintf(deployProjectEndpointTemplate, "correct") || r.URL.Path == fmt.Sprintf(deployProjectEndpointTemplate, "fails-wait-status")):
 			data, err := resources.EncodeResourceToJSON(&resources.DeployProject{
-				ID:  1,
+				ID:  "1",
 				URL: "http://example.com",
 			})
 
 			require.NoError(t, err)
 			w.Write(data)
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "correct", 1) && r.URL.Query().Get("environment") == "environmentName":
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "correct", "1") && r.URL.Query().Get("environment") == "environmentName":
 			data, err := resources.EncodeResourceToJSON(&resources.PipelineStatus{
-				ID:     1,
+				ID:     "1",
 				Status: "succeeded",
 			})
 			require.NoError(t, err)
@@ -108,7 +108,7 @@ func testTriggerServer(t *testing.T) *httptest.Server {
 
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(respBody))
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "fails-wait-status", 1) && r.URL.Query().Get("environment") == "environmentName":
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "fails-wait-status", "1") && r.URL.Query().Get("environment") == "environmentName":
 			respBody := `{"error": "Internal Server Error","message":"some error"}`
 
 			w.WriteHeader(http.StatusInternalServerError)
@@ -129,15 +129,15 @@ func testFailedTriggerServer(t *testing.T) *httptest.Server {
 		switch {
 		case r.Method == http.MethodPost && r.URL.Path == fmt.Sprintf(deployProjectEndpointTemplate, "failed"):
 			data, err := resources.EncodeResourceToJSON(&resources.DeployProject{
-				ID:  1,
+				ID:  "1",
 				URL: "http://example.com",
 			})
 
 			require.NoError(t, err)
 			w.Write(data)
-		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "failed", 1) && r.URL.Query().Get("environment") == "environmentName":
+		case r.Method == http.MethodGet && r.URL.Path == fmt.Sprintf(pipelineStatusEndpointTemplate, "failed", "1") && r.URL.Query().Get("environment") == "environmentName":
 			data, err := resources.EncodeResourceToJSON(&resources.PipelineStatus{
-				ID:     1,
+				ID:     "1",
 				Status: "failed",
 			})
 			require.NoError(t, err)

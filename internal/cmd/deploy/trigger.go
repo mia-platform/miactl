@@ -30,7 +30,7 @@ import (
 
 const (
 	deployProjectEndpointTemplate  = "/api/deploy/projects/%s/trigger/pipeline/"
-	pipelineStatusEndpointTemplate = "/api/deploy/projects/%s/pipelines/%d/status/"
+	pipelineStatusEndpointTemplate = "/api/deploy/projects/%s/pipelines/%s/status/"
 )
 
 func triggerCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -150,7 +150,7 @@ func triggerPipeline(ctx context.Context, client *client.APIClient, environmentN
 // Declared here to override it during tests
 var sleepDuration = (1 * time.Second) + (500 * time.Millisecond)
 
-func waitStatus(ctx context.Context, client *client.APIClient, projectID string, deployID int, environmentName string) (string, error) {
+func waitStatus(ctx context.Context, client *client.APIClient, projectID string, deployID string, environmentName string) (string, error) {
 	var outStatus *resources.PipelineStatus
 	for {
 		time.Sleep(sleepDuration)
