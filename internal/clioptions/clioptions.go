@@ -329,6 +329,10 @@ func (o *CLIOptions) AddImportFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.InputFilePath, "filename", "", "file or folder containing the resources to import")
 }
 
+func (o *CLIOptions) AddDeployLatestFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.Environment, "environment", "", "the environment scope for the command")
+}
+
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
 	locator := cliconfig.NewConfigPathLocator()
 	locator.ExplicitPath = o.MiactlConfig
