@@ -7,11 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Add
+### Changed
+
+- update go version to 1.25.5
+- update cobra to v1.10.2
+- update oauth2 to v0.34.0
+- update sync to v0.19.0
+- update text to v0.33.0
+- update kyaml to v0.21.0
+
+### Added
 
 - `miactl runtime create job` has two additional new flags:
-   - `--waitJobCompletion` (default `false`) - if enabled, the `miactl` will wait for the job completion
-   - `--waitJobTimeoutSeconds` (default `600` seconds) - if `--waitJobCompletion` is enabled, the maximum wait timeout for the job completion
+  - `--waitJobCompletion` (default `false`) - if enabled, the `miactl` will wait for the job completion
+  - `--waitJobTimeoutSeconds` (default `600` seconds) - if `--waitJobCompletion` is enabled, the maximum wait timeout
+    for the job completion
+- `miactl project version list` for listing available versions for a project
+- `miactl project version create` for create a new version for a project
+
+### Fixed
+
+- value parsing from a triggered deploy in certain configurations
 
 ## [v0.21.2] - 2025-10-09
 
