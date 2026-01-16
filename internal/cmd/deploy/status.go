@@ -37,7 +37,7 @@ var allowedArgs = []string{"success", "failed", "canceled", "skipped"}
 
 func newStatusAddCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "status" + " [" + strings.Join(allowedArgs, "|") + "]",
+		Use:   "add status" + " [" + strings.Join(allowedArgs, "|") + "]",
 		Short: "Add status to deploy history record.",
 		Long: `This command is used to add a status to a deploy history record.
 

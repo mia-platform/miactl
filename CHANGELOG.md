@@ -29,6 +29,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - value parsing from a triggered deploy in certain configurations
 
+### Removed
+
+- removed `miactl deploy ENVIRONMENT` deprecated command, use `miactl deploy trigger` instead that
+	is available since 0.15.x
+
 ## [v0.21.2] - 2025-10-09
 
 ### Fixed

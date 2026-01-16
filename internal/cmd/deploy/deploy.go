@@ -23,39 +23,17 @@ import (
 
 func NewDeployCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "deploy ENVIRONMENT",
-		Short: "Deploy the target environment.",
-		Long: `Deprecation Warning: This command is deprecated. Use 'deploy trigger' instead.
+		Use:   "deploy",
+		Short: "Manage project deployments",
+		Long: `Manage project deployments.
 
-Trigger the deploy of the target environment in the selected project.
-
-The deploy will be performed by the pipeline setup in project, the command will then keep
-listening on updates of the status for keep the user informed on the updates. The command
-will exit with error if the pipeline will not end with a success.`,
-		Args:       cobra.ExactArgs(1),
-		Deprecated: "use 'deploy trigger' instead",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			environmentName := args[0]
-			return runDeployTrigger(cmd.Context(), environmentName, options)
-		},
+Can trigger deployments to specific environments and monitor their status.`,
 	}
-
-	deployTriggerOptions(cmd, options)
 
 	cmd.AddCommand(
 		triggerCmd(options),
-		addCmd(options),
+		newStatusAddCmd(options),
 	)
-
-	return cmd
-}
-
-func addCmd(options *clioptions.CLIOptions) *cobra.Command {
-	cmd := &cobra.Command{
-		Use: "add",
-	}
-
-	cmd.AddCommand(newStatusAddCmd(options))
 
 	return cmd
 }
