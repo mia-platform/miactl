@@ -31,7 +31,7 @@ const (
 	deploymentsLatestEndpointTemplate = "/api/deploy/projects/%s/deployment/"
 )
 
-func newLatestDeploymentCmd(options *clioptions.CLIOptions) *cobra.Command {
+func latestDeploymentCmd(options *clioptions.CLIOptions) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "latest",
 		Short: "Get the latest deployment for the project",
