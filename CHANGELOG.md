@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `miactl deploy latest` for getting the latest successful deployment for a project in a specified environment
 - `miactl runtime create job` has two additional new flags:
   - `--waitJobCompletion` (default `false`) - if enabled, the `miactl` will wait for the job completion
   - `--waitJobTimeoutSeconds` (default `600` seconds) - if `--waitJobCompletion` is enabled, the maximum wait timeout

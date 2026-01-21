@@ -23,7 +23,6 @@ import (
 	"github.com/mia-platform/miactl/internal/cmd/events"
 	"github.com/mia-platform/miactl/internal/cmd/logs"
 	runtimeresources "github.com/mia-platform/miactl/internal/cmd/resources"
-	"github.com/mia-platform/miactl/internal/cmd/runtime"
 )
 
 func RuntimeCmd(o *clioptions.CLIOptions) *cobra.Command {
@@ -52,7 +51,6 @@ the resources generated, like Pods, Cronjobs and logs.
 		environments.EnvironmentCmd(o),
 		events.Command(o),
 		logs.Command(o),
-		runtime.NewDeploymentsCmd(o),
 	)
 
 	return cmd

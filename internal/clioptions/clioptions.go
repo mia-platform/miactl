@@ -175,6 +175,10 @@ func (o *CLIOptions) AddDeployAddStatusFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.TriggerID, "trigger-id", "", "trigger-id of the pipeline to update")
 }
 
+func (o *CLIOptions) AddDeployLatestFlags(flags *pflag.FlagSet) {
+	flags.StringVar(&o.Environment, "environment", "", "the environment scope for the command")
+}
+
 func (o *CLIOptions) AddContextAuthFlags(flags *pflag.FlagSet) {
 	flags.StringVar(&o.BasicClientID, "client-id", "", "the client ID of the service account")
 	flags.StringVar(&o.BasicClientSecret, "client-secret", "", "the client secret of the service account")
@@ -327,10 +331,6 @@ func (o *CLIOptions) AddImportFlags(flags *pflag.FlagSet) {
 	o.AddProjectFlags(flags)
 	flags.StringVar(&o.Revision, "revision", "", "revision of the commit to deploy")
 	flags.StringVar(&o.InputFilePath, "filename", "", "file or folder containing the resources to import")
-}
-
-func (o *CLIOptions) AddDeployLatestFlags(flags *pflag.FlagSet) {
-	flags.StringVar(&o.Environment, "environment", "", "the environment scope for the command")
 }
 
 func (o *CLIOptions) ToRESTConfig() (*client.Config, error) {
