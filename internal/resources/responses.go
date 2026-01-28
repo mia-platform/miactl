@@ -187,6 +187,21 @@ type Deployment struct {
 	Age       time.Time `json:"creationTimestamp"` //nolint: tagliatelle
 }
 
+type DeploymentHistory struct {
+	ID              string          `json:"id"`
+	Ref             string          `json:"ref"`
+	PipelineID      string          `json:"pipelineId"`
+	Status          string          `json:"status"`
+	FinishedAt      time.Time       `json:"finishedAt"`
+	Environment     string          `json:"env"` //nolint:tagliatelle
+	EnvironmentInfo EnvironmentInfo `json:"environmentInfo"`
+}
+
+type EnvironmentInfo struct {
+	EnvID string `json:"envId"`
+	Label string `json:"label"`
+}
+
 type Service struct {
 	Name      string    `json:"name"`
 	Type      string    `json:"type"`
