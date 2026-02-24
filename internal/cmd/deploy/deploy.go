@@ -33,6 +33,7 @@ Can trigger deployments to specific environments and monitor their status.`,
 	cmd.AddCommand(
 		triggerCmd(options),
 		newStatusAddCmd(options),
+		latestDeploymentCmd(options),
 	)
 
 	return cmd

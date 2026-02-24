@@ -1,6 +1,6 @@
 {
 	"name": "Go",
-	"image": "golang:1.25.5",
+	"image": "golang:1.25.6",
 	"features": {
 		"ghcr.io/devcontainers/features/common-utils:2": {
 			"installZsh": "true",
@@ -33,7 +33,7 @@
 				"go.gopath": "/go",
 				"go.useLanguageServer": true,
 				"go.toolsManagement.checkForUpdates": "local",
-				"go.buildFlags": ["-tags=conformance,integration"],
+				"go.buildFlags": [ "-tags=conformance,integration" ],
 				"go.lintTool": "golangci-lint",
 				"go.lintFlags": [
 					"--path-mode=abs",
