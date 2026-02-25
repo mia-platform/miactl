@@ -18,6 +18,7 @@ package cliconfig
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -35,14 +36,14 @@ func TestCachePath(t *testing.T) {
 		emptyHome           bool
 	}{
 		"Test Empty XDG environments": {
-			expectedConfig:      filepath.Join(os.Getenv("HOME"), ".config", miactlFolderName, configFileName),
-			expectedCache:       filepath.Join(os.Getenv("HOME"), ".cache", miactlFolderName),
-			expectedCredentials: filepath.Join(os.Getenv("HOME"), ".config", miactlFolderName, credentials),
+			expectedConfig:      filepath.Join(homeFolderPath(), ".config", miactlFolderName, configFileName),
+			expectedCache:       filepath.Join(homeFolderPath(), ".cache", miactlFolderName),
+			expectedCredentials: filepath.Join(homeFolderPath(), ".config", miactlFolderName, credentials),
 		},
 		"Test Empty HOME": {
-			expectedConfig:      filepath.Join("/", ".config", miactlFolderName, configFileName),
-			expectedCache:       filepath.Join("/", ".cache", miactlFolderName),
-			expectedCredentials: filepath.Join("/", ".config", miactlFolderName, credentials),
+			expectedConfig:      filepath.Join(expectedEmptyHome(), ".config", miactlFolderName, configFileName),
+			expectedCache:       filepath.Join(expectedEmptyHome(), ".cache", miactlFolderName),
+			expectedCredentials: filepath.Join(expectedEmptyHome(), ".config", miactlFolderName, credentials),
 			emptyHome:           true,
 		},
 		"Test Empty HOME with XDG environments": {
@@ -75,4 +76,13 @@ func TestCachePath(t *testing.T) {
 			assert.Equal(t, testCase.expectedCache, CacheFolderPath())
 		})
 	}
+}
+
+func expectedEmptyHome() string {
+	if runtime.GOOS == "windows" {
+		// On Windows, os.UserHomeDir() returns USERPROFILE even when HOME is empty
+		home, _ := os.UserHomeDir()
+		return home
+	}
+	return "/"
 }

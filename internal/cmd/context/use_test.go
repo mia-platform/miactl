@@ -69,8 +69,11 @@ func copyFile(t *testing.T, in string) string {
 	t.Helper()
 	inFile, err := os.OpenFile(in, os.O_RDONLY, 0644)
 	require.NoError(t, err)
+	defer inFile.Close()
+
 	outFile, err := os.CreateTemp(t.TempDir(), "test-file")
 	require.NoError(t, err)
+	defer outFile.Close()
 
 	_, err = io.Copy(outFile, inFile)
 	require.NoError(t, err)

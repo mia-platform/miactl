@@ -16,7 +16,11 @@
 ##@ Lint Goals
 
 # if not already installed in the system install a pinned version in tools folder
-GOLANGCI_PATH:= $(shell command -v golangci-lint 2> /dev/null)
+ifeq ($(OS),Windows_NT)
+GOLANGCI_PATH:= $(shell where golangci-lint 2>NUL)
+else
+GOLANGCI_PATH:= $(shell command -v golangci-lint 2>/dev/null)
+endif
 ifndef GOLANGCI_PATH
 	GOLANGCI_PATH:=$(TOOLS_BIN)/golangci-lint
 endif
@@ -35,10 +39,10 @@ golangci-lint: $(GOLANGCI_PATH)
 
 lint-deps: $(GOLANGCI_PATH)
 $(TOOLS_BIN)/golangci-lint: $(TOOLS_DIR)/GOLANGCI_LINT_VERSION
-	$(eval GOLANGCI_LINT_VERSION:= $(shell cat $<))
-	mkdir -p $(TOOLS_BIN)
+	$(eval GOLANGCI_LINT_VERSION:= $(shell $(call READ_FILE,$<)))
+	$(call MKDIR,$(TOOLS_BIN))
 	$(info Installing golangci-lint $(GOLANGCI_LINT_VERSION) bin in $(TOOLS_BIN))
-	GOBIN=$(TOOLS_BIN) go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION)
+	$(call GOBIN_INSTALL,$(TOOLS_BIN),github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT_VERSION))
 
 .PHONY: gomod-lint
 lint: gomod-lint

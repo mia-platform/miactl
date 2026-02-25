@@ -16,35 +16,48 @@
 ##@ Docker Images Goals
 
 # Force enable buildkit as a build engine
-DOCKER_CMD:= DOCKER_BUILDKIT=1 docker
+ifeq ($(OS),Windows_NT)
+REPO_TAG:= $(shell git describe --tags --exact-match 2>NUL || echo latest)
+else
 REPO_TAG:= $(shell git describe --tags --exact-match 2>/dev/null || echo latest)
+endif
+export DOCKER_BUILDKIT:= 1
 # Making the subst function works with spaces and comas required this hack
 COMMA:= ,
 EMPTY:=
 SPACE:= $(EMPTY) $(EMPTY)
 DOCKER_SUPPORTED_PLATFORMS:= $(subst $(SPACE),$(COMMA),$(SUPPORTED_PLATFORMS))
+ifeq ($(OS),Windows_NT)
+PARSED_TAGS:= $(shell powershell -NoProfile -File "$(TOOLS_DIR)/parse-tags.ps1" $(REPO_TAG))
+CONTAINER_BUILD_DATE:= $(shell powershell -NoProfile -Command "[DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')")
+else
 PARSED_TAGS:= $(shell $(TOOLS_DIR)/parse-tags.sh $(REPO_TAG))
-IMAGE_TAGS:= $(addprefix --tag , $(foreach REGISTRY, $(CONTAINER_REGISTRIES), $(foreach TAG, $(PARSED_TAGS), $(REGISTRY)/$(CMDNAME):$(TAG))))
 CONTAINER_BUILD_DATE:= $(shell date -u "+%Y-%m-%dT%H:%M:%SZ")
+endif
+IMAGE_TAGS:= $(addprefix --tag , $(foreach REGISTRY, $(CONTAINER_REGISTRIES), $(foreach TAG, $(PARSED_TAGS), $(REGISTRY)/$(CMDNAME):$(TAG))))
 
 DOCKER_LABELS:= --label "org.opencontainers.image.title=$(CMDNAME)"
 DOCKER_LABELS+= --label "org.opencontainers.image.description=$(DESCRIPTION)"
-DOCKER_LABELS+= --label "org.opencontainers.image.url=$(SOURCE_URL)"
-DOCKER_LABELS+= --label "org.opencontainers.image.source=$(SOURCE_URL)"
 DOCKER_LABELS+= --label "org.opencontainers.image.version=$(REPO_TAG)"
 DOCKER_LABELS+= --label "org.opencontainers.image.created=$(CONTAINER_BUILD_DATE)"
+ifeq ($(OS),Windows_NT)
+DOCKER_LABELS+= --label "org.opencontainers.image.revision=$(shell git rev-parse HEAD 2>NUL)"
+else
 DOCKER_LABELS+= --label "org.opencontainers.image.revision=$(shell git rev-parse HEAD 2>/dev/null)"
+endif
 DOCKER_LABELS+= --label "org.opencontainers.image.licenses=$(LICENSE)"
 DOCKER_LABELS+= --label "org.opencontainers.image.documentation=$(DOCUMENTATION_URL)"
 DOCKER_LABELS+= --label "org.opencontainers.image.vendor=$(VENDOR_NAME)"
 
 DOCKER_ANNOTATIONS:= --annotation "org.opencontainers.image.title=$(CMDNAME)"
 DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.description=$(DESCRIPTION)"
-DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.url=$(SOURCE_URL)"
-DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.source=$(SOURCE_URL)"
 DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.version=$(REPO_TAG)"
 DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.created=$(CONTAINER_BUILD_DATE)"
+ifeq ($(OS),Windows_NT)
+DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.revision=$(shell git rev-parse HEAD 2>NUL)"
+else
 DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.revision=$(shell git rev-parse HEAD 2>/dev/null)"
+endif
 DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.licenses=$(LICENSE)"
 DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.documentation=$(DOCUMENTATION_URL)"
 DOCKER_ANNOTATIONS+= --annotation "org.opencontainers.image.vendor=$(VENDOR_NAME)"
@@ -55,7 +68,7 @@ docker/%/multiarch:
 	$(eval IS_PUSH:= $(filter push,$(ACTION)))
 	$(eval ADDITIONAL_PARAMETER:= $(if $(IS_PUSH), --push))
 	$(info Building image for following platforms: $(SUPPORTED_PLATFORMS))
-	$(DOCKER_CMD) buildx build --platform "$(DOCKER_SUPPORTED_PLATFORMS)" \
+	docker buildx build --platform "$(DOCKER_SUPPORTED_PLATFORMS)" \
 		--build-arg CMD_NAME=$(CMDNAME) \
 		--provenance=false \
 		$(IMAGE_TAGS) \
@@ -65,11 +78,12 @@ docker/%/multiarch:
 
 .PHONY: docker/build/%
 docker/build/%:
-	$(eval OS:= $(word 1,$(subst /, ,$*)))
-	$(eval ARCH:= $(word 2,$(subst /, ,$*)))
-	$(eval ARM:= $(word 3,$(subst /, ,$*)))
-	$(info Building image for $(OS) $(ARCH) $(ARM))
-	$(DOCKER_CMD) build --platform $* \
+	$(eval DOCKER_OS:= $(word 1,$(subst /, ,$*)))
+	$(eval DOCKER_ARCH:= $(word 2,$(subst /, ,$*)))
+	$(eval DOCKER_ARM:= $(word 3,$(subst /, ,$*)))
+	$(eval DOCKER_PLATFORM:= $(DOCKER_OS)/$(DOCKER_ARCH)$(if $(DOCKER_ARM),/$(DOCKER_ARM),))
+	$(info Building image for $(DOCKER_OS) $(DOCKER_ARCH) $(DOCKER_ARM))
+	docker build --platform $(DOCKER_PLATFORM) \
 		--build-arg CMD_NAME=$(CMDNAME) \
 		$(IMAGE_TAGS) \
 		$(DOCKER_LABELS) \
@@ -83,7 +97,11 @@ docker/setup/multiarch:
 
 .PHONY: docker/buildx/setup docker/buildx/teardown
 docker/buildx/setup:
+ifeq ($(OS),Windows_NT)
+	docker buildx rm $(BUILDX_CONTEXT) 2>NUL || ver >NUL
+else
 	docker buildx rm $(BUILDX_CONTEXT) 2>/dev/null || :
+endif
 	docker buildx create --use --name $(BUILDX_CONTEXT) --platform "$(DOCKER_SUPPORTED_PLATFORMS)"
 
 docker/buildx/teardown:

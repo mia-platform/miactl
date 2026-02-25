@@ -26,8 +26,7 @@ import (
 )
 
 const (
-	localhost = "127.0.0.1:53535"
-	appID     = "miactl"
+	appID = "miactl"
 )
 
 type LocalServerReadyHandler func(string) error
@@ -72,7 +71,7 @@ func (ua *userAuthenticator) refreshAuthWithToken(refreshToken string) (*oauth2.
 func (ua *userAuthenticator) logUser() (*oauth2.Token, error) {
 	browserLoginConfig := &Config{
 		AppID:                  appID,
-		LocalServerBindAddress: []string{localhost},
+		LocalServerBindAddress: []string{"127.0.0.1:53535", "127.0.0.1:13535"},
 		Client:                 ua.client,
 		ServerReadyHandler:     ua.serverReadyHandler,
 	}
