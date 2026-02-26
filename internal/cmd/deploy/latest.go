@@ -42,7 +42,11 @@ func latestDeploymentCmd(options *clioptions.CLIOptions) *cobra.Command {
 	}
 
 	flags := cmd.Flags()
-	options.AddDeployLatestFlags(flags)
+	options.AddConnectionFlags(flags)
+	options.AddContextFlags(flags)
+	options.AddCompanyFlags(flags)
+	options.AddProjectFlags(flags)
+	options.AddEnvironmentFlags(flags)
 
 	return cmd
 }
