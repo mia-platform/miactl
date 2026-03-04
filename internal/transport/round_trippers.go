@@ -115,7 +115,7 @@ func printCurl(r *http.Request) string {
 	for key, values := range r.Header {
 		for _, value := range values {
 			value = maskSensibleHeaderValue(key, value)
-			builder.WriteString(fmt.Sprintf("\t-H %q\n", fmt.Sprintf("%s: %s", key, value)))
+			fmt.Fprintf(&builder, "\t-H %q\n", fmt.Sprintf("%s: %s", key, value))
 		}
 	}
 
