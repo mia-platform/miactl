@@ -98,6 +98,40 @@ func TestSetParams(t *testing.T) {
 	assert.Equal(t, url.Values{"foo": []string{"bar"}, "baz": []string{"1", "2"}}, r.params)
 }
 
+func TestRequestURL(t *testing.T) {
+	testCases := map[string]struct {
+		baseURL     string
+		apiPath     string
+		expectedURL string
+	}{
+		"no base path": {
+			baseURL:     "http://host/",
+			apiPath:     "/api/backend/projects/",
+			expectedURL: "http://host/api/backend/projects/",
+		},
+		"with base path prefix": {
+			baseURL:     "http://host/mia/",
+			apiPath:     "/api/backend/projects/",
+			expectedURL: "http://host/mia/api/backend/projects/",
+		},
+		"base path without trailing slash": {
+			baseURL:     "http://host/mia",
+			apiPath:     "/api/backend/projects/",
+			expectedURL: "http://host/mia/api/backend/projects/",
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			baseURL, err := url.Parse(testCase.baseURL)
+			require.NoError(t, err)
+			client := newAPIClient(baseURL, contentConfig{}, http.DefaultClient)
+			requestURL := NewRequest(client).APIPath(testCase.apiPath).URL()
+			assert.Equal(t, testCase.expectedURL, requestURL.String())
+		})
+	}
+}
+
 func TestSetAPIPath(t *testing.T) {
 	r := (&Request{})
 

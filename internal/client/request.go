@@ -23,6 +23,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 // Request wrap the http.Request configuration providing functions for configure it in an easier and contained way
@@ -134,7 +135,7 @@ func (r *Request) Error() error {
 func (r *Request) URL() *url.URL {
 	url := *r.restClient.baseURL
 
-	url.Path = r.apiPath
+	url.Path = strings.TrimSuffix(url.Path, "/") + r.apiPath
 	url.RawQuery = r.params.Encode()
 
 	return &url
