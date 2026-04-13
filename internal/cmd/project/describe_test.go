@@ -187,6 +187,46 @@ func TestDescribeProjectCmd(t *testing.T) {
 			}),
 			outputTextJSON: `{"config": {"name": "test-project", "revision": "test-yaml-revision"}}`,
 		},
+		"valid project with charts in response": {
+			options: describeProjectOptions{
+				ProjectID:    "test-project",
+				BranchName:   "test-branch",
+				OutputFormat: "json",
+			},
+			testServer: describeTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/branches/test-branch/configuration/" && r.Method == http.MethodGet {
+					w.WriteHeader(http.StatusOK)
+					_, _ = w.Write([]byte(`{
+						"name": "test-project",
+						"charts": {
+							"/my-chart/Chart.yaml": {
+								"pathSegments": ["my-chart", "Chart.yaml"],
+								"content": "apiVersion: v2\nname: my-chart\nversion: 0.1.0\n"
+							},
+							"/my-chart/templates/deployment.yaml": {
+								"pathSegments": ["my-chart", "templates", "deployment.yaml"],
+								"content": "apiVersion: apps/v1\nkind: Deployment\n"
+							}
+						}
+					}`))
+					return true
+				}
+				return false
+			}),
+			outputTextJSON: `{
+				"config": {"name": "test-project"},
+				"charts": {
+					"/my-chart/Chart.yaml": {
+						"pathSegments": ["my-chart", "Chart.yaml"],
+						"content": "apiVersion: v2\nname: my-chart\nversion: 0.1.0\n"
+					},
+					"/my-chart/templates/deployment.yaml": {
+						"pathSegments": ["my-chart", "templates", "deployment.yaml"],
+						"content": "apiVersion: apps/v1\nkind: Deployment\n"
+					}
+				}
+			}`,
+		},
 		"version with slash": {
 			options: describeProjectOptions{
 				ProjectID:    "test-project",

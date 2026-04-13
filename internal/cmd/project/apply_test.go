@@ -233,6 +233,33 @@ func TestApplyProjectCmd(t *testing.T) {
 				return false
 			}),
 		},
+		"apply config with charts": {
+			options: applyProjectOptions{
+				ProjectID:    "test-project",
+				RevisionName: "test-revision",
+				FilePath:     "testdata/config-with-charts.json",
+			},
+			testServer: applyTestServer(t, func(w http.ResponseWriter, r *http.Request) bool {
+				if r.URL.Path == "/api/backend/projects/test-project/revisions/test-revision/configuration" && r.Method == http.MethodPost {
+					var requestBody map[string]any
+					err := json.NewDecoder(r.Body).Decode(&requestBody)
+					require.NoError(t, err)
+
+					assert.Contains(t, requestBody, "config")
+					assert.Contains(t, requestBody, "previousSave")
+					assert.Contains(t, requestBody, "title")
+					assert.Contains(t, requestBody, "charts")
+					assert.NotContains(t, requestBody["config"], "charts")
+
+					assert.Equal(t, "[miactl] Applied project configuration", requestBody["title"])
+
+					w.WriteHeader(http.StatusOK)
+					w.Write([]byte(`{}`))
+					return true
+				}
+				return false
+			}),
+		},
 		"with custom title": {
 			options: applyProjectOptions{
 				ProjectID:    "test-project",

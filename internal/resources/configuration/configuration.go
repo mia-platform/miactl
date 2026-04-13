@@ -26,6 +26,19 @@ type Configuration struct {
 	FastDataConfig             map[string]any `json:"fastDataConfig,omitempty" yaml:"fastDataConfig,omitempty"`
 	MicrofrontendPluginsConfig map[string]any `json:"microfrontendPluginsConfig,omitempty" yaml:"microfrontendPluginsConfig,omitempty"`
 	ExtensionsConfig           map[string]any `json:"extensionsConfig,omitempty" yaml:"extensionsConfig,omitempty"`
+	Charts                     map[string]any `json:"charts,omitempty" yaml:"charts,omitempty"`
+}
+
+// subConfigFields returns a mapping of JSON key -> pointer to the corresponding struct field.
+// These are configuration sections of the Mia Platform Console design configuration of a project.
+// In case is needed to add a new sub-config type, add a field to Configuration and register it here.
+func (c *Configuration) subConfigFields() map[string]*map[string]any {
+	return map[string]*map[string]any{
+		"fastDataConfig":             &c.FastDataConfig,
+		"microfrontendPluginsConfig": &c.MicrofrontendPluginsConfig,
+		"extensionsConfig":           &c.ExtensionsConfig,
+		"charts":                     &c.Charts,
+	}
 }
 
 // BuildDescribeConfiguration builds a DescribeConfiguration from a configuration
@@ -57,16 +70,10 @@ func describeConfigurationAdapter(config map[string]any) (*Configuration, error)
 		baseConfig[key] = value
 	}
 
-	if fastDataConfig, ok := getConfig("fastDataConfig", config); ok && fastDataConfig != nil {
-		applyConfig.FastDataConfig = fastDataConfig
-	}
-
-	if extensionsConfig, ok := getConfig("extensionsConfig", config); ok && extensionsConfig != nil {
-		applyConfig.ExtensionsConfig = extensionsConfig
-	}
-
-	if microfrontendPluginsConfig, ok := getConfig("microfrontendPluginsConfig", config); ok && microfrontendPluginsConfig != nil {
-		applyConfig.MicrofrontendPluginsConfig = microfrontendPluginsConfig
+	for key, fieldPtr := range applyConfig.subConfigFields() {
+		if cfg, ok := getConfig(key, config); ok && cfg != nil {
+			*fieldPtr = cfg
+		}
 	}
 
 	applyConfig.Config = baseConfig
@@ -83,19 +90,11 @@ func flatConfigurationAdapter(config map[string]any) (*Configuration, error) {
 		baseConfig[key] = value
 	}
 
-	if fastDataConfig, ok := getConfig("fastDataConfig", baseConfig); ok && fastDataConfig != nil {
-		applyConfig.FastDataConfig = fastDataConfig
-		delete(baseConfig, "fastDataConfig")
-	}
-
-	if extensionsConfig, ok := getConfig("extensionsConfig", baseConfig); ok && extensionsConfig != nil {
-		applyConfig.ExtensionsConfig = extensionsConfig
-		delete(baseConfig, "extensionsConfig")
-	}
-
-	if microfrontendPluginsConfig, ok := getConfig("microfrontendPluginsConfig", baseConfig); ok && microfrontendPluginsConfig != nil {
-		applyConfig.MicrofrontendPluginsConfig = microfrontendPluginsConfig
-		delete(baseConfig, "microfrontendPluginsConfig")
+	for key, fieldPtr := range applyConfig.subConfigFields() {
+		if cfg, ok := getConfig(key, baseConfig); ok && cfg != nil {
+			*fieldPtr = cfg
+			delete(baseConfig, key)
+		}
 	}
 
 	applyConfig.Config = baseConfig
