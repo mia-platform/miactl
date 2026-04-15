@@ -19,14 +19,29 @@
 build:
 
 # if not already installed in the system install a pinned version in tools folder
-GORELEASER_PATH:= $(shell command -v goreleaser 2> /dev/null)
+ifeq ($(OS),Windows_NT)
+GORELEASER_PATH:= $(shell where goreleaser 2>NUL)
+else
+GORELEASER_PATH:= $(shell command -v goreleaser 2>/dev/null)
+endif
 ifndef GORELEASER_PATH
 GORELEASER_PATH:= $(TOOLS_BIN)/goreleaser
 endif
 
+GO:= go
+ifeq ($(OS),Windows_NT)
+EXE:= .exe
+else
+EXE:=
+endif
+
 ifeq ($(IS_LIBRARY), 1)
 
+ifeq ($(OS),Windows_NT)
+BUILD_DATE:= $(shell powershell -Command "[DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')")
+else
 BUILD_DATE:= $(shell date -u "+%Y-%m-%d")
+endif
 GO_LDFLAGS+= -s -w
 
 ifdef VERSION_MODULE_NAME
@@ -46,15 +61,31 @@ go/build/%:
 
 else
 
+ifeq ($(OS),Windows_NT)
+BUILD_DATE:= $(shell powershell -NoProfile -Command "[DateTime]::UtcNow.ToString('yyyy-MM-ddTHH:mm:ssZ')")
+else
+BUILD_DATE:= $(shell date -u "+%Y-%m-%dT%H:%M:%SZ")
+endif
+
+GO_LDFLAGS+= -s -w
+ifdef VERSION_MODULE_NAME
+GO_LDFLAGS+= -X $(VERSION_MODULE_NAME).Version=$(VERSION)
+GO_LDFLAGS+= -X $(VERSION_MODULE_NAME).BuildDate=$(BUILD_DATE)
+endif
+GO_LDFLAGS+= -X github.com/mia-platform/miactl/internal/util.BuildAlpha=$(BUILD_ALPHA)
+
 .PHONY: go/build/%
 go/build/%:
-	$(eval OS:= $(word 1,$(subst /, ,$*)))
-	$(eval ARCH:= $(word 2,$(subst /, ,$*)))
-	$(eval ARM:= $(word 3,$(subst /, ,$*)))
-	$(info Building image for $(OS) $(ARCH) $(ARM))
-
-	GOOS=$(OS) GOARCH=$(ARCH) GOARM=$(ARM) $(GORELEASER_PATH) build \
-		--single-target --snapshot --clean --config=.goreleaser.yaml
+	$(eval COMMAND_GOOS:= $(word 1, $(subst /, ,$*)))
+	$(eval COMMAND_GOARCH:= $(word 2, $(subst /, ,$*)))
+	$(eval COMMAND_GOARM:= $(word 3, $(subst /, ,$*)))
+	$(info Building image for $(COMMAND_GOOS) $(COMMAND_GOARCH) $(COMMAND_GOARM))
+	$(eval export GOOS=$(COMMAND_GOOS))
+	$(eval export GOARCH=$(COMMAND_GOARCH))
+	$(eval export GOARM=$(COMMAND_GOARM))
+	$(eval export CGO_ENABLED=0)
+	$(eval COMMAND_EXE:= $(if $(filter windows,$(COMMAND_GOOS)),.exe,))
+	$(GO) build -trimpath -ldflags "$(GO_LDFLAGS)" -o $(OUTPUT_DIR)/$(COMMAND_GOOS)/$(COMMAND_GOARCH)/$(CMDNAME)$(COMMAND_EXE) $(BUILD_PATH)
 
 .PHONY: go/build/multiarch
 go/build/multiarch:
@@ -76,7 +107,7 @@ endif
 build: go/build/$(GOOS)/$(GOARCH)/$(GOARM)
 
 $(TOOLS_BIN)/goreleaser: $(TOOLS_DIR)/GORELEASER_VERSION
-	$(eval GORELEASER_VERSION:= $(shell cat $<))
-	mkdir -p $(TOOLS_BIN)
+	$(eval GORELEASER_VERSION:= $(shell $(call READ_FILE,$<)))
+	$(call MKDIR,$(TOOLS_BIN))
 	$(info Installing goreleaser $(GORELEASER_VERSION) bin in $(TOOLS_BIN))
-	GOBIN=$(TOOLS_BIN) go install github.com/goreleaser/goreleaser/v2@$(GORELEASER_VERSION)
+	$(call GOBIN_INSTALL,$(TOOLS_BIN),github.com/goreleaser/goreleaser/v2@$(GORELEASER_VERSION))

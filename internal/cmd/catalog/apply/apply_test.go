@@ -22,6 +22,8 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -59,10 +61,10 @@ func TestApplyBuildPathsFromDir(t *testing.T) {
 
 		found, err := buildFilePathsList([]string{dirPath})
 		require.NoError(t, err)
-		require.Contains(t, found, "testdata/subdir/validItem1.json")
-		require.Contains(t, found, "testdata/subdir/validYaml.yaml")
-		require.Contains(t, found, "testdata/subdir/validYaml.yml")
-		require.Contains(t, found, "testdata/subdir/validItemWithImage.json")
+		require.Contains(t, found, filepath.Join("testdata", "subdir", "validItem1.json"))
+		require.Contains(t, found, filepath.Join("testdata", "subdir", "validYaml.yaml"))
+		require.Contains(t, found, filepath.Join("testdata", "subdir", "validYaml.yml"))
+		require.Contains(t, found, filepath.Join("testdata", "subdir", "validItemWithImage.json"))
 		require.Len(t, found, 4)
 	})
 
@@ -828,11 +830,19 @@ func TestApplyIntegration(t *testing.T) {
 func TestApplyConcatPathIfRelative(t *testing.T) {
 	t.Run("should concat relative paths", func(t *testing.T) {
 		found := concatPathDirToFilePathIfRelative("/some/path/to/file.json", "./image.png")
-		require.Equal(t, "/some/path/to/image.png", found)
+		require.Equal(t, filepath.FromSlash("/some/path/to/image.png"), found)
 	})
 	t.Run("should return an abs path", func(t *testing.T) {
-		found := concatPathDirToFilePathIfRelative("/some/path/to/file.json", "/some/absolute/path/image.png")
-		require.Equal(t, "/some/absolute/path/image.png", found)
+		basePath := "/some/path/to/file.json"
+		absImagePath := "/some/absolute/path/image.png"
+		expected := filepath.FromSlash("/some/absolute/path/image.png")
+		if runtime.GOOS == "windows" {
+			basePath = `C:\some\path\to\file.json`
+			absImagePath = `C:\some\absolute\path\image.png`
+			expected = `C:\some\absolute\path\image.png`
+		}
+		found := concatPathDirToFilePathIfRelative(basePath, absImagePath)
+		require.Equal(t, expected, found)
 	})
 }
 

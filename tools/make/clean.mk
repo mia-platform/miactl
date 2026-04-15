@@ -22,19 +22,27 @@ clean:
 clean: clean/coverage
 clean/coverage:
 	$(info Clean coverage file...)
-	rm -fr coverage.txt
+ifeq ($(OS),Windows_NT)
+	if exist coverage.txt del /f /q coverage.txt
+else
+	rm -f coverage.txt
+endif
 
 .PHONY: clean/bin
 clean: clean/bin
 clean/bin:
 	$(info Clean artifacts files...)
-	rm -fr $(OUTPUT_DIR)
+	$(call RM,$(OUTPUT_DIR))
 
 .PHONY: clean/tools
 clean/tools:
 	$(info Clean tools folder...)
+ifeq ($(OS),Windows_NT)
+	if exist "$(subst /,\,$(TOOLS_BIN))\k8s" icacls "$(subst /,\,$(TOOLS_BIN))\k8s\*" /grant Everyone:F 2>NUL
+else
 	[ -d $(TOOLS_BIN)/k8s ] && chmod +w $(TOOLS_BIN)/k8s/* || true
-	rm -fr $(TOOLS_BIN)
+endif
+	$(call RM,$(TOOLS_BIN))
 
 .PHONY: clean/go
 clean/go:

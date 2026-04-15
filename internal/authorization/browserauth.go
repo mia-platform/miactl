@@ -137,10 +137,12 @@ func (c *Config) startLoginFlow(ctx context.Context) (*oauth2.Token, error) {
 		return nil, err
 	}
 
+	redirectURI := "http://" + listener.Addr().String() + callbackEndpointString
 	startFlowURL := c.Client.Get().
 		APIPath(authorizeEndpointString).
 		SetParam(appIDKey, c.AppID).
-		SetParam(providerIDKey, providerID).URL().String()
+		SetParam(providerIDKey, providerID).
+		SetParam("redirect_uri", redirectURI).URL().String()
 
 	authResponse, err := startLocalServerForToken(ctx, startFlowURL, listener, c.ServerReadyHandler)
 	if err != nil {

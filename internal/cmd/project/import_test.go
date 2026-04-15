@@ -279,7 +279,7 @@ func TestImportResources(t *testing.T) {
 			testServer: importTestServer(t, func(_ http.ResponseWriter, _ *http.Request) bool {
 				return false
 			}),
-			expectedError: "no such file or directory",
+			expectedError: "missing-folder",
 		},
 		"failure to convert resources": {
 			inputPath: filepath.Join(testdata, "multiple-files"),
