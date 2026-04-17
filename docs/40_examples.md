@@ -128,7 +128,7 @@ Finally, you can group the commands above and run them inside a pipeline, e.g. a
 # Insert that after your pipeline stages
 delivery:
     stage: deploy
-    image: ghcr.io/mia-platform/miactl:v0.22.0
+    image: ghcr.io/mia-platform/miactl:v0.23.0
 
     script:
       - miactl version
@@ -136,4 +136,40 @@ delivery:
       - miactl context set my-private-console --endpoint https://console.private --company-id id-of-my-company --project-id id-of-my-project --auth-name deployer-sa
       - miactl use my-private-console
       - miactl deploy DEV --no-semver --deploy-type smart_deploy --revision main
+```
+
+## Get Latest Successful Deployment
+
+To retrieve information about the latest successful deployment for an environment:
+
+```sh
+miactl deploy latest development
+```
+
+Or with specific project and company IDs:
+
+```sh
+miactl deploy latest development --project-id <your-project-id> --company-id <your-company-id>
+```
+
+## Project Versioning
+
+List all available versions for a project using Enhanced Workflow:
+
+```sh
+miactl project version list --project-id <your-project-id>
+```
+
+Create a new version from a specific revision:
+
+```sh
+miactl project version create --project-id <your-project-id> --from-revision <your-revision>
+```
+
+## Import Project Configuration
+
+Import Kubernetes resource definitions into an empty project:
+
+```sh
+miactl project import --project-id <your-project-id> --filename path/to/resources
 ```

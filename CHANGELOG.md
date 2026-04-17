@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v0.23.0] - 2026-04-15
+
 ### Added
 
 - support to login to Mia-Platform instances in Windows OS

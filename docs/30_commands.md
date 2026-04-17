@@ -5,10 +5,22 @@ This section explores a summary of the `miactl` commands and their functionaliti
 :::tip
 
 You can also display a complete help message on the command line by using the `--help` flag postponed to any `miactl`
-command or subcommand.  
+command or subcommand.
 This way you can also be sure of the available features of the `miactl` version you currently have installed.
 
 :::
+
+## Global Flags
+
+The following flags are available across most `miactl` commands and subcommands. These are optional unless explicitly marked as required for a specific command. Rather than repeating them in each command's documentation, they are listed here for reference:
+
+- `--context`: the name of the `miactl` context to use for the command. This would allow to use a different context from the currently selected one without the need to change it with `context use` command.
+- `--auth-name string`: the name of the miactl auth to use for authentication (see [context auth](#auth) for setup). If not specified, `miactl` will attempt user authentication through the default browser.
+- `--endpoint string`: the address and port of the Mia-Platform Console server (e.g., `https://console.cloud.mia-platform.eu`). Overrides the endpoint set in your context.
+- `--certificate-authority string`: path to a certificate file for the certificate authority for the selected endpoint. Used for self-signed certificates.
+- `--insecure-skip-tls-verify`: if true, the server's certificate will not be checked for validity. This makes HTTPS connections insecure and should only be used in development/testing.
+
+**Note:** When viewing command documentation below, these global flags are often listed in the "Available flags for the command:" sections. You can refer to this section for detailed descriptions.
 
 ## context
 
@@ -102,12 +114,7 @@ Usage:
 miactl company list [flags]
 ```
 
-Available flags for the command:
-
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
+Available flags for the command are defined in the [Global Flags](#global-flags) section.
 
 ### iam
 
@@ -131,10 +138,6 @@ Available flags for the command:
 - `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
 - `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
 - `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 
 ##### users
@@ -150,10 +153,6 @@ miactl company iam list users [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 
 ##### groups
@@ -168,10 +167,6 @@ miactl company iam list groups [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 
 ##### serviceaccounts
@@ -187,10 +182,6 @@ miactl company iam list serviceaccounts [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 
 #### add serviceaccount basic
@@ -205,10 +196,6 @@ miactl company iam add serviceaccount basic NAME [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--role`, the Company role for the service account
 
@@ -225,10 +212,6 @@ miactl company iam add serviceaccount jwt NAME [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--output`, optional flag to save the service account configuration as json in a file at the provided path
 - `--role`, the Company role for the service account
@@ -245,10 +228,6 @@ miactl company iam add user [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--email`, the email of the user to add
 - `--role`, the Company role of the user
@@ -265,10 +244,6 @@ miactl company iam add group NAME [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--role`, the Company role of the user
 
@@ -286,10 +261,6 @@ Available flags for the command:
 
 - `--group-id`, the group id where to add the users
 - `--user-email`, the list of user email to add to the group
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 
 #### edit user
@@ -304,10 +275,6 @@ miactl company iam edit user [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--user-id`, the id of the user to edit
 - `--role`, the new Company role of the user
@@ -325,10 +292,6 @@ miactl company iam edit serviceaccount [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--service-account-id`, the id of the service account to edit
 - `--role`, the new Company role of the service account
@@ -345,10 +308,6 @@ miactl company iam edit group [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--group-id`, the id of the group to edit
 - `--role`, the new Company role of the group
@@ -366,10 +325,6 @@ miactl company iam remove user [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--user-id`, the id of the user to remove
 - `--no-include-groups`, set this flag for keeping the user memberhip, and only remove the role attached to the user
@@ -386,10 +341,6 @@ miactl company iam remove group [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--group-id`, the id of the group to remove
 
@@ -405,10 +356,6 @@ miactl company iam remove serviceaccount [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--service-account-id`, the id of the service account to remove
 
@@ -426,10 +373,6 @@ Available flags for the command:
 
 - `--group-id`, the group id where to remove the users
 - `--user-id`, the list of user ids to remove from the group
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 
 ### rules
@@ -508,10 +451,6 @@ miactl project list [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 
 ### describe
@@ -579,10 +518,6 @@ Available flags for the command:
 - `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
 - `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
 - `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 
@@ -606,10 +541,6 @@ Available flags for the command:
 - `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
 - `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
 - `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 - `--project-role`, the new role for the current project
@@ -633,10 +564,6 @@ Available flags for the command:
 - `--groups`, filter IAM entities to show only groups. Mutally exclusive with `users` and `serviceAccounts`
 - `--serviceAccounts`, filter IAM entities to show only service accounts. Mutally exclusive with `users` and `groups`
 - `--users`, filter IAM entities to show only users. Mutally exclusive with `groups` and `serviceAccounts`
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 - `--entity-id`, the entity id to change
@@ -660,11 +587,43 @@ Available flags for the command:
 - `--filename`, file or folder path containing the resource definitions to import
 - `--project-id`, to set the ID of the desired Project
 - `--revision`, to specify the revision of the commit to deploy
-- `--auth-name`, the name of the miactl auth to use
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
+- `--company-id`, to set the ID of the desired Company
+
+### version
+
+#### list
+
+The `project version list` subcommand allows you to view all available versions for a specific Application Project.
+
+This command is available for Application Projects using Enhanced Workflow.
+
+Usage:
+
+```sh
+miactl project version list [flags]
+```
+
+Available flags for the command:
+
+- `--project-id`: required. The ID of the Application Project
+- `--company-id`, to set the ID of the desired Company
+
+#### create
+
+The `project version create` subcommand allows you to create a new version for an Application Project.
+
+This command is available for Application Projects using Enhanced Workflow.
+
+Usage:
+
+```sh
+miactl project version create [flags]
+```
+
+Available flags for the command:
+
+- `--project-id`: required. The ID of the Application Project
+- `--from-revision`: the revision to create the version from
 - `--company-id`, to set the ID of the desired Company
 
 ## deploy
@@ -675,6 +634,7 @@ Available subcommands are the following ones:
 
 ```sh
   trigger       Trigger a deploy pipeline
+  latest        Get the latest successful deployment
   add status    Add a new deploy status
 ```
 
@@ -690,10 +650,6 @@ miactl deploy trigger ENVIRONMENT [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 - `--deploy-type`, to select a deploy type (default is `smart_deploy`)
@@ -715,13 +671,24 @@ where `STATUS` must be one of: `success`, `failed`, `canceled`, `skipped`.
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 - `--trigger-id`, to specify the trigger id to update
+
+### latest
+
+This command allows you to retrieve information about the latest successful deployment for a specified environment in a Project.
+
+Usage:
+
+```sh
+miactl deploy latest ENVIRONMENT [flags]
+```
+
+Available flags for the command:
+
+- `--company-id`, to set the ID of the desired Company
+- `--project-id`, to set the ID of the desired Project
 
 ## extensions
 
@@ -928,10 +895,6 @@ miactl runtime environment list [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 
@@ -946,12 +909,7 @@ Usage:
 miactl runtime api-resources [flags]
 ```
 
-Available flags for the command:
-
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
+Available flags for the command are defined in the [Global Flags](#global-flags) section.
 
 ### list RESOURCE-TYPE
 
@@ -968,10 +926,6 @@ miactl runtime list RESOURCE-TYPE [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 - `--environment`, to set the environment scope for the command
@@ -989,10 +943,6 @@ miactl runtime events RESOURCE-NAME [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 - `--environment`, to set the environment scope for the command
@@ -1010,10 +960,6 @@ miactl runtime create job [flags]
 Available flags for the command:
 
 - `--from`, to set the cronjob name from which the job will be created
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 - `--environment`, to set the scope for the command
@@ -1036,164 +982,15 @@ miactl runtime logs POD-QUERY [flags]
 
 Available flags for the command:
 
-- `--endpoint`, to set the Console endpoint
-- `--certificate-authority`, to provide the path to a custom CA certificate
-- `--insecure-skip-tls-verify`, to disallow the check the validity of the certificate of the remote endpoint
-- `--context`, to specify a different context from the currently selected one
 - `--company-id`, to set the ID of the desired Company
 - `--project-id`, to set the ID of the desired Project
 - `--environment`, to set the environment scope for the command
 - `--follow`, to keep open the stream and see the logs live as they will be produced
 
-## marketplace
-
-:::warning
-This command and its subcommands are deprecated from Mia-Platform Console v14.0.0. Please use [catalog](#catalog) command instead.
-:::
-
-View and manage Marketplace items
-
-All the subcommands inherit the following flags:
-
-```sh
-      --auth-name string               the name of the miactl auth to use
-      --certificate-authority string   path to a cert file for the certificate authority for the selected endpoint
-      --company-id string              the ID of the Company
-  -c, --config string                  path to the config file default to $HOME/miactl/config
-      --context string                 the name of the miactl context to use
-      --endpoint string                the address and port of the Mia-Platform Console server
-      --insecure-skip-tls-verify       if true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
-  -v  --verbose                        increase the verbosity of the cli output
-```
-
-### list
-
-List Marketplace items
-
-#### Synopsis
-
-List the Marketplace items that the current user can access.
-
-#### Usage
-
-```sh
-miactl marketplace list --company-id company-id [FLAGS]...
-```
-
-#### Flags
-
-- `--public` - if this flag is set, the command fetches not only the items from the requested company, but also the public Marketplace items from other companies.
-
-### get
-
-Get a Marketplace item
-
-#### Synopsis
-
-Get a single Marketplace item
-
-You need to specify either:
-
-- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
-- the ObjectID of the item with the flag object-id
-
-Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
-Otherwise, it is preferable to pass the tuple companyId-itemId-version.
-
-```bash
-miactl marketplace get { --item-id item-id --version version } | --object-id objectID [FLAGS]...
-```
-
-### delete
-
-Delete a Marketplace item
-
-#### Synopsis
-
-Delete a single Marketplace item
-
-You need to specify either:
-
-- the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
-- the ObjectID of the item with the flag object-id
-
-Passing the ObjectID is expected only when dealing with deprecated Marketplace items missing the itemId and/or version fields.
-Otherwise, it is preferable to pass the tuple companyId-itemId-version.
-
-```bash
-miactl marketplace delete { --item-id item-id --version version } | --object-id object-id [flags]...
-```
-
-### apply
-
-Create or update Marketplace items
-
-#### Synopsis
-
-Create or update one or more Marketplace items.
-
-The flag -f accepts either files or directories. In case of directories, it explores them recursively.
-
-Supported formats are JSON (.json files) and YAML (.yaml or .yml files).
-
-The file can contain an image object with the following format:
-
-```json
-"image": {
-	"localPath": "./someImage.png"
-}
-```
-
-The localPath can be absolute or relative to the file location.
-The image will be uploaded along with the Marketplace item.
-Before being applied, the "image" key will be replaced with the "imageUrl" referring to the uploaded image.
-You can retrieve the updated item with the "get" command.
-
-You can also specify the "supportedByImage" in a similar way.
-
-Be aware that the presence of both "image" and "imageUrl" and/or of both "supportedByImage" and "supportedByImageUrl" is ambiguous and raises an error.
-
-```bash
-miactl marketplace apply { -f file-path }... } [flags]
-```
-
-#### Examples
-
-```bash
-
-# Apply the configuration of the file myFantasticGoTemplate.json located in the current directory to the Marketplace
-miactl marketplace apply -f myFantasticGoTemplate.json
-
-# Apply the configurations in myFantasticGoTemplate.json and myFantasticNodeTemplate.yml to the Marketplace, with relative paths
-miactl marketplace apply -f ./path/to/myFantasticGoTemplate.json -f ./path/to/myFantasticNodeTemplate.yml
-
-# Apply all the valid configuration files in the directory myFantasticGoTemplates to the Marketplace
-miactl marketplace apply -f myFantasticGoTemplates
-```
-
-#### Options
-
-```bash
-  -f, --file stringArray   paths to JSON/YAML files or folder of files containing a Marketplace item definition
-  -h, --help               help for apply
-```
-
-### list-versions
-
-List all the available versions of a specific Marketplace item.
-
-#### Synopsis
-
-The flag `--item-id` or `-i` accepts the `itemId` of the Item.
-
-```bash
-miactl marketplace list-versions -i some-item
-```
-
 ## catalog
 
 :::info
-This command and its subcommands use APIs that are available from Mia-Platform Console v14.0.0. If you are using a previous Console version, use [marketplace](#marketplace) command instead.
+This command and its subcommands use APIs that are available from Mia-Platform Console v14.0.0. For Mia-Platform Console versions prior to v14.0.0, use the `marketplace` command instead (same functionality with different command name).
 :::
 
 View and manage Catalog items
@@ -1201,13 +998,8 @@ View and manage Catalog items
 All the subcommands inherit the following flags:
 
 ```sh
-      --auth-name string               the name of the miactl auth to use
-      --certificate-authority string   path to a cert file for the certificate authority for the selected endpoint
       --company-id string              the ID of the Company
   -c, --config string                  path to the config file default to $HOME/miactl/config
-      --context string                 the name of the miactl context to use
-      --endpoint string                the address and port of the Mia-Platform Console server
-      --insecure-skip-tls-verify       if true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
   -v  --verbose                        increase the verbosity of the cli output
 ```
 
@@ -1335,13 +1127,8 @@ View and manage Item Type Definitions
 All the subcommands inherit the following flags:
 
 ```sh
-      --auth-name string               the name of the miactl auth to use
-      --certificate-authority string   path to a cert file for the certificate authority for the selected endpoint
       --company-id string              the ID of the Company
   -c, --config string                  path to the config file default to $HOME/miactl/config
-      --context string                 the name of the miactl context to use
-      --endpoint string                the address and port of the Mia-Platform Console server
-      --insecure-skip-tls-verify       if true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
   -v  --verbose                        increase the verbosity of the cli output
 ```
 
