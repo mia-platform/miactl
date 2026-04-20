@@ -101,7 +101,7 @@ Once WSL is installed, to open a Linux bash terminal, press Start+R, enter `bash
 You can now install miactl with any of the methods explained above for Linux,
 we suggest the [binary installation](#binary-download) since it's the most straightforward.
 
-> *Note*: If you prefer not to use browser-based login, you can alternatively [setup a service account](https://docs.mia-platform.eu/docs/products/console/identity-and-access-management/manage-service-accounts#service-account-authentication) and use the [`miactl context auth` command](./30_commands.md#auth) to setup authentication.
+> *Note*: If you prefer not to use browser-based login, you can alternatively [setup a service account](https://docs.mia-platform.eu/docs/products/console/identity-and-access-management/manage-service-accounts#adding-a-service-account) and use the [`miactl context auth` command](./30_commands.md#auth) to setup authentication.
 
 ## Shell Autocompletion
 
