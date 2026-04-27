@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `miactl project describe` now exports the full Helm chart configuration of projects using the Enhanced Workflow, including the `charts` key with all chart files and their content
+- `miactl project apply` now supports applying configurations that include the `charts` key, allowing chart files to be updated programmatically on a target revision
+
 ## [v0.23.0] - 2026-04-15
 
 ### Added
