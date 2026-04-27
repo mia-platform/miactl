@@ -24,7 +24,19 @@ endif
 
 # It's necessary to set this because some environments don't link sh -> bash.
 # Using env is more portable than setting the path directly
+ifeq ($(OS),Windows_NT)
+SHELL:= cmd.exe
+MKDIR = if not exist "$(subst /,\,$1)" mkdir "$(subst /,\,$1)"
+RM = if exist "$(subst /,\,$1)" rmdir /s /q "$(subst /,\,$1)"
+READ_FILE = powershell -NoProfile -Command "Get-Content $1 -Raw"
+GOBIN_INSTALL = set "GOBIN=$1" && go install $2
+else
 SHELL:= /usr/bin/env bash
+MKDIR = mkdir -p $1
+RM = rm -fr $1
+READ_FILE = cat $1
+GOBIN_INSTALL = GOBIN=$1 go install $2
+endif
 
 .EXPORT_ALL_VARIABLES:
 
@@ -32,7 +44,11 @@ SHELL:= /usr/bin/env bash
 
 ## Set all variables
 ifeq ($(origin PROJECT_DIR),undefined)
+ifeq ($(OS),Windows_NT)
+PROJECT_DIR:= $(abspath $(CURDIR))
+else
 PROJECT_DIR:= $(abspath $(shell pwd -P))
+endif
 endif
 
 ifeq ($(origin OUTPUT_DIR),undefined)
@@ -60,8 +76,13 @@ GOARCH:= $(shell go env GOARCH)
 GOARM:= $(shell go env GOARM)
 
 ## Build Variables
+ifeq ($(OS),Windows_NT)
+GIT_REV:= $(shell git rev-parse --short HEAD 2>NUL)
+VERSION:= $(shell git describe --tags --exact-match 2>NUL || git rev-parse --short=12 HEAD 2>NUL)
+else
 GIT_REV:= $(shell git rev-parse --short HEAD 2>/dev/null)
 VERSION:= $(shell git describe --tags --exact-match 2>/dev/null || (echo $(GIT_REV) | cut -c1-12))
+endif
 # insert here the go module where to add the version metadata
 VERSION_MODULE_NAME:= github.com/mia-platform/miactl/internal/cmd
 
@@ -109,13 +130,17 @@ ci: test-coverage
 
 generate-deps: $(TOOLS_BIN)/deepcopy-gen
 $(TOOLS_BIN)/deepcopy-gen: $(TOOLS_DIR)/DEEPCOPY_GEN_VERSION
-	$(eval DEEPCOPY_GEN_VERSION:= $(shell cat $<))
-	mkdir -p $(TOOLS_BIN)
+	$(eval DEEPCOPY_GEN_VERSION:= $(shell $(call READ_FILE,$<)))
+	$(call MKDIR,$(TOOLS_BIN))
 	$(info Installing deepcopy-gen $(DEEPCOPY_GEN_VERSION) bin in $(TOOLS_BIN))
-	GOBIN=$(TOOLS_BIN) go install k8s.io/code-generator/cmd/deepcopy-gen@$(DEEPCOPY_GEN_VERSION)
+	$(call GOBIN_INSTALL,$(TOOLS_BIN),k8s.io/code-generator/cmd/deepcopy-gen@$(DEEPCOPY_GEN_VERSION))
 
 BUILD_ALPHA?=false
 
 .PHONY: build-alpha
 build-alpha:
+ifeq ($(OS),Windows_NT)
+	set "BUILD_ALPHA=true" && $(MAKE) build
+else
 	BUILD_ALPHA=true $(MAKE) build
+endif

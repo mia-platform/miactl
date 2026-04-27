@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- support to login to Mia-Platform instances in Windows OS
+
+### Changed
+
+- update actions/dependency-review-action to v4.8.3
+- update actions/setup-go to v6.3.0
+- update github/codeql-actions to 4.32.4
+
+### Fixed
+
+- `miactl deploy latest` now accept flags correctly
+- path prefix in endpoints now are correctly handled when building the request url
+
 ## [v0.22.0] - 2026-02-03
 
 ### Changed
