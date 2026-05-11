@@ -145,6 +145,13 @@ func TestSetAPIPath(t *testing.T) {
 	// once an error is register no other changes can be made
 	r.APIPath(validPath)
 	assert.Error(t, r.Error())
+
+	// percent-encoded path segments must not be double-encoded
+	r2 := (&Request{})
+	encodedPath := "/api/backend/projects/myProjectID/revisions/feat%2Fexternal-idp/configuration"
+	r2.APIPath(encodedPath)
+	assert.NoError(t, r2.Error())
+	assert.Equal(t, encodedPath, r2.apiPath)
 }
 
 func TestPreflightCheck(t *testing.T) {

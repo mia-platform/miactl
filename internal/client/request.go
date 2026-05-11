@@ -106,7 +106,13 @@ func (r *Request) APIPath(apiPath string) *Request {
 		return r
 	}
 
-	r.apiPath = parsedURI.EscapedPath()
+	// Use RawPath to preserve percent-encoded segments (e.g. %2F in branch names).
+	// EscapedPath() would double-encode them (e.g. %2F -> %252F).
+	if parsedURI.RawPath != "" {
+		r.apiPath = parsedURI.RawPath
+	} else {
+		r.apiPath = parsedURI.Path
+	}
 
 	// comment out this, because not every request support the trailing /
 	// hopefully in the future they will
