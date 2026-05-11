@@ -106,13 +106,7 @@ func (r *Request) APIPath(apiPath string) *Request {
 		return r
 	}
 
-	// Use RawPath to preserve percent-encoded segments (e.g. %2F in branch names).
-	// EscapedPath() would double-encode them (e.g. %2F -> %252F).
-	if parsedURI.RawPath != "" {
-		r.apiPath = parsedURI.RawPath
-	} else {
-		r.apiPath = parsedURI.Path
-	}
+	r.apiPath = parsedURI.EscapedPath()
 
 	// comment out this, because not every request support the trailing /
 	// hopefully in the future they will
@@ -139,12 +133,19 @@ func (r *Request) Error() error {
 
 // URL return the url that will be used by the http.Request in this moment
 func (r *Request) URL() *url.URL {
-	url := *r.restClient.baseURL
+	finalURL := *r.restClient.baseURL
 
-	url.Path = strings.TrimSuffix(url.Path, "/") + r.apiPath
-	url.RawQuery = r.params.Encode()
+	finalURL.Path = strings.TrimSuffix(finalURL.Path, "/") + r.apiPath
+	// r.apiPath may contain percent-encoded segments (e.g. %2F for branch names
+	// with slashes). Since url.Path is the decoded field, we must set RawPath
+	// to preserve the original encoding and avoid double percent-encoding.
+	if decodedPath, err := url.PathUnescape(finalURL.Path); err == nil && decodedPath != finalURL.Path {
+		finalURL.RawPath = finalURL.Path
+		finalURL.Path = decodedPath
+	}
+	finalURL.RawQuery = r.params.Encode()
 
-	return &url
+	return &finalURL
 }
 
 // preflightCheck perform checks for human error in setting the request

@@ -119,6 +119,11 @@ func TestRequestURL(t *testing.T) {
 			apiPath:     "/api/backend/projects/",
 			expectedURL: "http://host/mia/api/backend/projects/",
 		},
+		"percent-encoded path segments preserved": {
+			baseURL:     "http://host/",
+			apiPath:     "/api/backend/projects/myProjectID/revisions/feat%2Fexternal-idp/configuration",
+			expectedURL: "http://host/api/backend/projects/myProjectID/revisions/feat%2Fexternal-idp/configuration",
+		},
 	}
 
 	for testName, testCase := range testCases {
