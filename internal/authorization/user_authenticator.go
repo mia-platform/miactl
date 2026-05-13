@@ -76,7 +76,8 @@ func (ua *userAuthenticator) logUser() (*oauth2.Token, error) {
 	// OIDC discovery via RFC 9728 resource metadata
 	if jwt, err := ua.logUserWithDiscovery(ctx); err == nil {
 		ua.userAuth.WriteJWTToken(jwt)
-		fmt.Fprintln(os.Stderr, "Login successful.\n") //nolint:govet
+		fmt.Fprintln(os.Stderr, "Login successful.")
+		fmt.Fprintln(os.Stderr, "")
 		return jwt, nil
 	}
 
@@ -91,7 +92,8 @@ func (ua *userAuthenticator) logUser() (*oauth2.Token, error) {
 	jwt, err := browserLoginConfig.GetToken(ctx)
 	if jwt != nil {
 		ua.userAuth.WriteJWTToken(jwt)
-		fmt.Fprintln(os.Stderr, "Login successful.\n") //nolint:govet
+		fmt.Fprintln(os.Stderr, "Login successful.")
+		fmt.Fprintln(os.Stderr, "")
 	}
 
 	return jwt, err
