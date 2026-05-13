@@ -80,7 +80,7 @@ func TestDiscoverOAuthConfig(t *testing.T) {
 				})
 			case "/.well-known/openid-configuration":
 				// Minimal OIDC discovery document; issuer must match exactly.
-				json.NewEncoder(w).Encode(map[string]interface{}{ //nolint:errcheck
+				json.NewEncoder(w).Encode(map[string]any{
 					"issuer":                 serverURL,
 					"authorization_endpoint": serverURL + "/authorize",
 					"token_endpoint":         serverURL + "/token",
@@ -105,7 +105,7 @@ func TestDiscoverOAuthConfig(t *testing.T) {
 		server := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			// Return a non-reachable authorization server URL.
-			json.NewEncoder(w).Encode(protectedResourceMetadata{ //nolint:errcheck
+			json.NewEncoder(w).Encode(protectedResourceMetadata{
 				AuthorizationServers: []string{"http://127.0.0.1:0"},
 			})
 		})
