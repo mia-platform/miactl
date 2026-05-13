@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- support automatic OIDC endpoint discovery via OAuth2 Protected Resource Metadata ([RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728)) when available, with fallback to the Mia-Platform browser login flow
+
 ## [v0.24.0] - 2026-04-28
 
 ### Added

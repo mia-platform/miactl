@@ -17,7 +17,9 @@ package authorization
 
 import (
 	"context"
+	"fmt"
 	"net/http"
+	"os"
 	"sync"
 
 	"golang.org/x/oauth2"
@@ -69,6 +71,16 @@ func (ua *userAuthenticator) refreshAuthWithToken(refreshToken string) (*oauth2.
 }
 
 func (ua *userAuthenticator) logUser() (*oauth2.Token, error) {
+	ctx := context.Background()
+
+	// OIDC discovery via RFC 9728 resource metadata
+	if jwt, err := ua.logUserWithDiscovery(ctx); err == nil {
+		ua.userAuth.WriteJWTToken(jwt)
+		fmt.Fprintln(os.Stderr, "Login successful.\n") //nolint:govet
+		return jwt, nil
+	}
+
+	// In case of failure, fallback to the legacy browser login flow
 	browserLoginConfig := &Config{
 		AppID:                  appID,
 		LocalServerBindAddress: []string{"127.0.0.1:53535", "127.0.0.1:13535"},
@@ -76,12 +88,22 @@ func (ua *userAuthenticator) logUser() (*oauth2.Token, error) {
 		ServerReadyHandler:     ua.serverReadyHandler,
 	}
 
-	jwt, err := browserLoginConfig.GetToken(context.Background())
+	jwt, err := browserLoginConfig.GetToken(ctx)
 	if jwt != nil {
 		ua.userAuth.WriteJWTToken(jwt)
+		fmt.Fprintln(os.Stderr, "Login successful.\n") //nolint:govet
 	}
 
 	return jwt, err
+}
+
+func (ua *userAuthenticator) logUserWithDiscovery(ctx context.Context) (*oauth2.Token, error) {
+	oauthCfg, err := discoverOAuthConfig(ctx, ua.client)
+	if err != nil {
+		return nil, err
+	}
+
+	return getTokenWithOIDC(ctx, oauthCfg, ua.client, ua.serverReadyHandler)
 }
 
 func (ua *userAuthenticator) refreshToken(token string) (*oauth2.Token, error) {

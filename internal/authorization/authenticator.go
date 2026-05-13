@@ -18,6 +18,7 @@ package authorization
 import (
 	"fmt"
 	"net/http"
+	"os"
 
 	"github.com/mia-platform/miactl/internal/client"
 )
@@ -77,6 +78,7 @@ func (a *authenticator) Wrap(rt http.RoundTripper) http.RoundTripper {
 			next:     rt,
 			userAuth: a.cacheReadWriter,
 			serverReadyHandler: func(url string) error {
+				fmt.Fprintf(os.Stderr, "Opening your browser for login. If it does not open automatically, please visit:\n%s\n", url)
 				if err := open(url); err != nil {
 					return fmt.Errorf("could not open the browser: %w", err)
 				}
