@@ -43,7 +43,7 @@ func TestDiscoverOAuthConfig(t *testing.T) {
 	t.Run("resource metadata returns invalid JSON", func(t *testing.T) {
 		server := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte("not-json")) //nolint:errcheck
+			w.Write([]byte("not-json"))
 		})
 		defer server.Close()
 
@@ -56,7 +56,7 @@ func TestDiscoverOAuthConfig(t *testing.T) {
 	t.Run("resource metadata has no authorization_servers", func(t *testing.T) {
 		server := testServer(t, func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(protectedResourceMetadata{}) //nolint:errcheck
+			json.NewEncoder(w).Encode(protectedResourceMetadata{})
 		})
 		defer server.Close()
 
@@ -75,7 +75,7 @@ func TestDiscoverOAuthConfig(t *testing.T) {
 			w.Header().Set("Content-Type", "application/json")
 			switch r.URL.Path {
 			case protectedResourceMetadataPath:
-				json.NewEncoder(w).Encode(protectedResourceMetadata{ //nolint:errcheck
+				json.NewEncoder(w).Encode(protectedResourceMetadata{
 					AuthorizationServers: []string{serverURL},
 				})
 			case "/.well-known/openid-configuration":

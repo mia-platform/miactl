@@ -17,6 +17,7 @@ package authorization
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/coreos/go-oidc/v3/oidc"
@@ -32,7 +33,7 @@ const (
 
 // protectedResourceMetadata holds the relevant fields from RFC 9728.
 type protectedResourceMetadata struct {
-	AuthorizationServers []string `json:"authorization_servers"`
+	AuthorizationServers []string `json:"authorization_servers"` //nolint:tagliatelle
 }
 
 // discoverOAuthConfig fetches /.well-known/oauth-protected-resource from the API
@@ -55,7 +56,7 @@ func discoverOAuthConfig(ctx context.Context, apiClient client.Interface) (*oaut
 	}
 
 	if len(metadata.AuthorizationServers) == 0 {
-		return nil, fmt.Errorf("no authorization_servers listed in resource metadata")
+		return nil, errors.New("no authorization_servers listed in resource metadata")
 	}
 
 	oidcCtx := oidc.ClientContext(ctx, apiClient.HTTPClient())
@@ -94,9 +95,9 @@ func getTokenWithOIDC(ctx context.Context, oauthCfg *oauth2.Config, apiClient cl
 	}
 
 	if authResp.State != state {
-		return nil, fmt.Errorf("state mismatch in OAuth2 callback")
+		return nil, errors.New("state mismatch in OAuth2 callback")
 	}
 
-	exchangeCtx := context.WithValue(ctx, oauth2.HTTPClient, apiClient.HTTPClient()) //nolint:staticcheck
+	exchangeCtx := context.WithValue(ctx, oauth2.HTTPClient, apiClient.HTTPClient())
 	return cfg.Exchange(exchangeCtx, authResp.Code, oauth2.VerifierOption(verifier))
 }
