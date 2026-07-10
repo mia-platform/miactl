@@ -139,13 +139,13 @@ jobs:
       run: |
         find ./bin/{darwin,linux} -type f -exec chmod +x {} \;
     - name: Docker Login to GitHub Repository
-      uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+      uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
       with:
         registry: ghcr.io
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
     - name: Docker Login to DockerHub
-      uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3.7.0
+      uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
       with:
         username: ${{ secrets.BOT_DOCKER_USERNAME }}
         password: ${{ secrets.BOT_DOCKER_TOKEN }}
