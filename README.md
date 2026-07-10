@@ -19,7 +19,7 @@ Read the documentation [here](./docs/10_overview.md).
 
 To start developing the CLI you must have this requirements:
 
-- golang 1.19+
+- golang 1.25+
 - make
 
 Once you have pulled the code locally, you can build the code with make:
