@@ -31,6 +31,9 @@ import (
 const (
 	deployProjectEndpointTemplate  = "/api/deploy/projects/%s/trigger/pipeline/"
 	pipelineStatusEndpointTemplate = "/api/deploy/projects/%s/pipelines/%s/status/"
+
+	pipelineStatusFailed = "failed"
+	refTypeRevision      = "revision"
 )
 
 func triggerCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -98,7 +101,7 @@ func runDeployTrigger(ctx context.Context, environmentName string, options *clio
 		return fmt.Errorf("error retrieving the pipeline status: %w", err)
 	}
 
-	if status == "failed" {
+	if status == pipelineStatusFailed {
 		return errors.New("pipeline failed")
 	}
 
@@ -107,7 +110,7 @@ func runDeployTrigger(ctx context.Context, environmentName string, options *clio
 }
 
 func triggerPipeline(ctx context.Context, client *client.APIClient, environmentName, projectID string, options *clioptions.CLIOptions) (*resources.DeployProject, error) {
-	refType := "revision"
+	refType := refTypeRevision
 	refValue := options.Revision
 	if len(options.Version) > 0 {
 		refType = "version"
