@@ -59,6 +59,9 @@ func testServerForCompleteFlow(t *testing.T) *httptest.Server {
 	accessToken := "new"
 	return testServer(t, func(w http.ResponseWriter, r *http.Request) {
 		switch {
+		case r.Method == http.MethodGet && r.RequestURI == protectedResourceMetadataPath:
+			// NOTE: For now, OIDC is always unavailable in tests
+			http.NotFound(w, r)
 		case r.Method == http.MethodGet && r.RequestURI == fmt.Sprintf(providerEndpointStringTemplate, appID):
 			testProvider := resources.AuthProvider{
 				ID:    "foo",
