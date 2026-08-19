@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - support automatic OIDC endpoint discovery via OAuth2 Protected Resource Metadata ([RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728)) when available, with fallback to the Mia-Platform browser login flow
 
+### Removed
+
+- obsolete Console version checks (v14.0.0/v14.1.0) from Catalog and Item Type Definition commands, superseded by the minimum required Console version v15.0.0
+
 ## [v0.24.0] - 2026-04-28
 
 ### Added
