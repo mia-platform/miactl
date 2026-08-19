@@ -24,6 +24,7 @@ import (
 	"github.com/mia-platform/miactl/internal/cliconfig"
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/logger"
+	"github.com/mia-platform/miactl/internal/version"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
@@ -361,6 +362,10 @@ func defaultUserAgent() string {
 	command := "unknown"
 	if len(osCommand) > 0 {
 		command = filepath.Base(osCommand)
+	}
+
+	if version.Version != "" {
+		command = fmt.Sprintf("%s@%s", command, version.Version)
 	}
 
 	os := runtime.GOOS
