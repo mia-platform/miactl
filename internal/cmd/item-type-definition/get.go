@@ -25,14 +25,13 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
-	"github.com/mia-platform/miactl/internal/util"
 )
 
 const (
 	getItdEndpoint = "/api/tenants/%s/marketplace/item-type-definitions/%s/"
 	getCmdLong     = `Get an Item Type Definition
 
-   This command get an Item Type Definitions based on its name and tenant namespace. It works with Mia-Platform Console v14.1.0 or later.
+   This command get an Item Type Definitions based on its name and tenant namespace.
 
    You need to specify the name via the respective flag. The company-id flag can be omitted if it is already set in the context and it is used as tenantId of the item type definition.
    `
@@ -49,14 +48,6 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-
-			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 1)
-			if versionError != nil {
-				return versionError
-			}
-			if !canUseNewAPI {
-				return itd.ErrUnsupportedCompanyVersion
-			}
 
 			serializedItem, err := getItemEncodedWithFormat(
 				cmd.Context(),
