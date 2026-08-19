@@ -7,13 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- obsolete Console version checks (v14.0.0/v14.1.0) from Catalog and Item Type Definition commands, superseded by the minimum required Console version v15.0.0
+
+## [v0.25.0] - 2026-07-10
+
 ### Added
 
 - support automatic OIDC endpoint discovery via OAuth2 Protected Resource Metadata ([RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728)) when available, with fallback to the Mia-Platform browser login flow
 
-### Removed
-
-- obsolete Console version checks (v14.0.0/v14.1.0) from Catalog and Item Type Definition commands, superseded by the minimum required Console version v15.0.0
 
 ## [v0.24.0] - 2026-04-28
 
@@ -487,7 +490,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - create cli sdk
 - create cli renderer
 
-[unreleased]: https://github.com/mia-platform/miactl/compare/v0.24.0...HEAD
+[unreleased]: https://github.com/mia-platform/miactl/compare/v0.25.0...HEAD
+[v0.25.0]: https://github.com/mia-platform/miactl/compare/v0.24.0...v0.25.0
 [v0.24.0]: https://github.com/mia-platform/miactl/compare/v0.23.0...v0.24.0
 [v0.23.0]: https://github.com/mia-platform/miactl/compare/v0.22.0...v0.23.0
 [v0.22.0]: https://github.com/mia-platform/miactl/compare/v0.21.2...v0.22.0
