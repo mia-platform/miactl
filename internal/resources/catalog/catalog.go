@@ -16,13 +16,7 @@
 package catalog
 
 import (
-	"errors"
-
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-)
-
-var (
-	ErrUnsupportedCompanyVersion = errors.New("you need Mia-Platform Console v14.0.0 or later to use this command")
 )
 
 type ApplyResponse struct {

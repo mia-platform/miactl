@@ -26,7 +26,6 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/printer"
 	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
-	"github.com/mia-platform/miactl/internal/util"
 )
 
 type GetItdsOptions struct {
@@ -39,7 +38,7 @@ const (
 	listItdEndpoint = "/api/marketplace/item-type-definitions/"
 	listCmdLong     = `List Item Type Definitions
 
-    This command lists the Item Type Definitions of a company. It works with Mia-Platform Console v14.1.0 or later.
+    This command lists the Item Type Definitions of a company.
 
 		Results are paginated. By default, only the first page is shown.
 
@@ -70,14 +69,6 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 		cobra.CheckErr(err)
 		apiClient, err := client.APIClientForConfig(restConfig)
 		cobra.CheckErr(err)
-
-		canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), apiClient, 14, 1)
-		if versionError != nil {
-			return versionError
-		}
-		if !canUseNewAPI {
-			return itd.ErrUnsupportedCompanyVersion
-		}
 
 		listItemsOptions := GetItdsOptions{
 			CompanyID: restConfig.CompanyID,

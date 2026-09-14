@@ -27,7 +27,6 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
-	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 )
 
@@ -40,21 +39,6 @@ func TestDeleteResourceCmd(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		cmd := DeleteCmd(opts)
 		require.NotNil(t, cmd)
-	})
-
-	t.Run("should not run command when Console version is lower than 14.0.0", func(t *testing.T) {
-		server := httptest.NewServer(unexecutedCmdMockServer(t))
-		defer server.Close()
-
-		opts := clioptions.NewCLIOptions()
-		opts.CompanyID = mockDeleteCompanyID
-		opts.Endpoint = server.URL
-
-		cmd := DeleteCmd(opts)
-		cmd.SetArgs([]string{"delete", "--item-id", "some-item-id", "--version", "1.0.0"})
-
-		err := cmd.Execute()
-		require.ErrorIs(t, err, catalog.ErrUnsupportedCompanyVersion)
 	})
 }
 

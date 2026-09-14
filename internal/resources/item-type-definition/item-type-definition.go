@@ -22,9 +22,8 @@ import (
 )
 
 var (
-	ErrUnsupportedCompanyVersion = errors.New("you need Mia-Platform Console v14.1.0 or later to use this command")
-	ErrMissingCompanyID          = errors.New("missing company id, please set one with the flag company-id or in the context")
-	ErrItemNotFound              = errors.New("item type definition not found")
+	ErrMissingCompanyID = errors.New("missing company id, please set one with the flag company-id or in the context")
+	ErrItemNotFound     = errors.New("item type definition not found")
 )
 
 // GenericItemTypeDefinition is a Marketplace item
