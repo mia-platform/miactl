@@ -31,6 +31,9 @@ import (
 const (
 	deployProjectEndpointTemplate  = "/api/deploy/projects/%s/trigger/pipeline/"
 	pipelineStatusEndpointTemplate = "/api/deploy/projects/%s/pipelines/%s/status/"
+
+	pipelineStatusFailed = "failed"
+	refTypeRevision      = "revision"
 )
 
 func triggerCmd(options *clioptions.CLIOptions) *cobra.Command {
@@ -62,15 +65,14 @@ func deployTriggerOptions(cmd *cobra.Command, options *clioptions.CLIOptions) {
 	options.AddCompanyFlags(flags)
 	options.AddProjectFlags(flags)
 	options.AddDeployFlags(flags)
-	if err := cmd.MarkFlagRequired("revision"); err != nil {
-		// if there is an error something very wrong is happening, panic
-		panic(err)
-	}
 }
 
 func runDeployTrigger(ctx context.Context, environmentName string, options *clioptions.CLIOptions) error {
-	if len(options.Revision) == 0 {
-		return errors.New("a valid revision is required to start a deploy")
+	if len(options.Revision) == 0 && len(options.Version) == 0 {
+		return errors.New("one of --revision or --version is required to start a deploy")
+	}
+	if len(options.Revision) != 0 && len(options.Version) != 0 {
+		return errors.New("--revision and --version are mutually exclusive")
 	}
 
 	restConfig, err := options.ToRESTConfig()
@@ -99,7 +101,7 @@ func runDeployTrigger(ctx context.Context, environmentName string, options *clio
 		return fmt.Errorf("error retrieving the pipeline status: %w", err)
 	}
 
-	if status == "failed" {
+	if status == pipelineStatusFailed {
 		return errors.New("pipeline failed")
 	}
 
@@ -108,9 +110,17 @@ func runDeployTrigger(ctx context.Context, environmentName string, options *clio
 }
 
 func triggerPipeline(ctx context.Context, client *client.APIClient, environmentName, projectID string, options *clioptions.CLIOptions) (*resources.DeployProject, error) {
+	refType := refTypeRevision
+	refValue := options.Revision
+	if len(options.Version) > 0 {
+		refType = "version"
+		refValue = options.Version
+	}
+
 	request := resources.DeployProjectRequest{
 		Environment: environmentName,
-		Revision:    options.Revision,
+		Revision:    refValue,
+		RefType:     refType,
 		Type:        options.DeployType,
 		ForceDeploy: options.NoSemVer,
 	}

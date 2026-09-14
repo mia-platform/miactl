@@ -92,6 +92,7 @@ const (
 type DeployProjectRequest struct {
 	Environment string `json:"environment"`
 	Revision    string `json:"revision"`
+	RefType     string `json:"refType"`
 	Type        string `json:"deployType"`              //nolint: tagliatelle
 	ForceDeploy bool   `json:"forceDeployWhenNoSemver"` //nolint: tagliatelle
 }
