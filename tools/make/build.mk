@@ -16,7 +16,7 @@
 ##@ Go Builds Goals
 
 .PHONY: build
-build:
+build: ## Build the miactl binary
 
 # if not already installed in the system install a pinned version in tools folder
 ifeq ($(OS),Windows_NT)

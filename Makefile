@@ -108,9 +108,16 @@ DOCUMENTATION_URL:= https://docs.mia-platform.eu
 SOURCE_URL:= https://github.com/mia-platform/miactl
 BUILDX_CONTEXT?= miactl-build-context
 
+.DEFAULT_GOAL := help
+
 # Add additional targets that you want to run when calling make without arguments
 .PHONY: all
-all: lint test
+all: lint test ## Run linter and tests (default)
+
+.PHONY: help
+help: ## Show this list of commands
+	@echo "Available commands:"
+	@grep -hE '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-25s\033[0m %s\n", $$1, $$2}'
 
 ## Includes
 include tools/make/clean.mk
