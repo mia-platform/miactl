@@ -26,7 +26,7 @@ ifndef GOLANGCI_PATH
 endif
 
 .PHONY: lint
-lint:
+lint: ## Run the linter (golangci-lint)
 
 .PHONY: lint-deps
 lint-deps:
