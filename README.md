@@ -39,7 +39,17 @@ make build
 ```
 
 `make` will download all the dependencies needed and will build the binary for your current system that you can find
-in the `bin` folder.
+in the `bin/<os>/<arch>` folder.
+
+### Making `miactl` globally available
+
+If you want to use the CLI from anywhere without specifying the full path, you can install the binary globally using Go:
+
+```sh
+go install ./cmd/miactl
+```
+
+This will build and place the `miactl` binary in your Go bin folder (usually `~/go/bin`), which is normally already in your system's `PATH`.
 
 To build the docker image locally run:
 
