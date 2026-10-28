@@ -25,7 +25,7 @@ import (
 type Config struct {
 	// TLSClientConfig contains settings to enable transport layer security
 	TLSClientConfig
-	// AuthConfig contains settings for settign up authentication for the http requests
+	// AuthConfig contains settings for setting up authentication for the http requests
 	AuthConfig
 	// AuthCacheReadWriter provides access to authorization cache
 	AuthCacheReadWriter
@@ -64,7 +64,7 @@ type TLSClientConfig struct {
 	CAFile string
 }
 
-// AuthConfig contains settings for settign up authentication for the http requests
+// AuthConfig contains settings for setting up authentication for the http requests
 type AuthConfig struct {
 	ClientID          string
 	ClientSecret      string
