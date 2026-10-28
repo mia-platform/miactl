@@ -1,0 +1,20 @@
+contexts:
+  ctx-shared-a:
+    endpoint: https://example.com
+    credential: shared-auth
+  ctx-shared-b:
+    endpoint: https://example.com
+    credential: shared-auth
+  ctx-solo:
+    endpoint: https://example.com
+    credential: solo-auth
+  ctx-no-auth:
+    endpoint: https://example.com
+current-context: ctx-solo
+credentials:
+  shared-auth:
+    client-id: shared-client-id
+    client-secret: shared-secret
+  solo-auth:
+    client-id: solo-client-id
+    client-secret: solo-secret
