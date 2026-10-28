@@ -24,26 +24,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/mia-platform/miactl/internal/client"
-	"github.com/mia-platform/miactl/internal/clioptions"
 	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
 )
-
-func TestPutCommand(t *testing.T) {
-	t.Run("test post run - shows deprecated command message", func(t *testing.T) {
-		server := httptest.NewServer(unexecutedCmdMockServer(t))
-		defer server.Close()
-
-		opts := clioptions.NewCLIOptions()
-		opts.CompanyID = "company-id"
-		opts.Endpoint = server.URL
-
-		cmd := PutCmd(opts)
-		cmd.SetArgs([]string{"put", "--file", "testdata/validItem1.json"})
-
-		err := cmd.Execute()
-		require.ErrorIs(t, err, itd.ErrUnsupportedCompanyVersion)
-	})
-}
 
 var mockTenantID = "mock-tenant-id"
 var mockURI = "/api/tenants/" + mockTenantID + "/marketplace/item-type-definitions/"

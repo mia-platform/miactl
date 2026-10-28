@@ -30,7 +30,6 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/printer"
-	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
 )
 
@@ -66,21 +65,6 @@ func TestNewListVersionsCmd(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		cmd := ListVersionCmd(opts)
 		require.NotNil(t, cmd)
-	})
-
-	t.Run("should not run command when Console version is lower than 14.0.0", func(t *testing.T) {
-		server := httptest.NewServer(unexecutedCmdMockServer(t))
-		defer server.Close()
-
-		opts := clioptions.NewCLIOptions()
-		opts.CompanyID = "my-company"
-		opts.Endpoint = server.URL
-
-		cmd := ListVersionCmd(opts)
-		cmd.SetArgs([]string{"list-versions", "--item-id", "item-id"})
-
-		err := cmd.Execute()
-		require.ErrorIs(t, err, catalog.ErrUnsupportedCompanyVersion)
 	})
 }
 

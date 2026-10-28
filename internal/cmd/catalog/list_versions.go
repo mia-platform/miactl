@@ -21,8 +21,6 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
-	"github.com/mia-platform/miactl/internal/resources/catalog"
-	"github.com/mia-platform/miactl/internal/util"
 )
 
 const listItemVersionsEndpointTemplate = "/api/tenants/%s/marketplace/items/%s/versions"
@@ -33,20 +31,12 @@ func ListVersionCmd(options *clioptions.CLIOptions) *cobra.Command {
 		Use:   "list-versions",
 		Short: "List versions of a Marketplace item",
 		Long: `List the currently available versions of a Marketplace item.
-The command will output a table with each version of the item. It works with Mia-Platform Console v14.0.0 or later.`,
+The command will output a table with each version of the item.`,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			restConfig, err := options.ToRESTConfig()
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-
-			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
-			if versionError != nil {
-				return versionError
-			}
-			if !canUseNewAPI {
-				return catalog.ErrUnsupportedCompanyVersion
-			}
 
 			releases, err := commonMarketplace.GetItemVersions(
 				cmd.Context(),
