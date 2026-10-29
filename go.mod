@@ -6,6 +6,7 @@ toolchain go1.25.6
 
 require (
 	dario.cat/mergo v1.0.2
+	github.com/coreos/go-oidc/v3 v3.18.0
 	github.com/go-logr/logr v1.4.3
 	github.com/google/uuid v1.6.0
 	github.com/olekukonko/tablewriter v0.0.5
@@ -19,10 +20,9 @@ require (
 )
 
 require (
-	github.com/coreos/go-oidc/v3 v3.18.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-errors/errors v1.4.2 // indirect
-	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.6 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.20.2 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
