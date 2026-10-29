@@ -13,13 +13,23 @@ via the UI.
 
 ## To Start Using `miactl`
 
-Read the documentation [here](./docs/10_overview.md).
+Read more in the [official Mia-Platform documentation](https://docs.mia-platform.eu/docs/products/console/cli/miactl/overview).
+
+Please make sure to install a `miactl` version that supports the Mia-Platform Console you want to use.
+
+You can help yourself with this table:
+
+| Mia-Platform Console version | `miactl` version |
+| --- | --- |
+| v15.0.0 and above | v0.25.1 and above |
+| v14.1.0 and above | v0.24.0 |
+| v14.0.0 and before | v0.23.0 |
 
 ## To Start Developing `miactl`
 
 To start developing the CLI you must have this requirements:
 
-- golang 1.19+
+- golang 1.25+
 - make
 
 Once you have pulled the code locally, you can build the code with make:

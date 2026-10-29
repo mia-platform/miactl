@@ -25,9 +25,7 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
-	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/mia-platform/miactl/internal/util"
 )
 
 const (
@@ -35,8 +33,6 @@ const (
 	deleteItemByTupleEndpointTemplate = "/api/tenants/%s/marketplace/items/%s/versions/%s"
 
 	cmdDeleteLongDescription = `Delete a single Catalog item
-
-	This command works with Mia-Platform Console v14.0.0 or later.
 
 	You need to specify the companyId, itemId and version, via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 	`
@@ -55,14 +51,6 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-
-			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
-			if versionError != nil {
-				return versionError
-			}
-			if !canUseNewAPI {
-				return catalog.ErrUnsupportedCompanyVersion
-			}
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {
