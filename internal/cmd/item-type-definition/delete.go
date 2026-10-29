@@ -26,7 +26,6 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
-	"github.com/mia-platform/miactl/internal/util"
 )
 
 var (
@@ -37,7 +36,7 @@ var (
 const (
 	deleteItdEndpoint = "/api/tenants/%s/marketplace/item-type-definitions/%s/"
 
-	cmdDeleteLongDescription = `Delete an Item Type Definition. It works with Mia-Platform Console v14.1.0 or later.
+	cmdDeleteLongDescription = `Delete an Item Type Definition.
 
 	You need to specify the companyId and the item type definition name via the respective flags (recommended). The company-id flag can be omitted if it is already set in the context.
 	`
@@ -55,14 +54,6 @@ func DeleteCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-
-			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 1)
-			if versionError != nil {
-				return versionError
-			}
-			if !canUseNewAPI {
-				return itd.ErrUnsupportedCompanyVersion
-			}
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {

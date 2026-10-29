@@ -21,15 +21,13 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
-	"github.com/mia-platform/miactl/internal/resources/catalog"
-	"github.com/mia-platform/miactl/internal/util"
 )
 
 const (
 	listMarketplaceEndpoint = "/api/marketplace/"
 	listCmdLong             = `List Catalog items
 
-    This command lists the Catalog items of a company. It works with Mia-Platform Console v14.0.0 or later.
+    This command lists the Catalog items of a company.
 
 		Results are paginated. By default, only the first page is shown.
 
@@ -61,14 +59,6 @@ func runListCmd(options *clioptions.CLIOptions) func(cmd *cobra.Command, args []
 		cobra.CheckErr(err)
 		apiClient, err := client.APIClientForConfig(restConfig)
 		cobra.CheckErr(err)
-
-		canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), apiClient, 14, 0)
-		if versionError != nil {
-			return versionError
-		}
-		if !canUseNewAPI {
-			return catalog.ErrUnsupportedCompanyVersion
-		}
 
 		marketplaceItemsOptions := commonMarketplace.GetMarketplaceItemsOptions{
 			CompanyID: restConfig.CompanyID,

@@ -33,7 +33,7 @@ type Interface interface {
 	HTTPClient() *http.Client
 }
 
-// APIClient wrap an http.Client that can connect to Mia-Platform Console
+// APIClient wraps an http.Client that can connect to Mia-Platform Console
 type APIClient struct {
 	baseURL       *url.URL
 	contentConfig contentConfig
@@ -41,9 +41,9 @@ type APIClient struct {
 	client *http.Client
 }
 
-// newAPIClient create a new APIClient for url using config and httpClient for configure it
+// newAPIClient creates a new APIClient for url using config and httpClient to configure it
 func newAPIClient(url *url.URL, config contentConfig, httpClient *http.Client) *APIClient {
-	// be sure to have a valid ContetType
+	// be sure to have a valid ContentType
 	if len(config.ContentType) == 0 {
 		config.ContentType = defaultContentType
 	}
@@ -64,22 +64,22 @@ func newAPIClient(url *url.URL, config contentConfig, httpClient *http.Client) *
 	}
 }
 
-// Get return a new Request object for a GET http request
+// Get returns a new Request object for a GET http request
 func (c *APIClient) Get() *Request {
 	return NewRequest(c).SetVerb(http.MethodGet)
 }
 
-// Post return a new Request object for a POST http request
+// Post returns a new Request object for a POST http request
 func (c *APIClient) Post() *Request {
 	return NewRequest(c).SetVerb(http.MethodPost)
 }
 
-// Put return a new Request object for a Put http request
+// Put returns a new Request object for a Put http request
 func (c *APIClient) Put() *Request {
 	return NewRequest(c).SetVerb(http.MethodPut)
 }
 
-// Delete return a new Request object for a DELETE http request
+// Delete returns a new Request object for a DELETE http request
 func (c *APIClient) Delete() *Request {
 	return NewRequest(c).SetVerb(http.MethodDelete)
 }

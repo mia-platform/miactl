@@ -25,16 +25,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/mia-platform/miactl/internal/clioptions"
+	"github.com/mia-platform/miactl/internal/version"
 )
 
-// Version is dynamically set by the ci or overridden by the Makefile.
-var Version = ""
-
-// BuildDate is dynamically set at build time by the cli or overridden in the Makefile.
-var BuildDate = "" // YYYY-MM-DD
-
 func VersionCmd(_ *clioptions.CLIOptions) *cobra.Command {
-	versionOutput := versionFormat(Version, BuildDate)
+	versionOutput := versionFormat(version.Version, version.BuildDate)
 	// Version subcommand
 	cmd := &cobra.Command{
 		Use:   "version",
