@@ -25,17 +25,13 @@ import (
 	"github.com/mia-platform/miactl/internal/clioptions"
 	commonMarketplace "github.com/mia-platform/miactl/internal/cmd/common/marketplace"
 	"github.com/mia-platform/miactl/internal/encoding"
-	"github.com/mia-platform/miactl/internal/resources/catalog"
 	"github.com/mia-platform/miactl/internal/resources/marketplace"
-	"github.com/mia-platform/miactl/internal/util"
 )
 
 const (
 	getItemByItemIDAndVersionEndpointTemplate = "/api/tenants/%s/marketplace/items/%s/versions/%s"
 
 	cmdGetLongDescription = `Get a single Catalog item
-
-	This command works with Mia-Platform Console v14.0.0 or later.
 
 	You need to specify the itemId, via the respective flag. The company-id flag can be omitted if it is already set in the context.
 	`
@@ -53,14 +49,6 @@ func GetCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-
-			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 0)
-			if versionError != nil {
-				return versionError
-			}
-			if !canUseNewAPI {
-				return catalog.ErrUnsupportedCompanyVersion
-			}
 
 			serializedItem, err := getItemEncodedWithFormat(
 				cmd.Context(),

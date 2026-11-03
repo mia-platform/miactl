@@ -44,6 +44,7 @@ back in that file
 		context.SetCmd(options),
 		context.UseCmd(options),
 		context.ListCmd(options),
+		context.RemoveCmd(options),
 	)
 
 	return cmd
