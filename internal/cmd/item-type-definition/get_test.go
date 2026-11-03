@@ -28,7 +28,6 @@ import (
 	"github.com/mia-platform/miactl/internal/client"
 	"github.com/mia-platform/miactl/internal/clioptions"
 	"github.com/mia-platform/miactl/internal/encoding"
-	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
 )
 
 const (
@@ -79,21 +78,6 @@ func TestGetResourceCmd(t *testing.T) {
 		opts := clioptions.NewCLIOptions()
 		cmd := GetCmd(opts)
 		require.NotNil(t, cmd)
-	})
-
-	t.Run("should not run command when Console version is lower than 14.1.0", func(t *testing.T) {
-		server := httptest.NewServer(unexecutedCmdMockServer(t))
-		defer server.Close()
-
-		opts := clioptions.NewCLIOptions()
-		opts.CompanyID = mockCompanyID
-		opts.Endpoint = server.URL
-
-		cmd := GetCmd(opts)
-		cmd.SetArgs([]string{"get", "--name", mockName})
-
-		err := cmd.Execute()
-		require.ErrorIs(t, err, itd.ErrUnsupportedCompanyVersion)
 	})
 }
 

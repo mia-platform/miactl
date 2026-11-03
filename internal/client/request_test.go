@@ -119,6 +119,11 @@ func TestRequestURL(t *testing.T) {
 			apiPath:     "/api/backend/projects/",
 			expectedURL: "http://host/mia/api/backend/projects/",
 		},
+		"percent-encoded path segments preserved": {
+			baseURL:     "http://host/",
+			apiPath:     "/api/backend/projects/myProjectID/revisions/feat%2Fexternal-idp/configuration",
+			expectedURL: "http://host/api/backend/projects/myProjectID/revisions/feat%2Fexternal-idp/configuration",
+		},
 	}
 
 	for testName, testCase := range testCases {
@@ -145,6 +150,13 @@ func TestSetAPIPath(t *testing.T) {
 	// once an error is register no other changes can be made
 	r.APIPath(validPath)
 	assert.Error(t, r.Error())
+
+	// percent-encoded path segments must not be double-encoded
+	r2 := (&Request{})
+	encodedPath := "/api/backend/projects/myProjectID/revisions/feat%2Fexternal-idp/configuration"
+	r2.APIPath(encodedPath)
+	assert.NoError(t, r2.Error())
+	assert.Equal(t, encodedPath, r2.apiPath)
 }
 
 func TestPreflightCheck(t *testing.T) {
