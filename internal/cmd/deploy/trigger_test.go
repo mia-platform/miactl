@@ -35,30 +35,54 @@ func TestDeploy(t *testing.T) {
 	testCases := map[string]struct {
 		server    *httptest.Server
 		projectID string
+		revision  string
+		version   string
 		expectErr bool
 	}{
 		"pipeline succeed": {
 			server:    testTriggerServer(t),
 			projectID: "correct",
+			revision:  "revision",
+		},
+		"pipeline succeed with version": {
+			server:    testTriggerServer(t),
+			projectID: "correct",
+			version:   "1.0.0",
 		},
 		"pipeline failed": {
 			server:    testFailedTriggerServer(t),
 			projectID: "failed",
+			revision:  "revision",
 			expectErr: true,
 		},
 		"pipeline fails": {
 			server:    testTriggerServer(t),
 			projectID: "fails-bad-request",
+			revision:  "revision",
 			expectErr: true,
 		},
 		"wait status fails": {
 			server:    testTriggerServer(t),
 			projectID: "fails-wait-status",
+			revision:  "revision",
 			expectErr: true,
 		},
 		"missing project ID": {
 			server:    testTriggerServer(t),
 			projectID: "",
+			revision:  "revision",
+			expectErr: true,
+		},
+		"missing revision and version": {
+			server:    testTriggerServer(t),
+			projectID: "correct",
+			expectErr: true,
+		},
+		"revision and version are mutually exclusive": {
+			server:    testTriggerServer(t),
+			projectID: "correct",
+			revision:  "revision",
+			version:   "1.0.0",
 			expectErr: true,
 		},
 	}
@@ -70,7 +94,8 @@ func TestDeploy(t *testing.T) {
 			options := &clioptions.CLIOptions{
 				Endpoint:     server.URL,
 				ProjectID:    testCase.projectID,
-				Revision:     "revision",
+				Revision:     testCase.revision,
+				Version:      testCase.version,
 				MiactlConfig: filepath.Join(t.TempDir(), "nofile"),
 			}
 			err := runDeployTrigger(t.Context(), "environmentName", options)
