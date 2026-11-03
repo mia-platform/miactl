@@ -30,7 +30,6 @@ import (
 	"github.com/mia-platform/miactl/internal/encoding"
 	"github.com/mia-platform/miactl/internal/files"
 	itd "github.com/mia-platform/miactl/internal/resources/item-type-definition"
-	"github.com/mia-platform/miactl/internal/util"
 )
 
 var (
@@ -45,7 +44,7 @@ var (
 const (
 	putItdEndpoint = "/api/tenants/%s/marketplace/item-type-definitions/"
 
-	cmdPutLongDescription = ` Create or update an Item Type Definition. It works with Mia-Platform Console v14.1.0 or later.
+	cmdPutLongDescription = ` Create or update an Item Type Definition.
 
   You need to specify the flag --file or -f that accepts a file and companyId.
 
@@ -72,14 +71,6 @@ func PutCmd(options *clioptions.CLIOptions) *cobra.Command {
 			cobra.CheckErr(err)
 			client, err := client.APIClientForConfig(restConfig)
 			cobra.CheckErr(err)
-
-			canUseNewAPI, versionError := util.VersionCheck(cmd.Context(), client, 14, 1)
-			if versionError != nil {
-				return versionError
-			}
-			if !canUseNewAPI {
-				return itd.ErrUnsupportedCompanyVersion
-			}
 
 			companyID := restConfig.CompanyID
 			if len(companyID) == 0 {

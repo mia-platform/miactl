@@ -7,6 +7,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `miactl project revision list` for listing available revisions for a project
+
+## [v0.25.1] - 2026-08-19
+
+### Removed
+
+- obsolete Console version checks (v14.0.0/v14.1.0) from Catalog and Item Type Definition commands, superseded by the minimum required Console version v15.0.0
+
+## [v0.25.0] - 2026-07-10
+
+### Added
+
+- support automatic OIDC endpoint discovery via OAuth2 Protected Resource Metadata ([RFC 9728](https://datatracker.ietf.org/doc/html/rfc9728)) when available, with fallback to the Mia-Platform browser login flow
+
+
+## [v0.24.0] - 2026-04-28
+
+### Added
+
+- `miactl project describe` now exports the full Helm chart configuration of projects using the Enhanced Workflow, including the `charts` key with all chart files and their content
+- `miactl project apply` now supports applying configurations that include the `charts` key, allowing chart files to be updated programmatically on a target revision
+
+## [v0.23.0] - 2026-04-15
+
+### Added
+
+- support to login to Mia-Platform instances in Windows OS
+
+### Changed
+
+- update actions/dependency-review-action to v4.8.3
+- update actions/setup-go to v6.3.0
+- update github/codeql-actions to 4.32.4
+
+### Fixed
+
+- `miactl deploy latest` now accept flags correctly
+- path prefix in endpoints now are correctly handled when building the request url
+
 ## [v0.22.0] - 2026-02-03
 
 ### Changed
@@ -455,7 +496,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - create cli sdk
 - create cli renderer
 
-[unreleased]: https://github.com/mia-platform/miactl/compare/v0.22.0...HEAD
+[v0.25.1]: https://github.com/mia-platform/miactl/compare/v0.25.0...v0.25.1
+[v0.25.0]: https://github.com/mia-platform/miactl/compare/v0.24.0...v0.25.0
+[v0.24.0]: https://github.com/mia-platform/miactl/compare/v0.23.0...v0.24.0
+[v0.23.0]: https://github.com/mia-platform/miactl/compare/v0.22.0...v0.23.0
 [v0.22.0]: https://github.com/mia-platform/miactl/compare/v0.21.2...v0.22.0
 [v0.21.2]: https://github.com/mia-platform/miactl/compare/v0.21.1...v0.21.2
 [v0.21.1]: https://github.com/mia-platform/miactl/compare/v0.21.0...v0.21.1

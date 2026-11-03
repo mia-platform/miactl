@@ -126,9 +126,65 @@ type DeployProject struct {
 	URL string `json:"url"`
 }
 
+func (dp *DeployProject) UnmarshalJSON(data []byte) error {
+	var raw struct {
+		ID  json.RawMessage `json:"id"`
+		URL string          `json:"url"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	dp.URL = raw.URL
+
+	// try string
+	var err error
+	var s string
+	if err = json.Unmarshal(raw.ID, &s); err == nil {
+		dp.ID = s
+		return nil
+	}
+
+	var n json.Number
+	if err = json.Unmarshal(raw.ID, &n); err == nil {
+		dp.ID = n.String()
+		return nil
+	}
+
+	return err
+}
+
 type PipelineStatus struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`
+}
+
+func (dp *PipelineStatus) UnmarshalJSON(data []byte) error {
+	var raw struct {
+		ID     json.RawMessage `json:"id"`
+		Status string          `json:"status"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	dp.Status = raw.Status
+
+	// try string
+	var err error
+	var s string
+	if err = json.Unmarshal(raw.ID, &s); err == nil {
+		dp.ID = s
+		return nil
+	}
+
+	var n json.Number
+	if err = json.Unmarshal(raw.ID, &n); err == nil {
+		dp.ID = n.String()
+		return nil
+	}
+
+	return err
 }
 
 type CreateJob struct {

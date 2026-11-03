@@ -16,7 +16,7 @@
 ##@ Lint Goals
 
 .PHONY: clean
-clean:
+clean: ## Clean build artifacts
 
 .PHONY: clean/coverage
 clean: clean/coverage

@@ -47,6 +47,7 @@ resources that make up the applications of a specific company.
 		project.DescribeCmd(o),
 		project.ApplyCmd(o),
 		project.VersionCmd(o),
+		project.RevisionCmd(o),
 	)
 
 	return projectCmd
